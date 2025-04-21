@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/purchase-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <h1>Gabi Jyoti Yoga</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Me</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#offerings">Classes & Offerings</a></li>
+                <li><a href="#membership">Membership</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="login-flow-mockup.html" style="color: #e0a458;">Login Flow Demo</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Find Your Inner Peace</h1>
+            <p>Join our community and transform your mind, body, and spirit</p>
+            <a href="#offerings" class="btn">Explore Classes</a>
+        </div>
+    </section>
+
+    <!-- About/Bio Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2>About Me</h2>
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="images/DSC02659.JPG" alt="Yoga Instructor">
+                </div>
+                <div class="about-text">
+                    <h3>Gabi Jyoti</h3>
+                    <p class="subtitle">RYT 500 Certified Yoga Instructor</p>
+                    <p>Welcome to Gabi Jyoti Yoga! I've been practicing yoga for over 10 years and teaching for 5. My journey began when I was seeking balance in my hectic life, and yoga provided the perfect sanctuary.</p>
+                    <p>I specialize in Vinyasa, Hatha, and Restorative yoga practices. My teaching philosophy centers around making yoga accessible to practitioners of all levels while honoring its traditional roots.</p>
+                    <p>Through my classes, I aim to create a supportive environment where you can explore the transformative power of yoga, connecting breath with movement and finding peace within.</p>
+                    <div class="certifications">
+                        <h4>Certifications:</h4>
+                        <ul>
+                            <li>RYT 500 - Yoga Alliance</li>
+                            <li>Meditation Instructor Certification</li>
+                            <li>Pre-natal Yoga Certification</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2>Gallery</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/DSC02638.JPG" alt="Yoga class">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/DSC02646.JPG" alt="Yoga pose">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/DSC02661~3.JPG" alt="Yoga studio">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/IMG_5737.HEIC" alt="Group yoga">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/IMG_5740.HEIC" alt="Meditation">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/IMG_5742.HEIC" alt="Yoga retreat">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Offerings Section -->
+    <section id="offerings" class="offerings">
+        <div class="container">
+            <h2>Classes & Offerings</h2>
+            <div class="offerings-grid">
+                <!-- Class Types -->
+                <div class="offering-card">
+                    <div class="offering-icon">
+                        <i class="fas fa-om"></i>
+                    </div>
+                    <h3>Group Classes</h3>
+                    <p>Join our community for energizing and rejuvenating yoga sessions in a supportive group setting.</p>
+                    <ul>
+                        <li>Vinyasa Flow</li>
+                        <li>Gentle Hatha</li>
+                        <li>Power Yoga</li>
+                        <li>Restorative</li>
+                        <li>Yoga for Beginners</li>
+                    </ul>
+                    <a href="#schedule" class="btn-small">View Schedule</a>
+                </div>
+
+                <!-- Private Lessons -->
+                <div class="offering-card">
+                    <div class="offering-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>Private Lessons</h3>
+                    <p>Personalized one-on-one sessions tailored to your specific needs and goals.</p>
+                    <ul>
+                        <li>Customized practice</li>
+                        <li>Focused attention</li>
+                        <li>Flexible scheduling</li>
+                        <li>In-studio or virtual</li>
+                    </ul>
+                    <a href="#" class="btn-small" id="private-session-btn">Book a Session</a>
+                </div>
+
+                <!-- Workshops -->
+                <div class="offering-card">
+                    <div class="offering-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Workshops</h3>
+                    <p>Immersive experiences focusing on specific aspects of yoga practice.</p>
+                    <ul>
+                        <li>Inversions & Arm Balances</li>
+                        <li>Yoga Philosophy</li>
+                        <li>Meditation Techniques</li>
+                        <li>Breathwork (Pranayama)</li>
+                    </ul>
+                    <a href="#events" class="btn-small">Upcoming Workshops</a>
+                </div>
+
+                <!-- Retreats -->
+                <div class="offering-card">
+                    <div class="offering-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h3>Retreats</h3>
+                    <p>Transformative multi-day experiences in beautiful locations to deepen your practice.</p>
+                    <ul>
+                        <li>Weekend local retreats</li>
+                        <li>International destinations</li>
+                        <li>All-inclusive packages</li>
+                        <li>Life-changing experiences</li>
+                    </ul>
+                    <a href="#retreats" class="btn-small">View Retreats</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Class Schedule Section -->
+    <section id="schedule" class="schedule">
+        <div class="container">
+            <h2>Weekly Schedule</h2>
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Schedule will be dynamically loaded from the database -->
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:20px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading class schedule...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="class-signup">
+                <a href="#" class="btn" id="signup-btn">Sign Up for a Class</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membership Section -->
+    <section id="membership" class="membership">
+        <div class="container">
+            <h2>Membership & Packages</h2>
+            <div class="pricing-container">
+                <!-- Drop-in Option -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Drop-In</h3>
+                        <p class="price">$20</p>
+                        <p>per class</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Single class access</li>
+                            <li>All class types</li>
+                            <li>Mat rental available</li>
+                            <li>No commitment</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn pricing-btn">Purchase</a>
+                </div>
+
+                <!-- Class Pack Option -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Class Pack</h3>
+                        <p class="price">$150</p>
+                        <p>for 10 classes</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>10 class visits</li>
+                            <li>Valid for 3 months</li>
+                            <li>All class types</li>
+                            <li>Discounted rate ($15/class)</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn pricing-btn">Purchase</a>
+                </div>
+
+                <!-- Monthly Membership Option -->
+                <div class="pricing-card featured">
+                    <div class="pricing-header">
+                        <span class="featured-tag">Most Popular</span>
+                        <h3>Monthly Unlimited</h3>
+                        <p class="price">$120</p>
+                        <p>per month</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Unlimited classes</li>
+                            <li>10% off workshops</li>
+                            <li>Free mat rental</li>
+                            <li>Member-only events</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn pricing-btn">Subscribe</a>
+                </div>
+
+                <!-- Annual Membership Option -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Annual Membership</h3>
+                        <p class="price">$1,200</p>
+                        <p>per year</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Unlimited classes</li>
+                            <li>15% off workshops</li>
+                            <li>Free mat rental</li>
+                            <li>1 free private session</li>
+                            <li>5% off retreats</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn pricing-btn">Subscribe</a>
+                </div>
+            </div>
+
+            <!-- Private Sessions Pricing -->
+            <div class="private-sessions">
+                <h3>Private Sessions</h3>
+                <div class="private-pricing">
+                    <div class="private-option">
+                        <h4>Single Session</h4>
+                        <p class="price">$80</p>
+                        <p>60 minutes</p>
+                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
+                    </div>
+                    <div class="private-option">
+                        <h4>3-Session Package</h4>
+                        <p class="price">$225</p>
+                        <p>$75 per session</p>
+                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
+                    </div>
+                    <div class="private-option">
+                        <h4>5-Session Package</h4>
+                        <p class="price">$350</p>
+                        <p>$70 per session</p>
+                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Retreats Section -->
+    <section id="retreats" class="retreats">
+        <div class="container">
+            <h2>Upcoming Retreats</h2>
+            <div class="retreats-grid">
+                <!-- Retreat 1 -->
+                <div class="retreat-card">
+                    <div class="retreat-image">
+                        <img src="images/DSC02638.JPG" alt="Mountain Retreat">
+                    </div>
+                    <div class="retreat-content">
+                        <h3>Mountain Serenity Retreat</h3>
+                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Blue Ridge Mountains</p>
+                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> June 10-15, 2025</p>
+                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,200</p>
+                        <p class="retreat-description">Escape to the majestic Blue Ridge Mountains for 5 days of yoga, meditation, hiking, and self-discovery.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+
+                <!-- Retreat 2 -->
+                <div class="retreat-card">
+                    <div class="retreat-image">
+                        <img src="images/DSC02646.JPG" alt="Beach Retreat">
+                    </div>
+                    <div class="retreat-content">
+                        <h3>Coastal Bliss Retreat</h3>
+                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Tulum, Mexico</p>
+                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> September 5-12, 2025</p>
+                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,800</p>
+                        <p class="retreat-description">Immerse yourself in a week of beachside yoga, Caribbean sunshine, and Mayan cultural experiences.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+
+                <!-- Retreat 3 -->
+                <div class="retreat-card">
+                    <div class="retreat-image">
+                        <img src="images/DSC02661~3.JPG" alt="Desert Retreat">
+                    </div>
+                    <div class="retreat-content">
+                        <h3>Desert Renewal Retreat</h3>
+                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Sedona, Arizona</p>
+                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> November 15-20, 2025</p>
+                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,400</p>
+                        <p class="retreat-description">Experience the magical healing energy of Sedona's red rocks with daily yoga, meditation, and vortex hikes.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sign-up Modal (hidden by default) -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Sign Up for a Class</h2>
+            <form id="class-signup-form">
+                <div class="form-group">
+                    <label for="class-select">Select Class:</label>
+                    <select id="class-select" required>
+                        <option value="" selected disabled>Choose a class...</option>
+                        <option value="vinyasa-mon-7am">Monday 7:00 AM - Rise & Shine Vinyasa</option>
+                        <option value="hatha-tue-9am">Tuesday 9:00 AM - Gentle Hatha</option>
+                        <!-- Additional options would be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="signup-name">Name:</label>
+                    <input type="text" id="signup-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Payment Method:</label>
+                    <select id="payment-method" required>
+                        <option value="drop-in">Drop-in ($20)</option>
+                        <option value="class-pack">Use from Class Pack</option>
+                        <option value="membership">Membership</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Reserve Spot</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Contact Me</h2>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3>Get In Touch</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Yoga Street, Mindful City, CA 94000</p>
+                    <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> info@gabijyoti.yoga</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject:</label>
+                            <input type="text" id="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message:</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>Gabi Jyoti Yoga</h2>
+                    <p>Find your inner peace with us</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#offerings">Classes</a></li>
+                        <li><a href="#membership">Membership</a></li>
+                        <li><a href="#retreats">Retreats</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="login.html" class="admin-link">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on classes, workshops, and events</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Gabi Jyoti Yoga. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Workshops Schedule Modal (hidden by default) -->
+    <div id="workshops-modal" class="modal">
+        <div class="modal-content workshop-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Upcoming Workshops</h2>
+            <div class="workshops-grid">
+                <!-- Workshop 1 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">MAY</span>
+                            <span class="day">15</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">2:00 PM - 4:30 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Inversions & Arm Balances</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi Jyoti</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Main Studio</p>
+                        <p class="workshop-description">Learn the fundamentals of inversions and arm balances in this comprehensive workshop. Suitable for all levels.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$45</span>
+                            <span class="member-price">$40 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="inversions-may15">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 2 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">JUN</span>
+                            <span class="day">8</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">10:00 AM - 1:00 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Yoga Philosophy & Meditation</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi Jyoti & Dr. Anand Sharma</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Meditation Room</p>
+                        <p class="workshop-description">Explore the philosophical roots of yoga and learn meditation techniques to deepen your practice.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$55</span>
+                            <span class="member-price">$49 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="philosophy-jun8">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 3 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">JUL</span>
+                            <span class="day">22</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">6:30 PM - 8:30 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Pranayama & Breathwork</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi Jyoti</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Main Studio</p>
+                        <p class="workshop-description">Learn powerful breathing techniques to enhance your yoga practice, reduce stress, and increase vitality.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$40</span>
+                            <span class="member-price">$36 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="pranayama-jul22">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 4 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">AUG</span>
+                            <span class="day">12</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">1:00 PM - 4:00 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Yoga for Back Health</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi Jyoti & Dr. Lisa Chen</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Healing Arts Room</p>
+                        <p class="workshop-description">Learn therapeutic yoga poses and techniques specifically designed to relieve back pain and promote spinal health.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$60</span>
+                            <span class="member-price">$54 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="back-health-aug12">Register Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workshop Registration Modal (hidden by default) -->
+    <div id="workshop-signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Register for Workshop</h2>
+            <form id="workshop-signup-form">
+                <div class="form-group">
+                    <label for="workshop-title">Workshop:</label>
+                    <input type="text" id="workshop-title" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-date">Date & Time:</label>
+                    <input type="text" id="workshop-date" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-name">Name:</label>
+                    <input type="text" id="workshop-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-email">Email:</label>
+                    <input type="email" id="workshop-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-phone">Phone:</label>
+                    <input type="tel" id="workshop-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-member">Membership:</label>
+                    <select id="workshop-member" required>
+                        <option value="non-member">Non-Member</option>
+                        <option value="member">Member</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-experience">Experience Level:</label>
+                    <select id="workshop-experience" required>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-notes">Special Requests or Questions:</label>
+                    <textarea id="workshop-notes" rows="3"></textarea>
+                </div>
+                <div class="form-group payment-options">
+                    <label>Payment Method:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="payment-now" name="payment" value="now" checked>
+                            <label for="payment-now">Pay Now</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="payment-later" name="payment" value="later">
+                            <label for="payment-later">Pay at Studio</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Complete Registration</button>
+                <p class="form-note">* Registration is not confirmed until payment is received.</p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Private Session Booking Modal (hidden by default) -->
+    <div id="private-booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Book a Private Session</h2>
+            <form id="private-booking-form">
+                <div class="form-group">
+                    <label for="session-type">Session Package:</label>
+                    <select id="session-type" required>
+                        <option value="" selected disabled>Select package...</option>
+                        <option value="single">Single Session ($80)</option>
+                        <option value="three-pack">3-Session Package ($225)</option>
+                        <option value="five-pack">5-Session Package ($350)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="session-focus">Session Focus:</label>
+                    <select id="session-focus" required>
+                        <option value="" selected disabled>What would you like to focus on?</option>
+                        <option value="beginner">Beginners Introduction</option>
+                        <option value="alignment">Alignment & Technique</option>
+                        <option value="flexibility">Improving Flexibility</option>
+                        <option value="strength">Building Strength</option>
+                        <option value="meditation">Meditation & Breathwork</option>
+                        <option value="prenatal">Prenatal Yoga</option>
+                        <option value="therapeutic">Therapeutic Practice</option>
+                        <option value="custom">Custom Focus (Describe Below)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="preferred-dates">Preferred Dates:</label>
+                    <p class="form-note">Select up to 3 preferred dates</p>
+                    <div class="date-picker-grid">
+                        <div class="date-input">
+                            <label for="date1">Date 1:</label>
+                            <input type="date" id="date1" required min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time1">Time 1:</label>
+                            <select id="time1" required>
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                        <div class="date-input">
+                            <label for="date2">Date 2 (Optional):</label>
+                            <input type="date" id="date2" min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time2">Time 2:</label>
+                            <select id="time2">
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                        <div class="date-input">
+                            <label for="date3">Date 3 (Optional):</label>
+                            <input type="date" id="date3" min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time3">Time 3:</label>
+                            <select id="time3">
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="booking-name">Full Name:</label>
+                    <input type="text" id="booking-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="booking-email">Email:</label>
+                    <input type="email" id="booking-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="booking-phone">Phone:</label>
+                    <input type="tel" id="booking-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="booking-notes">Special Requests or Health Concerns:</label>
+                    <textarea id="booking-notes" rows="4"></textarea>
+                </div>
+                <p class="form-note">* I'll contact you to confirm your booking within 24 hours.</p>
+                <button type="submit" class="btn">Request Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include the purchase and subscription modals -->
+    <div id="purchase-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Complete Your Purchase</h2>
+            <form id="purchase-form">
+                <div class="form-group">
+                    <label for="purchase-type">Selected Package:</label>
+                    <input type="text" id="purchase-type" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-price">Price:</label>
+                    <input type="text" id="purchase-price" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-name">Full Name:</label>
+                    <input type="text" id="purchase-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-email">Email:</label>
+                    <input type="email" id="purchase-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="purchase-phone">Phone Number:</label>
+                    <input type="tel" id="purchase-phone" required>
+                </div>
+                <div class="form-group payment-section">
+                    <h3>Payment Details</h3>
+                    <div class="form-group">
+                        <label for="card-name">Name on Card:</label>
+                        <input type="text" id="card-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-number">Card Number:</label>
+                        <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX" required maxlength="19">
+                    </div>
+                    <div class="card-details">
+                        <div class="form-group expiry-date">
+                            <label for="card-expiry">Expiration Date:</label>
+                            <input type="text" id="card-expiry" placeholder="MM/YY" required maxlength="5">
+                        </div>
+                        <div class="form-group cvv">
+                            <label for="card-cvv">CVV:</label>
+                            <input type="text" id="card-cvv" placeholder="XXX" required maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms-conditions" required>
+                        <label for="terms-conditions">I agree to the terms and conditions</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Complete Purchase</button>
+                <p class="form-note">* Your card will be charged immediately upon submission.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subscription Modal (hidden by default) -->
+    <div id="subscription-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Start Your Membership</h2>
+            <form id="subscription-form">
+                <div class="form-group">
+                    <label for="subscription-type">Selected Membership:</label>
+                    <input type="text" id="subscription-type" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-price">Price:</label>
+                    <input type="text" id="subscription-price" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-start">Start Date:</label>
+                    <input type="date" id="subscription-start" required>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-name">Full Name:</label>
+                    <input type="text" id="subscription-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-email">Email:</label>
+                    <input type="email" id="subscription-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-phone">Phone Number:</label>
+                    <input type="tel" id="subscription-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="subscription-address">Billing Address:</label>
+                    <input type="text" id="subscription-address" required>
+                </div>
+                <div class="form-group payment-section">
+                    <h3>Payment Details</h3>
+                    <div class="form-group">
+                        <label for="sub-card-name">Name on Card:</label>
+                        <input type="text" id="sub-card-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sub-card-number">Card Number:</label>
+                        <input type="text" id="sub-card-number" placeholder="XXXX XXXX XXXX XXXX" required maxlength="19">
+                    </div>
+                    <div class="card-details">
+                        <div class="form-group expiry-date">
+                            <label for="sub-card-expiry">Expiration Date:</label>
+                            <input type="text" id="sub-card-expiry" placeholder="MM/YY" required maxlength="5">
+                        </div>
+                        <div class="form-group cvv">
+                            <label for="sub-card-cvv">CVV:</label>
+                            <input type="text" id="sub-card-cvv" placeholder="XXX" required maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="subscription-terms" required>
+                        <label for="subscription-terms">I agree to the membership terms and conditions</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="auto-renew" checked>
+                        <label for="auto-renew">Enable auto-renewal (can be canceled anytime)</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Start Membership</button>
+                <p class="form-note">* Your membership starts immediately. You will be charged today and then on your monthly/annual renewal date.</p>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
