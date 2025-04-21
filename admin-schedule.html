@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Management - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 class="admin-title">Class Schedule Management</h1>
+                <div class="admin-actions">
+                    <button class="admin-btn admin-btn-secondary" id="view-published-btn">
+                        <i class="fas fa-calendar-alt"></i> View Published Schedule
+                    </button>
+                    <button class="admin-btn admin-btn-primary" id="add-class-btn">
+                        <i class="fas fa-plus"></i> Add New Class
+                    </button>
+                </div>
+            </div>
+                
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Schedule Builder</h2>
+                </div>
+                
+                <div class="schedule-builder">
+                    <!-- Weekly calendar view -->
+                    <div class="weekly-calendar">
+                        <div class="weekly-calendar-header">
+                            <div class="time-column-header"></div>
+                            <div class="day-column-header" data-day-number="1">Monday</div>
+                            <div class="day-column-header" data-day-number="2">Tuesday</div>
+                            <div class="day-column-header" data-day-number="3">Wednesday</div>
+                            <div class="day-column-header" data-day-number="4">Thursday</div>
+                            <div class="day-column-header" data-day-number="5">Friday</div>
+                            <div class="day-column-header" data-day-number="6">Saturday</div>
+                            <div class="day-column-header" data-day-number="0">Sunday</div>
+                        </div>
+                        
+                        <div class="weekly-calendar-body">
+                            <!-- Will be populated by JavaScript -->
+                            <div style="text-align:center;padding:30px;grid-column: 1/-1;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading weekly schedule...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Class Templates</h2>
+                    <button class="admin-btn admin-btn-secondary" id="add-template-btn">
+                        <i class="fas fa-plus"></i> New Template
+                    </button>
+                </div>
+                
+                <table id="class-templates-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Duration</th>
+                            <th>Level</th>
+                            <th>Default Instructor</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading templates...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Class Edit Modal (hidden by default) -->
+            <div id="class-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="class-modal-title">Add New Class</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="class-form" class="admin-form">
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="class-name">Class Name</label>
+                                    <input type="text" id="class-name" name="name" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="class-template">Class Template</label>
+                                    <select id="class-template" name="template_id">
+                                        <option value="">-- Select Template --</option>
+                                        <!-- Templates will be loaded from database -->
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="class-day">Day of Week</label>
+                                    <select id="class-day" name="day_of_week" required>
+                                        <option value="1">Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                        <option value="0">Sunday</option>
+                                    </select>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="class-time">Start Time</label>
+                                    <input type="time" id="class-time" name="start_time" required>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="class-duration">Duration (minutes)</label>
+                                    <input type="number" id="class-duration" name="duration" min="15" max="180" step="15" value="60" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="class-capacity">Capacity</label>
+                                    <input type="number" id="class-capacity" name="capacity" min="1" value="20" required>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="class-instructor">Instructor</label>
+                                    <input type="text" id="class-instructor" name="instructor" value="Gabi Jyoti" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="class-level">Level</label>
+                                    <select id="class-level" name="level">
+                                        <option value="All Levels">All Levels</option>
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                        <option value="Intermediate/Advanced">Intermediate/Advanced</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="class-description">Description</label>
+                                <textarea id="class-description" name="description" rows="4"></textarea>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="class-active" name="active" checked>
+                                    <label for="class-active">Active</label>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="class-id" name="class_id" value="">
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Save Class</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Modal (hidden by default) -->
+            <div id="template-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="template-modal-title">Add New Template</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="template-form" class="admin-form">
+                            <div class="admin-form-group">
+                                <label for="template-name">Template Name</label>
+                                <input type="text" id="template-name" name="name" required>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="template-duration">Duration (minutes)</label>
+                                    <input type="number" id="template-duration" name="duration" min="15" max="180" step="15" value="60" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="template-level">Level</label>
+                                    <select id="template-level" name="level">
+                                        <option value="All Levels">All Levels</option>
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                        <option value="Intermediate/Advanced">Intermediate/Advanced</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="template-instructor">Default Instructor</label>
+                                <input type="text" id="template-instructor" name="default_instructor" value="Gabi Jyoti">
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="template-description">Description</label>
+                                <textarea id="template-description" name="description" rows="4"></textarea>
+                            </div>
+                            
+                            <input type="hidden" id="template-id" name="template_id" value="">
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Save Template</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-schedule.js"></script>
+</body>
+</html>

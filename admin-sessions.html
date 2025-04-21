@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Sessions Management - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 class="admin-title">Private Sessions Management</h1>
+                <div class="admin-actions">
+                    <button class="admin-btn admin-btn-secondary" id="calendar-view-btn">
+                        <i class="fas fa-calendar"></i> Calendar View
+                    </button>
+                    <button class="admin-btn admin-btn-primary" id="set-availability-btn">
+                        <i class="fas fa-clock"></i> Set Availability
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pending Requests Panel -->
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Pending Session Requests</h2>
+                </div>
+                
+                <table id="pending-sessions-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Focus</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading pending sessions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Upcoming Sessions Panel -->
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Upcoming Sessions</h2>
+                </div>
+                
+                <table id="upcoming-sessions-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Focus</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading upcoming sessions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Past Sessions Panel -->
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Past Sessions</h2>
+                </div>
+                
+                <table id="past-sessions-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Focus</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading past sessions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Session Details Modal -->
+            <div id="session-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="session-modal-title">Session Details</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <div id="session-details-content">
+                            <!-- Session details will be loaded here dynamically -->
+                        </div>
+                        
+                        <div class="admin-form-actions" id="session-modal-actions">
+                            <!-- Action buttons will be added dynamically based on session status -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Availability Modal -->
+            <div id="availability-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2>Set Availability</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="availability-form" class="admin-form">
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <h3>Regular Availability</h3>
+                                    <p>Select days and times when you're available for private sessions.</p>
+                                </div>
+                            </div>
+                            
+                            <div id="availability-days">
+                                <!-- Day availability inputs will be added dynamically -->
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-0" name="available_days" value="0">
+                                                <label for="day-0">Sunday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-0">Start Time</label>
+                                            <input type="time" id="start-time-0" name="start_time_0" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-0">End Time</label>
+                                            <input type="time" id="end-time-0" name="end_time_0" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-1" name="available_days" value="1">
+                                                <label for="day-1">Monday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-1">Start Time</label>
+                                            <input type="time" id="start-time-1" name="start_time_1" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-1">End Time</label>
+                                            <input type="time" id="end-time-1" name="end_time_1" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-2" name="available_days" value="2">
+                                                <label for="day-2">Tuesday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-2">Start Time</label>
+                                            <input type="time" id="start-time-2" name="start_time_2" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-2">End Time</label>
+                                            <input type="time" id="end-time-2" name="end_time_2" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-3" name="available_days" value="3">
+                                                <label for="day-3">Wednesday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-3">Start Time</label>
+                                            <input type="time" id="start-time-3" name="start_time_3" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-3">End Time</label>
+                                            <input type="time" id="end-time-3" name="end_time_3" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-4" name="available_days" value="4">
+                                                <label for="day-4">Thursday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-4">Start Time</label>
+                                            <input type="time" id="start-time-4" name="start_time_4" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-4">End Time</label>
+                                            <input type="time" id="end-time-4" name="end_time_4" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-5" name="available_days" value="5">
+                                                <label for="day-5">Friday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-5">Start Time</label>
+                                            <input type="time" id="start-time-5" name="start_time_5" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-5">End Time</label>
+                                            <input type="time" id="end-time-5" name="end_time_5" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="availability-day">
+                                    <div class="admin-form-row">
+                                        <div class="admin-form-group">
+                                            <div class="checkbox-group">
+                                                <input type="checkbox" id="day-6" name="available_days" value="6">
+                                                <label for="day-6">Saturday</label>
+                                            </div>
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="start-time-6">Start Time</label>
+                                            <input type="time" id="start-time-6" name="start_time_6" value="09:00">
+                                        </div>
+                                        <div class="admin-form-group">
+                                            <label for="end-time-6">End Time</label>
+                                            <input type="time" id="end-time-6" name="end_time_6" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row" style="margin-top: 20px;">
+                                <div class="admin-form-group">
+                                    <h3>Blocked Dates</h3>
+                                    <p>Mark specific dates when you're not available for private sessions.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <table id="blocked-dates-table" class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Reason</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Blocked dates will be loaded here dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="admin-form-row" style="margin-top: 10px;">
+                                <div class="admin-form-group">
+                                    <label for="blocked-date">Date</label>
+                                    <input type="date" id="blocked-date" name="blocked_date">
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="blocked-reason">Reason (Optional)</label>
+                                    <input type="text" id="blocked-reason" name="blocked_reason" placeholder="Reason for unavailability">
+                                </div>
+                                <div class="admin-form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" id="add-blocked-date-btn" class="admin-btn admin-btn-secondary">
+                                        Add Date
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary" id="cancel-availability-btn">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary" id="save-availability-btn">Save Availability</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reschedule Modal -->
+            <div id="reschedule-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2>Reschedule Session</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="reschedule-form" class="admin-form">
+                            <input type="hidden" id="reschedule-session-id" name="session_id">
+                            
+                            <div class="admin-form-group">
+                                <label for="reschedule-date">New Date</label>
+                                <input type="date" id="reschedule-date" name="date" required>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="reschedule-time">New Time</label>
+                                <input type="time" id="reschedule-time" name="time" required>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="reschedule-notes">Notes for Client (Optional)</label>
+                                <textarea id="reschedule-notes" name="notes" rows="3" placeholder="Explain why the session needs to be rescheduled"></textarea>
+                            </div>
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary" id="cancel-reschedule-btn">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Reschedule Session</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sessions.js"></script>
+</body>
+</html>

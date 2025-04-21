@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retreat Management - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-retreats.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 class="admin-title">Retreats Management</h1>
+                <div class="admin-actions">
+                    <button class="admin-btn admin-btn-secondary" id="view-published-btn">
+                        <i class="fas fa-eye"></i> View Published Retreats
+                    </button>
+                    <button class="admin-btn admin-btn-primary" id="add-retreat-btn">
+                        <i class="fas fa-plus"></i> Add New Retreat
+                    </button>
+                </div>
+            </div>
+                
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Upcoming Retreats</h2>
+                    <div class="admin-filter">
+                        <select id="retreat-filter">
+                            <option value="all">All Retreats</option>
+                            <option value="active">Published Only</option>
+                            <option value="draft">Drafts Only</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table id="retreats-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Dates</th>
+                            <th>Location</th>
+                            <th>Capacity</th>
+                            <th>Registrations</th>
+                            <th>Status</th>
+                            <th>Featured</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading retreats...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Past Retreats</h2>
+                </div>
+                
+                <table id="past-retreats-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Dates</th>
+                            <th>Location</th>
+                            <th>Capacity</th>
+                            <th>Attended</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading past retreats...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Retreat Edit Modal (hidden by default) -->
+            <div id="retreat-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content retreat-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="retreat-modal-title">Add New Retreat</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="retreat-form" class="admin-form">
+                            <div class="tabs">
+                                <button type="button" class="tab-btn active" data-tab="basic-info">Basic Info</button>
+                                <button type="button" class="tab-btn" data-tab="details">Details</button>
+                                <button type="button" class="tab-btn" data-tab="pricing">Pricing</button>
+                                <button type="button" class="tab-btn" data-tab="images">Images</button>
+                            </div>
+                            
+                            <div id="basic-info" class="tab-content active">
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-title">Retreat Title *</label>
+                                        <input type="text" id="retreat-title" name="title" required>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-subtitle">Subtitle</label>
+                                        <input type="text" id="retreat-subtitle" name="subtitle">
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-start-date">Start Date *</label>
+                                        <input type="date" id="retreat-start-date" name="start_date" required>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-end-date">End Date *</label>
+                                        <input type="date" id="retreat-end-date" name="end_date" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-location">Location *</label>
+                                        <input type="text" id="retreat-location" name="location" required>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-venue">Venue Name</label>
+                                        <input type="text" id="retreat-venue" name="venue_name">
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-capacity">Capacity *</label>
+                                        <input type="number" id="retreat-capacity" name="capacity" min="1" value="12" required>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-instructors">Instructors *</label>
+                                        <input type="text" id="retreat-instructors" name="instructors" value="Gabi Jyoti" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-description">Short Description *</label>
+                                    <textarea id="retreat-description" name="description" rows="3" required></textarea>
+                                    <small>This appears on the retreat listing and summary.</small>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-slug">URL Slug *</label>
+                                    <input type="text" id="retreat-slug" name="retreat_slug" required>
+                                    <small>This will be used in the URL (e.g., /retreats/your-slug)</small>
+                                </div>
+                            </div>
+                            
+                            <div id="details" class="tab-content">
+                                <div class="admin-form-group">
+                                    <label for="retreat-itinerary">Detailed Itinerary</label>
+                                    <textarea id="retreat-itinerary" name="detailed_itinerary" rows="6"></textarea>
+                                    <small>Describe the daily schedule and activities.</small>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-accommodations">Accommodations</label>
+                                    <textarea id="retreat-accommodations" name="accommodations" rows="4"></textarea>
+                                    <small>Describe the accommodation options and facilities.</small>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-included">What's Included</label>
+                                    <textarea id="retreat-included" name="included_items" rows="4"></textarea>
+                                    <small>List what is included in the retreat package (meals, activities, etc.).</small>
+                                </div>
+                            </div>
+                            
+                            <div id="pricing" class="tab-content">
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-price">Regular Price ($) *</label>
+                                        <input type="number" id="retreat-price" name="price" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-member-price">Member Price ($)</label>
+                                        <input type="number" id="retreat-member-price" name="member_price" min="0" step="0.01">
+                                        <small>(Leave empty for same as regular price)</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-row">
+                                    <div class="admin-form-group">
+                                        <label for="retreat-early-bird">Early Bird Price ($)</label>
+                                        <input type="number" id="retreat-early-bird" name="early_bird_price" min="0" step="0.01">
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="retreat-early-bird-deadline">Early Bird Deadline</label>
+                                        <input type="date" id="retreat-early-bird-deadline" name="early_bird_deadline">
+                                    </div>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-deposit">Deposit Amount ($)</label>
+                                    <input type="number" id="retreat-deposit" name="deposit_amount" min="0" step="0.01">
+                                    <small>Minimum amount required to reserve a spot.</small>
+                                </div>
+                            </div>
+                            
+                            <div id="images" class="tab-content">
+                                <div class="admin-form-group">
+                                    <label for="retreat-image">Main Image URL</label>
+                                    <input type="text" id="retreat-image" name="image_url">
+                                    <small>This will be the featured image for the retreat.</small>
+                                </div>
+                                
+                                <div class="admin-form-group">
+                                    <label for="retreat-gallery">Gallery Images</label>
+                                    <textarea id="retreat-gallery" name="gallery_images" rows="4" placeholder='["image1.jpg", "image2.jpg"]'></textarea>
+                                    <small>Enter a JSON array of image URLs for the retreat gallery.</small>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group checkbox-group-container">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="retreat-active" name="active">
+                                    <label for="retreat-active">Publish Retreat</label>
+                                    <small>(Uncheck to save as draft)</small>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="retreat-featured" name="featured">
+                                    <label for="retreat-featured">Feature on Homepage</label>
+                                    <small>(Will show in featured section)</small>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="retreat-id" name="retreat_id" value="">
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Save Retreat</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Retreat Registrations Modal (hidden by default) -->
+            <div id="registrations-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="registrations-modal-title">Retreat Registrations</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <div id="retreat-details" class="retreat-details">
+                            <!-- Retreat details will be shown here -->
+                        </div>
+                        
+                        <h3>Registered Members</h3>
+                        <table id="registrations-table" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Registration Date</th>
+                                    <th>Payment Status</th>
+                                    <th>Amount Paid</th>
+                                    <th>Balance Due</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" style="text-align:center;padding:30px;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading registrations...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Close</button>
+                            <button type="button" id="export-registrations" class="admin-btn admin-btn-primary">
+                                <i class="fas fa-file-export"></i> Export List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Update Modal (hidden by default) -->
+            <div id="payment-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content payment-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="payment-modal-title">Update Payment Status</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="payment-form" class="admin-form">
+                            <div class="admin-form-group">
+                                <label for="payment-status">Payment Status *</label>
+                                <select id="payment-status" name="status" required>
+                                    <option value="Deposit Paid">Deposit Paid</option>
+                                    <option value="Partial Payment">Partial Payment</option>
+                                    <option value="Full Payment">Full Payment</option>
+                                    <option value="Refunded">Refunded</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="payment-amount-paid">Amount Paid ($) *</label>
+                                    <input type="number" id="payment-amount-paid" name="amountPaid" min="0" step="0.01" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="payment-balance-due">Balance Due ($) *</label>
+                                    <input type="number" id="payment-balance-due" name="balanceDue" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="registration-id" name="registration_id" value="">
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Update Payment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-retreats.js"></script>
+</body>
+</html>

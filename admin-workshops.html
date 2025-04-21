@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop Management - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-workshops.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h1 class="admin-title">Workshops Management</h1>
+                <div class="admin-actions">
+                    <button class="admin-btn admin-btn-secondary" id="view-published-btn">
+                        <i class="fas fa-eye"></i> View Published Workshops
+                    </button>
+                    <button class="admin-btn admin-btn-primary" id="add-workshop-btn">
+                        <i class="fas fa-plus"></i> Add New Workshop
+                    </button>
+                </div>
+            </div>
+                
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Upcoming Workshops</h2>
+                    <div class="admin-filter">
+                        <select id="workshop-filter">
+                            <option value="all">All Workshops</option>
+                            <option value="active">Published Only</option>
+                            <option value="draft">Drafts Only</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table id="workshops-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Instructor</th>
+                            <th>Capacity</th>
+                            <th>Registrations</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading workshops...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Past Workshops</h2>
+                </div>
+                
+                <table id="past-workshops-table" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Instructor</th>
+                            <th>Capacity</th>
+                            <th>Attended</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading past workshops...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Workshop Edit Modal (hidden by default) -->
+            <div id="workshop-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="workshop-modal-title">Add New Workshop</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <form id="workshop-form" class="admin-form">
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="workshop-title">Workshop Title *</label>
+                                    <input type="text" id="workshop-title" name="title" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-instructor">Instructor *</label>
+                                    <input type="text" id="workshop-instructor" name="instructor" value="Gabi Jyoti" required>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="workshop-date">Date *</label>
+                                    <input type="date" id="workshop-date" name="date" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-start-time">Start Time *</label>
+                                    <input type="time" id="workshop-start-time" name="start_time" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-end-time">End Time *</label>
+                                    <input type="time" id="workshop-end-time" name="end_time" required>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="workshop-price">Regular Price ($) *</label>
+                                    <input type="number" id="workshop-price" name="price" min="0" step="0.01" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-member-price">Member Price ($)</label>
+                                    <input type="number" id="workshop-member-price" name="member_price" min="0" step="0.01">
+                                    <small>(Leave empty for same as regular price)</small>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-capacity">Capacity *</label>
+                                    <input type="number" id="workshop-capacity" name="capacity" min="1" value="15" required>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label for="workshop-location">Location</label>
+                                    <input type="text" id="workshop-location" name="location" value="Gabi Jyoti Yoga Studio" required>
+                                </div>
+                                <div class="admin-form-group">
+                                    <label for="workshop-image">Image URL</label>
+                                    <input type="text" id="workshop-image" name="image_url">
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="workshop-slug">URL Slug *</label>
+                                <input type="text" id="workshop-slug" name="workshop_slug" required>
+                                <small>This will be used in the URL (e.g., /workshops/your-slug)</small>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <label for="workshop-description">Workshop Description *</label>
+                                <textarea id="workshop-description" name="description" rows="6" required></textarea>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="workshop-active" name="active">
+                                    <label for="workshop-active">Publish Workshop</label>
+                                    <small>(Uncheck to save as draft)</small>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" id="workshop-id" name="workshop_id" value="">
+                            
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Cancel</button>
+                                <button type="submit" class="admin-btn admin-btn-primary">Save Workshop</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workshop Registrations Modal (hidden by default) -->
+            <div id="registrations-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h2 id="registrations-modal-title">Workshop Registrations</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <div id="workshop-details" class="workshop-details">
+                            <!-- Workshop details will be shown here -->
+                        </div>
+                        
+                        <h3>Registered Members</h3>
+                        <table id="registrations-table" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Registration Date</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" style="text-align:center;padding:30px;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading registrations...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-btn admin-btn-secondary admin-modal-cancel">Close</button>
+                            <button type="button" id="export-registrations" class="admin-btn admin-btn-primary">
+                                <i class="fas fa-file-export"></i> Export List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-workshops.js"></script>
+</body>
+</html>

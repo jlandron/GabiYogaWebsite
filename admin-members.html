@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Profiles - Admin - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-members.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Members Panel -->
+            <div id="members-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Member Profiles</h1>
+                    <div class="admin-actions">
+                        <div class="admin-search">
+                            <input type="text" placeholder="Search members..." class="admin-search-input">
+                            <button class="admin-btn admin-btn-secondary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <button class="admin-btn admin-btn-primary">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Member Summary</h2>
+                    </div>
+                    
+                    <div class="admin-cards">
+                        <div class="admin-card">
+                            <div class="admin-card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="admin-card-value">128</div>
+                            <div class="admin-card-label">Total Members</div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="admin-card-value">15</div>
+                            <div class="admin-card-label">New This Month</div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="admin-card-value">42%</div>
+                            <div class="admin-card-label">Annual Members</div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="admin-card-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="admin-card-value">76%</div>
+                            <div class="admin-card-label">Class Attendance</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Member Profiles</h2>
+                        <div>
+                            <select class="admin-select">
+                                <option>All Members</option>
+                                <option>Monthly Members</option>
+                                <option>Annual Members</option>
+                                <option>Class Pack Holders</option>
+                                <option>Recently Active</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="member-profiles">
+                        <!-- Member 1 -->
+                        <div class="member-card">
+                            <div class="member-header">
+                                <div class="member-avatar">
+                                    <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Sarah Johnson">
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">Sarah Johnson</div>
+                                    <div class="member-email">sarah.j@example.com</div>
+                                </div>
+                            </div>
+                            <div class="member-details">
+                                <div class="member-detail-item">
+                                    <i class="fas fa-id-card"></i> Member since: Jan 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-tag"></i> Annual Membership
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-calendar-check"></i> Last Class: Apr 18, 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-star"></i> Favorite Class: Vinyasa Flow
+                                </div>
+                            </div>
+                            <div class="member-actions">
+                                <button title="View Profile" data-member="sarah-johnson" class="view-member-btn">
+                                    <i class="fas fa-user"></i>
+                                </button>
+                                <button title="View Bookings">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                <button title="View Purchases">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                                <button title="Send Message">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Member 2 -->
+                        <div class="member-card">
+                            <div class="member-header">
+                                <div class="member-avatar">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen">
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">Michael Chen</div>
+                                    <div class="member-email">mchen@example.com</div>
+                                </div>
+                            </div>
+                            <div class="member-details">
+                                <div class="member-detail-item">
+                                    <i class="fas fa-id-card"></i> Member since: Nov 2024
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-tag"></i> Monthly Membership
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-calendar-check"></i> Last Class: Apr 20, 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-star"></i> Favorite Class: Hatha
+                                </div>
+                            </div>
+                            <div class="member-actions">
+                                <button title="View Profile" data-member="michael-chen" class="view-member-btn">
+                                    <i class="fas fa-user"></i>
+                                </button>
+                                <button title="View Bookings">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                <button title="View Purchases">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                                <button title="Send Message">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Member 3 -->
+                        <div class="member-card">
+                            <div class="member-header">
+                                <div class="member-avatar">
+                                    <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Alicia Roberts">
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">Alicia Roberts</div>
+                                    <div class="member-email">alicia@example.com</div>
+                                </div>
+                            </div>
+                            <div class="member-details">
+                                <div class="member-detail-item">
+                                    <i class="fas fa-id-card"></i> Member since: Mar 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-tag"></i> Class Pack (10)
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-calendar-check"></i> Last Class: Apr 17, 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-star"></i> Favorite Class: Restorative
+                                </div>
+                            </div>
+                            <div class="member-actions">
+                                <button title="View Profile" data-member="alicia-roberts" class="view-member-btn">
+                                    <i class="fas fa-user"></i>
+                                </button>
+                                <button title="View Bookings">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                <button title="View Purchases">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                                <button title="Send Message">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Member 4 -->
+                        <div class="member-card">
+                            <div class="member-header">
+                                <div class="member-avatar">
+                                    <img src="https://randomuser.me/api/portraits/men/76.jpg" alt="David Park">
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">David Park</div>
+                                    <div class="member-email">dpark@example.com</div>
+                                </div>
+                            </div>
+                            <div class="member-details">
+                                <div class="member-detail-item">
+                                    <i class="fas fa-id-card"></i> Member since: Feb 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-tag"></i> Annual Membership
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-calendar-check"></i> Last Class: Apr 19, 2025
+                                </div>
+                                <div class="member-detail-item">
+                                    <i class="fas fa-star"></i> Favorite Class: Power Yoga
+                                </div>
+                            </div>
+                            <div class="member-actions">
+                                <button title="View Profile" data-member="david-park" class="view-member-btn">
+                                    <i class="fas fa-user"></i>
+                                </button>
+                                <button title="View Bookings">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                <button title="View Purchases">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                                <button title="Send Message">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Member Detail Modal (initially hidden) -->
+            <div id="member-detail-modal" class="admin-modal" style="display: none;">
+                <div class="member-detail-modal">
+                    <div class="admin-modal-header">
+                        <h2>Member Profile</h2>
+                        <button class="admin-modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="member-detail-header">
+                        <div class="member-detail-avatar">
+                            <img id="modal-member-avatar" src="" alt="Member Photo">
+                        </div>
+                        <div class="member-detail-info">
+                            <h2 id="modal-member-name">Member Name</h2>
+                            <p id="modal-member-email">member@example.com</p>
+                            <p id="modal-member-phone">(555) 123-4567</p>
+                            <p id="modal-member-since">Member since: January 2025</p>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-panel">
+                        <div class="admin-panel-header">
+                            <h3>Membership Details</h3>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Membership Type</label>
+                                <p id="modal-membership-type">Annual Membership</p>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Status</label>
+                                <p><span id="modal-membership-status" class="admin-tag green">Active</span></p>
+                            </div>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Renewal Date</label>
+                                <p id="modal-renewal-date">January 15, 2026</p>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Payment Method</label>
+                                <p id="modal-payment-method">Credit Card (ending in 1234)</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-bio">
+                        <h3>Biography & Notes</h3>
+                        <div id="modal-member-bio">
+                            <p>Sarah has been practicing yoga for over 3 years. She initially joined to help with back pain and stress relief from her job as a software engineer. She has shown significant improvement in flexibility and balance.</p>
+                            <p>Sarah prefers morning classes and typically attends 3-4 times per week. She has expressed interest in the upcoming retreat in September.</p>
+                            <p>Health notes: Mentioned mild lower back issues in initial consultation. Modifications have been provided for certain poses.</p>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="admin-btn admin-btn-secondary">
+                                <i class="fas fa-edit"></i> Edit Biography
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-panel">
+                        <div class="admin-panel-header">
+                            <h3>Recent Activity</h3>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>Date</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-activity-list">
+                                <tr>
+                                    <td>Class Attendance</td>
+                                    <td>Apr 18, 2025</td>
+                                    <td>Vinyasa Flow (7:00 AM)</td>
+                                </tr>
+                                <tr>
+                                    <td>Class Booking</td>
+                                    <td>Apr 17, 2025</td>
+                                    <td>Vinyasa Flow (Apr 20, 2025)</td>
+                                </tr>
+                                <tr>
+                                    <td>Workshop Registration</td>
+                                    <td>Apr 10, 2025</td>
+                                    <td>Inversions & Arm Balances (May 15)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="admin-modal-footer">
+                        <button class="admin-btn admin-btn-secondary close-modal-btn">Close</button>
+                        <button class="admin-btn admin-btn-primary">Contact Member</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-members.js"></script>
+</body>
+</html>

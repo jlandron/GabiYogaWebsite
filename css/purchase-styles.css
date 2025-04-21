@@ -1,0 +1,90 @@
+/* Purchase and Subscription Modal Styles */
+
+/* Card details layout */
+.card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15px;
+}
+
+.payment-section {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-top: 20px;
+    background-color: #fbfbfb;
+}
+
+.payment-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+/* Checkbox group styles */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+.checkbox-group label {
+    display: inline;
+    font-weight: normal;
+}
+
+/* Form validation visual feedback */
+input:invalid {
+    border-color: #ffdddd;
+}
+
+input:valid {
+    border-color: #ddffdd;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(123, 166, 154, 0.3);
+}
+
+/* Payment input formatting */
+#card-number, #sub-card-number {
+    letter-spacing: 1px;
+}
+
+#card-cvv, #sub-card-cvv {
+    letter-spacing: 2px;
+}
+
+/* Success message styles */
+.success-message {
+    background-color: #e0f5e9;
+    border-left: 4px solid var(--primary-color);
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+}
+
+.success-message i {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin-right: 15px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 576px) {
+    .card-details {
+        grid-template-columns: 1fr;
+        grid-gap: 10px;
+    }
+}

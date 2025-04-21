@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Settings Panel -->
+            <div id="settings-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Website Settings</h1>
+                    <div class="admin-actions">
+                        <button id="save-all-settings" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- About Me Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">About Me</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="about-form">
+                        <div class="admin-form-group">
+                            <label for="instructor-name">Instructor Name</label>
+                            <input type="text" id="instructor-name" class="admin-form-control" value="Gabi Jyoti" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-subtitle">Subtitle</label>
+                            <input type="text" id="instructor-subtitle" class="admin-form-control" value="RYT 500 Certified Yoga Instructor" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-bio">Biography</label>
+                            <textarea id="instructor-bio" class="admin-form-control" rows="6" required>Welcome to Gabi Jyoti Yoga! I've been practicing yoga for over 10 years and teaching for 5. My journey began when I was seeking balance in my hectic life, and yoga provided the perfect sanctuary.
+
+I specialize in Vinyasa, Hatha, and Restorative yoga practices. My teaching philosophy centers around making yoga accessible to practitioners of all levels while honoring its traditional roots.
+
+Through my classes, I aim to create a supportive environment where you can explore the transformative power of yoga, connecting breath with movement and finding peace within.</textarea>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-photo">Profile Photo</label>
+                            <div class="photo-upload-container">
+                                <img id="instructor-photo-preview" src="images/DSC02659.JPG" alt="Instructor Photo">
+                                <div class="photo-upload-controls">
+                                    <input type="file" id="instructor-photo" accept="image/*">
+                                    <label for="instructor-photo" class="admin-btn admin-btn-secondary">
+                                        <i class="fas fa-upload"></i> Upload New Photo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Certifications Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Certifications</h2>
+                        <button id="add-certification" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-plus"></i> Add Certification
+                        </button>
+                    </div>
+                    
+                    <div class="admin-table-responsive">
+                        <table class="admin-table" id="certifications-table">
+                            <thead>
+                                <tr>
+                                    <th>Certification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="text" class="admin-form-control" value="RYT 500 - Yoga Alliance">
+                                    </td>
+                                    <td class="admin-table-actions">
+                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="text" class="admin-form-control" value="Meditation Instructor Certification">
+                                    </td>
+                                    <td class="admin-table-actions">
+                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input type="text" class="admin-form-control" value="Pre-natal Yoga Certification">
+                                    </td>
+                                    <td class="admin-table-actions">
+                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Homepage Sections Visibility -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Homepage Sections</h2>
+                    </div>
+                    
+                    <div class="admin-form">
+                        <h3>Classes & Offerings</h3>
+                        <p class="admin-form-note">Enable or disable specific offerings displayed on the homepage</p>
+                        
+                        <div class="toggle-section">
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Group Classes</h4>
+                                    <p>Join our community for energizing and rejuvenating yoga sessions in a supportive group setting.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-group-classes" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Private Lessons</h4>
+                                    <p>Personalized one-on-one sessions tailored to your specific needs and goals.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-private-lessons" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Workshops</h4>
+                                    <p>Immersive experiences focusing on specific aspects of yoga practice.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-workshops" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Retreats</h4>
+                                    <p>Transformative multi-day experiences in beautiful locations to deepen your practice.</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-retreats" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-divider"></div>
+                        
+                        <h3>Other Sections</h3>
+                        <p class="admin-form-note">Enable or disable entire sections on the homepage</p>
+                        
+                        <div class="toggle-section">
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Upcoming Retreats Section</h4>
+                                    <p>Section showcasing your upcoming retreat offerings</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-retreats-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Weekly Schedule Section</h4>
+                                    <p>Section displaying your weekly class schedule</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-schedule-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Membership & Pricing Section</h4>
+                                    <p>Section showing membership options and pricing</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-membership-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Gallery Section</h4>
+                                    <p>Section showcasing your photo gallery</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-gallery-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Contact Information</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="contact-form">
+                        <div class="admin-form-group">
+                            <label for="contact-address">Studio Address</label>
+                            <input type="text" id="contact-address" class="admin-form-control" value="123 Yoga Street, Mindful City, CA 94000">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="contact-phone">Phone Number</label>
+                            <input type="tel" id="contact-phone" class="admin-form-control" value="(555) 123-4567">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="contact-email">Email Address</label>
+                            <input type="email" id="contact-email" class="admin-form-control" value="info@gabijyoti.yoga">
+                        </div>
+                        
+                        <h3>Social Media Links</h3>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-facebook">Facebook</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-facebook-f"></i>
+                                <input type="url" id="social-facebook" class="admin-form-control" value="https://facebook.com/gabijyotiyoga">
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-instagram">Instagram</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-instagram"></i>
+                                <input type="url" id="social-instagram" class="admin-form-control" value="https://instagram.com/gabijyotiyoga">
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-youtube">YouTube</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-youtube"></i>
+                                <input type="url" id="social-youtube" class="admin-form-control" value="https://youtube.com/gabijyotiyoga">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success notification -->
+    <div id="settings-notification" class="admin-notification">
+        <i class="fas fa-check-circle"></i> Settings saved successfully!
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Pricing & Offerings - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-settings.css">
+    <link rel="stylesheet" href="css/admin-pricing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Pricing Panel -->
+            <div id="pricing-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Pricing & Offerings</h1>
+                    <div class="admin-actions">
+                        <button id="save-all-pricing" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Memberships & Packages Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Memberships & Packages</h2>
+                        <button id="add-membership" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-plus"></i> Add New Membership
+                        </button>
+                    </div>
+                    
+                    <div class="admin-table-responsive">
+                        <table class="admin-table" id="memberships-table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Price</th>
+                                    <th>Duration/Classes</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Membership rows will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Private Sessions Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Private Session Packages</h2>
+                        <button id="add-session-package" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-plus"></i> Add New Package
+                        </button>
+                    </div>
+                    
+                    <div class="admin-table-responsive">
+                        <table class="admin-table" id="private-sessions-table">
+                            <thead>
+                                <tr>
+                                    <th>Package Name</th>
+                                    <th>Description</th>
+                                    <th>Sessions</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Private session package rows will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Membership Edit Modal -->
+    <div id="membership-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h2 id="membership-modal-title">Edit Membership</h2>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="membership-form" class="admin-form">
+                    <input type="hidden" id="membership-id">
+                    
+                    <div class="admin-form-group">
+                        <label for="membership-type">Membership Type</label>
+                        <input type="text" id="membership-type" class="admin-form-control" required placeholder="e.g., Monthly Unlimited">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label for="membership-description">Description</label>
+                        <textarea id="membership-description" class="admin-form-control" rows="3" placeholder="Brief description of this membership"></textarea>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label for="membership-price">Price ($)</label>
+                            <input type="number" id="membership-price" class="admin-form-control" required min="0" step="0.01">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="membership-duration">Duration (days)</label>
+                            <input type="number" id="membership-duration" class="admin-form-control" min="0">
+                            <small class="admin-form-help">Leave empty for unlimited time / class packs</small>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label for="membership-classes">Number of Classes</label>
+                            <input type="number" id="membership-classes" class="admin-form-control" min="0">
+                            <small class="admin-form-help">Leave empty for unlimited classes</small>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="membership-status">Status</label>
+                            <select id="membership-status" class="admin-form-control" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <div class="admin-form-checkbox">
+                            <input type="checkbox" id="membership-auto-renew">
+                            <label for="membership-auto-renew">Allow Auto-Renew</label>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-modal-actions">
+                        <button type="button" class="admin-btn admin-btn-secondary" id="cancel-membership">Cancel</button>
+                        <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Private Session Package Edit Modal -->
+    <div id="session-package-modal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h2 id="session-package-modal-title">Edit Session Package</h2>
+                <button class="admin-modal-close">&times;</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="session-package-form" class="admin-form">
+                    <input type="hidden" id="package-id">
+                    
+                    <div class="admin-form-group">
+                        <label for="package-name">Package Name</label>
+                        <input type="text" id="package-name" class="admin-form-control" required placeholder="e.g., Single Session, 5-Session Package">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label for="package-description">Description</label>
+                        <textarea id="package-description" class="admin-form-control" rows="3" placeholder="Brief description of this package"></textarea>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label for="package-sessions">Number of Sessions</label>
+                            <input type="number" id="package-sessions" class="admin-form-control" required min="1">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="package-price">Total Price ($)</label>
+                            <input type="number" id="package-price" class="admin-form-control" required min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label for="package-duration">Session Duration (minutes)</label>
+                            <input type="number" id="package-duration" class="admin-form-control" required min="15" step="15" value="60">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="package-status">Status</label>
+                            <select id="package-status" class="admin-form-control" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label for="package-focus-options">Available Focus Options</label>
+                        <div id="focus-options-container">
+                            <!-- Focus options will be added here dynamically -->
+                            <div class="focus-option-row">
+                                <input type="text" class="admin-form-control focus-option" placeholder="e.g., Beginners Introduction">
+                                <button type="button" class="admin-btn admin-btn-icon remove-focus-option"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-focus-option" class="admin-btn admin-btn-secondary-small">
+                            <i class="fas fa-plus"></i> Add Focus Option
+                        </button>
+                    </div>
+                    
+                    <div class="admin-modal-actions">
+                        <button type="button" class="admin-btn admin-btn-secondary" id="cancel-package">Cancel</button>
+                        <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success notification -->
+    <div id="pricing-notification" class="admin-notification">
+        <i class="fas fa-check-circle"></i> Pricing & offerings updated successfully!
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-pricing.js"></script>
+</body>
+</html>

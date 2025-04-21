@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Dashboard Panel -->
+            <div id="dashboard-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Dashboard</h1>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn-primary">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-cards">
+                    <div class="admin-card">
+                        <div class="admin-card-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <div class="admin-card-value">128</div>
+                        <div class="admin-card-label">Active Members</div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="admin-card-value">42</div>
+                        <div class="admin-card-label">Class Bookings This Week</div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-icon">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="admin-card-value">8</div>
+                        <div class="admin-card-label">Private Sessions Scheduled</div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="admin-card-value">$3,240</div>
+                        <div class="admin-card-label">Revenue This Month</div>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Recent Bookings</h2>
+                        <a href="#" class="admin-btn-secondary">View All</a>
+                    </div>
+                    
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Class</th>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sarah Johnson</td>
+                                <td>Vinyasa Flow</td>
+                                <td>Apr 20, 2025 - 9:00 AM</td>
+                                <td><span class="admin-tag green">Confirmed</span></td>
+                                <td class="admin-table-actions">
+                                    <button class="view"><i class="fas fa-eye"></i></button>
+                                    <button class="edit"><i class="fas fa-edit"></i></button>
+                                    <button class="delete"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Michael Chen</td>
+                                <td>Gentle Hatha</td>
+                                <td>Apr 21, 2025 - 11:30 AM</td>
+                                <td><span class="admin-tag green">Confirmed</span></td>
+                                <td class="admin-table-actions">
+                                    <button class="view"><i class="fas fa-eye"></i></button>
+                                    <button class="edit"><i class="fas fa-edit"></i></button>
+                                    <button class="delete"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Alicia Roberts</td>
+                                <td>Restorative</td>
+                                <td>Apr 22, 2025 - 6:30 PM</td>
+                                <td><span class="admin-tag yellow">Pending</span></td>
+                                <td class="admin-table-actions">
+                                    <button class="view"><i class="fas fa-eye"></i></button>
+                                    <button class="edit"><i class="fas fa-edit"></i></button>
+                                    <button class="delete"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>David Park</td>
+                                <td>Private Session</td>
+                                <td>Apr 23, 2025 - 3:00 PM</td>
+                                <td><span class="admin-tag blue">New</span></td>
+                                <td class="admin-table-actions">
+                                    <button class="view"><i class="fas fa-eye"></i></button>
+                                    <button class="edit"><i class="fas fa-edit"></i></button>
+                                    <button class="delete"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Upcoming Workshops & Events</h2>
+                        <a href="#" class="admin-btn-secondary">View All</a>
+                    </div>
+                    
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Registrations</th>
+                                <th>Capacity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Inversions & Arm Balances</td>
+                                <td>May 15, 2025</td>
+                                <td>2:00 - 4:30 PM</td>
+                                <td>12</td>
+                                <td>20</td>
+                            </tr>
+                            <tr>
+                                <td>Yoga Philosophy & Meditation</td>
+                                <td>Jun 8, 2025</td>
+                                <td>10:00 AM - 1:00 PM</td>
+                                <td>8</td>
+                                <td>25</td>
+                            </tr>
+                            <tr>
+                                <td>Pranayama & Breathwork</td>
+                                <td>Jul 22, 2025</td>
+                                <td>6:30 - 8:30 PM</td>
+                                <td>5</td>
+                                <td>15</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Schedule Management Panel -->
+            <div id="schedule-panel" class="admin-panel-content">
+                <div class="admin-header">
+                    <h1 class="admin-title">Class Schedule Management</h1>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-calendar-alt"></i> View Published Schedule
+                        </button>
+                        <button class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus"></i> Add New Class
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Schedule Builder</h2>
+                    </div>
+                    
+                    <div class="schedule-builder">
+                        <div class="schedule-days">
+                            <div class="schedule-day active">Monday</div>
+                            <div class="schedule-day">Tuesday</div>
+                            <div class="schedule-day">Wednesday</div>
+                            <div class="schedule-day">Thursday</div>
+                            <div class="schedule-day">Friday</div>
+                            <div class="schedule-day">Saturday</div>
+                            <div class="schedule-day">Sunday</div>
+                        </div>
+                        
+                        <div class="schedule-timeslots">
+                            <!-- 7:00 AM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">7:00 AM</div>
+                                <div class="schedule-class">
+                                    <strong>Rise & Shine Vinyasa</strong>
+                                    <div>Instructor: Gabi Jyoti</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="admin-btn-icon edit-class">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 9:00 AM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">9:00 AM</div>
+                                <div class="schedule-class empty">
+                                    <i class="fas fa-plus"></i> Add Class
+                                </div>
+                                <div class="schedule-actions"></div>
+                            </div>
+                            
+                            <!-- 12:00 PM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">12:00 PM</div>
+                                <div class="schedule-class">
+                                    <strong>Lunch Break Flow</strong>
+                                    <div>Instructor: Gabi Jyoti</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="admin-btn-icon edit-class">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 4:30 PM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">4:30 PM</div>
+                                <div class="schedule-class empty">
+                                    <i class="fas fa-plus"></i> Add Class
+                                </div>
+                                <div class="schedule-actions"></div>
+                            </div>
+                            
+                            <!-- 6:00 PM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">6:00 PM</div>
+                                <div class="schedule-class">
+                                    <strong>Power Yoga</strong>
+                                    <div>Instructor: Gabi Jyoti</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="admin-btn-icon edit-class">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 7:30 PM -->
+                            <div class="schedule-timeslot">
+                                <div class="schedule-time">7:30 PM</div>
+                                <div class="schedule-class">
+                                    <strong>Restorative</strong>
+                                    <div>Instructor: Gabi Jyoti</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="admin-btn-icon edit-class">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Class Templates</h2>
+                        <button class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-plus"></i> New Template
+                        </button>
+                    </div>
+                    
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Class Name</th>
+                                <th>Duration</th>
+                                <th>Level</th>
+                                <th>Default Instructor</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Rise & Shine Vinyasa</td>
+                                <td>60 min</td>
+                                <td>All Levels</td>
+                                <td>Gabi Jyoti</td>
+                                <td class="admin-table-actions">
+                                    <button title="Use Template"><i class="fas fa-plus-circle"></i></button>
+                                    <button title="Edit Template"><i class="fas fa-edit"></i></button>
+                                    <button title="Delete Template"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Gentle Hatha</td>
+                                <td>75 min</td>
+                                <td>Beginner</td>
+                                <td>Gabi Jyoti</td>
+                                <td class="admin-table-actions">
+                                    <button title="Use Template"><i class="fas fa-plus-circle"></i></button>
+                                    <button title="Edit Template"><i class="fas fa-edit"></i></button>
+                                    <button title="Delete Template"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Power Yoga</td>
+                                <td>60 min</td>
+                                <td>Intermediate/Advanced</td>
+                                <td>Gabi Jyoti</td>
+                                <td class="admin-table-actions">
+                                    <button title="Use Template"><i class="fas fa-plus-circle"></i></button>
+                                    <button title="Edit Template"><i class="fas fa-edit"></i></button>
+                                    <button title="Delete Template"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Restorative</td>
+                                <td>75 min</td>
+                                <td>All Levels</td>
+                                <td>Gabi Jyoti</td>
+                                <td class="admin-table-actions">
+                                    <button title="Use Template"><i class="fas fa-plus-circle"></i></button>
+                                    <button title="Edit Template"><i class="fas fa-edit"></i></button>
+                                    <button title="Delete Template"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Lunch Break Flow</td>
+                                <td>45 min</td>
+                                <td>All Levels</td>
+                                <td>Gabi Jyoti</td>
+                                <td class="admin-table-actions">
+                                    <button title="Use Template"><i class="fas fa-plus-circle"></i></button>
+                                    <button title="Edit Template"><i class="fas fa-edit"></i></button>
+                                    <button title="Delete Template"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Private Sessions Panel -->
+            <div id="sessions-panel" class="admin-panel-content">
+                <div class="admin-header">
+                    <h1 class="admin-title">Private Sessions</h1>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-calendar"></i> View Calendar
+                        </button>
+                        <button class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus"></i> Set Availability
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Upcoming Private Sessions</h2>
+                    </div>
+                    
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Focus</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Emma Stevens</td>
+                                <td>Apr 22, 2025</td>
+                                <td>10:00 AM</td>
+                                <td>Alignment & Technique</td>
+                                <td><span class="admin-tag green">Confirmed</span></td>
+                                <td class="admin-table-actions">
+                                    <button title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button title="Reschedule"><i class="fas fa-calendar-alt"></i></button>
+                                    <button title="Cancel"><i class="fas fa-times"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>James Wilson</td>
+                                <td>Apr 24, 2025</td>
+                                <td>2:30 PM</td>
+                                <td>Beginners Introduction</td>
+                                <td><span class="admin-tag green">Confirmed</span></td>
+                                <td class="admin-table-actions">
+                                    <button title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button title="Reschedule"><i class="fas fa-calendar-alt"></i></button>
+                                    <button title="Cancel"><i class="fas fa-times"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Lisa Thompson</td>
+                                <td>Apr 26, 2025</td>
+                                <td>11:00 AM</td>
+                                <td>Therapeutic Practice</td>
+                                <td><span class="admin-tag yellow">Pending</span></td>
+                                <td class="admin-table-actions">
+                                    <button title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button title="Confirm"><i class="fas fa-check"></i></button>
+                                    <button title="Decline"><i class="fas fa-times"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Availability Settings</h2>
+                    </div>
+                    
+                    <form class="admin-form">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Set Your Regular Availability</label>
+                                <p>Select days and times when you're regularly available for private sessions.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label>Monday</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <input type="checkbox" id="monday-available" checked>
+                                <label for="monday-available" style="font-weight: normal;">Available</label>
+                            </div>
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1;">
+                                    <label for="monday-start">Start Time</label>
+                                    <select id="monday-start" class="admin-form-control">
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="13:00" selected>1:00 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="monday-end">End Time</label>
+                                    <select id="monday-end" class="admin-form-control">
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="17:00" selected>5:00 PM</option>
+                                        <option value="18:00">6:00 PM</option>
+                                        <option value="19:00">7:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label>Wednesday</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <input type="checkbox" id="wednesday-available" checked>
+                                <label for="wednesday-available" style="font-weight: normal;">Available</label>
+                            </div>
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1;">
+                                    <label for="wednesday-start">Start Time</label>
+                                    <select id="wednesday-start" class="admin-form-control">
+                                        <option value="10:00" selected>10:00 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="wednesday-end">End Time</label>
+                                    <select id="wednesday-end" class="admin-form-control">
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="14:00" selected>2:00 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label>Saturday</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <input type="checkbox" id="saturday-available" checked>
+                                <label for="saturday-available" style="font-weight: normal;">Available</label>
+                            </div>
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1;">
+                                    <label for="saturday-start">Start Time</label>
+                                    <select id="saturday-start" class="admin-form-control">
+                                        <option value="9:00">9:00 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="11:00" selected>11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="saturday-end">End Time</label>
+                                    <select id="saturday-end" class="admin-form-control">
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="16:00" selected>4:00 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <button type="button" class="admin-btn admin-btn-secondary">
+                                <i class="fas fa-plus"></i> Add Another Day
+                            </button>
+                        </div>
+                        
+                        <div class="admin-form-row" style="margin-top: 20px;">
+                            <div class="admin-form-group">
+                                <h3>Unavailable Dates</h3>
+                                <p>Mark specific dates when you're not available for private sessions.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>May 10-12, 2025</td>
+                                        <td>Out of town workshop</td>
+                                        <td class="admin-table-actions">
+                                            <button title="Remove"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jun 5, 2025</td>
+                                        <td>Doctor appointment</td>
+                                        <td class="admin-table-actions">
+                                            <button title="Remove"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="admin-form-row" style="margin-top: 10px;">
+                            <div class="admin-form-group">
+                                <label for="unavailable-date">Date</label>
+                                <input type="date" id="unavailable-date">
+                            </div>
+                            <div class="admin-form-group">
+                                <label for="unavailable-reason">Reason (Optional)</label>
+                                <input type="text" id="unavailable-reason" placeholder="Reason for unavailability">
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <button type="button" class="admin-btn admin-btn-secondary">
+                                <i class="fas fa-plus"></i> Add Date
+                            </button>
+                        </div>
+                        
+                        <div class="admin-form-group" style="margin-top: 30px;">
+                            <button type="submit" class="admin-btn admin-btn-primary">
+                                Save Availability Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

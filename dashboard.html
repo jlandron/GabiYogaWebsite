@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/purchase-styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="index.html"><h1>Gabi Jyoti Yoga</h1></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About Me</a></li>
+                <li><a href="index.html#gallery">Gallery</a></li>
+                <li><a href="index.html#offerings">Classes & Offerings</a></li>
+                <li><a href="index.html#membership">Membership</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="dashboard.html" class="active">My Account</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Dashboard Section -->
+    <section class="account-section">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="welcome-message">
+                    <h2>Welcome, Julia!</h2>
+                    <p>Manage your bookings, memberships, and account details.</p>
+                </div>
+                <div class="dashboard-actions">
+                    <a href="#" id="new-booking-btn" class="btn btn-secondary">Book a Class</a>
+                    <a href="#" id="logout-btn" class="btn">Sign Out</a>
+                </div>
+            </div>
+
+            <div class="dashboard-nav">
+                <div class="dashboard-nav-item active" data-panel="bookings">My Classes</div>
+                <div class="dashboard-nav-item" data-panel="memberships">Memberships & Packages</div>
+                <div class="dashboard-nav-item" data-panel="workshops">Workshops</div>
+                <div class="dashboard-nav-item" data-panel="retreats">Retreats</div>
+                <div class="dashboard-nav-item" data-panel="private-sessions">Private Sessions</div>
+                <div class="dashboard-nav-item" data-panel="profile">Profile Settings</div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Bookings Panel -->
+                <div id="bookings-panel" class="dashboard-panel active">
+                    <div class="panel-header">
+                        <h3>Upcoming Classes</h3>
+                        <a href="#" class="btn-small">View Past Classes</a>
+                    </div>
+
+                    <div class="booking-list">
+                        <!-- Individual Booking Item -->
+                        <div class="booking-item">
+                            <div class="booking-details">
+                                <div class="booking-title">Rise & Shine Vinyasa</div>
+                                <div class="booking-info">
+                                    <span><i class="far fa-calendar"></i> Monday, April 22, 2025</span>
+                                    <span><i class="far fa-clock"></i> 7:00 AM - 8:15 AM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Main Studio</span>
+                                </div>
+                            </div>
+                            <div class="booking-actions">
+                                <button title="Add to Calendar"><i class="far fa-calendar-plus"></i></button>
+                                <button title="Cancel Booking"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Individual Booking Item -->
+                        <div class="booking-item">
+                            <div class="booking-details">
+                                <div class="booking-title">Gentle Hatha</div>
+                                <div class="booking-info">
+                                    <span><i class="far fa-calendar"></i> Thursday, April 25, 2025</span>
+                                    <span><i class="far fa-clock"></i> 9:00 AM - 10:15 AM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Main Studio</span>
+                                </div>
+                            </div>
+                            <div class="booking-actions">
+                                <button title="Add to Calendar"><i class="far fa-calendar-plus"></i></button>
+                                <button title="Cancel Booking"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Individual Booking Item -->
+                        <div class="booking-item">
+                            <div class="booking-details">
+                                <div class="booking-title">Pranayama & Breathwork Workshop</div>
+                                <div class="booking-info">
+                                    <span><i class="far fa-calendar"></i> Saturday, May 3, 2025</span>
+                                    <span><i class="far fa-clock"></i> 2:00 PM - 4:00 PM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Meditation Room</span>
+                                </div>
+                            </div>
+                            <div class="booking-actions">
+                                <button title="Add to Calendar"><i class="far fa-calendar-plus"></i></button>
+                                <button title="Cancel Booking"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memberships Panel -->
+                <div id="memberships-panel" class="dashboard-panel">
+                    <div class="panel-header">
+                        <h3>Your Memberships & Packages</h3>
+                    </div>
+
+                    <div class="membership-list">
+                        <!-- Membership Item -->
+                        <div class="membership-item">
+                            <div class="membership-details">
+                                <div class="membership-title">Monthly Unlimited</div>
+                                <div class="membership-info">
+                                    <span><i class="fas fa-calendar-check"></i> Active</span>
+                                    <span><i class="far fa-calendar-alt"></i> Renews: May 15, 2025</span>
+                                    <span><i class="fas fa-tag"></i> $120/month</span>
+                                </div>
+                            </div>
+                            <div class="membership-actions">
+                                <button title="Manage Billing"><i class="fas fa-credit-card"></i></button>
+                                <button title="Cancel Subscription"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Class Pack Item -->
+                        <div class="membership-item">
+                            <div class="membership-details">
+                                <div class="membership-title">Class Pack (10 Classes)</div>
+                                <div class="membership-info">
+                                    <span><i class="fas fa-check-circle"></i> 5 Classes Remaining</span>
+                                    <span><i class="far fa-calendar-alt"></i> Expires: July 20, 2025</span>
+                                </div>
+                            </div>
+                            <div class="membership-actions">
+                                <button title="Purchase More Classes"><i class="fas fa-plus-circle"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-header" style="margin-top: 40px;">
+                        <h3>Purchase History</h3>
+                    </div>
+
+                    <div class="membership-list">
+                        <!-- Purchase History Item -->
+                        <div class="membership-item">
+                            <div class="membership-details">
+                                <div class="membership-title">Monthly Membership Renewal</div>
+                                <div class="membership-info">
+                                    <span><i class="far fa-calendar-alt"></i> April 15, 2025</span>
+                                    <span><i class="fas fa-tag"></i> $120.00</span>
+                                </div>
+                            </div>
+                            <div class="membership-actions">
+                                <button title="View Receipt"><i class="fas fa-file-invoice"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Purchase History Item -->
+                        <div class="membership-item">
+                            <div class="membership-details">
+                                <div class="membership-title">Class Pack (10 Classes)</div>
+                                <div class="membership-info">
+                                    <span><i class="far fa-calendar-alt"></i> April 5, 2025</span>
+                                    <span><i class="fas fa-tag"></i> $150.00</span>
+                                </div>
+                            </div>
+                            <div class="membership-actions">
+                                <button title="View Receipt"><i class="fas fa-file-invoice"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Purchase History Item -->
+                        <div class="membership-item">
+                            <div class="membership-details">
+                                <div class="membership-title">Pranayama & Breathwork Workshop</div>
+                                <div class="membership-info">
+                                    <span><i class="far fa-calendar-alt"></i> March 22, 2025</span>
+                                    <span><i class="fas fa-tag"></i> $40.00</span>
+                                </div>
+                            </div>
+                            <div class="membership-actions">
+                                <button title="View Receipt"><i class="fas fa-file-invoice"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workshops Panel -->
+                <div id="workshops-panel" class="dashboard-panel">
+                    <div class="panel-header">
+                        <h3>Workshops</h3>
+                        <a href="#" class="btn-small" id="view-all-workshops-btn">View All Workshops</a>
+                    </div>
+
+                    <div class="workshop-list">
+                        <!-- Workshop Item -->
+                        <div class="workshop-item">
+                            <div class="workshop-details">
+                                <div class="workshop-title">Inversions & Arm Balances</div>
+                                <div class="workshop-info">
+                                    <span><i class="far fa-calendar"></i> May 15, 2025</span>
+                                    <span><i class="far fa-clock"></i> 2:00 PM - 4:30 PM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Main Studio</span>
+                                    <span><i class="fas fa-tag"></i> $45 ($40 for members)</span>
+                                </div>
+                                <p class="workshop-description">Learn the fundamentals of inversions and arm balances in this comprehensive workshop. Suitable for all levels.</p>
+                            </div>
+                            <div class="workshop-actions">
+                                <a href="#" class="btn-small" data-workshop="inversions-may15">Register Now</a>
+                            </div>
+                        </div>
+
+                        <!-- Workshop Item -->
+                        <div class="workshop-item">
+                            <div class="workshop-details">
+                                <div class="workshop-title">Yoga Philosophy & Meditation</div>
+                                <div class="workshop-info">
+                                    <span><i class="far fa-calendar"></i> June 8, 2025</span>
+                                    <span><i class="far fa-clock"></i> 10:00 AM - 1:00 PM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Meditation Room</span>
+                                    <span><i class="fas fa-tag"></i> $55 ($49 for members)</span>
+                                </div>
+                                <p class="workshop-description">Explore the philosophical roots of yoga and learn meditation techniques to deepen your practice.</p>
+                            </div>
+                            <div class="workshop-actions">
+                                <a href="#" class="btn-small" data-workshop="philosophy-jun8">Register Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Retreats Panel -->
+                <div id="retreats-panel" class="dashboard-panel">
+                    <div class="panel-header">
+                        <h3>Retreats</h3>
+                        <a href="#" class="btn-small" id="view-all-retreats-btn">View All Retreats</a>
+                    </div>
+
+                    <div class="retreat-list">
+                        <!-- Retreat Item -->
+                        <div class="retreat-item">
+                            <div class="retreat-image">
+                                <img src="images/DSC02638.JPG" alt="Mountain Retreat">
+                            </div>
+                            <div class="retreat-details">
+                                <div class="retreat-title">Mountain Serenity Retreat</div>
+                                <div class="retreat-info">
+                                    <span><i class="fas fa-map-marker-alt"></i> Blue Ridge Mountains</span>
+                                    <span><i class="far fa-calendar-alt"></i> June 10-15, 2025</span>
+                                    <span><i class="fas fa-tag"></i> From $1,200</span>
+                                </div>
+                                <p class="retreat-description">Escape to the majestic Blue Ridge Mountains for 5 days of yoga, meditation, hiking, and self-discovery.</p>
+                                <div class="retreat-actions">
+                                    <a href="#" class="btn-small">Learn More</a>
+                                    <a href="#" class="btn-small">Register</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Retreat Item -->
+                        <div class="retreat-item">
+                            <div class="retreat-image">
+                                <img src="images/DSC02646.JPG" alt="Beach Retreat">
+                            </div>
+                            <div class="retreat-details">
+                                <div class="retreat-title">Coastal Bliss Retreat</div>
+                                <div class="retreat-info">
+                                    <span><i class="fas fa-map-marker-alt"></i> Tulum, Mexico</span>
+                                    <span><i class="far fa-calendar-alt"></i> September 5-12, 2025</span>
+                                    <span><i class="fas fa-tag"></i> From $1,800</span>
+                                </div>
+                                <p class="retreat-description">Immerse yourself in a week of beachside yoga, Caribbean sunshine, and Mayan cultural experiences.</p>
+                                <div class="retreat-actions">
+                                    <a href="#" class="btn-small">Learn More</a>
+                                    <a href="#" class="btn-small">Register</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Private Sessions Panel -->
+                <div id="private-sessions-panel" class="dashboard-panel">
+                    <div class="panel-header">
+                        <h3>Private Sessions</h3>
+                        <a href="#" class="btn-small" id="book-private-session-btn">Book New Session</a>
+                    </div>
+
+                    <div class="session-list">
+                        <!-- Session Item -->
+                        <div class="session-item">
+                            <div class="session-details">
+                                <div class="session-title">Private Yoga Session</div>
+                                <div class="session-info">
+                                    <span><i class="far fa-calendar"></i> May 5, 2025</span>
+                                    <span><i class="far fa-clock"></i> 2:00 PM - 3:00 PM</span>
+                                    <span><i class="fas fa-map-marker-alt"></i> Studio Room 2</span>
+                                </div>
+                                <div class="session-focus">
+                                    <span><strong>Focus:</strong> Alignment & Technique</span>
+                                </div>
+                            </div>
+                            <div class="session-actions">
+                                <button title="Add to Calendar"><i class="far fa-calendar-plus"></i></button>
+                                <button title="Reschedule"><i class="far fa-clock"></i></button>
+                                <button title="Cancel Session"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="panel-header" style="margin-top: 40px;">
+                            <h3>Session Packages</h3>
+                        </div>
+
+                        <div class="session-packages">
+                            <div class="session-package-item">
+                                <div class="package-name">Single Session</div>
+                                <div class="package-price">$80</div>
+                                <div class="package-details">60 minutes, one-on-one instruction</div>
+                                <a href="#" class="btn-small">Book Now</a>
+                            </div>
+                            
+                            <div class="session-package-item">
+                                <div class="package-name">3-Session Package</div>
+                                <div class="package-price">$225</div>
+                                <div class="package-details">$75 per session</div>
+                                <a href="#" class="btn-small">Book Now</a>
+                            </div>
+                            
+                            <div class="session-package-item">
+                                <div class="package-name">5-Session Package</div>
+                                <div class="package-price">$350</div>
+                                <div class="package-details">$70 per session</div>
+                                <a href="#" class="btn-small">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Panel -->
+                <div id="profile-panel" class="dashboard-panel">
+                    <div class="panel-header">
+                        <h3>Profile Settings</h3>
+                    </div>
+
+                    <div class="profile-image">
+                        <img src="images/profile-placeholder.jpg" alt="Profile Photo" id="profile-photo">
+                        <div class="upload-overlay" id="upload-photo">Change Photo</div>
+                    </div>
+
+                    <form class="profile-form" id="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-first-name">First Name</label>
+                                <input type="text" id="profile-first-name" value="Julia" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-last-name">Last Name</label>
+                                <input type="text" id="profile-last-name" value="Parker" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-email">Email Address</label>
+                            <input type="email" id="profile-email" value="julia@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-phone">Phone Number</label>
+                            <input type="tel" id="profile-phone" value="(555) 123-4567">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-dob">Date of Birth</label>
+                            <input type="date" id="profile-dob" value="1990-05-15">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-experience">Yoga Experience Level</label>
+                            <select id="profile-experience">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profile-health">Health Conditions or Injuries (Optional)</label>
+                            <textarea id="profile-health" rows="3" placeholder="Please share any health conditions or injuries your instructor should be aware of."></textarea>
+                        </div>
+
+                        <div class="panel-header" style="margin-top: 40px;">
+                            <h3>Change Password</h3>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <div class="password-container">
+                                <input type="password" id="current-password">
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <div class="password-container">
+                                <input type="password" id="new-password">
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <div class="password-container">
+                                <input type="password" id="confirm-password">
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>Gabi Jyoti Yoga</h2>
+                    <p>Find your inner peace with us</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                        <li><a href="index.html#offerings">Classes</a></li>
+                        <li><a href="index.html#membership">Membership</a></li>
+                        <li><a href="index.html#retreats">Retreats</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on classes, workshops, and events</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Gabi Jyoti Yoga. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/pricing-display.js"></script>
+</body>
+</html>

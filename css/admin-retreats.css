@@ -1,0 +1,200 @@
+/**
+ * Admin Retreats CSS styles
+ * These styles are specific to the retreats management page
+ */
+
+/* Retreat details in registrations modal */
+.retreat-details {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.retreat-detail-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.retreat-detail-row strong {
+    width: 120px;
+    display: inline-block;
+}
+
+/* Tabbed interface for retreat form */
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: #4CAF50;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #4CAF50;
+}
+
+.tab-content {
+    display: none;
+    padding: 10px 0;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Make modal wider for retreats */
+.retreat-modal-content {
+    width: 800px;
+    max-width: 90vw;
+}
+
+.payment-modal-content {
+    width: 500px;
+}
+
+/* Checkbox group container for setting active/featured */
+.checkbox-group-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.checkbox-group {
+    margin-right: 20px;
+}
+
+/* Featured badge */
+.featured-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    background-color: #FFD700;
+    color: #333;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.featured-badge i {
+    margin-right: 4px;
+}
+
+.not-featured {
+    color: #999;
+    font-style: italic;
+}
+
+/* Status indicators */
+.admin-table .status-indicator {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.admin-table .status-indicator.active {
+    background-color: #4CAF50;
+}
+
+.admin-table .status-indicator.draft {
+    background-color: #ff9800;
+}
+
+/* Make action buttons more compact */
+.admin-table-actions button {
+    margin-right: 5px;
+}
+
+/* Add some spacing between dates */
+.date-range {
+    white-space: nowrap;
+}
+
+.date-range .date-separator {
+    margin: 0 5px;
+    color: #666;
+}
+
+/* Payment status styles */
+.payment-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.payment-status.deposit {
+    background-color: #FFD700;
+    color: #333;
+}
+
+.payment-status.partial {
+    background-color: #2196F3;
+    color: white;
+}
+
+.payment-status.full {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.payment-status.pending {
+    background-color: #ff9800;
+    color: white;
+}
+
+.payment-status.refunded {
+    background-color: #f44336;
+    color: white;
+}
+
+.payment-status.cancelled {
+    background-color: #9e9e9e;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1024px) {
+    .retreat-modal-content {
+        width: 95vw;
+    }
+    
+    .tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        padding: 10px 15px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .admin-form-row {
+        flex-direction: column;
+    }
+    
+    .admin-form-group {
+        width: 100%;
+    }
+}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/purchase-styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Debug panel styles */
+        .debug-panel {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .debug-panel h3 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .debug-panel p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .form-error {
+            color: #e74c3c;
+            background-color: #fee;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #e74c3c;
+        }
+        .form-error i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="index.html"><h1>Gabi Jyoti Yoga</h1></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About Me</a></li>
+                <li><a href="index.html#gallery">Gallery</a></li>
+                <li><a href="index.html#offerings">Classes & Offerings</a></li>
+                <li><a href="index.html#membership">Membership</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="login.html" class="active">Login</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Login Section -->
+    <section class="account-section">
+        <div class="container">
+            <div class="account-container">
+                <div class="account-card">
+                    <div class="account-header">
+                        <h2>Member Login</h2>
+                        <p>Access your bookings and memberships</p>
+                    </div>
+
+                    <form id="login-form" class="account-form">
+                        <div class="form-group">
+                            <label for="login-email">Email Address</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="password-container">
+                                <input type="password" id="login-password" required>
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">Remember me</label>
+                            <a href="#" class="forgot-password">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-full-width">Sign In</button>
+                        
+                        <div class="form-separator">
+                            <span>or</span>
+                        </div>
+                        
+                        <button type="button" id="google-login-btn" class="btn btn-google btn-full-width">
+                            <i class="fab fa-google"></i> Sign in with Google
+                        </button>
+
+                        <div class="form-separator">
+                            <span>Don't have an account?</span>
+                        </div>
+
+                        <a href="#" id="show-registration-btn" class="btn btn-secondary btn-full-width">Create Account</a>
+                    </form>
+
+                    <!-- Debug login status -->
+                    <div class="debug-panel">
+                        <h3>Login Status</h3>
+                        <div id="debug-login-status">
+                            <p>Not logged in</p>
+                        </div>
+                        <p>For admin access, use:</p>
+                        <p><strong>Email:</strong> admin@gabijyotiyoga.com</p>
+                        <p><strong>Password:</strong> admin123</p>
+                    </div>
+                </div>
+
+                <div class="account-card hidden" id="registration-card">
+                    <div class="account-header">
+                        <h2>Create Account</h2>
+                        <p>Join our yoga community</p>
+                    </div>
+
+                    <form id="registration-form" class="account-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-first-name">First Name</label>
+                                <input type="text" id="register-first-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-last-name">Last Name</label>
+                                <input type="text" id="register-last-name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email Address</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Create Password</label>
+                            <div class="password-container">
+                                <input type="password" id="register-password" required minlength="8">
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                            <p class="password-hint">Password must be at least 8 characters.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-confirm-password">Confirm Password</label>
+                            <div class="password-container">
+                                <input type="password" id="register-confirm-password" required>
+                                <i class="fas fa-eye-slash toggle-password"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="terms-agree" required>
+                            <label for="terms-agree">I agree to the <a href="#">Terms & Conditions</a></label>
+                        </div>
+
+                        <button type="submit" class="btn btn-full-width">Create Account</button>
+
+                        <div class="form-separator">
+                            <span>Already have an account?</span>
+                        </div>
+
+                        <a href="#" id="show-login-btn" class="btn btn-secondary btn-full-width">Sign In</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>Gabi Jyoti Yoga</h2>
+                    <p>Find your inner peace with us</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                        <li><a href="index.html#offerings">Classes</a></li>
+                        <li><a href="index.html#membership">Membership</a></li>
+                        <li><a href="index.html#retreats">Retreats</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on classes, workshops, and events</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Gabi Jyoti Yoga. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="js/account.js"></script>
+</body>
+</html>

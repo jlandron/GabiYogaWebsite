@@ -23,7 +23,6 @@
                 <li><a href="#membership">Membership</a></li>
                 <li><a href="#contact">Contact</a></li>
                 <li><a href="login.html">Login</a></li>
-                <li><a href="login-flow-mockup.html" style="color: #e0a458;">Login Flow Demo</a></li>
             </ul>
             <div class="hamburger">
                 <span class="bar"></span>
@@ -51,17 +50,15 @@
                     <img src="images/DSC02659.JPG" alt="Yoga Instructor">
                 </div>
                 <div class="about-text">
-                    <h3>Gabi Jyoti</h3>
-                    <p class="subtitle">RYT 500 Certified Yoga Instructor</p>
-                    <p>Welcome to Gabi Jyoti Yoga! I've been practicing yoga for over 10 years and teaching for 5. My journey began when I was seeking balance in my hectic life, and yoga provided the perfect sanctuary.</p>
-                    <p>I specialize in Vinyasa, Hatha, and Restorative yoga practices. My teaching philosophy centers around making yoga accessible to practitioners of all levels while honoring its traditional roots.</p>
-                    <p>Through my classes, I aim to create a supportive environment where you can explore the transformative power of yoga, connecting breath with movement and finding peace within.</p>
+                    <h3></h3>
+                    <p class="subtitle"></p>
+                    <p></p>
+                    <p></p>
+                    <p></p>
                     <div class="certifications">
                         <h4>Certifications:</h4>
                         <ul>
-                            <li>RYT 500 - Yoga Alliance</li>
-                            <li>Meditation Instructor Certification</li>
-                            <li>Pre-natal Yoga Certification</li>
+                            <li></li>
                         </ul>
                     </div>
                 </div>
@@ -207,103 +204,20 @@
     <section id="membership" class="membership">
         <div class="container">
             <h2>Membership & Packages</h2>
-            <div class="pricing-container">
-                <!-- Drop-in Option -->
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Drop-In</h3>
-                        <p class="price">$20</p>
-                        <p>per class</p>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Single class access</li>
-                            <li>All class types</li>
-                            <li>Mat rental available</li>
-                            <li>No commitment</li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn pricing-btn">Purchase</a>
-                </div>
-
-                <!-- Class Pack Option -->
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Class Pack</h3>
-                        <p class="price">$150</p>
-                        <p>for 10 classes</p>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>10 class visits</li>
-                            <li>Valid for 3 months</li>
-                            <li>All class types</li>
-                            <li>Discounted rate ($15/class)</li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn pricing-btn">Purchase</a>
-                </div>
-
-                <!-- Monthly Membership Option -->
-                <div class="pricing-card featured">
-                    <div class="pricing-header">
-                        <span class="featured-tag">Most Popular</span>
-                        <h3>Monthly Unlimited</h3>
-                        <p class="price">$120</p>
-                        <p>per month</p>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Unlimited classes</li>
-                            <li>10% off workshops</li>
-                            <li>Free mat rental</li>
-                            <li>Member-only events</li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn pricing-btn">Subscribe</a>
-                </div>
-
-                <!-- Annual Membership Option -->
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Annual Membership</h3>
-                        <p class="price">$1,200</p>
-                        <p>per year</p>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li>Unlimited classes</li>
-                            <li>15% off workshops</li>
-                            <li>Free mat rental</li>
-                            <li>1 free private session</li>
-                            <li>5% off retreats</li>
-                        </ul>
-                    </div>
-                    <a href="#" class="btn pricing-btn">Subscribe</a>
+            <div id="pricing-container" class="pricing-container">
+                <!-- Memberships will be dynamically loaded here -->
+                <div class="pricing-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading membership options...
                 </div>
             </div>
 
             <!-- Private Sessions Pricing -->
             <div class="private-sessions">
                 <h3>Private Sessions</h3>
-                <div class="private-pricing">
-                    <div class="private-option">
-                        <h4>Single Session</h4>
-                        <p class="price">$80</p>
-                        <p>60 minutes</p>
-                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
-                    </div>
-                    <div class="private-option">
-                        <h4>3-Session Package</h4>
-                        <p class="price">$225</p>
-                        <p>$75 per session</p>
-                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
-                    </div>
-                    <div class="private-option">
-                        <h4>5-Session Package</h4>
-                        <p class="price">$350</p>
-                        <p>$70 per session</p>
-                        <a href="#" class="btn-small private-booking-btn">Book Now</a>
+                <div id="private-pricing" class="private-pricing">
+                    <!-- Private sessions will be dynamically loaded here -->
+                    <div class="pricing-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading private session options...
                     </div>
                 </div>
             </div>
@@ -876,5 +790,6 @@
     </div>
 
     <script src="js/script.js"></script>
+    <script src="js/pricing-display.js"></script>
 </body>
 </html>
