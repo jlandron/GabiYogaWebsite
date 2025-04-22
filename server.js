@@ -18,6 +18,7 @@ require('dotenv').config(); // Load environment variables
 const adminRoutes = require('./api/admin');
 const adminSettingsRoutes = require('./api/admin-settings');
 const adminPricingRoutes = require('./api/admin-pricing');
+const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -435,6 +436,7 @@ app.get('/api/website-settings', async (req, res) => {
 app.use('/api/admin', authenticateToken, adminRoutes);
 app.use('/api/admin', authenticateToken, adminSettingsRoutes);
 app.use('/api/admin', authenticateToken, adminPricingRoutes);
+app.use('/api/admin', authenticateToken, adminCustomerDashboardRoutes);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
 
 // Fallback route for SPA

@@ -37,10 +37,11 @@ const seedDatabase = async () => {
         email, 
         password_hash, 
         role, 
+        phone,
         created_at, 
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-    `, ['Gabi', 'Jyoti', 'admin@gabijyotiyoga.com', adminHash, 'admin']);
+      ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `, ['Gabi', 'Jyoti', 'admin@gabijyotiyoga.com', adminHash, 'admin', '555-987-6543']);
     
     // Create sample members
     const memberSalt = await bcrypt.genSalt(10);
@@ -760,6 +761,180 @@ const seedDatabase = async () => {
       ]);
     }
     
+    // Create data for admin user to display in customer dashboard view
+    // Get admin user ID
+    const adminResponse = await db.query(`SELECT user_id FROM users WHERE role = 'admin' LIMIT 1`);
+    const adminId = adminResponse[0].user_id;
+    
+    // Create admin memberships
+    await db.query(`
+      INSERT INTO memberships (
+        user_id,
+        membership_type,
+        start_date,
+        end_date,
+        classes_remaining,
+        auto_renew,
+        status,
+        price,
+        payment_method,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, date('now', '-30 days'), date('now', '+335 days'), NULL, 1, 'Active', 1200, 'Credit Card', datetime('now', '-30 days'), datetime('now'))
+    `, [adminId, 'Annual Membership']);
+    
+    await db.query(`
+      INSERT INTO memberships (
+        user_id,
+        membership_type,
+        start_date,
+        end_date,
+        classes_remaining,
+        auto_renew,
+        status,
+        price,
+        payment_method,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, date('now', '-15 days'), NULL, 8, 0, 'Active', 150, 'Credit Card', datetime('now', '-15 days'), datetime('now'))
+    `, [adminId, '10-Class Pack']);
+    
+    // Create admin bookings
+    for (let i = 0; i < 5; i++) {
+      // Get random future date within next 7 days
+      const futureDay = Math.floor(Math.random() * 7) + 1;
+      const date = new Date();
+      date.setDate(date.getDate() + futureDay);
+      const dateStr = date.toISOString().substring(0, 10); // YYYY-MM-DD
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      // Find a class for this day
+      const matchingClasses = classes.filter(c => c.day_of_week === dayOfWeek);
+      if (matchingClasses.length > 0) {
+        const randomClass = matchingClasses[Math.floor(Math.random() * matchingClasses.length)];
+        
+        // Create booking
+        await db.query(`
+          INSERT INTO bookings (
+            user_id,
+            class_id,
+            date,
+            status,
+            booking_date,
+            created_at,
+            updated_at
+          ) VALUES (?, ?, ?, 'Confirmed', datetime('now', '-1 day'), datetime('now', '-1 day'), datetime('now'))
+        `, [adminId, randomClass.class_id, dateStr]);
+      }
+    }
+    
+    // Create admin private sessions
+    const adminSessionFocuses = ['Flexibility Training', 'Meditation Techniques', 'Advanced Inversions'];
+    
+    for (let i = 0; i < 3; i++) {
+      // Random future date
+      const futureDay = Math.floor(Math.random() * 14) + 1;
+      const date = new Date();
+      date.setDate(date.getDate() + futureDay);
+      const dateStr = date.toISOString().substring(0, 10); // YYYY-MM-DD
+      
+      // Random time
+      const hour = 10 + i * 2; // 10:00, 12:00, 14:00
+      const start_time = `${hour}:00`;
+      
+      // Create session
+      await db.query(`
+        INSERT INTO private_sessions (
+          user_id,
+          date,
+          start_time,
+          duration,
+          focus,
+          package_type,
+          price,
+          location,
+          status,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, 60, ?, '3-Session Package', 75, 'Main Studio', 'Confirmed', datetime('now', '-5 days'), datetime('now'))
+      `, [adminId, dateStr, start_time, adminSessionFocuses[i]]);
+    }
+    
+    // Register admin for a workshop
+    const workshopForAdmin = await db.query(`SELECT workshop_id, member_price FROM workshops WHERE date > date('now') ORDER BY date ASC LIMIT 1`);
+    if (workshopForAdmin.length > 0) {
+      await db.query(`
+        INSERT INTO workshop_registrations (
+          user_id,
+          workshop_id,
+          registration_date,
+          payment_status,
+          payment_method,
+          amount_paid,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, datetime('now', '-3 days'), 'Paid', 'Credit Card', ?, datetime('now', '-3 days'), datetime('now'))
+      `, [adminId, workshopForAdmin[0].workshop_id, workshopForAdmin[0].member_price]);
+      
+      // Payment for the workshop
+      await db.query(`
+        INSERT INTO payments (
+          user_id,
+          amount,
+          payment_date,
+          payment_method,
+          payment_reference,
+          payment_type,
+          related_id,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, date('now', '-3 days'), 'Credit Card', ?, 'workshop', ?, datetime('now', '-3 days'), datetime('now'))
+      `, [adminId, workshopForAdmin[0].member_price, `ws-admin-${Date.now()}`, workshopForAdmin[0].workshop_id]);
+    }
+    
+    // Add admin payments
+    await db.query(`
+      INSERT INTO payments (
+        user_id,
+        amount,
+        payment_date,
+        payment_method,
+        payment_reference,
+        payment_type,
+        related_id,
+        created_at,
+        updated_at
+      ) VALUES (?, 1200, date('now', '-30 days'), 'Credit Card', ?, 'membership', ?, datetime('now', '-30 days'), datetime('now'))
+    `, [adminId, `mem-admin-annual-${Date.now()}`, adminId]);
+    
+    await db.query(`
+      INSERT INTO payments (
+        user_id,
+        amount,
+        payment_date,
+        payment_method,
+        payment_reference,
+        payment_type,
+        related_id,
+        created_at,
+        updated_at
+      ) VALUES (?, 150, date('now', '-15 days'), 'Credit Card', ?, 'membership', ?, datetime('now', '-15 days'), datetime('now'))
+    `, [adminId, `mem-admin-classpack-${Date.now()}`, adminId]);
+    
+    await db.query(`
+      INSERT INTO payments (
+        user_id,
+        amount,
+        payment_date,
+        payment_method,
+        payment_reference,
+        payment_type,
+        related_id,
+        created_at,
+        updated_at
+      ) VALUES (?, 225, date('now', '-5 days'), 'Credit Card', ?, 'private_session', ?, datetime('now', '-5 days'), datetime('now'))
+    `, [adminId, `ps-admin-package-${Date.now()}`, adminId]);
+
     // Create newsletter subscribers
     const subscriberEmails = [
       'yoga.fan@example.com',

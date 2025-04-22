@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // If on the homepage
-    const membershipSection = document.querySelector('.membership-options');
+    const membershipSection = document.querySelector('.membership');
     if (membershipSection) {
         fetchPricingDataForHomepage();
     }

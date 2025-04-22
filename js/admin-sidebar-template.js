@@ -40,6 +40,11 @@ const ADMIN_SIDEBAR_HTML = `
         </a>
     </li>
     <li class="admin-nav-item">
+        <a href="admin-customer-dashboard.html" class="admin-nav-link" data-page="customer-dashboard">
+            <i class="fas fa-user-circle"></i> Customer Dashboard
+        </a>
+    </li>
+    <li class="admin-nav-item">
         <a href="admin-workshops.html" class="admin-nav-link" data-page="workshops">
             <i class="fas fa-chalkboard-teacher"></i> Workshops
         </a>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Customer Dashboard - Gabi Jyoti Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/purchase-styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <div class="admin-sidebar" id="admin-sidebar-container">
+            <!-- Sidebar will be injected by JavaScript -->
+        </div>
+
+        <!-- Admin Content Area -->
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1 class="admin-title">Customer Dashboard Preview</h1>
+                <div class="admin-actions">
+                    <button id="back-to-members" class="admin-btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Members
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Customer Dashboard Panel -->
+            <div class="admin-panel">
+                <div class="admin-panel-header">
+                    <h2 class="admin-panel-title">Viewing as Admin User</h2>
+                </div>
+                <div class="admin-panel-content">
+                    <!-- Embedded Customer Dashboard -->
+                    <div class="embedded-customer-dashboard">
+                        <!-- Dashboard Section -->
+                        <section class="account-section">
+                            <div class="container">
+                                <div class="dashboard-header">
+                                    <div class="welcome-message">
+                                        <h2>Welcome, <span id="admin-name">Admin</span>!</h2>
+                                        <p>Admin View: Member Dashboard Preview</p>
+                                    </div>
+                                </div>
+
+                                <div class="dashboard-nav">
+                                    <div class="dashboard-nav-item active" data-panel="bookings">My Classes</div>
+                                    <div class="dashboard-nav-item" data-panel="memberships">Memberships & Packages</div>
+                                    <div class="dashboard-nav-item" data-panel="workshops">Workshops</div>
+                                    <div class="dashboard-nav-item" data-panel="retreats">Retreats</div>
+                                    <div class="dashboard-nav-item" data-panel="private-sessions">Private Sessions</div>
+                                    <div class="dashboard-nav-item" data-panel="profile">Profile Settings</div>
+                                </div>
+
+                                <div class="dashboard-content">
+                                    <!-- Bookings Panel -->
+                                    <div id="bookings-panel" class="dashboard-panel active">
+                                        <div class="panel-header">
+                                            <h3>Upcoming Classes</h3>
+                                            <a href="#" class="btn-small">View Past Classes</a>
+                                        </div>
+
+                                        <div class="booking-list" id="admin-bookings-list">
+                                            <!-- Bookings will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading bookings...
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Memberships Panel -->
+                                    <div id="memberships-panel" class="dashboard-panel">
+                                        <div class="panel-header">
+                                            <h3>Your Memberships & Packages</h3>
+                                        </div>
+
+                                        <div class="membership-list" id="admin-memberships-list">
+                                            <!-- Memberships will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading memberships...
+                                            </div>
+                                        </div>
+
+                                        <div class="panel-header" style="margin-top: 40px;">
+                                            <h3>Purchase History</h3>
+                                        </div>
+
+                                        <div class="membership-list" id="admin-purchase-history-list">
+                                            <!-- Purchase history will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading purchase history...
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Workshops Panel -->
+                                    <div id="workshops-panel" class="dashboard-panel">
+                                        <div class="panel-header">
+                                            <h3>Workshops</h3>
+                                        </div>
+
+                                        <div class="workshop-list" id="admin-workshops-list">
+                                            <!-- Workshops will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading workshops...
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Retreats Panel -->
+                                    <div id="retreats-panel" class="dashboard-panel">
+                                        <div class="panel-header">
+                                            <h3>Retreats</h3>
+                                        </div>
+
+                                        <div class="retreat-list" id="admin-retreats-list">
+                                            <!-- Retreats will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading retreats...
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Private Sessions Panel -->
+                                    <div id="private-sessions-panel" class="dashboard-panel">
+                                        <div class="panel-header">
+                                            <h3>Private Sessions</h3>
+                                        </div>
+
+                                        <div class="session-list" id="admin-sessions-list">
+                                            <!-- Sessions will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading sessions...
+                                            </div>
+                                        </div>
+
+                                        <div class="panel-header" style="margin-top: 40px;">
+                                            <h3>Session Packages</h3>
+                                        </div>
+
+                                        <div class="session-packages">
+                                            <div class="session-package-item">
+                                                <div class="package-name">Single Session</div>
+                                                <div class="package-price">$80</div>
+                                                <div class="package-details">60 minutes, one-on-one instruction</div>
+                                            </div>
+                                            
+                                            <div class="session-package-item">
+                                                <div class="package-name">3-Session Package</div>
+                                                <div class="package-price">$225</div>
+                                                <div class="package-details">$75 per session</div>
+                                            </div>
+                                            
+                                            <div class="session-package-item">
+                                                <div class="package-name">5-Session Package</div>
+                                                <div class="package-price">$350</div>
+                                                <div class="package-details">$70 per session</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Profile Panel -->
+                                    <div id="profile-panel" class="dashboard-panel">
+                                        <div class="panel-header">
+                                            <h3>Admin Profile</h3>
+                                        </div>
+
+                                        <div class="profile-image">
+                                            <img src="images/profile-placeholder.jpg" alt="Admin Profile Photo" id="profile-photo">
+                                        </div>
+
+                                        <div class="profile-form" id="admin-profile-details">
+                                            <!-- Profile details will be loaded dynamically via JavaScript -->
+                                            <div class="loading-indicator">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading profile details...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Auth tokens:', {
+                auth_token: localStorage.getItem('auth_token'),
+                authToken: localStorage.getItem('authToken')
+            });
+            console.log('User info:', localStorage.getItem('user_info'));
+            
+            // Add error handling to fetch operations
+            const originalFetch = window.fetch;
+            window.fetch = async function(url, options) {
+                try {
+                    const response = await originalFetch(url, options);
+                    const clone = response.clone();
+                    
+                    // Try to parse as JSON for debugging
+                    clone.text().then(text => {
+                        try {
+                            const json = JSON.parse(text);
+                            console.log(`API Response ${url}:`, json);
+                        } catch (e) {
+                            console.log(`API Response ${url}:`, text);
+                        }
+                    }).catch(err => {
+                        console.error('Error reading response:', err);
+                    });
+                    
+                    return response;
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    throw error;
+                }
+            };
+        });
+    </script>
+    <script>
+        // Check if API_BASE_URL is already defined to avoid conflicts
+        if (typeof API_BASE_URL === 'undefined') {
+            const API_BASE_URL = '/api';
+        }
+    </script>
+    <script src="js/api.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-customer-dashboard.js"></script>
+</body>
+</html>
