@@ -9,9 +9,17 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const { sendSuccess, sendError, asyncHandler } = require('./utils/api-response');
+const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 const { initializeDatabase } = require('./database/schema');
 const { initializePricingDatabase } = require('./database/schema-pricing');
-const { AuthOperations } = require('./database/data-access');
+const { 
+  AuthOperations, 
+  ClassOperations, 
+  RetreatOperations, 
+  WorkshopOperations, 
+  WebsiteSettingsOperations 
+} = require('./database/data-access');
 require('dotenv').config(); // Load environment variables
 
 // Import API routes
@@ -43,242 +51,91 @@ app.use(express.static(path.join(__dirname)));
 app.use('/api/auth', authRouter);
 
 // Public API endpoints for homepage data
-app.get('/api/schedule', async (req, res) => {
-  try {
-    const { ClassOperations } = require('./database/data-access');
-    const classes = await ClassOperations.getClasses();
-    
-    // Format classes by day and time for easy rendering on the frontend
-    const formattedSchedule = {
-      0: [], // Sunday
-      1: [], // Monday
-      2: [], // Tuesday
-      3: [], // Wednesday
-      4: [], // Thursday
-      5: [], // Friday
-      6: []  // Saturday
-    };
-    
-    classes.forEach(classInfo => {
-      if (classInfo.active) {
-        formattedSchedule[classInfo.day_of_week].push({
-          class_id: classInfo.class_id,
-          name: classInfo.name,
-          start_time: classInfo.start_time,
-          duration: classInfo.duration,
-          instructor: classInfo.instructor,
-          level: classInfo.level
-        });
-      }
-    });
-    
-    // Sort classes by start_time for each day
-    Object.keys(formattedSchedule).forEach(day => {
-      formattedSchedule[day].sort((a, b) => {
-        return a.start_time.localeCompare(b.start_time);
+app.get('/api/schedule', asyncHandler(async (req, res) => {
+  const classes = await ClassOperations.getClasses();
+  
+  // Format classes by day and time for easy rendering on the frontend
+  const formattedSchedule = {
+    0: [], // Sunday
+    1: [], // Monday
+    2: [], // Tuesday
+    3: [], // Wednesday
+    4: [], // Thursday
+    5: [], // Friday
+    6: []  // Saturday
+  };
+  
+  classes.forEach(classInfo => {
+    if (classInfo.active) {
+      formattedSchedule[classInfo.day_of_week].push({
+        class_id: classInfo.class_id,
+        name: classInfo.name,
+        start_time: classInfo.start_time,
+        duration: classInfo.duration,
+        instructor: classInfo.instructor,
+        level: classInfo.level
       });
+    }
+  });
+  
+  // Sort classes by start_time for each day
+  Object.keys(formattedSchedule).forEach(day => {
+    formattedSchedule[day].sort((a, b) => {
+      return a.start_time.localeCompare(b.start_time);
     });
-    
-    return res.json({
-      success: true,
-      schedule: formattedSchedule
-    });
-  } catch (error) {
-    console.error('Error fetching class schedule:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch class schedule',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
-
-// (Removed duplicate route - only keeping one version below)
+  });
+  
+  return sendSuccess(res, { schedule: formattedSchedule }, 'Class schedule fetched successfully');
+}));
 
 // Public API endpoint for featured retreats (for homepage)
-app.get('/api/retreats/featured', async (req, res) => {
-  try {
-    // Since the retreats table doesn't exist in SQLite yet, return hardcoded sample data
-    const mockRetreats = [
-      {
-        retreat_id: 1,
-        title: "Mountain Serenity Retreat",
-        description: "Escape to the majestic Blue Ridge Mountains for 5 days of yoga, meditation, hiking, and self-discovery.",
-        start_date: "2025-06-10",
-        end_date: "2025-06-15",
-        location: "Blue Ridge Mountains",
-        price: "1200",
-        image_url: "images/DSC02638.JPG",
-        retreat_slug: "mountain-serenity-retreat-2025"
-      },
-      {
-        retreat_id: 2,
-        title: "Coastal Bliss Retreat",
-        description: "Immerse yourself in a week of beachside yoga, Caribbean sunshine, and Mayan cultural experiences.",
-        start_date: "2025-09-05",
-        end_date: "2025-09-12",
-        location: "Tulum, Mexico",
-        price: "1800",
-        image_url: "images/DSC02646.JPG",
-        retreat_slug: "coastal-bliss-retreat-2025"
-      },
-      {
-        retreat_id: 3,
-        title: "Desert Renewal Retreat",
-        description: "Experience the magical healing energy of Sedona's red rocks with daily yoga, meditation, and vortex hikes.",
-        start_date: "2025-11-15",
-        end_date: "2025-11-20",
-        location: "Sedona, Arizona",
-        price: "1400",
-        image_url: "images/DSC02661~3.JPG",
-        retreat_slug: "desert-renewal-retreat-2025"
-      }
-    ];
-    
-    return res.json({
-      success: true,
-      retreats: mockRetreats
-    });
-  } catch (error) {
-    console.error('Error preparing retreat data:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch featured retreats',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
+app.get('/api/retreats/featured', asyncHandler(async (req, res) => {
+  const retreats = await RetreatOperations.getFeaturedRetreats();
+  return sendSuccess(res, { retreats }, 'Featured retreats fetched successfully');
+}));
 
 // Public API endpoint for all retreats
-app.get('/api/retreats', async (req, res) => {
-  try {
-    // Since the retreats table doesn't exist in SQLite yet, return the same mock data
-    const mockRetreats = [
-      {
-        retreat_id: 1,
-        title: "Mountain Serenity Retreat",
-        description: "Escape to the majestic Blue Ridge Mountains for 5 days of yoga, meditation, hiking, and self-discovery.",
-        start_date: "2025-06-10",
-        end_date: "2025-06-15",
-        location: "Blue Ridge Mountains",
-        price: "1200",
-        image_url: "images/DSC02638.JPG",
-        retreat_slug: "mountain-serenity-retreat-2025"
-      },
-      {
-        retreat_id: 2,
-        title: "Coastal Bliss Retreat",
-        description: "Immerse yourself in a week of beachside yoga, Caribbean sunshine, and Mayan cultural experiences.",
-        start_date: "2025-09-05",
-        end_date: "2025-09-12",
-        location: "Tulum, Mexico",
-        price: "1800",
-        image_url: "images/DSC02646.JPG",
-        retreat_slug: "coastal-bliss-retreat-2025"
-      },
-      {
-        retreat_id: 3,
-        title: "Desert Renewal Retreat",
-        description: "Experience the magical healing energy of Sedona's red rocks with daily yoga, meditation, and vortex hikes.",
-        start_date: "2025-11-15",
-        end_date: "2025-11-20",
-        location: "Sedona, Arizona",
-        price: "1400",
-        image_url: "images/DSC02661~3.JPG",
-        retreat_slug: "desert-renewal-retreat-2025"
-      }
-    ];
-    
-    return res.json({
-      success: true,
-      retreats: mockRetreats
-    });
-  } catch (error) {
-    console.error('Error preparing retreat data:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch retreats',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
+app.get('/api/retreats', asyncHandler(async (req, res) => {
+  const retreats = await RetreatOperations.getPublishedRetreats();
+  return sendSuccess(res, { retreats }, 'Retreats fetched successfully');
+}));
 
 // Public API endpoint for workshops
-app.get('/api/workshops', async (req, res) => {
-  try {
-    // Use a direct query to match the actual SQLite schema
-    const db = require('./database/db-config');
-    const workshops = await db.query(`
-      SELECT 
-        workshop_id,
-        title,
-        description,
-        date,
-        start_time,
-        end_time,
-        instructor,
-        capacity,
-        price,
-        early_bird_price as member_price, /* Use early_bird_price as substitute for member_price */
-        location,
-        title as workshop_slug, /* Use title as fallback for workshop_slug */
-        active
-      FROM workshops
-      WHERE date >= date('now')
-      ORDER BY date, start_time
-      LIMIT 10
-    `);
-    
-    // Format the response to match the expected structure
-    return res.json({
-      success: true,
-      workshops: workshops.map(workshop => ({
-        ...workshop,
-        workshop_slug: workshop.title.toLowerCase().replace(/\s+/g, '-') // Generate slug from title
-      }))
-    });
-  } catch (error) {
-    console.error('Error fetching workshops:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch workshops',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
+app.get('/api/workshops', asyncHandler(async (req, res) => {
+  const workshops = await WorkshopOperations.getUpcomingWorkshops();
+  return sendSuccess(res, { workshops }, 'Workshops fetched successfully');
+}));
 
 // Public API endpoint for website settings (for homepage)
-app.get('/api/website-settings', async (req, res) => {
-  try {
-    const { WebsiteSettingsOperations } = require('./database/data-access');
-    const settings = await WebsiteSettingsOperations.getSettings();
-    
-    return res.json({
-      success: true,
-      settings
-    });
-  } catch (error) {
-    console.error('Error fetching website settings:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch website settings',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
+app.get('/api/website-settings', asyncHandler(async (req, res) => {
+  const settings = await WebsiteSettingsOperations.getSettings();
+  return sendSuccess(res, { settings }, 'Website settings fetched successfully');
+}));
+
+// Create an admin router with authentication middleware
+const adminRouter = express.Router();
+adminRouter.use(authenticateToken);
+
+// Register admin routes (all protected by authenticateToken)
+adminRouter.use('/', adminRoutes);
+adminRouter.use('/', adminSettingsRoutes);
+adminRouter.use('/', adminPricingRoutes);
+adminRouter.use('/', adminCustomerDashboardRoutes);
 
 // Register API routes
-app.use('/api/admin', authenticateToken, adminRoutes);
-app.use('/api/admin', authenticateToken, adminSettingsRoutes);
-app.use('/api/admin', authenticateToken, adminPricingRoutes);
-app.use('/api/admin', authenticateToken, adminCustomerDashboardRoutes);
+app.use('/api/admin', adminRouter);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
 app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
 
 // Fallback route for SPA
+// This should be after API routes but before error handlers
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// Error handling and not found middleware (must come after all routes)
+app.use(notFoundHandler); // Handle 404 for unknown API routes
+app.use(errorHandler);    // Handle all other errors
 
 // Initialize database and start server
 const startServer = async () => {

@@ -11,8 +11,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { AuthOperations } = require('../database/data-access');
 
-// Environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// Environment variables from .env file should be loaded by server.js
+const JWT_SECRET = process.env.JWT_SECRET || 'yoga_dev_secret_key_for_jwt';
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
 
 /**

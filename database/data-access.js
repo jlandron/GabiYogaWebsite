@@ -1032,11 +1032,10 @@ const PrivateSessionOperations = {
  */
 const AuthOperations = {
   /**
-   * Login a user and return their details
+   * Find user by email
    */
-  loginUser: async (email, password) => {
+  findUserByEmail: async (email) => {
     try {
-      // Get user by email
       const users = await db.query(`
         SELECT 
           user_id, 
@@ -1050,42 +1049,56 @@ const AuthOperations = {
         WHERE email = ?
       `, [email]);
       
-      if (users.length === 0) {
-        return null;
-      }
-      
-      const user = users[0];
-      
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-      if (!isPasswordValid) {
-        return null;
-      }
-      
-      // Return user data without password hash
-      delete user.password_hash;
-      return user;
+      return users.length > 0 ? users[0] : null;
     } catch (error) {
-      console.error('Error logging in user:', error);
+      console.error('Error finding user by email:', error);
       throw error;
     }
   },
   
   /**
-   * Register a new user
+   * Find user by ID
    */
-  registerUser: async (userData) => {
+  findUserById: async (userId) => {
+    try {
+      const users = await db.query(`
+        SELECT 
+          user_id, 
+          first_name, 
+          last_name, 
+          email, 
+          phone,
+          role,
+          profile_picture
+        FROM users 
+        WHERE user_id = ?
+      `, [userId]);
+      
+      return users.length > 0 ? users[0] : null;
+    } catch (error) {
+      console.error('Error finding user by ID:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Verify user password
+   */
+  verifyPassword: async (password, passwordHash) => {
+    try {
+      return await bcrypt.compare(password, passwordHash);
+    } catch (error) {
+      console.error('Error verifying password:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Create new user
+   */
+  createUser: async (userData) => {
     try {
       const { firstName, lastName, email, password } = userData;
-      
-      // Check if user exists
-      const existingUsers = await db.query(`
-        SELECT user_id FROM users WHERE email = ?
-      `, [email]);
-      
-      if (existingUsers.length > 0) {
-        throw new Error('Email already registered');
-      }
       
       // Hash password
       const salt = await bcrypt.genSalt(10);
@@ -1105,19 +1118,98 @@ const AuthOperations = {
       `, [firstName, lastName, email, passwordHash]);
       
       // Get created user
-      const users = await db.query(`
-        SELECT 
-          user_id, 
-          first_name, 
-          last_name, 
-          email, 
-          role,
-          profile_picture
-        FROM users 
-        WHERE user_id = ?
-      `, [result.lastID]);
+      return await AuthOperations.findUserById(result.lastID);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Find or create user with Google OAuth data
+   */
+  findOrCreateGoogleUser: async (googleData) => {
+    try {
+      const { email, given_name, family_name, sub, picture } = googleData;
       
-      return users[0];
+      // Check if user exists
+      const user = await AuthOperations.findUserByEmail(email);
+      
+      if (user) {
+        // Update existing user with Google data if needed
+        return user;
+      }
+      
+      // Create new user with Google data
+      // Generate a random password since Google OAuth doesn't provide one
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(randomPassword, salt);
+      
+      // Create user
+      const result = await db.query(`
+        INSERT INTO users (
+          first_name,
+          last_name,
+          email,
+          password_hash,
+          role,
+          profile_picture,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, 'member', ?, datetime('now'), datetime('now'))
+      `, [given_name, family_name, email, passwordHash, picture]);
+      
+      // Get created user
+      return await AuthOperations.findUserById(result.lastID);
+    } catch (error) {
+      console.error('Error with Google OAuth:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Login a user and return their details (kept for backwards compatibility)
+   */
+  loginUser: async (email, password) => {
+    try {
+      // Get user by email
+      const user = await AuthOperations.findUserByEmail(email);
+      
+      if (!user) {
+        return null;
+      }
+      
+      // Verify password
+      const isPasswordValid = await AuthOperations.verifyPassword(password, user.password_hash);
+      if (!isPasswordValid) {
+        return null;
+      }
+      
+      // Return user data without password hash
+      const userCopy = {...user};
+      delete userCopy.password_hash;
+      return userCopy;
+    } catch (error) {
+      console.error('Error logging in user:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Register a new user (kept for backwards compatibility)
+   */
+  registerUser: async (userData) => {
+    try {
+      // Check if user exists
+      const existingUser = await AuthOperations.findUserByEmail(userData.email);
+      
+      if (existingUser) {
+        throw new Error('Email already registered');
+      }
+      
+      // Create user
+      return await AuthOperations.createUser(userData);
     } catch (error) {
       console.error('Error registering user:', error);
       throw error;
@@ -1125,28 +1217,10 @@ const AuthOperations = {
   },
   
   /**
-   * Get user by ID
+   * Get user by ID (kept for backwards compatibility)
    */
   getUserById: async (userId) => {
-    try {
-      const users = await db.query(`
-        SELECT 
-          user_id, 
-          first_name, 
-          last_name, 
-          email, 
-          phone,
-          role,
-          profile_picture
-        FROM users 
-        WHERE user_id = ?
-      `, [userId]);
-      
-      return users.length > 0 ? users[0] : null;
-    } catch (error) {
-      console.error('Error getting user by ID:', error);
-      throw error;
-    }
+    return await AuthOperations.findUserById(userId);
   }
 };
 
