@@ -962,34 +962,87 @@ const seedDatabase = async () => {
       ]);
     }
     
-    // Gallery Images
-    const galleryImages = [
-      { title: 'Yoga Class', description: 'Group class in session', image_url: 'images/DSC02638.JPG', display_order: 1 },
-      { title: 'Yoga Pose', description: 'Demonstrating proper alignment', image_url: 'images/DSC02646.JPG', display_order: 2 },
-      { title: 'Studio Space', description: 'Our beautiful yoga studio', image_url: 'images/DSC02661~3.JPG', display_order: 3 },
-      { title: 'Group Practice', description: 'Students practicing together', image_url: 'images/IMG_5737.HEIC', display_order: 4 },
-      { title: 'Meditation Session', description: 'Guided meditation class', image_url: 'images/IMG_5740.HEIC', display_order: 5 },
-      { title: 'Yoga Retreat', description: 'From our last mountain retreat', image_url: 'images/IMG_5742.HEIC', display_order: 6 }
+    // Gallery Images - Using BLOB storage
+    // We'll implement a separate migration script for actual image data
+    // Here we just create placeholder entries that will be populated by the migration script
+    const galleryImagePaths = [
+      { 
+        title: 'Yoga Class', 
+        description: 'Group class in session', 
+        path: 'images/DSC02638.JPG', 
+        alt_text: 'Students practicing yoga in a group class setting',
+        display_order: 1,
+        is_profile_photo: 0
+      },
+      { 
+        title: 'Yoga Pose', 
+        description: 'Demonstrating proper alignment', 
+        path: 'images/DSC02646.JPG', 
+        alt_text: 'Instructor demonstrating a yoga pose with proper alignment',
+        display_order: 2,
+        is_profile_photo: 0
+      },
+      { 
+        title: 'Studio Space', 
+        description: 'Our beautiful yoga studio', 
+        path: 'images/DSC02659.JPG', 
+        alt_text: 'Interior of the yoga studio with natural light',
+        display_order: 3,
+        is_profile_photo: 1  // This will be the profile photo
+      },
+      { 
+        title: 'Group Practice', 
+        description: 'Students practicing together', 
+        path: 'images/IMG_5737.HEIC', 
+        alt_text: 'Group of yoga students practicing together',
+        display_order: 4,
+        is_profile_photo: 0
+      },
+      { 
+        title: 'Meditation Session', 
+        description: 'Guided meditation class', 
+        path: 'images/IMG_5740.HEIC', 
+        alt_text: 'Students in meditation pose during a guided session',
+        display_order: 5,
+        is_profile_photo: 0
+      },
+      { 
+        title: 'Yoga Retreat', 
+        description: 'From our last mountain retreat', 
+        path: 'images/IMG_5742.HEIC', 
+        alt_text: 'Yoga practice during the mountain retreat',
+        display_order: 6,
+        is_profile_photo: 0
+      }
     ];
     
-    for (const image of galleryImages) {
+    // Add empty entries for the gallery images
+    // These will be populated with image data by the migration script
+    for (const image of galleryImagePaths) {
       await db.query(`
         INSERT INTO gallery_images (
           title,
           description,
-          image_url,
+          alt_text,
+          is_profile_photo,
           display_order,
           active,
           created_at,
-          updated_at
-        ) VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+          updated_at,
+          mime_type,
+          size
+        ) VALUES (?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'), 'image/jpeg', 0)
       `, [
         image.title,
         image.description,
-        image.image_url,
+        image.alt_text,
+        image.is_profile_photo,
         image.display_order
       ]);
     }
+    
+    // Note: the actual image data will be populated by running the migrate-gallery.js script
+    console.log('Gallery image entries created. Run migrate-gallery.js to import actual image data.');
     
     console.log('Database seeded successfully');
   } catch (error) {

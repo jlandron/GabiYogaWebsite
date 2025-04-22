@@ -30,7 +30,7 @@ const ADMIN_SIDEBAR_HTML = `
         </a>
     </li>
     <li class="admin-nav-item">
-        <a href="admin-dashboard.html#photos" class="admin-nav-link" data-page="photos">
+        <a href="admin-photos.html" class="admin-nav-link" data-page="photos">
             <i class="fas fa-images"></i> Photo Gallery
         </a>
     </li>

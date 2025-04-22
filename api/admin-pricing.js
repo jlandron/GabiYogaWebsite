@@ -36,6 +36,7 @@ router.get('/pricing/memberships', requireAdmin, async (req, res) => {
         m.duration_days,
         m.classes,
         m.auto_renew_allowed,
+        m.most_popular,
         m.status
       FROM membership_types m
       ORDER BY m.price
@@ -68,6 +69,7 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
       duration_days,
       classes,
       auto_renew_allowed,
+      most_popular,
       status = 'active'
     } = req.body;
     
@@ -81,6 +83,12 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
     
     // Insert new membership type
     const now = new Date().toISOString();
+    
+    // If this membership is being set as "most popular", remove that flag from all other memberships
+    if (most_popular) {
+      await db.query(`UPDATE membership_types SET most_popular = 0`);
+    }
+    
     const result = await db.query(`
       INSERT INTO membership_types (
         type,
@@ -89,10 +97,11 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
         duration_days,
         classes,
         auto_renew_allowed,
+        most_popular,
         status,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       type,
       description || null,
@@ -100,6 +109,7 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
       duration_days || null,
       classes || null,
       auto_renew_allowed ? 1 : 0,
+      most_popular ? 1 : 0,
       status,
       now,
       now
@@ -115,6 +125,7 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
         m.duration_days,
         m.classes,
         m.auto_renew_allowed,
+        m.most_popular,
         m.status
       FROM membership_types m
       WHERE m.id = ?
@@ -149,6 +160,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
       duration_days,
       classes,
       auto_renew_allowed,
+      most_popular,
       status
     } = req.body;
     
@@ -174,6 +186,12 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     
     // Update membership type
     const now = new Date().toISOString();
+    
+    // If this membership is being set as "most popular", remove that flag from all other memberships
+    if (most_popular) {
+      await db.query(`UPDATE membership_types SET most_popular = 0 WHERE id != ?`, [membershipId]);
+    }
+    
     await db.query(`
       UPDATE membership_types
       SET 
@@ -183,6 +201,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
         duration_days = ?,
         classes = ?,
         auto_renew_allowed = ?,
+        most_popular = ?,
         status = ?,
         updated_at = ?
       WHERE id = ?
@@ -193,6 +212,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
       duration_days || null,
       classes || null,
       auto_renew_allowed ? 1 : 0,
+      most_popular ? 1 : 0,
       status,
       now,
       membershipId
@@ -208,6 +228,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
         m.duration_days,
         m.classes,
         m.auto_renew_allowed,
+        m.most_popular,
         m.status
       FROM membership_types m
       WHERE m.id = ?
@@ -546,6 +567,7 @@ router.get('/pricing', async (req, res) => {
         duration_days,
         classes,
         auto_renew_allowed,
+        most_popular,
         'active' as status
       FROM membership_types
       WHERE status = 'active'

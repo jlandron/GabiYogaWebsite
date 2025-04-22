@@ -267,6 +267,7 @@ function initializeMembershipModal() {
                 ? parseInt(document.getElementById('membership-classes').value) 
                 : null,
             auto_renew_allowed: document.getElementById('membership-auto-renew').checked,
+            most_popular: document.getElementById('membership-most-popular').checked,
             status: document.getElementById('membership-status').value
         };
         
@@ -342,6 +343,7 @@ function openMembershipModal(membership = null) {
         document.getElementById('membership-duration').value = membership.duration_days || '';
         document.getElementById('membership-classes').value = membership.classes || '';
         document.getElementById('membership-auto-renew').checked = !!membership.auto_renew_allowed;
+        document.getElementById('membership-most-popular').checked = !!membership.most_popular;
         document.getElementById('membership-status').value = membership.status;
     } else {
         // Creating new membership

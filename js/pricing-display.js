@@ -206,6 +206,10 @@ function fetchPricingDataForHomepage() {
             const data = JSON.parse(responseText);
             
             if (data.success && data.pricing) {
+                // Log memberships data to check most_popular flag
+                console.log('Memberships data:', data.pricing.memberships);
+                console.log('Most popular check:', data.pricing.memberships.map(m => ({ type: m.type, most_popular: m.most_popular, mostPopularType: typeof m.most_popular })));
+                
                 // Update homepage memberships section
                 updateHomepageMemberships(data.pricing.memberships);
                 
@@ -326,14 +330,16 @@ function updateHomepageMemberships(memberships) {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'pricing-card';
         
-        // Add featured tag to most popular option (typically monthly unlimited)
-        if (membership.type.toLowerCase().includes('monthly unlimited')) {
+        // Add featured tag to membership marked as most popular
+        // SQLite stores booleans as 0/1, so we need to explicitly check for 1
+        if (membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true) {
             cardDiv.classList.add('featured');
         }
         
         cardDiv.innerHTML = `
             <div class="pricing-header">
-                ${membership.type.toLowerCase().includes('monthly unlimited') ? '<span class="featured-tag">Most Popular</span>' : ''}
+                ${membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true ? 
+                  '<span class="featured-tag">Most Popular</span>' : ''}
                 <h3>${escapeHTML(membership.type)}</h3>
                 <p class="price">${priceDisplay}</p>
                 <p>${periodDisplay}</p>

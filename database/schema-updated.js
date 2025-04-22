@@ -226,13 +226,21 @@ const createSchema = async () => {
       )
     `);
 
-    // Gallery Images table
+    // Gallery Images table - Updated to use BLOB storage
     await db.query(`
       CREATE TABLE IF NOT EXISTS gallery_images (
         image_id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT,
         description TEXT,
-        image_url TEXT NOT NULL,
+        alt_text TEXT,
+        caption TEXT,
+        tags TEXT,
+        image_data BLOB,
+        mime_type TEXT,
+        size INTEGER,
+        width INTEGER,
+        height INTEGER,
+        is_profile_photo BOOLEAN DEFAULT 0,
         display_order INTEGER DEFAULT 0,
         active BOOLEAN DEFAULT 1,
         created_at TEXT NOT NULL,

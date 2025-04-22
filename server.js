@@ -19,6 +19,8 @@ const adminRoutes = require('./api/admin');
 const adminSettingsRoutes = require('./api/admin-settings');
 const adminPricingRoutes = require('./api/admin-pricing');
 const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
+const galleryRoutes = require('./api/gallery');
+const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -34,178 +36,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Authentication middleware
-const authenticateToken = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Access denied. No token provided.'
-      });
-    }
-    
-    // Verify the token
-    jwt.verify(token, JWT_SECRET, async (err, decodedToken) => {
-      if (err) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Invalid token'
-        });
-      }
-      
-      // Check if user still exists in the database
-      const user = await AuthOperations.getUserById(decodedToken.userId);
-      
-      if (!user) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'User not found'
-        });
-      }
-      
-      // Add user to request
-      req.user = user;
-      next();
-    });
-  } catch (error) {
-    console.error('Authentication error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Authentication error'
-    });
-  }
-};
+// Authentication middleware is imported from auth.js
 
 // API Routes
-// Auth endpoints
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required'
-      });
-    }
-    
-    const user = await AuthOperations.loginUser(email, password);
-    
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.user_id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
-    );
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Login successful',
-      token,
-      user: {
-        user_id: user.user_id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profile_picture
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Login failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
-
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { firstName, lastName, email, password } = req.body;
-    
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'First name, last name, email and password are required'
-      });
-    }
-    
-    // Check password length
-    if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 8 characters long'
-      });
-    }
-    
-    try {
-      const user = await AuthOperations.registerUser({ firstName, lastName, email, password });
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user.user_id, role: user.role },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRY }
-      );
-      
-      return res.status(201).json({
-        success: true,
-        message: 'Registration successful',
-        token,
-        user: {
-          user_id: user.user_id,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          email: user.email,
-          role: user.role,
-          profilePicture: user.profile_picture
-        }
-      });
-    } catch (error) {
-      if (error.message === 'Email already registered') {
-        return res.status(409).json({
-          success: false,
-          message: 'Email already registered'
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Registration failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
-
-// Protected endpoint to get current user
-app.get('/api/auth/me', authenticateToken, async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    user: {
-      user_id: req.user.user_id,
-      firstName: req.user.first_name,
-      lastName: req.user.last_name,
-      email: req.user.email,
-      role: req.user.role,
-      profilePicture: req.user.profile_picture
-    }
-  });
-});
+// Use auth router for authentication endpoints
+app.use('/api/auth', authRouter);
 
 // Public API endpoints for homepage data
 app.get('/api/schedule', async (req, res) => {
@@ -438,6 +273,7 @@ app.use('/api/admin', authenticateToken, adminSettingsRoutes);
 app.use('/api/admin', authenticateToken, adminPricingRoutes);
 app.use('/api/admin', authenticateToken, adminCustomerDashboardRoutes);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
+app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
 
 // Fallback route for SPA
 app.get('*', (req, res) => {

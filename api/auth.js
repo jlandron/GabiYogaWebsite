@@ -277,4 +277,9 @@ router.get('/me', verifyToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+// Export the router and the verifyToken middleware as authenticateToken 
+// for use in other files
+module.exports = {
+  router,
+  authenticateToken: verifyToken
+};

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery - Gabi Jyoti Yoga Admin</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-photos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div id="photos-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Photo Gallery</h1>
+                    <div class="admin-actions">
+                        <button id="upload-photo-btn" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus"></i> Upload Photos
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Gallery Management</h2>
+                        <div class="admin-panel-actions">
+                            <button id="select-all-btn" class="admin-btn-secondary">
+                                <i class="fas fa-check-square"></i> Select All
+                            </button>
+                            <button id="delete-selected-btn" class="admin-btn-danger" disabled>
+                                <i class="fas fa-trash-alt"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-gallery-container">
+                        <div id="photo-upload-zone" class="photo-upload-zone">
+                            <div class="upload-zone-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop photos here or click to select files</p>
+                                <input type="file" id="photo-file-input" multiple accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                        
+                        <div class="gallery-filter">
+                            <select id="gallery-sort" class="admin-form-control">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                            </select>
+                        </div>
+                        
+                        <div id="photo-gallery" class="photo-gallery">
+                            <!-- Photos will be dynamically inserted here -->
+                            <div class="photo-gallery-empty">
+                                <p>No photos in the gallery yet. Upload photos to get started.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Gallery Settings</h2>
+                    </div>
+                    
+                    <form id="gallery-settings-form" class="admin-form">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label for="gallery-title">Gallery Title</label>
+                                <input type="text" id="gallery-title" class="admin-form-control" placeholder="Yoga Practice Photos">
+                            </div>
+                            <div class="admin-form-group">
+                                <label for="gallery-description">Gallery Description (optional)</label>
+                                <textarea id="gallery-description" class="admin-form-control" rows="3" placeholder="Beautiful moments from our yoga practice sessions."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label for="photos-per-page">Photos Per Page</label>
+                                <select id="photos-per-page" class="admin-form-control">
+                                    <option value="12">12</option>
+                                    <option value="24" selected>24</option>
+                                    <option value="36">36</option>
+                                    <option value="48">48</option>
+                                </select>
+                            </div>
+                            <div class="admin-form-group">
+                                <label for="gallery-layout">Gallery Layout</label>
+                                <select id="gallery-layout" class="admin-form-control">
+                                    <option value="grid" selected>Grid</option>
+                                    <option value="masonry">Masonry</option>
+                                    <option value="carousel">Carousel</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="storage-usage">Storage Usage</label>
+                            <div class="storage-meter">
+                                <div class="storage-progress">
+                                    <div id="storage-bar" class="storage-bar" style="width: 0%"></div>
+                                </div>
+                                <div id="storage-info" class="storage-info">0 MB used of 5 GB</div>
+                                <p class="storage-note">Using local storage for now. Will migrate to S3 in the future.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <button type="submit" class="admin-btn admin-btn-primary">Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Photo Detail Modal -->
+            <div id="photo-detail-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="photo-detail-title">Photo Details</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="photo-detail-container">
+                            <div class="photo-detail-image">
+                                <img id="modal-photo" src="" alt="Photo preview">
+                            </div>
+                            <div class="photo-detail-info">
+                                <form id="photo-detail-form">
+                                    <div class="admin-form-group">
+                                        <label for="photo-title">Title</label>
+                                        <input type="text" id="photo-title" class="admin-form-control" placeholder="Enter a title for this photo">
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="photo-caption">Caption</label>
+                                        <textarea id="photo-caption" class="admin-form-control" rows="3" placeholder="Enter a caption for this photo"></textarea>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="photo-alt-text">Alt Text (for accessibility)</label>
+                                        <input type="text" id="photo-alt-text" class="admin-form-control" placeholder="Describe the image for screen readers">
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label for="photo-tags">Tags (comma separated)</label>
+                                        <input type="text" id="photo-tags" class="admin-form-control" placeholder="yoga, meditation, nature">
+                                    </div>
+                                    <div class="admin-form-group profile-photo-option">
+                                        <div class="profile-photo-checkbox">
+                                            <input type="checkbox" id="use-as-profile">
+                                            <label for="use-as-profile">Use as Profile Photo (About Me section)</label>
+                                        </div>
+                                    </div>
+                                    <div class="admin-form-group">
+                                        <label>Photo Information</label>
+                                        <table class="photo-info-table">
+                                            <tr>
+                                                <td>Filename:</td>
+                                                <td id="photo-filename">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>File Size:</td>
+                                                <td id="photo-size">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Dimensions:</td>
+                                                <td id="photo-dimensions">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Uploaded:</td>
+                                                <td id="photo-date">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="admin-form-actions">
+                                        <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
+                                        <button type="button" id="delete-photo-btn" class="admin-btn admin-btn-danger">Delete Photo</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-photos.js"></script>
+</body>
+</html>
