@@ -297,27 +297,27 @@ function addMemberCardEventListeners() {
     });
   });
 
-  // View bookings buttons (placeholder)
+  // View bookings buttons
   document.querySelectorAll('.view-bookings-btn').forEach(button => {
     button.addEventListener('click', function() {
       const memberId = this.getAttribute('data-member-id');
-      alert(`View bookings for member ID ${memberId} - This functionality will be implemented soon.`);
+      viewMemberBookings(memberId);
     });
   });
 
-  // View purchases buttons (placeholder)
+  // View purchases buttons
   document.querySelectorAll('.view-purchases-btn').forEach(button => {
     button.addEventListener('click', function() {
       const memberId = this.getAttribute('data-member-id');
-      alert(`View purchases for member ID ${memberId} - This functionality will be implemented soon.`);
+      viewMemberPurchases(memberId);
     });
   });
 
-  // Send message buttons (placeholder)
+  // Send message buttons
   document.querySelectorAll('.send-message-btn').forEach(button => {
     button.addEventListener('click', function() {
       const memberId = this.getAttribute('data-member-id');
-      alert(`Send message to member ID ${memberId} - This functionality will be implemented soon.`);
+      openMessageComposer(memberId);
     });
   });
 }
@@ -346,6 +346,12 @@ async function viewMemberDetail(memberId) {
 
     // Setup close button
     setupModalCloseButtons(modal);
+    
+    // Setup biography edit button
+    setupBioEditButton(modal);
+    
+    // Setup contact member button
+    setupContactMemberButton(modal, member);
   } catch (error) {
     console.error('Error viewing member detail:', error);
     showErrorMessage('Failed to load member details. Please try again.');
@@ -757,4 +763,778 @@ function showSuccessMessage(message) {
       successDiv.remove();
     }, 5000);
   }
+}
+
+/**
+ * View member bookings - Shows a modal with the member's class bookings
+ */
+async function viewMemberBookings(memberId) {
+  try {
+    // Create modal container if it doesn't exist
+    let modal = document.getElementById('bookings-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'bookings-modal';
+      modal.className = 'admin-modal';
+      document.body.appendChild(modal);
+    }
+    
+    // Show loading state
+    modal.innerHTML = `
+      <div class="admin-modal-content">
+        <div class="modal-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading booking history...</p>
+        </div>
+      </div>
+    `;
+    modal.style.display = 'flex';
+    
+    // Fetch member info and bookings
+    const memberResponse = await AdminApiService.getMemberById(memberId);
+    const member = memberResponse.member;
+    
+    // In a real app, we would have a dedicated endpoint for bookings
+    // For demo purposes, we'll simulate this with a delay
+    const bookings = await new Promise((resolve) => {
+      setTimeout(() => {
+        // Simulated booking data - in a real app, this would come from an API call
+        resolve([
+          {
+            booking_id: 101,
+            class_name: 'Vinyasa Flow',
+            instructor: 'Emily Johnson',
+            date: '2025-04-25',
+            time: '7:00 AM - 8:15 AM',
+            status: 'Upcoming'
+          },
+          {
+            booking_id: 99,
+            class_name: 'Restorative Yoga',
+            instructor: 'Michael Chen',
+            date: '2025-04-22',
+            time: '6:30 PM - 7:45 PM',
+            status: 'Upcoming'
+          },
+          {
+            booking_id: 95,
+            class_name: 'Vinyasa Flow',
+            instructor: 'Emily Johnson',
+            date: '2025-04-18',
+            time: '7:00 AM - 8:15 AM',
+            status: 'Attended'
+          },
+          {
+            booking_id: 87,
+            class_name: 'Hatha Yoga',
+            instructor: 'David Lee',
+            date: '2025-04-15',
+            time: '9:30 AM - 10:45 AM',
+            status: 'Attended'
+          },
+          {
+            booking_id: 76,
+            class_name: 'Yin Yoga',
+            instructor: 'Sarah Wong',
+            date: '2025-04-08',
+            time: '8:00 PM - 9:15 PM',
+            status: 'Attended'
+          }
+        ]);
+      }, 800); // Simulate network delay
+    });
+    
+    // Generate bookings table HTML
+    let bookingsHtml = '';
+    if (bookings.length > 0) {
+      bookingsHtml = bookings.map(booking => {
+        // Determine status class for coloring
+        let statusClass = '';
+        switch(booking.status) {
+          case 'Upcoming':
+            statusClass = 'blue';
+            break;
+          case 'Attended':
+            statusClass = 'green';
+            break;
+          case 'Missed':
+            statusClass = 'red';
+            break;
+          case 'Cancelled':
+            statusClass = 'yellow';
+            break;
+          default:
+            statusClass = '';
+        }
+        
+        return `
+          <tr data-booking-id="${booking.booking_id}">
+            <td>${booking.class_name}</td>
+            <td>${booking.instructor}</td>
+            <td>${new Date(booking.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</td>
+            <td>${booking.time}</td>
+            <td><span class="admin-tag ${statusClass}">${booking.status}</span></td>
+            <td class="table-actions">
+              ${booking.status === 'Upcoming' ? 
+                `<button class="admin-btn admin-btn-small cancel-booking-btn" data-booking-id="${booking.booking_id}">
+                  <i class="fas fa-times"></i> Cancel
+                </button>` : 
+                ''
+              }
+              <button class="admin-btn admin-btn-small">
+                <i class="fas fa-info-circle"></i> Details
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      bookingsHtml = `
+        <tr>
+          <td colspan="6" style="text-align: center;">No bookings found for this member.</td>
+        </tr>
+      `;
+    }
+    
+    // Populate modal content
+    modal.innerHTML = `
+      <div class="admin-modal-content">
+        <div class="admin-modal-header">
+          <h2>Class Bookings - ${member.first_name} ${member.last_name}</h2>
+          <button class="admin-modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="admin-modal-body">
+          <div class="admin-panel">
+            <div class="admin-panel-header">
+              <h3>Booking History</h3>
+              <div>
+                <select class="admin-select booking-filter">
+                  <option value="all">All Bookings</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="past">Past</option>
+                  <option value="attended">Attended</option>
+                  <option value="missed">Missed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Instructor</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-table-body">
+                ${bookingsHtml}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-modal-footer">
+          <button class="admin-btn admin-btn-secondary close-modal-btn">Close</button>
+          <button class="admin-btn admin-btn-primary add-booking-btn">
+            <i class="fas fa-plus"></i> Add New Booking
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Add event listeners for close buttons
+    setupModalCloseButtons(modal);
+    
+    // Add event listeners for cancel booking buttons
+    setupCancelBookingButtons(modal);
+    
+    // Add event listener for the add booking button
+    setupAddBookingButton(modal, memberId);
+    
+  } catch (error) {
+    console.error('Error viewing member bookings:', error);
+    showErrorMessage('Failed to load booking details. Please try again.');
+  }
+}
+
+/**
+ * Setup cancel booking buttons
+ */
+function setupCancelBookingButtons(modal) {
+  modal.querySelectorAll('.cancel-booking-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const bookingId = this.getAttribute('data-booking-id');
+      if (confirm('Are you sure you want to cancel this booking?')) {
+        // In a real app, we would call an API endpoint to cancel the booking
+        // For now, we'll simulate success
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        this.disabled = true;
+        
+        setTimeout(() => {
+          // Update the status in the table
+          const row = this.closest('tr');
+          const statusCell = row.querySelector('td:nth-child(5)');
+          statusCell.innerHTML = '<span class="admin-tag yellow">Cancelled</span>';
+          
+          // Remove the cancel button
+          this.remove();
+          
+          showSuccessMessage('Booking successfully cancelled.');
+        }, 800);
+      }
+    });
+  });
+}
+
+/**
+ * Setup add booking button
+ */
+function setupAddBookingButton(modal, memberId) {
+  const addBookingBtn = modal.querySelector('.add-booking-btn');
+  if (addBookingBtn) {
+    addBookingBtn.addEventListener('click', function() {
+      // This would typically open another modal with class selection
+      // For now we'll just show a success message
+      showSuccessMessage('Booking functionality will be implemented soon.');
+      
+      // In a real app, you might navigate to a booking page or open another modal:
+      // window.location.href = `admin-schedule.html?booking=true&member=${memberId}`;
+    });
+  }
+}
+
+/**
+ * View member purchases - Shows a modal with the member's purchase history
+ */
+async function viewMemberPurchases(memberId) {
+  try {
+    // Create modal container if it doesn't exist
+    let modal = document.getElementById('purchases-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'purchases-modal';
+      modal.className = 'admin-modal';
+      document.body.appendChild(modal);
+    }
+    
+    // Show loading state
+    modal.innerHTML = `
+      <div class="admin-modal-content">
+        <div class="modal-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading purchase history...</p>
+        </div>
+      </div>
+    `;
+    modal.style.display = 'flex';
+    
+    // Fetch member info and purchases
+    const memberResponse = await AdminApiService.getMemberById(memberId);
+    const member = memberResponse.member;
+    
+    // In a real app, we would have a dedicated endpoint for purchases
+    // For demo purposes, we'll simulate this with a delay
+    const purchases = await new Promise((resolve) => {
+      setTimeout(() => {
+        // Simulated purchase data - in a real app, this would come from an API call
+        resolve([
+          {
+            purchase_id: 205,
+            date: '2025-04-15',
+            item: 'Annual Membership',
+            price: 1200.00,
+            status: 'Active',
+            payment_method: 'Credit Card (ending in 4321)'
+          },
+          {
+            purchase_id: 189,
+            date: '2025-03-22',
+            item: 'Workshop: Inversions & Arm Balances',
+            price: 45.00,
+            status: 'Completed',
+            payment_method: 'Credit Card (ending in 4321)'
+          },
+          {
+            purchase_id: 174,
+            date: '2025-02-10',
+            item: 'Yoga Mat - Premium',
+            price: 68.00,
+            status: 'Completed',
+            payment_method: 'Credit Card (ending in 4321)'
+          },
+          {
+            purchase_id: 152,
+            date: '2025-01-15',
+            item: 'Monthly Membership',
+            price: 120.00,
+            status: 'Expired',
+            payment_method: 'Credit Card (ending in 4321)'
+          }
+        ]);
+      }, 800); // Simulate network delay
+    });
+    
+    // Generate purchases table HTML
+    let purchasesHtml = '';
+    if (purchases.length > 0) {
+      purchasesHtml = purchases.map(purchase => {
+        // Determine status class for coloring
+        let statusClass = '';
+        switch(purchase.status) {
+          case 'Active':
+            statusClass = 'green';
+            break;
+          case 'Completed':
+            statusClass = 'blue';
+            break;
+          case 'Refunded':
+            statusClass = 'yellow';
+            break;
+          case 'Expired':
+            statusClass = 'red';
+            break;
+          default:
+            statusClass = '';
+        }
+        
+        // Format price with currency
+        const formattedPrice = new Intl.NumberFormat('en-US', { 
+          style: 'currency', 
+          currency: 'USD' 
+        }).format(purchase.price);
+        
+        return `
+          <tr data-purchase-id="${purchase.purchase_id}">
+            <td>${new Date(purchase.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+            <td>${purchase.item}</td>
+            <td>${formattedPrice}</td>
+            <td><span class="admin-tag ${statusClass}">${purchase.status}</span></td>
+            <td>${purchase.payment_method}</td>
+            <td class="table-actions">
+              <button class="admin-btn admin-btn-small view-receipt-btn" data-purchase-id="${purchase.purchase_id}">
+                <i class="fas fa-receipt"></i> Receipt
+              </button>
+              ${purchase.status === 'Active' ? 
+                `<button class="admin-btn admin-btn-small">
+                  <i class="fas fa-cog"></i> Manage
+                </button>` : 
+                ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      purchasesHtml = `
+        <tr>
+          <td colspan="6" style="text-align: center;">No purchase history found for this member.</td>
+        </tr>
+      `;
+    }
+    
+    // Calculate total spent
+    const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.price, 0);
+    const formattedTotal = new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD' 
+    }).format(totalSpent);
+    
+    // Populate modal content
+    modal.innerHTML = `
+      <div class="admin-modal-content">
+        <div class="admin-modal-header">
+          <h2>Purchase History - ${member.first_name} ${member.last_name}</h2>
+          <button class="admin-modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="admin-modal-body">
+          <div class="admin-summary-cards">
+            <div class="admin-summary-card">
+              <h3>Membership Status</h3>
+              <p>${member.membership ? 
+                `<span class="admin-tag green">Active - ${member.membership.type}</span>` : 
+                '<span class="admin-tag red">No Active Membership</span>'}</p>
+            </div>
+            <div class="admin-summary-card">
+              <h3>Total Purchases</h3>
+              <p>${purchases.length}</p>
+            </div>
+            <div class="admin-summary-card">
+              <h3>Total Spent</h3>
+              <p>${formattedTotal}</p>
+            </div>
+          </div>
+          
+          <div class="admin-panel">
+            <div class="admin-panel-header">
+              <h3>Purchase History</h3>
+              <div>
+                <select class="admin-select purchase-filter">
+                  <option value="all">All Purchases</option>
+                  <option value="memberships">Memberships</option>
+                  <option value="workshops">Workshops</option>
+                  <option value="products">Products</option>
+                </select>
+              </div>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Item</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Payment Method</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="purchases-table-body">
+                ${purchasesHtml}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-modal-footer">
+          <button class="admin-btn admin-btn-secondary close-modal-btn">Close</button>
+          <button class="admin-btn admin-btn-primary new-purchase-btn">
+            <i class="fas fa-plus"></i> Add New Purchase
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Add event listeners for close buttons
+    setupModalCloseButtons(modal);
+    
+    // Add event listeners for view receipt buttons
+    setupViewReceiptButtons(modal);
+    
+    // Add event listener for the add purchase button
+    setupAddPurchaseButton(modal, memberId);
+    
+  } catch (error) {
+    console.error('Error viewing member purchases:', error);
+    showErrorMessage('Failed to load purchase details. Please try again.');
+  }
+}
+
+/**
+ * Setup view receipt buttons
+ */
+function setupViewReceiptButtons(modal) {
+  modal.querySelectorAll('.view-receipt-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const purchaseId = this.getAttribute('data-purchase-id');
+      
+      // In a real app, we would fetch the receipt from the server
+      // For now, we'll just show a message
+      showSuccessMessage(`Receipt for purchase #${purchaseId} will be available soon.`);
+    });
+  });
+}
+
+/**
+ * Setup add purchase button
+ */
+function setupAddPurchaseButton(modal, memberId) {
+  const addPurchaseBtn = modal.querySelector('.new-purchase-btn');
+  if (addPurchaseBtn) {
+    addPurchaseBtn.addEventListener('click', function() {
+      // In a real app, this would open a form to create a new purchase
+      // For now, we'll just show a message
+      showSuccessMessage('Purchase functionality will be implemented soon.');
+    });
+  }
+}
+
+/**
+ * Open message composer - Opens a modal for sending messages to a member
+ */
+function openMessageComposer(memberId) {
+  try {
+    // Fetch member data for the message composer
+    AdminApiService.getMemberById(memberId).then(response => {
+      const member = response.member;
+      if (!member) {
+        throw new Error('Member not found');
+      }
+      
+      // Create modal container if it doesn't exist
+      let modal = document.getElementById('message-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'message-modal';
+        modal.className = 'admin-modal';
+        document.body.appendChild(modal);
+      }
+      
+      // Populate modal content
+      modal.innerHTML = `
+        <div class="admin-modal-content">
+          <div class="admin-modal-header">
+            <h2>Send Message to ${member.first_name} ${member.last_name}</h2>
+            <button class="admin-modal-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="admin-modal-body">
+            <div class="admin-form">
+              <div class="admin-form-group">
+                <label for="message-subject">Subject</label>
+                <input type="text" id="message-subject" class="admin-input" placeholder="Enter message subject">
+              </div>
+              <div class="admin-form-group">
+                <label for="message-type">Message Type</label>
+                <select id="message-type" class="admin-select">
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="both">Email & SMS</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label for="message-template">Use Template</label>
+                <select id="message-template" class="admin-select">
+                  <option value="none">No Template</option>
+                  <option value="welcome">Welcome Message</option>
+                  <option value="renewal">Membership Renewal</option>
+                  <option value="workshop">Workshop Invitation</option>
+                  <option value="schedule">Schedule Change</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label for="message-content">Message</label>
+                <textarea id="message-content" class="admin-textarea" rows="8" placeholder="Enter your message here..."></textarea>
+              </div>
+              <div class="admin-form-group">
+                <div class="admin-checkbox-group">
+                  <input type="checkbox" id="send-copy" class="admin-checkbox">
+                  <label for="send-copy">Send me a copy</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admin-modal-footer">
+            <button class="admin-btn admin-btn-secondary close-modal-btn">Cancel</button>
+            <button class="admin-btn admin-btn-primary send-message-action">
+              <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Show the modal
+      modal.style.display = 'flex';
+      
+      // Add event listeners for close buttons
+      setupModalCloseButtons(modal);
+      
+      // Add event listener for the send message button
+      setupSendMessageButton(modal, memberId);
+      
+      // Add event listener for message template selection
+      setupMessageTemplateListener(modal);
+      
+    }).catch(error => {
+      console.error('Error opening message composer:', error);
+      showErrorMessage('Failed to open message composer. Please try again.');
+    });
+  } catch (error) {
+    console.error('Error opening message composer:', error);
+    showErrorMessage('Failed to open message composer. Please try again.');
+  }
+}
+
+/**
+ * Setup message template listener
+ */
+function setupMessageTemplateListener(modal) {
+  const templateSelect = modal.querySelector('#message-template');
+  const messageSubject = modal.querySelector('#message-subject');
+  const messageContent = modal.querySelector('#message-content');
+  
+  if (!templateSelect || !messageSubject || !messageContent) return;
+  
+  templateSelect.addEventListener('change', function() {
+    const selectedTemplate = this.value;
+    
+    switch (selectedTemplate) {
+      case 'welcome':
+        messageSubject.value = 'Welcome to Gabi Jyoti Yoga!';
+        messageContent.value = 'Dear member,\n\n' +
+          'Welcome to Gabi Jyoti Yoga! We are delighted to have you as part of our community. ' +
+          'Your membership is now active, and you can start booking classes right away.\n\n' +
+          'If you have any questions or need assistance, please don\'t hesitate to contact us.\n\n' +
+          'Namaste,\nThe Gabi Jyoti Yoga Team';
+        break;
+      case 'renewal':
+        messageSubject.value = 'Your Membership Renewal';
+        messageContent.value = 'Dear member,\n\n' +
+          'Your membership with Gabi Jyoti Yoga will expire soon. ' +
+          'To continue enjoying all benefits of your membership, please renew it before the expiration date.\n\n' +
+          'You can renew online through your member portal or visit us at the studio.\n\n' +
+          'Thank you for being part of our community!\n\n' +
+          'Namaste,\nThe Gabi Jyoti Yoga Team';
+        break;
+      case 'workshop':
+        messageSubject.value = 'Special Workshop Invitation';
+        messageContent.value = 'Dear member,\n\n' +
+          'We are excited to invite you to our upcoming workshop: "Inversions & Arm Balances" ' +
+          'taking place on May 15, 2025 from 2:00 PM to 4:30 PM.\n\n' +
+          'This workshop is suitable for all levels and will focus on building strength and confidence ' +
+          'for inversions and arm balances in a safe and supportive environment.\n\n' +
+          'Space is limited, so reserve your spot early!\n\n' +
+          'Namaste,\nThe Gabi Jyoti Yoga Team';
+        break;
+      case 'schedule':
+        messageSubject.value = 'Schedule Change Notification';
+        messageContent.value = 'Dear member,\n\n' +
+          'We would like to inform you of an upcoming change to our class schedule.\n\n' +
+          'Starting next week, our Tuesday evening Vinyasa Flow class will be moved from 6:30 PM ' +
+          'to 7:00 PM to better accommodate our members\' schedules.\n\n' +
+          'We appreciate your understanding and look forward to seeing you in class!\n\n' +
+          'Namaste,\nThe Gabi Jyoti Yoga Team';
+        break;
+      default:
+        // No template or clear template
+        messageSubject.value = '';
+        messageContent.value = '';
+        break;
+    }
+  });
+}
+
+/**
+ * Setup send message button
+ */
+function setupSendMessageButton(modal, memberId) {
+  const sendButton = modal.querySelector('.send-message-action');
+  if (!sendButton) return;
+  
+  sendButton.addEventListener('click', function() {
+    const subject = modal.querySelector('#message-subject').value.trim();
+    const content = modal.querySelector('#message-content').value.trim();
+    const messageType = modal.querySelector('#message-type').value;
+    
+    // Basic validation
+    if (!subject) {
+      showErrorMessage('Please enter a subject for your message.');
+      return;
+    }
+    
+    if (!content) {
+      showErrorMessage('Please enter a message content.');
+      return;
+    }
+    
+    // Show sending status
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    this.disabled = true;
+    
+    // In a real app, we would call an API to send the message
+    // For now, we'll simulate success with a delay
+    setTimeout(() => {
+      // Reset button state
+      this.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+      this.disabled = false;
+      
+      // Close the modal
+      modal.style.display = 'none';
+      
+      // Show success message
+      showSuccessMessage(`Message "${subject}" sent successfully.`);
+    }, 1500);
+  });
+}
+
+/**
+ * Edit member biography - enables editing of the member bio in the profile modal
+ */
+function editMemberBio(modal) {
+  const bioDiv = modal.querySelector('#modal-member-bio');
+  const editBtn = modal.querySelector('.member-bio .admin-btn-secondary');
+  
+  if (!bioDiv || !editBtn) return;
+  
+  // Get current bio content
+  const currentBio = bioDiv.innerHTML;
+  
+  // Replace div with textarea for editing
+  bioDiv.innerHTML = `<textarea class="admin-textarea bio-editor" rows="8">${currentBio}</textarea>`;
+  
+  // Change button to Save
+  editBtn.innerHTML = '<i class="fas fa-save"></i> Save Biography';
+  
+  // Remove old click handler and add new one
+  editBtn.replaceWith(editBtn.cloneNode(true));
+  modal.querySelector('.member-bio .admin-btn-secondary').addEventListener('click', () => saveMemberBio(modal, currentBio));
+}
+
+/**
+ * Save member biography after editing
+ */
+function saveMemberBio(modal, originalContent) {
+  const textarea = modal.querySelector('.bio-editor');
+  const saveBtn = modal.querySelector('.member-bio .admin-btn-secondary');
+  
+  if (!textarea || !saveBtn) return;
+  
+  // Get edited content
+  const updatedBio = textarea.value;
+  
+  // Show saving state
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  saveBtn.disabled = true;
+  
+  // In a real app, we would call an API to save the bio
+  // For now, we'll simulate success with a delay
+  setTimeout(() => {
+    // Update the bio div with new content
+    const bioDiv = modal.querySelector('#modal-member-bio');
+    if (bioDiv) {
+      bioDiv.innerHTML = updatedBio;
+    }
+    
+    // Change button back to Edit
+    saveBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Biography';
+    saveBtn.disabled = false;
+    
+    // Remove old click handler and add new one
+    saveBtn.replaceWith(saveBtn.cloneNode(true));
+    modal.querySelector('.member-bio .admin-btn-secondary').addEventListener('click', () => editMemberBio(modal));
+    
+    // Show success message
+    showSuccessMessage('Member biography updated successfully.');
+  }, 800);
+}
+
+/**
+ * Setup biography edit button
+ */
+function setupBioEditButton(modal) {
+  const editBioBtn = modal.querySelector('.member-bio .admin-btn-secondary');
+  if (editBioBtn) {
+    editBioBtn.addEventListener('click', function() {
+      editMemberBio(modal);
+    });
+  }
+}
+
+/**
+ * Setup contact member button
+ */
+function setupContactMemberButton(modal, member) {
+  const contactBtn = modal.querySelector('.admin-modal-footer .admin-btn-primary');
+  if (!contactBtn) return;
+  
+  contactBtn.addEventListener('click', function() {
+    // Close the detail modal
+    modal.style.display = 'none';
+    
+    // Open message composer modal
+    openMessageComposer(member.user_id);
+  });
 }

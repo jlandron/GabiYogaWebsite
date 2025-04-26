@@ -20,10 +20,10 @@ class PhotoGalleryManager {
         this.galleryElement = document.getElementById('photo-gallery');
         this.uploadZone = document.getElementById('photo-upload-zone');
         this.fileInput = document.getElementById('photo-file-input');
-        this.uploadBtn = document.getElementById('upload-photo-btn');
-        this.selectAllBtn = document.getElementById('select-all-btn');
-        this.deleteSelectedBtn = document.getElementById('delete-selected-btn');
-        this.sortSelect = document.getElementById('gallery-sort');
+        this.uploadBtn = document.getElementById('upload-photo-btn') || document.querySelector('.admin-btn-primary');
+        this.selectAllBtn = document.getElementById('select-all-btn') || document.querySelector('.select-all');
+        this.deleteSelectedBtn = document.getElementById('delete-selected-btn') || document.querySelector('.delete-selected');
+        this.sortSelect = document.getElementById('gallery-sort') || document.querySelector('.gallery-sort');
         this.gallerySettingsForm = document.getElementById('gallery-settings-form');
         
         // Modal Elements
@@ -54,9 +54,6 @@ class PhotoGalleryManager {
         // Storage management
         this.maxStorageSize = 5 * 1024 * 1024 * 1024; // 5 GB in bytes (just for UI display)
         this.currentStorageUsage = 0;
-        
-        // Reference to this instance for event handlers
-        const self = this;
         
         // Bind event handlers
         if (this.uploadBtn) {
@@ -111,23 +108,13 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Initialize the gallery manager
-     */
+    // Initialize the gallery manager
     init() {
-        // Load photos from storage
         this.loadPhotos();
-        
-        // Update gallery display
         this.renderGallery();
-        
-        // Apply saved settings to the form
         this.applySettingsToForm();
-        
-        // Update storage usage display
         this.updateStorageUsage();
         
-        // Apply saved layout
         if (this.gallerySettings.layout) {
             this.updateGalleryLayout(this.gallerySettings.layout);
             const layoutSelect = document.getElementById('gallery-layout');
@@ -137,9 +124,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Load photos from the database via API
-     */
+    // Load photos from the database via API
     async loadPhotos() {
         try {
             const response = await fetch('/api/gallery/images');
@@ -150,8 +135,6 @@ class PhotoGalleryManager {
             
             const data = await response.json();
             
-            // Transform API data to match our local format
-            // Note: image_data is not returned by the list endpoint for efficiency
             this.photos = data.images.map(img => ({
                 id: img.image_id,
                 title: img.title || '',
@@ -167,16 +150,13 @@ class PhotoGalleryManager {
                 },
                 uploadDate: img.created_at,
                 isProfilePhoto: img.is_profile_photo === 1,
-                // Temporary placeholder for data - will be loaded on demand
                 data: `/api/gallery/images/${img.image_id}/data`
             }));
             
-            // Calculate total storage used
             this.currentStorageUsage = this.photos.reduce((total, photo) => {
                 return total + (photo.size || 0);
             }, 0);
             
-            // Preload the thumbnails
             this.preloadThumbnails();
         } catch (error) {
             console.error('Error loading photos from API:', error);
@@ -185,9 +165,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Preload thumbnails for all photos
-     */
+    // Preload thumbnails for all photos
     async preloadThumbnails() {
         for (const photo of this.photos) {
             if (typeof photo.data === 'string' && photo.data.startsWith('/api/')) {
@@ -203,25 +181,25 @@ class PhotoGalleryManager {
             }
         }
         
-        // Update the gallery with loaded thumbnails
         this.renderGallery();
     }
     
-    /**
-     * Save a photo to the database
-     * @param {Object} photo - The photo object to save
-     * @returns {Promise<boolean>} - Whether the operation was successful
-     */
+    // Save a photo to the database
     async savePhoto(photo) {
         try {
             const isNew = !photo.id || photo.id.toString().startsWith('temp_');
             
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('Authentication required. Please log in again.');
+            }
+            
             if (isNew) {
-                // Upload new photo
                 const response = await fetch('/api/gallery/images', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         title: photo.title,
@@ -242,15 +220,14 @@ class PhotoGalleryManager {
                     throw new Error(`Failed to upload photo: ${response.statusText}`);
                 }
                 
-                // Update photo with server-assigned ID
                 const result = await response.json();
                 photo.id = result.image_id;
             } else {
-                // Update existing photo
                 const response = await fetch(`/api/gallery/images/${photo.id}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         title: photo.title,
@@ -275,9 +252,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Load gallery settings from local storage
-     */
+    // Load gallery settings from local storage
     loadGallerySettings() {
         try {
             const storedSettings = localStorage.getItem('admin_gallery_settings');
@@ -298,9 +273,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Save gallery settings to local storage
-     */
+    // Save gallery settings to local storage
     saveGallerySettings() {
         try {
             localStorage.setItem('admin_gallery_settings', JSON.stringify(this.gallerySettings));
@@ -310,9 +283,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Apply saved settings to the form
-     */
+    // Apply saved settings to the form
     applySettingsToForm() {
         const titleInput = document.getElementById('gallery-title');
         if (titleInput) {
@@ -335,9 +306,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Save settings from form
-     */
+    // Save settings from form
     saveSettings(e) {
         e.preventDefault();
         
@@ -349,27 +318,17 @@ class PhotoGalleryManager {
         };
         
         this.saveGallerySettings();
-        
-        // Update layout if changed
         this.updateGalleryLayout(this.gallerySettings.layout);
-        
-        // Show confirmation
         this.showNotification('Gallery settings saved successfully!');
     }
     
-    /**
-     * Update the gallery layout based on selection
-     */
+    // Update the gallery layout based on selection
     updateGalleryLayout(layout) {
         if (!this.galleryElement) return;
         
-        // Remove all layout classes
         this.galleryElement.classList.remove('grid', 'masonry', 'carousel');
-        
-        // Add the selected layout class
         this.galleryElement.classList.add(layout);
         
-        // Add carousel controls if needed
         if (layout === 'carousel') {
             if (!document.querySelector('.carousel-controls')) {
                 const controls = document.createElement('div');
@@ -380,7 +339,6 @@ class PhotoGalleryManager {
                 `;
                 this.galleryElement.parentNode.insertBefore(controls, this.galleryElement.nextSibling);
                 
-                // Add event listeners
                 document.querySelector('.prev-btn')?.addEventListener('click', () => {
                     this.galleryElement.scrollBy({ left: -this.galleryElement.offsetWidth, behavior: 'smooth' });
                 });
@@ -389,7 +347,6 @@ class PhotoGalleryManager {
                 });
             }
         } else {
-            // Remove carousel controls if they exist
             const controls = document.querySelector('.carousel-controls');
             if (controls) {
                 controls.remove();
@@ -397,38 +354,30 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Update the storage usage display
-     */
+    // Update the storage usage display
     updateStorageUsage() {
         if (!this.storageBar || !this.storageInfo) return;
         
         const usagePercent = (this.currentStorageUsage / this.maxStorageSize) * 100;
         this.storageBar.style.width = `${Math.min(usagePercent, 100)}%`;
         
-        // Change color based on usage
         if (usagePercent > 90) {
             this.storageBar.style.backgroundColor = '#e74c3c';
         } else if (usagePercent > 70) {
             this.storageBar.style.backgroundColor = '#f39c12';
         }
         
-        // Display in readable format
         const usageInMB = (this.currentStorageUsage / (1024 * 1024)).toFixed(2);
         const totalInGB = this.maxStorageSize / (1024 * 1024 * 1024);
         this.storageInfo.textContent = `${usageInMB} MB used of ${totalInGB} GB`;
     }
     
-    /**
-     * Render the gallery with photos
-     */
+    // Render the gallery with photos
     renderGallery() {
         if (!this.galleryElement) return;
         
-        // Clear the gallery
         this.galleryElement.innerHTML = '';
         
-        // Check if we have any photos
         if (this.photos.length === 0) {
             this.galleryElement.innerHTML = `
                 <div class="photo-gallery-empty">
@@ -438,13 +387,11 @@ class PhotoGalleryManager {
             return;
         }
         
-        // Create and append photo items
         this.photos.forEach((photo, index) => {
             const photoItem = document.createElement('div');
             photoItem.className = 'photo-item';
             photoItem.dataset.id = photo.id;
             
-            // Add "profile photo" indicator if this is set as profile photo
             let profileBadge = '';
             if (photo.isProfilePhoto) {
                 profileBadge = '<span class="profile-photo-badge"><i class="fas fa-user-circle"></i></span>';
@@ -470,40 +417,33 @@ class PhotoGalleryManager {
             
             this.galleryElement.appendChild(photoItem);
             
-            // Add click event for checkbox
             const checkbox = photoItem.querySelector('.photo-checkbox');
             checkbox?.addEventListener('change', (e) => {
                 e.stopPropagation();
                 this.togglePhotoSelection(photo.id);
             });
             
-            // Add click event for edit button
             const editBtn = photoItem.querySelector('.edit-photo-btn');
             editBtn?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.openPhotoDetails(photo);
             });
             
-            // Add click event for delete button
             const deleteBtn = photoItem.querySelector('.delete-photo-btn');
             deleteBtn?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.deletePhoto(photo.id);
             });
             
-            // Add click event for the whole photo item
             photoItem.addEventListener('click', () => {
                 this.openPhotoDetails(photo);
             });
         });
         
-        // Update the selected state for checkboxes
         this.updateSelectionDisplay();
     }
     
-    /**
-     * Handle file selection from input
-     */
+    // Handle file selection from input
     handleFileSelect(e) {
         const files = e.target.files;
         if (files.length) {
@@ -511,9 +451,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Handle drag over event
-     */
+    // Handle drag over event
     handleDragOver(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -522,9 +460,7 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Handle drop event
-     */
+    // Handle drop event
     handleDrop(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -538,32 +474,32 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Process uploaded files
-     */
+    // Process uploaded files
     async processFiles(files) {
         for (const file of files) {
-            // Check if file is an image
             if (!file.type.startsWith('image/')) {
                 continue;
             }
             
             try {
-                // Show loading overlay
                 this.showLoadingOverlay();
                 
-                // Read file as data URL
-                const photoData = await this.readFileAsDataURL(file);
+                let fileSize = file.size;
+                let photoData;
+                let dimensions;
                 
-                // Get image dimensions
-                const dimensions = await this.getImageDimensions(photoData);
+                const compressedFile = await this.compressImage(file);
+                photoData = await this.readFileAsDataURL(compressedFile);
+                dimensions = await this.getImageDimensions(photoData);
+                fileSize = compressedFile.size;
                 
-                // Create photo object with temporary ID
+                console.log(`Image processed: ${this.formatFileSize(file.size)} → ${this.formatFileSize(fileSize)}`);
+                
                 const photo = {
                     id: 'temp_' + this.generateUniqueId(),
                     title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
                     data: photoData,
-                    size: file.size,
+                    size: fileSize,
                     type: file.type,
                     mime_type: file.type,
                     dimensions: dimensions,
@@ -574,19 +510,14 @@ class PhotoGalleryManager {
                     isProfilePhoto: false
                 };
                 
-                // Save photo to database via API
                 const success = await this.savePhoto(photo);
                 
                 if (success) {
-                    // Add photo to collection and render gallery
                     this.photos.push(photo);
                     this.renderGallery();
-                    
-                    // Display success notification
                     this.showNotification(`Uploaded ${file.name} successfully!`);
                 }
                 
-                // Hide loading overlay
                 this.hideLoadingOverlay();
             } catch (error) {
                 console.error('Error processing file:', error);
@@ -595,15 +526,12 @@ class PhotoGalleryManager {
             }
         }
         
-        // Reset file input
         if (this.fileInput) {
             this.fileInput.value = '';
         }
     }
     
-    /**
-     * Read file as data URL
-     */
+    // Read file as data URL
     readFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -620,9 +548,7 @@ class PhotoGalleryManager {
         });
     }
     
-    /**
-     * Get image dimensions
-     */
+    // Get image dimensions
     getImageDimensions(dataUrl) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -642,16 +568,53 @@ class PhotoGalleryManager {
         });
     }
     
-    /**
-     * Generate a unique ID for a photo
-     */
+    // Compress an image file using browser-image-compression library
+    async compressImage(imageFile) {
+        const options = {
+            maxSizeMB: 5,
+            maxWidthOrHeight: 2560,
+            useWebWorker: true,
+            preserveExif: true,
+            initialQuality: 0.9,
+            alwaysKeepResolution: false
+        };
+
+        if (imageFile.size > 10 * 1024 * 1024) {
+            options.maxSizeMB = 3;
+            options.initialQuality = 0.85;
+        } else if (imageFile.size < 1 * 1024 * 1024) {
+            options.maxSizeMB = 1;
+            options.initialQuality = 0.95;
+        }
+        
+        if (imageFile.type === 'image/png') {
+            options.initialQuality = 0.85;
+        }
+        
+        if (imageFile.type === 'image/gif') {
+            return imageFile;
+        }
+        
+        try {
+            return await imageCompression(imageFile, options);
+        } catch (error) {
+            console.error('Image compression failed:', error);
+            return imageFile;
+        }
+    }
+    
+    // Calculate the approximate size of a data URL in bytes
+    getDataUrlSize(dataUrl) {
+        const base64 = dataUrl.split(',')[1];
+        return base64 ? Math.floor(base64.length * 0.75) : 0;
+    }
+    
+    // Generate a unique ID for a photo
     generateUniqueId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
     }
     
-    /**
-     * Toggle the selection of a photo
-     */
+    // Toggle the selection of a photo
     togglePhotoSelection(photoId) {
         const index = this.selectedPhotos.indexOf(photoId);
         
@@ -664,21 +627,16 @@ class PhotoGalleryManager {
         this.updateSelectionDisplay();
     }
     
-    /**
-     * Update the display of selected photos
-     */
+    // Update the display of selected photos
     updateSelectionDisplay() {
         if (!this.selectAllBtn || !this.deleteSelectedBtn) return;
         
-        // Update checkboxes
         document.querySelectorAll('.photo-checkbox').forEach(checkbox => {
             checkbox.checked = this.selectedPhotos.includes(checkbox.dataset.id);
         });
         
-        // Update delete button state
         this.deleteSelectedBtn.disabled = this.selectedPhotos.length === 0;
         
-        // Update select all button text
         if (this.selectedPhotos.length === this.photos.length && this.photos.length > 0) {
             this.selectAllBtn.innerHTML = '<i class="fas fa-times-square"></i> Deselect All';
         } else {
@@ -686,24 +644,18 @@ class PhotoGalleryManager {
         }
     }
     
-    /**
-     * Toggle select all photos
-     */
+    // Toggle select all photos
     toggleSelectAll() {
         if (this.selectedPhotos.length === this.photos.length && this.photos.length > 0) {
-            // Deselect all
             this.selectedPhotos = [];
         } else {
-            // Select all
             this.selectedPhotos = this.photos.map(photo => photo.id);
         }
         
         this.updateSelectionDisplay();
     }
     
-    /**
-     * Delete selected photos
-     */
+    // Delete selected photos
     deleteSelected() {
         if (this.selectedPhotos.length === 0) return;
         
@@ -711,34 +663,32 @@ class PhotoGalleryManager {
             return;
         }
         
-        // Check if any of the selected photos is the profile photo
         const isProfilePhotoSelected = this.photos.some(photo => 
             this.selectedPhotos.includes(photo.id) && photo.isProfilePhoto
         );
         
-        // Filter out selected photos
-        this.photos = this.photos.filter(photo => !this.selectedPhotos.includes(photo.id));
+        this.showLoadingOverlay();
         
-        // Clear selection
-        this.selectedPhotos = [];
-        
-        // Save photos
-        this.savePhotos();
-        
-        // Update gallery display
-        this.renderGallery();
-        
-        // Show notification
-        let message = 'Selected photos deleted successfully.';
-        if (isProfilePhotoSelected) {
-            message += ' Note: The profile photo was deleted. Please select a new profile photo.';
-        }
-        this.showNotification(message);
+        Promise.all(
+            this.selectedPhotos.map(photoId => this.deletePhoto(photoId))
+        ).then(() => {
+            this.selectedPhotos = [];
+            
+            let message = 'Selected photos deleted successfully.';
+            if (isProfilePhotoSelected) {
+                message += ' Note: The profile photo was deleted. Please select a new profile photo.';
+            }
+            this.showNotification(message);
+            
+            this.hideLoadingOverlay();
+        }).catch(error => {
+            console.error('Error deleting selected photos:', error);
+            this.showNotification('There was an error deleting some photos. Please try again.', 'error');
+            this.hideLoadingOverlay();
+        });
     }
     
-    /**
-     * Sort the gallery
-     */
+    // Sort the gallery
     sortGallery() {
         const sortValue = this.sortSelect?.value;
         if (!sortValue) return;
@@ -758,57 +708,47 @@ class PhotoGalleryManager {
                 break;
         }
         
-        // Update gallery display
         this.renderGallery();
     }
     
-    /**
-     * Open photo details modal
-     */
+    // Open photo details modal
     openPhotoDetails(photo) {
         this.currentPhoto = photo;
         
-        // Create modal if it doesn't exist
         if (!this.photoDetailModal) {
             this.createPhotoDetailModal();
         }
         
         if (!this.modalPhoto || !this.photoTitle || !this.photoCaption || !this.photoAltText ||
-            !this.photoTags || !this.photoFilename || !this.photoSize || !this.photoDimensions || 
+            !this.photoTags || !this.photoFilename || !this.photoSize || !this.photoDimensions ||
             !this.photoDate) {
             console.error("Missing required modal elements");
             return;
         }
         
-        // Set modal content
         this.modalPhoto.src = photo.data;
         this.photoTitle.value = photo.title || '';
         this.photoCaption.value = photo.caption || '';
         this.photoAltText.value = photo.alt || '';
         this.photoTags.value = photo.tags ? photo.tags.join(', ') : '';
         
-        // Check profile photo checkbox if this is the profile photo
         const profileCheckbox = document.getElementById('use-as-profile');
         if (profileCheckbox) {
             profileCheckbox.checked = photo.isProfilePhoto || false;
         }
         
-        // Set info fields
         this.photoFilename.textContent = photo.title ? `${photo.title}${this.getFileExtension(photo.type)}` : '-';
         this.photoSize.textContent = this.formatFileSize(photo.size);
         this.photoDimensions.textContent = photo.dimensions ? `${photo.dimensions.width} × ${photo.dimensions.height}` : '-';
         this.photoDate.textContent = photo.uploadDate ? new Date(photo.uploadDate).toLocaleString() : '-';
         
-        // Show the modal
         if (this.photoDetailModal) {
             this.photoDetailModal.classList.add('show');
             document.body.style.overflow = 'hidden';
         }
     }
     
-    /**
-     * Create the photo detail modal
-     */
+    // Create the photo detail modal
     createPhotoDetailModal() {
         const modal = document.createElement('div');
         modal.id = 'photo-detail-modal';
@@ -1028,9 +968,18 @@ class PhotoGalleryManager {
             
             const wasProfilePhoto = photo.isProfilePhoto || false;
             
+            // Get authentication token
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('Authentication required. Please log in again.');
+            }
+            
             // Delete from database
             const response = await fetch(`/api/gallery/images/${photoId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             
             if (!response.ok) {

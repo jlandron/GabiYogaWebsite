@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initializeScheduleBuilder();
 
     // Setup action buttons
-    const viewPublishedBtn = document.getElementById('view-published-btn');
-    const addClassBtn = document.getElementById('add-class-btn');
-    const addTemplateBtn = document.getElementById('add-template-btn');
+    const viewPublishedBtn = document.querySelector('.admin-actions .admin-btn-secondary');
+    const addClassBtn = document.querySelector('.admin-actions .admin-btn-primary');
+    const addTemplateBtn = document.querySelector('.admin-panel-header .admin-btn-secondary');
 
     if (viewPublishedBtn) {
         viewPublishedBtn.addEventListener('click', () => {
@@ -37,6 +37,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             openTemplateModal();
         });
     }
+    
+    // Add click events for schedule day tabs
+    setupDayTabs();
+    
+    // Add click events for empty class slots
+    document.querySelectorAll('.schedule-class.empty').forEach(slot => {
+        slot.addEventListener('click', () => {
+            addNewClass(slot.getAttribute('data-time'));
+        });
+    });
 });
 
 /**

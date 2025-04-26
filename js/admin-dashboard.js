@@ -38,6 +38,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             showSuccessMessage('Dashboard data refreshed');
         });
     }
+    
+    // Setup "View All" buttons
+    const viewAllButtons = document.querySelectorAll('.admin-panel-header .admin-btn-secondary');
+    viewAllButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const panelTitle = this.closest('.admin-panel-header').querySelector('.admin-panel-title').textContent;
+            
+            if (panelTitle.includes('Recent Bookings')) {
+                window.location.href = 'admin-schedule.html';
+            } else if (panelTitle.includes('Upcoming Workshops')) {
+                window.location.href = 'admin-workshops.html';
+            }
+        });
+    });
 });
 
 /**

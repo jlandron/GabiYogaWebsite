@@ -532,7 +532,479 @@ async function cancelSession(sessionId) {
  * Show calendar view
  */
 function showCalendarView() {
-    alert('Calendar view is not yet implemented. This feature will be added soon.');
+    // Create the calendar modal if it doesn't exist
+    let calendarModal = document.getElementById('calendar-modal');
+    if (!calendarModal) {
+        calendarModal = document.createElement('div');
+        calendarModal.id = 'calendar-modal';
+        calendarModal.className = 'admin-modal';
+        
+        calendarModal.innerHTML = `
+            <div class="admin-modal-content">
+                <div class="admin-modal-header">
+                    <h2>Private Sessions Calendar</h2>
+                    <button class="admin-modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="admin-modal-body">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button id="prev-month" class="calendar-nav-btn"><i class="fas fa-chevron-left"></i></button>
+                            <h3 id="calendar-month">April 2025</h3>
+                            <button id="next-month" class="calendar-nav-btn"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-day-header">Sun</div>
+                            <div class="calendar-day-header">Mon</div>
+                            <div class="calendar-day-header">Tue</div>
+                            <div class="calendar-day-header">Wed</div>
+                            <div class="calendar-day-header">Thu</div>
+                            <div class="calendar-day-header">Fri</div>
+                            <div class="calendar-day-header">Sat</div>
+                            <!-- Calendar days will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-modal-footer">
+                    <button class="admin-btn admin-btn-secondary calendar-close-btn">Close</button>
+                    <button class="admin-btn admin-btn-primary">
+                        <i class="fas fa-download"></i> Export Calendar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(calendarModal);
+        
+        // Setup event listeners for calendar modal
+        setupCalendarModalListeners(calendarModal);
+        
+        // Initialize the calendar with current month
+        initializeCalendar();
+    }
+    
+    // Show the modal
+    calendarModal.style.display = 'flex';
+}
+
+/**
+ * Setup calendar modal event listeners
+ */
+function setupCalendarModalListeners(modal) {
+    // Close button
+    const closeBtn = modal.querySelector('.admin-modal-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Close button in footer
+    const closeFooterBtn = modal.querySelector('.calendar-close-btn');
+    if (closeFooterBtn) {
+        closeFooterBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Close on outside click
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Previous month button
+    const prevMonthBtn = modal.querySelector('#prev-month');
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener('click', () => {
+            changeCalendarMonth(-1);
+        });
+    }
+    
+    // Next month button
+    const nextMonthBtn = modal.querySelector('#next-month');
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener('click', () => {
+            changeCalendarMonth(1);
+        });
+    }
+}
+
+/**
+ * Initialize calendar with sessions data
+ */
+function initializeCalendar() {
+    // Get the current date
+    const currentDate = new Date();
+    renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    
+    // Load sessions for the calendar
+    loadSessionsForCalendar(currentDate.getFullYear(), currentDate.getMonth());
+}
+
+/**
+ * Change the calendar month
+ */
+function changeCalendarMonth(delta) {
+    const monthElement = document.getElementById('calendar-month');
+    if (!monthElement) return;
+    
+    // Get the current month and year
+    const currentMonth = monthElement.dataset.month || new Date().getMonth();
+    const currentYear = monthElement.dataset.year || new Date().getFullYear();
+    
+    // Calculate new month and year
+    let newMonth = parseInt(currentMonth) + delta;
+    let newYear = parseInt(currentYear);
+    
+    if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
+    } else if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+    }
+    
+    // Update the calendar
+    renderCalendar(newYear, newMonth);
+    
+    // Load sessions for the new month
+    loadSessionsForCalendar(newYear, newMonth);
+}
+
+/**
+ * Render calendar grid for given month and year
+ */
+function renderCalendar(year, month) {
+    const monthElement = document.getElementById('calendar-month');
+    const calendarGrid = document.querySelector('.calendar-grid');
+    
+    if (!monthElement || !calendarGrid) return;
+    
+    // Set month title and data attributes
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+    monthElement.textContent = `${monthNames[month]} ${year}`;
+    monthElement.dataset.month = month;
+    monthElement.dataset.year = year;
+    
+    // Calculate the first day of the month
+    const firstDay = new Date(year, month, 1);
+    const startingDay = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    // Calculate number of days in the month
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+    
+    // Calculate number of days from the previous month to show
+    const daysFromPrevMonth = startingDay;
+    
+    // Calculate days from the next month to show (to fill the grid)
+    const totalGridCells = Math.ceil((daysInMonth + daysFromPrevMonth) / 7) * 7;
+    const daysFromNextMonth = totalGridCells - (daysInMonth + daysFromPrevMonth);
+    
+    // Create grid cells
+    let calendarHTML = '';
+    
+    // Add day headers back (they're part of the template already)
+    calendarHTML += `
+        <div class="calendar-day-header">Sun</div>
+        <div class="calendar-day-header">Mon</div>
+        <div class="calendar-day-header">Tue</div>
+        <div class="calendar-day-header">Wed</div>
+        <div class="calendar-day-header">Thu</div>
+        <div class="calendar-day-header">Fri</div>
+        <div class="calendar-day-header">Sat</div>
+    `;
+    
+    // Days from previous month
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevMonthYear = month === 0 ? year - 1 : year;
+    const daysInPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0).getDate();
+    
+    for (let i = 0; i < daysFromPrevMonth; i++) {
+        const day = daysInPrevMonth - daysFromPrevMonth + i + 1;
+        calendarHTML += `
+            <div class="calendar-day prev-month" data-date="${prevMonthYear}-${(prevMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}">
+                <div class="calendar-day-number">${day}</div>
+                <div class="calendar-day-sessions"></div>
+            </div>
+        `;
+    }
+    
+    // Days of current month
+    const today = new Date();
+    const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+        const isToday = isCurrentMonth && today.getDate() === i;
+        calendarHTML += `
+            <div class="calendar-day ${isToday ? 'today' : ''}" data-date="${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}">
+                <div class="calendar-day-number">${i}</div>
+                <div class="calendar-day-sessions"></div>
+            </div>
+        `;
+    }
+    
+    // Days from next month
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextMonthYear = month === 11 ? year + 1 : year;
+    
+    for (let i = 1; i <= daysFromNextMonth; i++) {
+        calendarHTML += `
+            <div class="calendar-day next-month" data-date="${nextMonthYear}-${(nextMonth + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}">
+                <div class="calendar-day-number">${i}</div>
+                <div class="calendar-day-sessions"></div>
+            </div>
+        `;
+    }
+    
+    // Update the calendar grid
+    calendarGrid.innerHTML = calendarHTML;
+    
+    // Add click event listeners to days
+    document.querySelectorAll('.calendar-day').forEach(dayElement => {
+        dayElement.addEventListener('click', function() {
+            const date = this.getAttribute('data-date');
+            showDateSessions(date);
+        });
+    });
+}
+
+/**
+ * Load sessions for the calendar
+ */
+async function loadSessionsForCalendar(year, month) {
+    try {
+        // Get all sessions
+        const sessionsResponse = await AdminApiService.getPrivateSessions();
+        const sessions = sessionsResponse.sessions || [];
+        
+        // Filter sessions for the current month
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        
+        const monthSessions = sessions.filter(session => {
+            const sessionDate = new Date(session.date);
+            return sessionDate >= monthStart && sessionDate <= monthEnd;
+        });
+        
+        // Add sessions to the calendar
+        monthSessions.forEach(session => {
+            const sessionDate = new Date(session.date);
+            const dateKey = `${sessionDate.getFullYear()}-${(sessionDate.getMonth() + 1).toString().padStart(2, '0')}-${sessionDate.getDate().toString().padStart(2, '0')}`;
+            
+            const dayElement = document.querySelector(`.calendar-day[data-date="${dateKey}"]`);
+            if (dayElement) {
+                const sessionsContainer = dayElement.querySelector('.calendar-day-sessions');
+                if (sessionsContainer) {
+                    // Determine status color
+                    let statusClass = '';
+                    if (session.status.toLowerCase() === 'confirmed') {
+                        statusClass = 'green';
+                    } else if (session.status.toLowerCase() === 'pending') {
+                        statusClass = 'yellow';
+                    } else if (session.status.toLowerCase() === 'cancelled') {
+                        statusClass = 'red';
+                    }
+                    
+                    // Add session indicator
+                    const sessionElement = document.createElement('div');
+                    sessionElement.className = `calendar-session ${statusClass}`;
+                    sessionElement.setAttribute('data-id', session.session_id);
+                    sessionElement.setAttribute('title', `${session.start_time} - ${session.user_name} (${session.status})`);
+                    sessionElement.textContent = session.start_time;
+                    
+                    sessionsContainer.appendChild(sessionElement);
+                    
+                    // Add click event to session indicator
+                    sessionElement.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent triggering the day click event
+                        viewSessionDetails(session.session_id);
+                    });
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading sessions for calendar:', error);
+        showErrorMessage('Failed to load sessions for calendar view');
+    }
+}
+
+/**
+ * Show sessions for a specific date
+ */
+function showDateSessions(dateString) {
+    // Convert date string to Date object
+    const date = new Date(dateString);
+    
+    // Format date for display
+    const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    // Check if we have any sessions on this day
+    const sessionElements = document.querySelector(`.calendar-day[data-date="${dateString}"] .calendar-session`);
+    const hasSessions = sessionElements && sessionElements.length > 0;
+    
+    // Create a modal to show sessions for this date
+    let dateModal = document.getElementById('date-sessions-modal');
+    if (!dateModal) {
+        dateModal = document.createElement('div');
+        dateModal.id = 'date-sessions-modal';
+        dateModal.className = 'admin-modal';
+        
+        document.body.appendChild(dateModal);
+    }
+    
+    // Set modal content
+    dateModal.innerHTML = `
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h2>Sessions on ${formattedDate}</h2>
+                <button class="admin-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="admin-modal-body">
+                ${hasSessions ? 
+                    `<div class="date-sessions-list">Loading sessions...</div>` : 
+                    `<p class="no-sessions-message">No sessions scheduled for this date.</p>`
+                }
+            </div>
+            <div class="admin-modal-footer">
+                <button class="admin-btn admin-btn-secondary date-close-btn">Close</button>
+                <button class="admin-btn admin-btn-primary date-add-session-btn">
+                    <i class="fas fa-plus"></i> Add Session
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Setup event listeners for the modal
+    const closeBtn = dateModal.querySelector('.admin-modal-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            dateModal.style.display = 'none';
+        });
+    }
+    
+    const closeFooterBtn = dateModal.querySelector('.date-close-btn');
+    if (closeFooterBtn) {
+        closeFooterBtn.addEventListener('click', () => {
+            dateModal.style.display = 'none';
+        });
+    }
+    
+    const addSessionBtn = dateModal.querySelector('.date-add-session-btn');
+    if (addSessionBtn) {
+        addSessionBtn.addEventListener('click', () => {
+            showAddSessionForm(dateString);
+        });
+    }
+    
+    dateModal.addEventListener('click', (event) => {
+        if (event.target === dateModal) {
+            dateModal.style.display = 'none';
+        }
+    });
+    
+    // Show the modal
+    dateModal.style.display = 'flex';
+    
+    // If there are sessions, load them
+    if (hasSessions) {
+        loadDateSessions(dateString);
+    }
+}
+
+/**
+ * Load sessions for a specific date
+ */
+async function loadDateSessions(dateString) {
+    try {
+        // Get all sessions
+        const sessionsResponse = await AdminApiService.getPrivateSessions();
+        const sessions = sessionsResponse.sessions || [];
+        
+        // Filter sessions for the selected date
+        const dateSessions = sessions.filter(session => {
+            const sessionDate = new Date(session.date);
+            const formattedSessionDate = `${sessionDate.getFullYear()}-${(sessionDate.getMonth() + 1).toString().padStart(2, '0')}-${sessionDate.getDate().toString().padStart(2, '0')}`;
+            return formattedSessionDate === dateString;
+        });
+        
+        // Get the container
+        const sessionsContainer = document.querySelector('.date-sessions-list');
+        if (!sessionsContainer) return;
+        
+        // Generate sessions list HTML
+        if (dateSessions.length === 0) {
+            sessionsContainer.innerHTML = `<p class="no-sessions-message">No sessions scheduled for this date.</p>`;
+            return;
+        }
+        
+        sessionsContainer.innerHTML = dateSessions.map(session => {
+            // Determine status class
+            let statusClass = '';
+            if (session.status.toLowerCase() === 'confirmed') {
+                statusClass = 'green';
+            } else if (session.status.toLowerCase() === 'pending') {
+                statusClass = 'yellow';
+            } else if (session.status.toLowerCase() === 'cancelled') {
+                statusClass = 'red';
+            }
+            
+            return `
+                <div class="date-session-item">
+                    <div class="date-session-time">${session.start_time}</div>
+                    <div class="date-session-details">
+                        <h4>${session.user_name}</h4>
+                        <p class="date-session-focus">${session.focus || 'General Practice'}</p>
+                        <p class="date-session-status"><span class="admin-tag ${statusClass}">${session.status}</span></p>
+                    </div>
+                    <div class="date-session-actions">
+                        <button class="admin-btn admin-btn-small date-view-session" data-id="${session.session_id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Add event listeners for view buttons
+        sessionsContainer.querySelectorAll('.date-view-session').forEach(button => {
+            button.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-id');
+                viewSessionDetails(sessionId);
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error loading date sessions:', error);
+        const sessionsContainer = document.querySelector('.date-sessions-list');
+        if (sessionsContainer) {
+            sessionsContainer.innerHTML = `
+                <p class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> Failed to load sessions. Please try again.
+                </p>
+            `;
+        }
+    }
+}
+
+/**
+ * Show form to add a new session
+ */
+function showAddSessionForm(dateString) {
+    // Implement this function to open a form for adding a new session
+    alert(`Add session form for ${dateString} will be implemented soon.`);
 }
 
 /**
@@ -614,6 +1086,12 @@ async function handleAvailabilitySubmit(e) {
     e.preventDefault();
     
     try {
+        // Show saving indicator
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitButton.disabled = true;
+        
         // Get available days
         const availableDays = [];
         const checkboxes = document.querySelectorAll('input[name="available_days"]:checked');
@@ -651,17 +1129,29 @@ async function handleAvailabilitySubmit(e) {
             }
         });
         
-        // In a real app, you would send this data to your backend API
-        console.log('Availability settings to save:', { availableDays, blockedDates });
+        // In a real app, we would send this data to the backend API
+        // Here we'll simulate an API call with a delay
+        await new Promise(resolve => setTimeout(resolve, 800));
         
-        showSuccessMessage('Availability settings have been saved.');
+        // Use AdminApiService to save availability settings
+        await AdminApiService.authRequest('/api/admin/sessions/availability', 'POST', {
+            available_days: availableDays,
+            blocked_dates: blockedDates
+        });
+        
+        showSuccessMessage('Availability settings saved successfully!');
         
         // Hide modal
         document.getElementById('availability-modal').style.display = 'none';
         
     } catch (error) {
         console.error('Error saving availability settings:', error);
-        showErrorMessage('Failed to save availability settings. Please try again.');
+        showErrorMessage('Failed to save availability settings: ' + (error.message || 'Unknown error'));
+    } finally {
+        // Reset submit button
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        submitButton.innerHTML = 'Save Availability Settings';
+        submitButton.disabled = false;
     }
 }
 
