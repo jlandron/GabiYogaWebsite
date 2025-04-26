@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Gabi Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/blog-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <h1>Gabi Yoga</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About Me</a></li>
+                <li><a href="index.html#gallery">Gallery</a></li>
+                <li><a href="index.html#offerings">Classes & Offerings</a></li>
+                <li><a href="index.html#membership">Membership</a></li>
+                <li><a href="blog.html" class="active">Blog</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Blog Main Section -->
+    <section class="blog-hero">
+        <div class="blog-hero-content">
+            <h1>Yoga Insights & Inspiration</h1>
+            <p>Thoughts, tips, and stories from my yoga journey</p>
+        </div>
+    </section>
+
+    <div class="blog-container">
+        <main class="blog-main">
+            <!-- Blog Posts List -->
+            <div id="blog-posts-list" class="blog-posts-list">
+                <div class="blog-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading posts...
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div id="blog-pagination" class="blog-pagination">
+                <!-- Pagination will be added dynamically -->
+            </div>
+        </main>
+        
+        <aside class="blog-sidebar">
+            <!-- Search -->
+            <div class="sidebar-section">
+                <h3>Search</h3>
+                <div class="sidebar-search">
+                    <input type="text" id="blog-search" placeholder="Search posts...">
+                    <button id="blog-search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <!-- Recent Posts -->
+            <div class="sidebar-section">
+                <h3>Recent Posts</h3>
+                <ul id="recent-posts" class="sidebar-list">
+                    <li><i class="fas fa-spinner fa-spin"></i> Loading...</li>
+                </ul>
+            </div>
+            
+            <!-- Tags -->
+            <div class="sidebar-section">
+                <h3>Categories</h3>
+                <div id="blog-tags" class="blog-tags">
+                    <span class="tag-loading">Loading tags...</span>
+                </div>
+            </div>
+            
+            <!-- About section -->
+            <div class="sidebar-section about-widget">
+                <h3>About</h3>
+                <div class="about-widget-content">
+                    <img src="images/DSC02659.JPG" alt="Gabi" class="about-image">
+                    <p>Welcome to my blog where I share insights from my yoga journey, tips for practitioners of all levels, and reflections on mindful living.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Single Post Template (hidden by default) -->
+    <div id="single-post-template" style="display: none;">
+        <div class="single-post-container">
+            <div class="back-to-posts">
+                <a href="blog.html" id="back-to-posts-link"><i class="fas fa-arrow-left"></i> Back to all posts</a>
+            </div>
+            <article class="single-post">
+                <header class="post-header">
+                    <h1 id="post-title" class="post-title">Post Title</h1>
+                    <div class="post-meta">
+                        <span id="post-author" class="post-author"><i class="fas fa-user"></i> Gabi</span>
+                        <span id="post-date" class="post-date"><i class="fas fa-calendar"></i> April 26, 2025</span>
+                    </div>
+                    <div id="post-tags" class="post-tags">
+                        <!-- Tags will be added dynamically -->
+                    </div>
+                </header>
+                
+                <div id="post-featured-image" class="post-featured-image">
+                    <img src="" alt="Post featured image">
+                </div>
+                
+                <div id="post-content" class="post-content">
+                    <!-- Post content will be added dynamically -->
+                </div>
+                
+                <footer class="post-footer">
+                    <div class="post-share">
+                        <span>Share this post:</span>
+                        <a href="#" class="share-link" id="share-facebook" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="share-link" id="share-twitter" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="share-link" id="share-pinterest" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                    </div>
+                </footer>
+            </article>
+            
+            <div class="related-posts">
+                <h3>Related Posts</h3>
+                <div id="related-posts-list" class="related-posts-grid">
+                    <!-- Related posts will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>Gabi Yoga</h2>
+                    <p>Find your inner peace with us</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                        <li><a href="index.html#offerings">Classes</a></li>
+                        <li><a href="index.html#membership">Membership</a></li>
+                        <li><a href="index.html#retreats">Retreats</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                        <li><a href="login.html" class="admin-link">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on classes, workshops, and events</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Gabi Yoga. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/blog.js"></script>
+</body>
+</html>

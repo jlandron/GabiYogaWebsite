@@ -1,5 +1,5 @@
 /**
- * Admin API for Gabi Jyoti Yoga Website
+ * Admin API for Gabi Yoga Website
  * 
  * This file provides API endpoints for admin operations
  * that interact with the SQLite database.

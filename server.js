@@ -28,6 +28,7 @@ const adminSettingsRoutes = require('./api/admin-settings');
 const adminPricingRoutes = require('./api/admin-pricing');
 const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
 const galleryRoutes = require('./api/gallery');
+const blogRoutes = require('./api/blog'); // Import blog routes
 const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
 // Removed mock routes to use real database data
 
@@ -127,6 +128,7 @@ adminRouter.use('/', adminCustomerDashboardRoutes);
 app.use('/api/admin', adminRouter);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
 app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
+app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers

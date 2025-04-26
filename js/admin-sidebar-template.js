@@ -55,6 +55,11 @@ const ADMIN_SIDEBAR_HTML = `
         </a>
     </li>
     <li class="admin-nav-item">
+        <a href="admin-blog.html" class="admin-nav-link" data-page="blog">
+            <i class="fas fa-blog"></i> Blog Posts
+        </a>
+    </li>
+    <li class="admin-nav-item">
         <a href="admin-pricing.html" class="admin-nav-link" data-page="pricing">
             <i class="fas fa-tags"></i> Pricing & Offerings
         </a>
