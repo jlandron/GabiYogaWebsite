@@ -1126,49 +1126,6 @@ const AuthOperations = {
   },
   
   /**
-   * Find or create user with Google OAuth data
-   */
-  findOrCreateGoogleUser: async (googleData) => {
-    try {
-      const { email, given_name, family_name, sub, picture } = googleData;
-      
-      // Check if user exists
-      const user = await AuthOperations.findUserByEmail(email);
-      
-      if (user) {
-        // Update existing user with Google data if needed
-        return user;
-      }
-      
-      // Create new user with Google data
-      // Generate a random password since Google OAuth doesn't provide one
-      const randomPassword = Math.random().toString(36).slice(-8);
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(randomPassword, salt);
-      
-      // Create user
-      const result = await db.query(`
-        INSERT INTO users (
-          first_name,
-          last_name,
-          email,
-          password_hash,
-          role,
-          profile_picture,
-          created_at,
-          updated_at
-        ) VALUES (?, ?, ?, ?, 'member', ?, datetime('now'), datetime('now'))
-      `, [given_name, family_name, email, passwordHash, picture]);
-      
-      // Get created user
-      return await AuthOperations.findUserById(result.lastID);
-    } catch (error) {
-      console.error('Error with Google OAuth:', error);
-      throw error;
-    }
-  },
-  
-  /**
    * Login a user and return their details (kept for backwards compatibility)
    */
   loginUser: async (email, password) => {

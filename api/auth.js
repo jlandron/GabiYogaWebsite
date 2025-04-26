@@ -155,66 +155,6 @@ router.post('/register', async (req, res) => {
 });
 
 /**
- * Google OAuth endpoint
- * POST /api/auth/google
- */
-router.post('/google', async (req, res) => {
-  try {
-    const { googleData } = req.body;
-    
-    if (!googleData || !googleData.email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid Google profile data' 
-      });
-    }
-
-    // Find or create user with Google data
-    const user = await AuthOperations.findOrCreateGoogleUser({
-      email: googleData.email,
-      given_name: googleData.given_name || googleData.firstName,
-      family_name: googleData.family_name || googleData.lastName,
-      sub: googleData.sub, 
-      picture: googleData.picture
-    });
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.user_id,
-        email: user.email,
-        role: user.role 
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
-    );
-
-    // Return user info and token
-    return res.status(200).json({
-      success: true,
-      message: 'Google authentication successful',
-      user: {
-        id: user.user_id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profile_picture
-      },
-      token
-    });
-    
-  } catch (error) {
-    console.error('Google authentication error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'An error occurred during Google authentication',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
-
-/**
  * User verification middleware
  * Verifies JWT token and adds user data to request
  */

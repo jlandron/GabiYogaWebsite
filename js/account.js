@@ -4,15 +4,11 @@
  * Integrates with SQLite database through backend API
  */
 
-// Google OAuth Configuration (Replace with actual client ID from Google Cloud Console)
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
-
 // API endpoints
 const API_BASE_URL = '/api';
 const API_ENDPOINTS = {
   login: `${API_BASE_URL}/auth/login`,
   register: `${API_BASE_URL}/auth/register`,
-  google: `${API_BASE_URL}/auth/google`,
   me: `${API_BASE_URL}/auth/me`
 };
 
@@ -221,32 +217,6 @@ const ApiService = {
   },
 
   /**
-   * Process Google Sign-In
-   */
-  googleLogin: async (googleData) => {
-    const response = await fetch(API_ENDPOINTS.google, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ googleData })
-    });
-
-    const json = await response.json();
-
-    if (!response.ok) {
-      throw new Error(json.message || 'Google login failed');
-    }
-
-    if (json.token && json.user) {
-      TokenService.setToken(json.token);
-      UserService.setUser(json.user);
-    }
-
-    return json;
-  },
-
-  /**
    * Get current user profile
    */
   getCurrentUser: async () => {
@@ -254,68 +224,12 @@ const ApiService = {
   }
 };
 
-// Load Google Identity Services API
-function loadGoogleAPI() {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-    
-    // Initialize Google Sign-In after the script has loaded
-    script.onload = initializeGoogleSignIn;
-}
-
-// Initialize Google Sign-In
-function initializeGoogleSignIn() {
-    if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleSignIn,
-            auto_select: false,
-            cancel_on_tap_outside: true
-        });
-    } else {
-        console.error('Google API not loaded');
-    }
-}
-
-// Handle Google Sign-In response
-async function handleGoogleSignIn(response) {
-    if (response.credential) {
-        // Show loading state
-        setFormLoading(true, 'google-login-btn');
-        
-        try {
-            // Decode the JWT token to get user information
-            const base64Url = response.credential.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            
-            const googleData = JSON.parse(jsonPayload);
-            
-            // Send Google data to backend
-            await ApiService.googleLogin(googleData);
-            
-            // Redirect based on role
-            redirectToDashboard();
-        } catch (error) {
-            console.error('Google sign-in error:', error);
-            showErrorMessage(error.message);
-            setFormLoading(false, 'google-login-btn');
-        }
-    }
-}
-
 // Show loading state on buttons
 function setFormLoading(isLoading, buttonId = null) {
     const loginBtn = document.querySelector('#login-form button[type="submit"]');
     const registerBtn = document.querySelector('#registration-form button[type="submit"]');
-    const googleBtn = document.getElementById('google-login-btn');
     
-    const buttons = [loginBtn, registerBtn, googleBtn].filter(btn => btn);
+    const buttons = [loginBtn, registerBtn].filter(btn => btn);
     
     if (buttonId) {
         const specificBtn = document.getElementById(buttonId);
@@ -325,9 +239,7 @@ function setFormLoading(isLoading, buttonId = null) {
             if (isLoading) {
                 specificBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             } else {
-                specificBtn.innerHTML = buttonId === 'google-login-btn' ? 
-                    '<i class="fab fa-google"></i> Sign in with Google' : 
-                    (buttonId === 'register-btn' ? 'Create Account' : 'Sign In');
+                specificBtn.innerHTML = (buttonId === 'register-btn' ? 'Create Account' : 'Sign In');
             }
             return;
         }
@@ -407,9 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
         return;
     }
-    
-    // Load Google API when the page loads
-    loadGoogleAPI();
     
     // ------------------
     // Login/Registration
@@ -536,22 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return UserService.getUser();
     };
-
-    // Handle Google Sign-In button click
-    const googleLoginBtn = document.getElementById('google-login-btn');
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                // Prompt the Google Sign-In UI
-                google.accounts.id.prompt();
-            } else {
-                console.error('Google Sign-In API not loaded properly');
-                showErrorMessage('Google Sign-In is not available at the moment. Please try the email login or try again later.');
-            }
-        });
-    }
     
     // Handle dashboard tab navigation
     if (dashboardNavItems.length > 0) {
