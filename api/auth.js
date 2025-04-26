@@ -11,8 +11,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { AuthOperations } = require('../database/data-access');
 
-// Environment variables from .env file should be loaded by server.js
-const JWT_SECRET = process.env.JWT_SECRET || 'yoga_dev_secret_key_for_jwt';
+// Environment variables from .env file loaded by server.js
+// Get JWT secret from environment variable - no fallback for security
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is not set in auth.js!');
+  console.error('Please set JWT_SECRET in your .env file');
+  process.exit(1);
+}
+
+// Get JWT expiry from environment variable
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
 
 /**

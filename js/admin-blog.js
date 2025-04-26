@@ -1352,37 +1352,37 @@ class BlogManager {
             // Process image
             const imageData = await this.processImage(file);
             
-            // Upload to server
-            const token = localStorage.getItem('auth_token');
-            if (!token) {
-                throw new Error('Authentication required. Please log in again.');
-            }
-            
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('title', file.name.replace(/\.[^/.]+$/, "")); // Filename without extension
-            
-            const response = await fetch('/api/gallery/images', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to upload image: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            // Add to local images array
-            this.images.unshift({
-                image_id: data.image_id,
-                title: data.title,
-                alt_text: '',
-                thumbnail_url: null
-            });
+        // Upload to server using blog-specific endpoint
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            throw new Error('Authentication required. Please log in again.');
+        }
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/api/blog/images/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to upload image: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Add to local images array
+        this.images.unshift({
+            image_id: Date.now(), // Generate a temporary ID
+            title: file.name.replace(/\.[^/.]+$/, ""), // Filename without extension
+            alt_text: '',
+            url: data.url,
+            thumbnail_url: data.url
+        });
             
             // Render gallery images
             this.renderGalleryImages();
@@ -1414,15 +1414,20 @@ class BlogManager {
         try {
             this.showLoadingOverlay();
             
-            // Get image data
-            const response = await fetch(this.selectedImage.url);
+            // Get image URL (could be direct URL or gallery URL)
+            let imageUrl = this.selectedImage.url;
             
-            if (!response.ok) {
-                throw new Error('Failed to load image data');
+            // If it's a gallery URL, we need to load the blob and create an object URL
+            if (imageUrl.startsWith('/api/gallery/')) {
+                const response = await fetch(imageUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load image data');
+                }
+                
+                const blob = await response.blob();
+                imageUrl = URL.createObjectURL(blob);
             }
-            
-            const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
             
             if (this.imageInsertCallback === 'featured') {
                 // Set as featured image

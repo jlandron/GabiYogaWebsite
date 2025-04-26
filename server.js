@@ -36,9 +36,25 @@ const { router: authRouter, authenticateToken } = require('./api/auth');  // Imp
 const app = express();
 const PORT = process.env.PORT || 5001; // Use port 5001 instead of 5000
 
-// Set JWT secret from environment variable or use a default for development
-const JWT_SECRET = process.env.JWT_SECRET || 'yoga_dev_secret_key_for_jwt';
-const JWT_EXPIRY = '24h';
+// Set JWT secret from environment variable with validation
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is not set!');
+  console.error('Please set JWT_SECRET in your .env file');
+  process.exit(1);
+}
+
+// Set JWT expiry
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
+
+// Validate environment
+if (process.env.NODE_ENV === 'production') {
+  if (JWT_SECRET === 'CHANGE_THIS_IN_PRODUCTION_TO_SECURE_RANDOM_STRING') {
+    console.error('ERROR: Default JWT_SECRET detected in production environment!');
+    console.error('Please change the JWT_SECRET to a secure random string before deploying to production');
+    process.exit(1);
+  }
+}
 
 // Middleware
 app.use(cors());
