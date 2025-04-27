@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db-config');
-const { requireAuth } = require('./auth');
+const { authenticateToken: requireAuth } = require('./auth');
 const { ApiResponse } = require('../utils/api-response');
 
 // Initialize Stripe with the secret key from environment variables
@@ -22,29 +22,29 @@ try {
 
 /**
  * Create a payment intent for one-time payments
- * 
+ *
  * POST /api/stripe/create-payment-intent
  */
 router.post('/create-payment-intent', requireAuth, async (req, res) => {
   try {
     const { amount, currency = 'usd', description, metadata = {} } = req.body;
-    
+
     if (!amount || amount <= 0) {
       return ApiResponse.badRequest(res, 'Valid amount is required');
     }
-    
+
     // Ensure we have Stripe initialized
     if (!stripe) {
       return ApiResponse.serverError(res, 'Payment processing is not available');
     }
-    
+
     // Add user info to metadata
     const userMetadata = {
       user_id: req.user.user_id,
       email: req.user.email,
       ...metadata
     };
-    
+
     // Create a PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
@@ -54,15 +54,15 @@ router.post('/create-payment-intent', requireAuth, async (req, res) => {
       receipt_email: req.user.email,
       // Enable automatic payment methods suitable for the user's location
       automatic_payment_methods: {
-        enabled: true,
-      },
+        enabled: true
+      }
     });
-    
+
     return res.json({
       success: true,
       clientSecret: paymentIntent.client_secret
     });
-    
+
   } catch (error) {
     console.error('Error creating payment intent:', error);
     return ApiResponse.serverError(res, 'Failed to process payment request');
@@ -71,26 +71,26 @@ router.post('/create-payment-intent', requireAuth, async (req, res) => {
 
 /**
  * Create a checkout session for subscriptions
- * 
+ *
  * POST /api/stripe/create-subscription
  */
 router.post('/create-subscription', requireAuth, async (req, res) => {
   try {
     const { 
       priceId, 
-      successUrl = `${req.protocol}://${req.get('host')}/payment-success`, 
+      successUrl = `${req.protocol}://${req.get('host')}/payment-success`,
       cancelUrl = `${req.protocol}://${req.get('host')}/payment-cancel`
     } = req.body;
-    
+
     if (!priceId) {
       return ApiResponse.badRequest(res, 'Price ID is required');
     }
-    
+
     // Ensure we have Stripe initialized
     if (!stripe) {
       return ApiResponse.serverError(res, 'Payment processing is not available');
     }
-    
+
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -98,8 +98,8 @@ router.post('/create-subscription', requireAuth, async (req, res) => {
       line_items: [
         {
           price: priceId,
-          quantity: 1,
-        },
+          quantity: 1
+        }
       ],
       customer_email: req.user.email,
       client_reference_id: req.user.user_id.toString(),
@@ -107,15 +107,15 @@ router.post('/create-subscription', requireAuth, async (req, res) => {
       cancel_url: cancelUrl,
       metadata: {
         user_id: req.user.user_id
-      },
+      }
     });
-    
+
     return res.json({
       success: true,
       sessionId: session.id,
       url: session.url
     });
-    
+
   } catch (error) {
     console.error('Error creating subscription session:', error);
     return ApiResponse.serverError(res, 'Failed to process subscription request');
@@ -124,28 +124,28 @@ router.post('/create-subscription', requireAuth, async (req, res) => {
 
 /**
  * Webhook endpoint for Stripe events
- * 
+ *
  * POST /api/stripe/webhook
  */
-router.post('/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+const handleWebhook = async (req, res) => {
   try {
     // Ensure we have Stripe initialized
     if (!stripe) {
       return res.status(500).send('Stripe is not initialized');
     }
-    
+
     const signature = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    
+
     if (!webhookSecret) {
       console.warn('WARNING: Stripe webhook secret is not set in environment variables');
       return res.status(500).send('Webhook secret not configured');
     }
-    
+
     if (!signature) {
       return res.status(400).send('Webhook signature missing');
     }
-    
+
     // Verify webhook signature and extract the event
     let event;
     try {
@@ -158,38 +158,40 @@ router.post('/webhook', express.raw({type: 'application/json'}), async (req, res
       console.error('Webhook signature verification failed:', err);
       return res.status(400).send(`Webhook signature verification failed: ${err.message}`);
     }
-    
+
     // Handle the event based on its type
     switch (event.type) {
       case 'payment_intent.succeeded':
         await handlePaymentIntentSucceeded(event.data.object);
         break;
-        
+
       case 'checkout.session.completed':
         await handleCheckoutSessionCompleted(event.data.object);
         break;
-        
+
       case 'invoice.paid':
         await handleInvoicePaid(event.data.object);
         break;
-        
+
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
         await handleSubscriptionUpdate(event.data.object);
         break;
-        
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
-    
+
     // Return a 200 response to acknowledge receipt of the event
     return res.status(200).json({ received: true });
-    
+
   } catch (error) {
     console.error('Error processing webhook:', error);
     return res.status(500).send('Failed to process webhook');
   }
-});
+};
+
+router.post('/webhook', handleWebhook);
 
 /**
  * Handle successful payments
@@ -539,4 +541,6 @@ router.post('/create-product', requireAuth, async (req, res) => {
   }
 });
 
+// Export the router and webhook handler for direct access by server.js
+router.handle = handleWebhook;
 module.exports = router;

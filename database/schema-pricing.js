@@ -24,6 +24,7 @@ const createPricingSchema = async () => {
         duration_days INTEGER,
         classes INTEGER,
         auto_renew_allowed BOOLEAN DEFAULT 1,
+        most_popular BOOLEAN DEFAULT 0,
         status TEXT DEFAULT 'active' NOT NULL, -- 'active', 'inactive'
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL

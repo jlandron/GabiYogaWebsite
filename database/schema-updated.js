@@ -241,6 +241,7 @@ const createSchema = async () => {
         width INTEGER,
         height INTEGER,
         is_profile_photo BOOLEAN DEFAULT 0,
+        show_on_homepage BOOLEAN DEFAULT 0,
         display_order INTEGER DEFAULT 0,
         active BOOLEAN DEFAULT 1,
         created_at TEXT NOT NULL,

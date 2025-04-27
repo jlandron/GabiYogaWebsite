@@ -141,15 +141,14 @@ adminRouter.use('/', adminSettingsRoutes);
 adminRouter.use('/', adminPricingRoutes);
 adminRouter.use('/', adminCustomerDashboardRoutes);
 
+// Remove the special case webhook handler - it's already defined in the stripe routes module
+
 // Register API routes
 app.use('/api/admin', adminRouter);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
 app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
 app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 app.use('/api/stripe', stripeRoutes); // Stripe payment routes
-
-// Special case: Stripe webhook endpoint needs raw body for signature verification
-app.use('/api/stripe/webhook', express.raw({type: 'application/json'}), stripeRoutes);
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers
