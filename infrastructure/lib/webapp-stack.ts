@@ -86,10 +86,33 @@ export class WebAppStack extends cdk.Stack {
       '[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"',
       
       // Source bashrc to ensure NVM is available
+      'echo "Sourcing bash profiles to enable NVM"',
       'source ~/.bashrc || source ~/.bash_profile || true',
       'nvm install 16',
       'nvm use 16',
       'nvm alias default 16',
+      
+      // Create symlinks to make Node.js available system-wide
+      'echo "Creating system-wide Node.js symlinks"',
+      'NODE_PATH="$HOME/.nvm/versions/node/v16.20.2/bin/node"',
+      'NPM_PATH="$HOME/.nvm/versions/node/v16.20.2/bin/npm"',
+      '[ -f "$NODE_PATH" ] || NODE_PATH="$(find $HOME/.nvm/versions/node -name node -type f | head -n 1)"',
+      '[ -f "$NPM_PATH" ] || NPM_PATH="$(find $HOME/.nvm/versions/node -name npm -type f | head -n 1)"',
+      'echo "Node path: $NODE_PATH"',
+      'echo "NPM path: $NPM_PATH"',
+      
+      // Remove existing symlinks if they exist
+      'if [ -L "/usr/bin/node" ]; then rm -f /usr/bin/node; fi',
+      'if [ -L "/usr/bin/npm" ]; then rm -f /usr/bin/npm; fi',
+      'if [ -L "/usr/local/bin/node" ]; then rm -f /usr/local/bin/node; fi',
+      'if [ -L "/usr/local/bin/npm" ]; then rm -f /usr/local/bin/npm; fi',
+      
+      // Create new symlinks
+      'ln -sf "$NODE_PATH" /usr/bin/node',
+      'ln -sf "$NPM_PATH" /usr/bin/npm',
+      'ln -sf "$NODE_PATH" /usr/local/bin/node',
+      'ln -sf "$NPM_PATH" /usr/local/bin/npm',
+      'ls -la /usr/bin/node || echo "Failed to create symlink"',
       
       // Make NVM available in system profile
       'echo "export NVM_DIR=\\"\\\$HOME/.nvm\\"" >> /etc/profile.d/nvm.sh',
@@ -172,7 +195,7 @@ export class WebAppStack extends cdk.Stack {
       'cd /var/www/gabiyoga',
       'npm install --production',
       
-      // Setup systemd service
+      // Setup systemd service with absolute path to node
       'cat > /etc/systemd/system/gabiyoga.service << EOF',
       '[Unit]',
       'Description=Gabi Yoga Web Application',
@@ -182,7 +205,7 @@ export class WebAppStack extends cdk.Stack {
       'Type=simple',
       'User=root',
       'WorkingDirectory=/var/www/gabiyoga',
-      'ExecStart=/usr/bin/node /var/www/gabiyoga/server.js',
+      'ExecStart=$NODE_PATH /var/www/gabiyoga/server.js',
       'Restart=on-failure',
       'RestartSec=10',
       'StandardOutput=journal',
@@ -193,6 +216,7 @@ export class WebAppStack extends cdk.Stack {
       '[Install]',
       'WantedBy=multi-user.target',
       'EOF',
+      'echo "Created systemd service with Node.js path: $NODE_PATH"',
       
       // Start service
       'systemctl daemon-reload',

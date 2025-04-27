@@ -1,109 +1,129 @@
 # Yoga Website Database Solution
 
-This directory contains a complete MongoDB-based database solution for the yoga website. The database is designed to work locally during development and can easily be migrated to AWS DocumentDB when you're ready to deploy.
+This directory contains a complete database solution for the yoga website, supporting both SQLite for local development and MySQL for production.
 
-## Database Structure
+## Database Configuration
 
-### Schemas
-- **Users**: Member profiles, authentication info, and preferences
-- **Memberships**: Tracks different membership types and their status
-- **Classes**: Templates and scheduled classes
-- **Bookings**: Member registrations for classes
-- **Workshops**: Special events with registrations
-- **Private Sessions**: One-on-one sessions with instructor
-- **Gallery**: Images for the website gallery
-- **Newsletter**: Email subscriptions
+The system is designed to automatically select the appropriate database based on the `NODE_ENV` environment variable:
+- **Development environment**: Uses SQLite by default
+- **Production environment**: Uses MySQL by default
+
+This behavior can be overridden by explicitly setting the `DB_TYPE` environment variable in the `.env` file.
+
+## Environment Variables
+
+All database configuration settings are stored in the `.env` file at the root of the project:
+
+```
+# Database Configuration
+# ------------------------------
+# You can explicitly set DB_TYPE to override the automatic selection
+# based on NODE_ENV (default: development=sqlite, production=mysql)
+# DB_TYPE=sqlite
+
+# SQLite Configuration (used when DB_TYPE=sqlite or NODE_ENV=development)
+DB_PATH=./data/yoga.sqlite
+
+# MySQL Configuration (used when DB_TYPE=mysql or NODE_ENV=production)
+DB_HOST=your-rds-instance.region.rds.amazonaws.com
+DB_PORT=3306
+DB_NAME=yoga
+DB_USER=admin
+DB_PASSWORD=your_secure_password
+```
 
 ## Getting Started
 
 ### Prerequisites
-1. Install MongoDB
+1. For local development (SQLite):
+   - No additional installation required
+   
+2. For production (MySQL):
+   - Access to AWS RDS MySQL instance
+   - MySQL client for testing (optional)
+
+3. Install Node.js dependencies:
    ```
-   sudo apt-get install mongodb
-   ```
-2. Install Node.js dependencies
-   ```
-   cd yoga-website
    npm install
    ```
 
-### Setup
-1. **Environment Variables**: Update the `.env` file with your specific settings
-   - For local development, use the default MongoDB URI
-   - For production, update with your AWS DocumentDB connection string
+### Testing the Database Connection
 
-2. **Initialize the Database**:
-   ```
-   npm run seed
-   ```
-   This will populate the database with sample data including:
-   - Sample users
-   - Class templates
-   - Scheduled classes
-   - Workshops
-   - Memberships
-   - Bookings
+You can test your database connection with the provided utility script:
 
-3. **Start the Server**:
-   ```
-   npm run dev
-   ```
+```bash
+# Test with SQLite (Development)
+NODE_ENV=development node utils/test-db-config.js
+
+# Test with MySQL (Production)
+NODE_ENV=production node utils/test-db-config.js
+
+# Explicit override
+DB_TYPE=sqlite node utils/test-db-config.js
+DB_TYPE=mysql node utils/test-db-config.js
+```
 
 ## Key Files
 
-- `db-schema.js` - Mongoose schema definitions
-- `db-config.js` - Database connection configuration
-- `models.js` - Mongoose models
+- `db-config.js` - Database connection configuration (SQLite and MySQL)
+- `db-schema.js` - Database schema definitions
+- `schema.sql` - SQL schema definition
+- `models.js` - Database models
 - `data-access.js` - Data access layer with CRUD operations
 - `seed.js` - Sample data initialization
 
-## API Integration
+## Database Schema
 
-The database is accessible through a RESTful API defined in `server.js`. The frontend can communicate with the database using the utility functions in `api.js`.
+The schema includes tables for:
 
-### Example API Usage
+- **Users**: Member profiles, authentication info, and preferences
+- **Memberships**: Different membership types and their status
+- **Classes**: Templates and scheduled classes
+- **Bookings**: Member registrations for classes
+- **Workshops**: Special events with registrations
+- **Private Sessions**: One-on-one sessions with instructors
+- **Gallery**: Images for the website gallery
+- **Newsletter**: Email subscriptions
 
-```javascript
-// Login a user
-API.auth.login({ email: 'user@example.com', password: 'password123' })
-  .then(response => console.log('Logged in:', response.user))
-  .catch(error => console.error('Login failed:', error));
+## Migration Between Environments
 
-// Get all classes
-API.classes.getAll()
-  .then(response => {
-    const classes = response.classes;
-    // Update UI with classes
-  });
-```
+### Development to Production
 
-## Migration to AWS DocumentDB
+When moving from local development to production:
 
-When you're ready to deploy to production:
-
-1. Create an AWS DocumentDB cluster
-2. Update the `.env` file with your DocumentDB connection string:
+1. Make sure your AWS RDS MySQL instance is properly configured
+2. Update the `.env` file to use production settings:
    ```
    NODE_ENV=production
-   MONGODB_URI=mongodb://username:password@your-docdb-instance.region.docdb.amazonaws.com:27017/gabi_jyoti_yoga?ssl=true&replicaSet=rs0&readPreference=secondaryPreferred
    ```
-3. Make sure your security groups allow connections from your application server
-4. Restart your application with the production environment
+3. The database will automatically switch to using MySQL
 
-## Data Flow
+### Production to Development
 
-1. **User Dashboard Updates**:
-   - When a user makes changes in their dashboard, the frontend calls the appropriate API endpoint
-   - The server processes the request and updates the MongoDB database
-   - Changes are immediately reflected in the user's view
+To switch back to development:
 
-2. **Admin Portal Updates**:
-   - Admin changes are processed through secure API endpoints
-   - Database updates are reflected across the site
-   - Changes appear in both admin and user views as appropriate
+1. Update the `.env` file:
+   ```
+   NODE_ENV=development
+   ```
+2. The database will automatically switch to using SQLite
+
+### Manual Override
+
+If you need to use a specific database type regardless of environment:
+
+```
+# Force SQLite even in production
+NODE_ENV=production
+DB_TYPE=sqlite
+
+# Force MySQL even in development
+NODE_ENV=development
+DB_TYPE=mysql
+```
 
 ## Security Notes
 
-- Passwords are hashed using bcrypt before storage
-- API endpoints for admin functions are protected with authentication middleware
-- Session management uses express-session with secure cookies
+- Database credentials are stored in the `.env` file and should not be committed to version control
+- Use appropriate security groups and firewall rules to restrict access to your MySQL database
+- In production, ensure your RDS instance is properly secured according to AWS best practices

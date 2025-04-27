@@ -11,7 +11,13 @@ const path = require('path');
 const fs = require('fs');
 
 // Determine database type from environment
-const DB_TYPE = process.env.DB_TYPE || 'sqlite';
+// Default to SQLite for development and MySQL for production,
+// but allow explicit override through DB_TYPE environment variable
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
+const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
+
+console.log(`Using database type: ${DB_TYPE} (${NODE_ENV} environment)`);
 let db;
 
 // Configure database based on environment
