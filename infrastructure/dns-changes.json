@@ -1,0 +1,29 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "gabi.yoga",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z1H1FL5HABSF5",
+          "DNSName": "GabiYo-LoadB-go6jsRpXRCQ0-433005971.us-west-2.elb.amazonaws.com",
+          "EvaluateTargetHealth": true
+        }
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "www.gabi.yoga",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "gabi.yoga"
+          }
+        ]
+      }
+    }
+  ]
+}

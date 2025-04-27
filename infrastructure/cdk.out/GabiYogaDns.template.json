@@ -1,0 +1,108 @@
+{
+ "Resources": {
+  "Certificate4E7ABB08": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "gabi.yoga",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "gabi.yoga",
+      "HostedZoneId": "Z0858162FM97J2FO2QJU"
+     },
+     {
+      "DomainName": "www.gabi.yoga",
+      "HostedZoneId": "Z0858162FM97J2FO2QJU"
+     }
+    ],
+    "SubjectAlternativeNames": [
+     "www.gabi.yoga"
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Name",
+      "Value": "GabiYogaDns/Certificate"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaDns/Certificate/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSM7Q00jNQTCwv1k1OydbNyUzSqw4uSUzO1glKLc4vLUpO1QHKxSenFpVkpmUmJ5ak5ibmJaanFulVOyPEdJzT8pC4tSC+f2lJQWlJrU5efkqqXlaxfpmhhR4QGSlmFWdm6haV5pVk5qbqBUFoAHzg6TmIAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaDns/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "HostedZoneId": {
+   "Description": "Route53 Hosted Zone ID",
+   "Value": "Z0858162FM97J2FO2QJU"
+  },
+  "CertificateArn": {
+   "Description": "ACM Certificate ARN",
+   "Value": {
+    "Ref": "Certificate4E7ABB08"
+   }
+  },
+  "DnsConfigInstructions": {
+   "Description": "DNS configuration instructions",
+   "Value": "\n        Using existing hosted zone ID: Z0858162FM97J2FO2QJU\n        \n        DNS records were NOT created or modified by this stack to avoid conflicts.\n        \n        To manually update DNS records, use:\n        aws route53 change-resource-record-sets --hosted-zone-id Z0858162FM97J2FO2QJU --change-batch file://dns-changes.json\n        \n        Get nameservers with:\n        aws route53 get-hosted-zone --id Z0858162FM97J2FO2QJU --query \"DelegationSet.NameServers\" --output text\n        \n        If you are using an external domain registrar, update the nameservers with those returned by the above command.\n      "
+  },
+  "ExportsOutputRefCertificate4E7ABB08F7C8AF50": {
+   "Value": {
+    "Ref": "Certificate4E7ABB08"
+   },
+   "Export": {
+    "Name": "GabiYogaDns:ExportsOutputRefCertificate4E7ABB08F7C8AF50"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

@@ -1,6 +1,6 @@
 /**
  * Express Server for Yoga Website
- * 
+ *
  * This file sets up the Express server with the necessary routes and middleware
  * to connect the frontend to the SQLite database.
  */
@@ -13,12 +13,12 @@ const { sendSuccess, sendError, asyncHandler } = require('./utils/api-response')
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 const { initializeDatabase } = require('./database/schema');
 const { initializePricingDatabase } = require('./database/schema-pricing');
-const { 
-  AuthOperations, 
-  ClassOperations, 
-  RetreatOperations, 
-  WorkshopOperations, 
-  WebsiteSettingsOperations 
+const {
+  AuthOperations,
+  ClassOperations,
+  RetreatOperations,
+  WorkshopOperations,
+  WebsiteSettingsOperations
 } = require('./database/data-access');
 require('dotenv').config(); // Load environment variables
 
@@ -63,6 +63,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
+// Health check endpoint for AWS load balancer
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Server is healthy' });
+});
+
 // Authentication middleware is imported from auth.js
 
 // API Routes
@@ -72,7 +77,7 @@ app.use('/api/auth', authRouter);
 // Public API endpoints for homepage data
 app.get('/api/schedule', asyncHandler(async (req, res) => {
   const classes = await ClassOperations.getClasses();
-  
+
   // Format classes by day and time for easy rendering on the frontend
   const formattedSchedule = {
     0: [], // Sunday
@@ -83,7 +88,7 @@ app.get('/api/schedule', asyncHandler(async (req, res) => {
     5: [], // Friday
     6: []  // Saturday
   };
-  
+
   classes.forEach(classInfo => {
     if (classInfo.active) {
       formattedSchedule[classInfo.day_of_week].push({
@@ -96,14 +101,14 @@ app.get('/api/schedule', asyncHandler(async (req, res) => {
       });
     }
   });
-  
+
   // Sort classes by start_time for each day
   Object.keys(formattedSchedule).forEach(day => {
     formattedSchedule[day].sort((a, b) => {
       return a.start_time.localeCompare(b.start_time);
     });
   });
-  
+
   return sendSuccess(res, { schedule: formattedSchedule }, 'Class schedule fetched successfully');
 }));
 
@@ -165,15 +170,15 @@ const startServer = async () => {
   try {
     // Initialize database
     await initializeDatabase();
-    
+
     // Initialize pricing tables
     await initializePricingDatabase();
-    
+
     // Start server
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`http://localhost:${PORT}`);
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('Running in development mode');
       }

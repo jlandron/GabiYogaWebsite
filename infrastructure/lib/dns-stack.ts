@@ -11,16 +11,17 @@ export interface DnsStackProps extends cdk.StackProps {
 }
 
 export class DnsStack extends cdk.Stack {
-  public readonly hostedZone: route53.HostedZone;
+  public readonly hostedZone: route53.IHostedZone;
   public readonly certificate: acm.Certificate;
 
   constructor(scope: Construct, id: string, props: DnsStackProps) {
     super(scope, id, props);
 
-    // Create a hosted zone for the domain
-    this.hostedZone = new route53.HostedZone(this, 'HostedZone', {
+    // Use existing hosted zone created by the Route53 domain registrar
+    // instead of creating a new one to avoid duplicate hosted zones
+    this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
       zoneName: props.domainName,
-      comment: `Hosted zone for ${props.domainName}`,
+      hostedZoneId: 'Z0858162FM97J2FO2QJU', // Registrar-created zone
     });
 
     // Create an ACM certificate for the domain and www subdomain
@@ -33,28 +34,11 @@ export class DnsStack extends cdk.Stack {
     // Note: We don't create target groups or HTTPS listeners here to avoid circular dependencies
     // Instead, we should pass the certificate back to WebAppStack to configure HTTPS
 
-    // Create an A record for the apex domain (gabi.yoga)
-    new route53.ARecord(this, 'ApexRecord', {
-      zone: this.hostedZone,
-      target: route53.RecordTarget.fromAlias(
-        new targets.LoadBalancerTarget(props.loadBalancer)
-      ),
-      recordName: props.domainName,
-    });
-
-    // Create a CNAME record for the www subdomain
-    new route53.CnameRecord(this, 'WwwRecord', {
-      zone: this.hostedZone,
-      domainName: props.domainName,
-      recordName: `www.${props.domainName}`,
-    });
-
-    // Output the nameservers
-    new cdk.CfnOutput(this, 'Nameservers', {
-      value: cdk.Fn.join('\n', this.hostedZone.hostedZoneNameServers || []),
-      description: 'Nameservers for domain registration',
-    });
-
+    // REMOVED: Creating the apex A record and www CNAME record
+    // These records already exist in the hosted zone which was causing deployment failures
+    // If you need to update these records, use the AWS Console or CLI instead
+    
+    // Output the nameservers and hosted zone ID
     new cdk.CfnOutput(this, 'HostedZoneId', {
       value: this.hostedZone.hostedZoneId,
       description: 'Route53 Hosted Zone ID',
@@ -65,15 +49,21 @@ export class DnsStack extends cdk.Stack {
       description: 'ACM Certificate ARN',
     });
 
-    new cdk.CfnOutput(this, 'DomainRegistrationInstructions', {
+    new cdk.CfnOutput(this, 'DnsConfigInstructions', {
       value: `
-        Use these nameservers to register ${props.domainName} with your domain registrar:
-        ${cdk.Fn.join('\n', this.hostedZone.hostedZoneNameServers || [])}
-
-        If registering through AWS Route53, run:
-        aws route53domains register-domain --domain-name ${props.domainName} --admin-contact ... --registrant-contact ... --tech-contact ... --years 1 --auto-renew
+        Using existing hosted zone ID: ${this.hostedZone.hostedZoneId}
+        
+        DNS records were NOT created or modified by this stack to avoid conflicts.
+        
+        To manually update DNS records, use:
+        aws route53 change-resource-record-sets --hosted-zone-id ${this.hostedZone.hostedZoneId} --change-batch file://dns-changes.json
+        
+        Get nameservers with:
+        aws route53 get-hosted-zone --id ${this.hostedZone.hostedZoneId} --query "DelegationSet.NameServers" --output text
+        
+        If you are using an external domain registrar, update the nameservers with those returned by the above command.
       `,
-      description: 'Instructions for domain registration',
+      description: 'DNS configuration instructions',
     });
   }
 }

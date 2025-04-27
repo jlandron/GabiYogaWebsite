@@ -43,11 +43,17 @@ const webAppStack = new WebAppStack(app, 'GabiYogaWebApp', {
 });
 
 // Create DNS stack with Route53 configuration
-new DnsStack(app, 'GabiYogaDns', {
+const dnsStack = new DnsStack(app, 'GabiYogaDns', {
   env,
   domainName: domainName,
   loadBalancer: webAppStack.loadBalancer
 });
+
+// Add a dependency to ensure the certificate is created before being used
+webAppStack.addDependency(dnsStack);
+
+// Now pass the certificate to the WebAppStack to enable HTTPS
+webAppStack.addHttpsListener(dnsStack.certificate);
 
 // We'll manage security group access by allowing all traffic within the VPC
 // This avoids creating circular dependencies between stacks

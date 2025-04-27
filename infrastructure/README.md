@@ -1,324 +1,166 @@
-# Gabi Yoga Website - AWS Deployment Guide
+# GabiYoga Infrastructure Guide
 
-This guide provides instructions for deploying the Gabi Yoga website to AWS using the AWS Cloud Development Kit (CDK).
+This directory contains AWS CDK (Cloud Development Kit) code for deploying the infrastructure for the Gabi Yoga website.
 
-## Prerequisites
+## Components
 
-Before you begin, make sure you have:
+The infrastructure consists of several stacks:
 
-1. An AWS account (Account number: 891709159344)
-2. [AWS CLI](https://aws.amazon.com/cli/) installed and configured
-3. [Node.js](https://nodejs.org/) (version 16.x or later)
-4. [AWS CDK](https://aws.amazon.com/cdk/) installed (`npm install -g aws-cdk`)
+1. **GabiYogaNetwork**: VPC and networking components
+2. **GabiYogaStorage**: S3 bucket and CloudFront distribution
+3. **GabiYogaDatabase**: RDS MySQL database
+4. **GabiYogaWebApp**: EC2 instances with Auto Scaling and Load Balancer
+5. **GabiYogaDns**: Route53 hosted zone and DNS records
 
-## Project Structure
+## Deployment Instructions
 
-```
-yoga-website/
-├── infrastructure/        # AWS CDK deployment code
-│   ├── bin/               # CDK app entry point
-│   └── lib/               # Stack definitions
-├── api/                   # Backend API routes
-├── database/              # Database models and schema
-├── js/                    # Frontend JavaScript files
-├── css/                   # CSS stylesheets
-└── ...
-```
+### Prerequisites
 
-## Infrastructure Overview
+- AWS CLI configured with appropriate credentials
+- Node.js and npm installed
+- AWS CDK installed (`npm install -g aws-cdk`)
 
-The deployment creates the following AWS resources:
+### Steps
 
-1. **Network Stack:** VPC, subnets, security groups, etc.
-2. **Database Stack:** RDS MySQL database instance
-3. **Storage Stack:** S3 bucket for uploads and CloudFront distribution
-4. **WebApp Stack:** EC2 instances with auto-scaling, load balancer, etc.
-
-## Deployment Steps
-
-### 1. Initial Setup
-
-First, prepare your environment:
-
-```bash
-# Navigate to the project root
-cd /path/to/yoga-website
-
-# Install project dependencies
-npm install
-
-# Navigate to infrastructure directory
-cd infrastructure
-
-# Install CDK dependencies
-npm install
-```
-
-### 2. Environment Setup
-
-Create a `.env` file in the project root with your production settings:
-
-```
-NODE_ENV=production
-PORT=5001
-
-# JWT Configuration
-JWT_SECRET=<generate-a-secure-random-string>
-JWT_EXPIRY=24h
-
-# Database Configuration
-DB_TYPE=mysql
-DB_HOST=<will-be-populated-after-deployment>
-DB_PORT=3306
-DB_NAME=yoga
-DB_USER=admin
-DB_PASSWORD=<will-be-populated-after-deployment>
-
-# AWS Configuration
-AWS_REGION=us-west-2
-S3_BUCKET_NAME=gabi-yoga-uploads
-CLOUDFRONT_DISTRIBUTION_ID=<will-be-populated-after-deployment>
-
-# Stripe API Keys (Get these from Stripe dashboard)
-STRIPE_PUBLISHABLE_KEY=<your-live-key>
-STRIPE_SECRET_KEY=<your-live-key>
-STRIPE_WEBHOOK_SECRET=<your-live-webhook-secret>
-```
-
-### 3. Bootstrap CDK (One-time setup)
-
-Bootstrap the AWS environment (one-time setup for your AWS account/region):
-
-```bash
-cd infrastructure
-cdk bootstrap aws://891709159344/us-west-2
-```
-
-### 4. Deploy the Stacks
-
-Deploy all the stacks at once:
-
-```bash
-cd infrastructure
-cdk deploy --all --app "npx ts-node bin/app.ts"
-```
-
-Alternatively, you can create a `cdk.json` file in the infrastructure directory:
-
-```bash
-echo '{ "app": "npx ts-node bin/app.ts" }' > cdk.json
-```
-
-After creating this file, you can run:
-
-```bash
-cd infrastructure
-cdk deploy --all
-```
-
-If you prefer to deploy one stack at a time:
-
-```bash
-cd infrastructure
-cdk deploy GabiYogaNetwork --app "npx ts-node bin/app.ts"
-cdk deploy GabiYogaDatabase --app "npx ts-node bin/app.ts"
-cdk deploy GabiYogaStorage --app "npx ts-node bin/app.ts"
-cdk deploy GabiYogaWebApp --app "npx ts-node bin/app.ts"
-```
-
-### 5. Post-Deployment Configuration
-
-After deployment, you'll see several outputs in your terminal including:
-
-- Database endpoint
-- CloudFront URL
-- Load balancer DNS
-- Secret ARNs
-
-#### Update Your .env File
-
-Update these values in your `.env` file:
-
-1. `DB_HOST`: Use the database endpoint from the `GabiYogaDatabase` stack output
-2. `DB_PASSWORD`: Retrieve from Secrets Manager (see below)
-3. `CLOUDFRONT_DISTRIBUTION_ID`: From the `GabiYogaStorage` stack output
-
-#### Retrieve Database Credentials
-
-Get the database password from Secrets Manager:
-
-```bash
-aws secretsmanager get-secret-value --secret-id gabi-yoga-db-credentials --query SecretString --output text
-```
-
-The output is JSON containing the username and password.
-
-### 6. Uploading Web Content
-
-You'll need to upload your application code to the EC2 instances:
-
-1. Create a deployment package:
-
-```bash
-cd /path/to/yoga-website
-zip -r deployment.zip * .env
-```
-
-2. Upload to each EC2 instance using AWS Systems Manager (SSM) Session Manager or SCP
-
-### 7. DNS Configuration with Route53
-
-To configure DNS for your domain `gabi.yoga`:
-
-1. **Create a hosted zone in Route53:**
-
-   ```bash
-   aws route53 create-hosted-zone --name gabi.yoga --caller-reference $(date +%s)
+1. Install dependencies:
+   ```
+   npm install
    ```
 
-2. **Note the nameservers** in the output, which will look like:
-   
+2. Deploy the stacks:
    ```
-   ns-123.awsdns-12.com.
-   ns-456.awsdns-34.net.
-   ns-789.awsdns-56.org.
-   ns-012.awsdns-78.co.uk.
+   cdk deploy --all
    ```
 
-3. **Register the domain** (if not already registered):
-   
-   ```bash
-   aws route53domains register-domain \
-     --domain-name gabi.yoga \
-     --admin-contact "..." \
-     --registrant-contact "..." \
-     --tech-contact "..." \
-     --years 1 \
-     --auto-renew
+3. For individual stack deployment:
    ```
-   
-   Note: You'll need to provide admin, registrant, and technical contact information.
-   
-   Alternatively, if the domain is already registered elsewhere, update the nameservers with your domain registrar.
-
-4. **Create an SSL certificate** using AWS Certificate Manager:
-
-   ```bash
-   aws acm request-certificate \
-     --domain-name gabi.yoga \
-     --validation-method DNS \
-     --region us-west-2
+   cdk deploy GabiYogaNetwork
+   cdk deploy GabiYogaStorage
+   cdk deploy GabiYogaDatabase
+   cdk deploy GabiYogaWebApp
+   cdk deploy GabiYogaDns
    ```
 
-5. **Create validation DNS records** as prompted by AWS.
+## DNS Configuration Steps
 
-6. **Create a Route53 record set** that points to your load balancer:
+### IMPORTANT: Duplicate Hosted Zones Issue
 
-   ```bash
-   # Get your load balancer DNS name from the outputs
-   LB_DNS_NAME=$(aws cloudformation describe-stacks \
-     --stack-name GabiYogaWebApp \
-     --query "Stacks[0].Outputs[?OutputKey=='LoadBalancerDNS'].OutputValue" \
-     --output text)
-   
-   # Create the A record alias to the load balancer
+We've identified that there are two hosted zones for the same domain name "gabi.yoga":
+
+1. **Registrar-created zone** (Z0858162FM97J2FO2QJU):
+   - Created by the Route53 domain registrar
+   - Has nameservers:
+     - ns-1840.awsdns-38.co.uk
+     - ns-1021.awsdns-63.net
+     - ns-472.awsdns-59.com
+     - ns-1408.awsdns-48.org
+
+2. **CDK-created zone** (Z014284916RF6IYZT6XTQ):
+   - Created by the GabiYogaDns stack
+   - Has nameservers:
+     - ns-1446.awsdns-52.org
+     - ns-56.awsdns-07.com
+     - ns-689.awsdns-22.net
+     - ns-1636.awsdns-12.co.uk
+
+Having two hosted zones for the same domain will cause DNS issues. Here's how to resolve this:
+
+1. **Determine which zone to keep**:
+   - The registrar-created zone (recommended if domain was registered through Route53)
+   - OR the CDK-created zone (if you prefer to use this one)
+
+2. **Delete the unused hosted zone**:
+   ```
+   # To delete the CDK-created zone (recommended)
+   aws route53 delete-hosted-zone --id Z014284916RF6IYZT6XTQ
+
+   # OR to delete the registrar-created zone
+   aws route53 delete-hosted-zone --id Z0858162FM97J2FO2QJU
+   ```
+
+3. **Update the CDK code** to use the existing hosted zone:
+   - Modify `infrastructure/lib/dns-stack.ts` to import the existing hosted zone rather than creating a new one:
+   ```typescript
+   // Replace the hosted zone creation with:
+   this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
+     zoneName: props.domainName,
+     hostedZoneId: 'Z0858162FM97J2FO2QJU', // Use the ID of the zone you want to keep
+   });
+   ```
+
+### DNS Configuration After Resolving Duplicate Zones
+
+Once you've resolved the duplicate zones issue, follow these steps:
+
+1. **Get the Hosted Zone ID and Nameservers**:
+   ```
+   aws route53 get-hosted-zone --id Z0858162FM97J2FO2QJU --query "DelegationSet.NameServers" --output text
+   ```
+
+2. **Domain Registration** (if not already registered):
+   ```
+   # Create contact information JSON
+   CONTACT='{
+     "FirstName": "Your-First-Name",
+     "LastName": "Your-Last-Name",
+     "ContactType": "PERSON",
+     "OrganizationName": "Gabi Yoga",
+     "AddressLine1": "Your Address",
+     "City": "Your City",
+     "State": "Your State",
+     "CountryCode": "US",
+     "ZipCode": "Your ZIP",
+     "PhoneNumber": "+1.1234567890",
+     "Email": "your-email@example.com"
+   }'
+
+   # Register the domain - IMPORTANT: This must run in us-east-1 region
+   aws --region us-east-1 route53domains register-domain \
+       --domain-name gabi.yoga \
+       --admin-contact "$CONTACT" \
+       --registrant-contact "$CONTACT" \
+       --tech-contact "$CONTACT" \
+       --duration-in-years 1 \
+       --auto-renew
+   ```
+
+3. **Update Nameservers** (if registered elsewhere):
+   Use the nameservers from step 1 to configure at your domain registrar.
+
+4. **Create/Update DNS Records**:
+   ```
+   # Use correct hosted zone ID
    aws route53 change-resource-record-sets \
-     --hosted-zone-id YOUR_HOSTED_ZONE_ID \
-     --change-batch '{
-       "Changes": [{
-         "Action": "CREATE",
-         "ResourceRecordSet": {
-           "Name": "gabi.yoga",
-           "Type": "A",
-           "AliasTarget": {
-             "HostedZoneId": "YOUR_LOAD_BALANCER_HOSTED_ZONE_ID",
-             "DNSName": "'$LB_DNS_NAME'",
-             "EvaluateTargetHealth": true
-           }
-         }
-       }]
-     }'
+        --hosted-zone-id Z0858162FM97J2FO2QJU \
+        --change-batch '{
+          "Changes": [{
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+              "Name": "www.gabi.yoga",
+              "Type": "CNAME",
+              "TTL": 300,
+              "ResourceRecords": [{
+                "Value": "gabi.yoga"
+              }]
+            }
+          }]
+        }'
    ```
 
-   Note: Replace `YOUR_HOSTED_ZONE_ID` with the actual hosted zone ID and `YOUR_LOAD_BALANCER_HOSTED_ZONE_ID` with the hosted zone ID specific to your load balancer's region.
-
-7. **Configure www subdomain** (optional):
-
-   ```bash
-   aws route53 change-resource-record-sets \
-     --hosted-zone-id YOUR_HOSTED_ZONE_ID \
-     --change-batch '{
-       "Changes": [{
-         "Action": "CREATE",
-         "ResourceRecordSet": {
-           "Name": "www.gabi.yoga",
-           "Type": "CNAME",
-           "TTL": 300,
-           "ResourceRecords": [{
-             "Value": "gabi.yoga"
-           }]
-         }
-       }]
-     }'
+5. **Validate ACM Certificate**:
+   If your certificate is in the other hosted zone, you'll need to create new validation records:
+   ```
+   aws acm describe-certificate --certificate-arn <CERTIFICATE_ARN> --query "Certificate.DomainValidationOptions[].ResourceRecord"
    ```
 
-8. **Update your load balancer** to use the new SSL certificate:
+   Then create those records in your chosen hosted zone.
 
-   ```bash
-   aws elbv2 modify-listener \
-     --listener-arn YOUR_LISTENER_ARN \
-     --certificates CertificateArn=YOUR_CERTIFICATE_ARN \
-     --ssl-policy ELBSecurityPolicy-2016-08
-   ```
+6. **Add HTTPS Listener to Load Balancer**:
+   This might require updating the WebAppStack to include an HTTPS listener using the certificate.
 
-9. **Verify DNS propagation** (this may take 24-48 hours):
+## Important Notes
 
-   ```bash
-   dig gabi.yoga
-   ```
-
-### 8. Database Migration
-
-Initialize your production database:
-
-1. Connect to the RDS database using the endpoint from CloudFormation outputs
-2. Run your schema and seed scripts:
-
-```bash
-mysql -h <db-endpoint> -u admin -p yoga < database/schema.sql
-```
-
-### 9. Verify Deployment
-
-Access your application through:
-
-1. The load balancer DNS name (for the web application)
-2. The CloudFront distribution URL (for static assets)
-
-### 10. Monitoring and Logs
-
-Monitor your application using:
-
-1. CloudWatch for logs and metrics
-2. RDS monitoring for database performance
-
-## Cleanup
-
-If you need to delete the deployed resources:
-
-```bash
-cdk destroy --all
-```
-
-## Security Notes
-
-1. The production database has deletion protection enabled
-2. Secrets are stored in AWS Secrets Manager
-3. SSL is enabled for both database connections and web traffic
-4. The S3 bucket is configured to block public access
-
-## Manual Setup Required
-
-1. Set up Stripe webhook endpoint to notify your application of payment events
-2. Create test users in Stripe to validate subscriptions and one-time payments
-3. Set up regular backups for your database (beyond the automatic RDS backups)
+- Having two hosted zones for the same domain causes DNS resolution issues and certificate validation problems.
+- After cleaning up the duplicate hosted zone, DNS propagation can take 24-48 hours to complete globally.
+- The AdminCDKUser IAM user needs appropriate Route53 permissions to manage DNS records.
+- If using the registrar-created hosted zone, you may need to request a new ACM certificate or move the validation records.

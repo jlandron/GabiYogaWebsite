@@ -1,0 +1,36 @@
+{
+  "version": "41.0.0",
+  "files": {
+    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
+      "displayName": "GabiYogaStorage/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
+      "source": {
+        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "891709159344-us-west-2": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
+          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "region": "us-west-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
+        }
+      }
+    },
+    "c2ba944a9faa63d7b75601659596ca9ea117c66ffecdc40b27f2da987434d84c": {
+      "displayName": "GabiYogaStorage Template",
+      "source": {
+        "path": "GabiYogaStorage.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "891709159344-us-west-2": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
+          "objectKey": "c2ba944a9faa63d7b75601659596ca9ea117c66ffecdc40b27f2da987434d84c.json",
+          "region": "us-west-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

@@ -24,6 +24,8 @@ export interface WebAppStackProps extends cdk.StackProps {
 export class WebAppStack extends cdk.Stack {
   public readonly loadBalancer: elbv2.ApplicationLoadBalancer;
   public readonly webSecurityGroup: ec2.SecurityGroup;
+  public readonly asg: autoscaling.AutoScalingGroup;
+  private httpListener: elbv2.ApplicationListener;
   
   constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
@@ -80,16 +82,16 @@ export class WebAppStack extends cdk.Stack {
       'NODE_ENV=production',
       'PORT=5001',
       `DB_TYPE=mysql`,
-      `DB_HOST=\${props.database.dbInstanceEndpointAddress}`,
+      `DB_HOST=gabiyogadatabase-databaseb269d8bb-2ftmtodc9lpf.cxq64wemez5f.us-west-2.rds.amazonaws.com`,
       'DB_PORT=3306',
       'DB_NAME=yoga',
       'DB_USER=admin',
       // In production, you would fetch this from Secrets Manager
-      'DB_PASSWORD=${PLACEHOLDER_DB_PASSWORD}',
+      'DB_PASSWORD=8O4Lfa8tq10wgAg8',
       `AWS_REGION=us-west-2`,
       `S3_BUCKET_NAME=${props.bucket.bucketName}`,
       `CLOUDFRONT_DISTRIBUTION_ID=${props.distribution.distributionId}`,
-      'JWT_SECRET=${PLACEHOLDER_JWT_SECRET}',
+      'JWT_SECRET=8b6b566f9125ce96c553d5bc46f6a0e0758bb8211500515e9a24dfe2d6cdebc6e721bb398906c203a7cde28b70b75561e470607cd8eeb49849d34bc8f5782f36131ccbcd516408028fdc85f5bde689f7cf5f2f47287ef28d5ae55728d92db6fc90db2137e781ce15be1744346ea857ee6b8082b672ab9c8ef4eea9062a9ff72c658e0527e98b217bf6d565361ccac0a543306ee220afaf0ecd3aef6dcc4711808389566ffd4b6e1d317b26225e94bfd8598745dcf2c3a9a2a339227c5b2c7ada2b4d8dc840e938f1f1575f7c5cc9c96cc6a084efaa186360bdd64c9dedf1b15c14e3868713710b9f90e90f64feb2a36e587e7f38d09ee5c40be3c4a4d57e35fe',
       'EOL',
       
       // Install dependencies
@@ -127,22 +129,27 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Add HTTP listener
-    const httpListener = this.loadBalancer.addListener('HttpListener', {
+    this.httpListener = this.loadBalancer.addListener('HttpListener', {
       port: 80,
       open: true,
     });
 
-    // Create Auto Scaling Group
-    const asg = new autoscaling.AutoScalingGroup(this, 'WebServerASG', {
-      vpc: props.vpc,
+    // Create Launch Template
+    const launchTemplate = new ec2.LaunchTemplate(this, 'WebServerLaunchTemplate', {
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.SMALL
       ),
-      machineImage: ec2.MachineImage.latestAmazonLinux2(),
-      securityGroup: webSg,
       role: webServerRole,
+      securityGroup: webSg,
       userData,
+    });
+
+    // Create Auto Scaling Group with Launch Template
+    this.asg = new autoscaling.AutoScalingGroup(this, 'WebServerASG', {
+      vpc: props.vpc,
+      launchTemplate: launchTemplate,
       minCapacity: 2,
       maxCapacity: 4,
       desiredCapacity: 2,
@@ -150,10 +157,10 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Add ASG to target group
-    httpListener.addTargets('WebTarget', {
+    this.httpListener.addTargets('WebTarget', {
       port: 5001,
       protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [asg],
+      targets: [this.asg],
       healthCheck: {
         path: '/api/health',
         interval: cdk.Duration.seconds(30),
@@ -164,7 +171,7 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Scale based on CPU usage
-    asg.scaleOnCpuUtilization('CpuScaling', {
+    this.asg.scaleOnCpuUtilization('CpuScaling', {
       targetUtilizationPercent: 70,
       cooldown: cdk.Duration.seconds(300),
     });
@@ -196,6 +203,40 @@ export class WebAppStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'DeploymentInstructions', {
       value: 'Replace placeholders in user data script and update your application code',
       description: 'Follow-up instructions for deployment',
+    });
+  }
+  
+  // Add a method to enable HTTPS with the certificate
+  public addHttpsListener(certificate: acm.ICertificate) {
+    // Add HTTPS listener
+    const httpsListener = this.loadBalancer.addListener('HttpsListener', {
+      port: 443,
+      certificates: [certificate],
+      open: true,
+      sslPolicy: elbv2.SslPolicy.RECOMMENDED
+    });
+
+    // Add target group to the HTTPS listener
+    httpsListener.addTargets('HttpsWebTarget', {
+      port: 5001,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targets: [this.asg],
+      healthCheck: {
+        path: '/api/health',
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      }
+    });
+    
+    // Add a redirect from HTTP to HTTPS
+    this.httpListener.addAction('HttpToHttpsRedirect', {
+      action: elbv2.ListenerAction.redirect({
+        protocol: 'HTTPS',
+        port: '443',
+        permanent: true
+      })
     });
   }
 }

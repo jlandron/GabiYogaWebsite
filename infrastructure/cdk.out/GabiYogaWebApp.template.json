@@ -1,0 +1,664 @@
+{
+ "Resources": {
+  "WebSecurityGroup73AF7387": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Security group for web servers",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTP",
+      "FromPort": 80,
+      "IpProtocol": "tcp",
+      "ToPort": 80
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTPS",
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "ToPort": 443
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow SSH",
+      "FromPort": 22,
+      "IpProtocol": "tcp",
+      "ToPort": 22
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "VpcId": {
+     "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebSecurityGroup/Resource"
+   }
+  },
+  "WebSecurityGroupfromGabiYogaWebAppWebSecurityGroupB8A6BA725001EDDCF558": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "Load balancer to target",
+    "FromPort": 5001,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "WebSecurityGroup73AF7387",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "WebSecurityGroup73AF7387",
+      "GroupId"
+     ]
+    },
+    "ToPort": 5001
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebSecurityGroup/from GabiYogaWebAppWebSecurityGroupB8A6BA72:5001"
+   }
+  },
+  "WebServerRole42ABA571": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ec2.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonSSMManagedInstanceCore"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonS3ReadOnlyAccess"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/CloudWatchAgentServerPolicy"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerRole/Resource"
+   }
+  },
+  "WebServerRoleDefaultPolicy9AFE19CE": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::gabi-yoga-uploads"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::gabi-yoga-uploads/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "GabiYogaDatabase:ExportsOutputRefDatabaseCredentialsAttachment7BAB329F508B30D6"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WebServerRoleDefaultPolicy9AFE19CE",
+    "Roles": [
+     {
+      "Ref": "WebServerRole42ABA571"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerRole/DefaultPolicy/Resource"
+   }
+  },
+  "LoadBalancerBE9EEC3A": {
+   "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+   "Properties": {
+    "LoadBalancerAttributes": [
+     {
+      "Key": "deletion_protection.enabled",
+      "Value": "false"
+     }
+    ],
+    "Scheme": "internet-facing",
+    "SecurityGroups": [
+     {
+      "Fn::GetAtt": [
+       "WebSecurityGroup73AF7387",
+       "GroupId"
+      ]
+     }
+    ],
+    "Subnets": [
+     {
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet1SubnetF78B4A2131BBBBCC"
+     },
+     {
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet2Subnet810C6076C62BA0AE"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "Type": "application"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LoadBalancer/Resource"
+   }
+  },
+  "LoadBalancerHttpListener22970844": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "DefaultActions": [
+     {
+      "RedirectConfig": {
+       "Port": "443",
+       "Protocol": "HTTPS",
+       "StatusCode": "HTTP_301"
+      },
+      "Type": "redirect"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "LoadBalancerBE9EEC3A"
+    },
+    "Port": 80,
+    "Protocol": "HTTP"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LoadBalancer/HttpListener/Resource"
+   }
+  },
+  "LoadBalancerHttpListenerWebTargetGroup156743A2": {
+   "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+   "Properties": {
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckPath": "/api/health",
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 2,
+    "Port": 5001,
+    "Protocol": "HTTP",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "TargetGroupAttributes": [
+     {
+      "Key": "stickiness.enabled",
+      "Value": "false"
+     }
+    ],
+    "TargetType": "instance",
+    "UnhealthyThresholdCount": 5,
+    "VpcId": {
+     "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LoadBalancer/HttpListener/WebTargetGroup/Resource"
+   }
+  },
+  "LoadBalancerHttpsListener583C7712": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "Certificates": [
+     {
+      "CertificateArn": {
+       "Fn::ImportValue": "GabiYogaDns:ExportsOutputRefCertificate4E7ABB08F7C8AF50"
+      }
+     }
+    ],
+    "DefaultActions": [
+     {
+      "TargetGroupArn": {
+       "Ref": "LoadBalancerHttpsListenerHttpsWebTargetGroup7A821C28"
+      },
+      "Type": "forward"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "LoadBalancerBE9EEC3A"
+    },
+    "Port": 443,
+    "Protocol": "HTTPS",
+    "SslPolicy": "ELBSecurityPolicy-2016-08"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LoadBalancer/HttpsListener/Resource"
+   }
+  },
+  "LoadBalancerHttpsListenerHttpsWebTargetGroup7A821C28": {
+   "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+   "Properties": {
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckPath": "/api/health",
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 2,
+    "Port": 5001,
+    "Protocol": "HTTP",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "TargetGroupAttributes": [
+     {
+      "Key": "stickiness.enabled",
+      "Value": "false"
+     }
+    ],
+    "TargetType": "instance",
+    "UnhealthyThresholdCount": 5,
+    "VpcId": {
+     "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LoadBalancer/HttpsListener/HttpsWebTargetGroup/Resource"
+   }
+  },
+  "WebServerLaunchTemplateProfile90C47AD5": {
+   "Type": "AWS::IAM::InstanceProfile",
+   "Properties": {
+    "Roles": [
+     {
+      "Ref": "WebServerRole42ABA571"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerLaunchTemplate/Profile"
+   }
+  },
+  "WebServerLaunchTemplateF0B86FE6": {
+   "Type": "AWS::EC2::LaunchTemplate",
+   "Properties": {
+    "LaunchTemplateData": {
+     "IamInstanceProfile": {
+      "Arn": {
+       "Fn::GetAtt": [
+        "WebServerLaunchTemplateProfile90C47AD5",
+        "Arn"
+       ]
+      }
+     },
+     "ImageId": {
+      "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amikernel510hvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+     },
+     "InstanceType": "t3.small",
+     "SecurityGroupIds": [
+      {
+       "Fn::GetAtt": [
+        "WebSecurityGroup73AF7387",
+        "GroupId"
+       ]
+      }
+     ],
+     "TagSpecifications": [
+      {
+       "ResourceType": "instance",
+       "Tags": [
+        {
+         "Key": "Environment",
+         "Value": "Production"
+        },
+        {
+         "Key": "Name",
+         "Value": "GabiYogaWebApp/WebServerLaunchTemplate"
+        },
+        {
+         "Key": "Project",
+         "Value": "GabiYoga"
+        }
+       ]
+      },
+      {
+       "ResourceType": "volume",
+       "Tags": [
+        {
+         "Key": "Environment",
+         "Value": "Production"
+        },
+        {
+         "Key": "Name",
+         "Value": "GabiYogaWebApp/WebServerLaunchTemplate"
+        },
+        {
+         "Key": "Project",
+         "Value": "GabiYoga"
+        }
+       ]
+      }
+     ],
+     "UserData": {
+      "Fn::Base64": {
+       "Fn::Join": [
+        "",
+        [
+         "#!/bin/bash\napt-get update -y\napt-get install -y nodejs npm mysql-client\ncurl -fsSL https://deb.nodesource.com/setup_16.x | bash -\napt-get install -y nodejs\napt-get install -y amazon-cloudwatch-agent\nmkdir -p /var/www/gabiyoga\ngit clone https://github.com/jlandron/GabiYogaWebsite.git /var/www/gabiyoga\necho \"Setting up environment variables\"\ncat > /var/www/gabiyoga/.env << EOL\nNODE_ENV=production\nPORT=5001\nDB_TYPE=mysql\nDB_HOST=gabiyogadatabase-databaseb269d8bb-2ftmtodc9lpf.cxq64wemez5f.us-west-2.rds.amazonaws.com\nDB_PORT=3306\nDB_NAME=yoga\nDB_USER=admin\nDB_PASSWORD=8O4Lfa8tq10wgAg8\nAWS_REGION=us-west-2\nS3_BUCKET_NAME=gabi-yoga-uploads\nCLOUDFRONT_DISTRIBUTION_ID=",
+         {
+          "Fn::ImportValue": "GabiYogaStorage:ExportsOutputRefDistribution830FAC524DF81588"
+         },
+         "\nJWT_SECRET=8b6b566f9125ce96c553d5bc46f6a0e0758bb8211500515e9a24dfe2d6cdebc6e721bb398906c203a7cde28b70b75561e470607cd8eeb49849d34bc8f5782f36131ccbcd516408028fdc85f5bde689f7cf5f2f47287ef28d5ae55728d92db6fc90db2137e781ce15be1744346ea857ee6b8082b672ab9c8ef4eea9062a9ff72c658e0527e98b217bf6d565361ccac0a543306ee220afaf0ecd3aef6dcc4711808389566ffd4b6e1d317b26225e94bfd8598745dcf2c3a9a2a339227c5b2c7ada2b4d8dc840e938f1f1575f7c5cc9c96cc6a084efaa186360bdd64c9dedf1b15c14e3868713710b9f90e90f64feb2a36e587e7f38d09ee5c40be3c4a4d57e35fe\nEOL\ncd /var/www/gabiyoga\nnpm install\ncat > /etc/systemd/system/gabiyoga.service << EOL\n[Unit]\nDescription=Gabi Yoga Web Application\nAfter=network.target\n\n[Service]\nType=simple\nUser=ubuntu\nWorkingDirectory=/var/www/gabiyoga\nExecStart=/usr/bin/npm start\nRestart=on-failure\nEnvironment=NODE_ENV=production\n\n[Install]\nWantedBy=multi-user.target\nEOL\nsystemctl enable gabiyoga\nsystemctl start gabiyoga"
+        ]
+       ]
+      }
+     }
+    },
+    "TagSpecifications": [
+     {
+      "ResourceType": "launch-template",
+      "Tags": [
+       {
+        "Key": "Environment",
+        "Value": "Production"
+       },
+       {
+        "Key": "Name",
+        "Value": "GabiYogaWebApp/WebServerLaunchTemplate"
+       },
+       {
+        "Key": "Project",
+        "Value": "GabiYoga"
+       }
+      ]
+     }
+    ]
+   },
+   "DependsOn": [
+    "WebServerRoleDefaultPolicy9AFE19CE",
+    "WebServerRole42ABA571"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerLaunchTemplate/Resource"
+   }
+  },
+  "WebServerASG5A722E5A": {
+   "Type": "AWS::AutoScaling::AutoScalingGroup",
+   "Properties": {
+    "DesiredCapacity": "2",
+    "LaunchTemplate": {
+     "LaunchTemplateId": {
+      "Ref": "WebServerLaunchTemplateF0B86FE6"
+     },
+     "Version": {
+      "Fn::GetAtt": [
+       "WebServerLaunchTemplateF0B86FE6",
+       "LatestVersionNumber"
+      ]
+     }
+    },
+    "MaxSize": "4",
+    "MinSize": "2",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "PropagateAtLaunch": true,
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "PropagateAtLaunch": true,
+      "Value": "GabiYoga"
+     }
+    ],
+    "TargetGroupARNs": [
+     {
+      "Ref": "LoadBalancerHttpListenerWebTargetGroup156743A2"
+     },
+     {
+      "Ref": "LoadBalancerHttpsListenerHttpsWebTargetGroup7A821C28"
+     }
+    ],
+    "VPCZoneIdentifier": [
+     {
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet1SubnetF78B4A2131BBBBCC"
+     },
+     {
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet2Subnet810C6076C62BA0AE"
+     }
+    ]
+   },
+   "UpdatePolicy": {
+    "AutoScalingScheduledAction": {
+     "IgnoreUnmodifiedGroupSizeProperties": true
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerASG/ASG"
+   }
+  },
+  "WebServerASGScalingPolicyCpuScalingEE12A730": {
+   "Type": "AWS::AutoScaling::ScalingPolicy",
+   "Properties": {
+    "AutoScalingGroupName": {
+     "Ref": "WebServerASG5A722E5A"
+    },
+    "Cooldown": "300",
+    "PolicyType": "TargetTrackingScaling",
+    "TargetTrackingConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ASGAverageCPUUtilization"
+     },
+     "TargetValue": 70
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebServerASG/ScalingPolicyCpuScaling/Resource"
+   }
+  },
+  "WebAppLogs91210B48": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 14,
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/WebAppLogs/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31QzWrDMAx+lt4db81pO247jEKgIc19qK6auXXsYMsdJfjdpyZtkzIYGKTvR5KlXC5fc/m8gJ+Qqd0xM3or+w2BOgqmvnpUOWNU0Ws6f3oXO/Gxt/8TK9t4DEEUEK36rrHtDBBebI9MEhpa2VfODOIQS2e0Ol/glK1sILAKS+/22nAZGgiklXGw24JhSdvmxP986zquAdLOFqy9Dxr6YfIcz306ENqr55bP9Bp8g3TfcwaTgEguKDA8nWcz2Izg7v7DjeW15/Myd5WmRR+IJIxrguwLNzW85SmJCoOLXg2XK8FDizRusY7URUrCuh3KQ3g6LV8kv3xxCFpnPlrSLcpqjL+hJ2+F/wEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/CDKMetadata/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amikernel510hvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": {
+   "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+   "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Outputs": {
+  "LoadBalancerDNS": {
+   "Description": "Load balancer DNS name",
+   "Value": {
+    "Fn::GetAtt": [
+     "LoadBalancerBE9EEC3A",
+     "DNSName"
+    ]
+   }
+  },
+  "WebServerSecurityGroup": {
+   "Description": "Web server security group ID",
+   "Value": {
+    "Fn::GetAtt": [
+     "WebSecurityGroup73AF7387",
+     "GroupId"
+    ]
+   }
+  },
+  "DeploymentInstructions": {
+   "Description": "Follow-up instructions for deployment",
+   "Value": "Replace placeholders in user data script and update your application code"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
