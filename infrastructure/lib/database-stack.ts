@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
-import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 
 export interface DatabaseStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
@@ -11,7 +11,7 @@ export interface DatabaseStackProps extends cdk.StackProps {
 export class DatabaseStack extends cdk.Stack {
   public readonly database: rds.DatabaseInstance;
   public readonly databaseSecurityGroup: ec2.SecurityGroup;
-  public readonly databaseSecret: secretsmanager.Secret;
+  public readonly databaseSecret: secrets.Secret;
 
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
@@ -24,7 +24,7 @@ export class DatabaseStack extends cdk.Stack {
     });
 
     // Create a secret for database credentials
-    this.databaseSecret = new secretsmanager.Secret(this, 'DatabaseCredentials', {
+    this.databaseSecret = new secrets.Secret(this, 'DatabaseCredentials', {
       secretName: 'gabi-yoga-db-credentials',
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: 'admin' }),
@@ -63,7 +63,7 @@ export class DatabaseStack extends cdk.Stack {
       publiclyAccessible: false,
     });
 
-    // Allow connections from web servers
+    // Allow connections from anywhere within the VPC to avoid circular dependencies
     this.databaseSecurityGroup.addIngressRule(
       ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
       ec2.Port.tcp(3306),
@@ -76,9 +76,6 @@ export class DatabaseStack extends cdk.Stack {
       description: 'Database endpoint',
     });
 
-    new cdk.CfnOutput(this, 'DatabaseSecretArn', {
-      value: this.databaseSecret.secretArn,
-      description: 'Database credentials secret ARN',
-    });
+    // The secret ARN output is now in the CredentialsStack
   }
 }

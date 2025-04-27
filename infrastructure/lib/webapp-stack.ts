@@ -17,20 +17,25 @@ export interface WebAppStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
   database: rds.DatabaseInstance;
   databaseSecurityGroup: ec2.SecurityGroup;
-  bucket: s3.Bucket;
+  bucket: s3.IBucket;
   distribution: cloudfront.Distribution;
 }
 
 export class WebAppStack extends cdk.Stack {
+  public readonly loadBalancer: elbv2.ApplicationLoadBalancer;
+  public readonly webSecurityGroup: ec2.SecurityGroup;
+  
   constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
 
     // Create security group for web instances
-    const webSg = new ec2.SecurityGroup(this, 'WebSecurityGroup', {
+    this.webSecurityGroup = new ec2.SecurityGroup(this, 'WebSecurityGroup', {
       vpc: props.vpc,
       description: 'Security group for web servers',
       allowAllOutbound: true,
     });
+    
+    const webSg = this.webSecurityGroup; // For readability in the rest of the code
 
     // Allow inbound HTTP and HTTPS traffic
     webSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP');
@@ -67,7 +72,7 @@ export class WebAppStack extends cdk.Stack {
       'mkdir -p /var/www/gabiyoga',
       
       // Clone application code (replace with your repository)
-      // 'git clone https://github.com/yourusername/gabiyoga.git /var/www/gabiyoga',
+      'git clone https://github.com/jlandron/GabiYogaWebsite.git /var/www/gabiyoga',
       
       // Setup environment variables
       'echo "Setting up environment variables"',
@@ -115,14 +120,14 @@ export class WebAppStack extends cdk.Stack {
     );
 
     // Create load balancer
-    const lb = new elbv2.ApplicationLoadBalancer(this, 'LoadBalancer', {
+    this.loadBalancer = new elbv2.ApplicationLoadBalancer(this, 'LoadBalancer', {
       vpc: props.vpc,
       internetFacing: true,
       securityGroup: webSg,
     });
 
     // Add HTTP listener
-    const httpListener = lb.addListener('HttpListener', {
+    const httpListener = this.loadBalancer.addListener('HttpListener', {
       port: 80,
       open: true,
     });
@@ -134,9 +139,7 @@ export class WebAppStack extends cdk.Stack {
         ec2.InstanceClass.BURSTABLE3,
         ec2.InstanceSize.SMALL
       ),
-      machineImage: ec2.MachineImage.latestAmazonLinux2({
-        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-      }),
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
       securityGroup: webSg,
       role: webServerRole,
       userData,
@@ -149,6 +152,7 @@ export class WebAppStack extends cdk.Stack {
     // Add ASG to target group
     httpListener.addTargets('WebTarget', {
       port: 5001,
+      protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [asg],
       healthCheck: {
         path: '/api/health',
@@ -176,16 +180,11 @@ export class WebAppStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // Allow connections from web servers to database
-    props.databaseSecurityGroup.addIngressRule(
-      webSg,
-      ec2.Port.tcp(3306),
-      'Allow MySQL connections from web servers'
-    );
+    // Security group rule for database access will be added in app.ts to avoid circular dependencies
 
     // Outputs
     new cdk.CfnOutput(this, 'LoadBalancerDNS', {
-      value: lb.loadBalancerDnsName,
+      value: this.loadBalancer.loadBalancerDnsName,
       description: 'Load balancer DNS name',
     });
 

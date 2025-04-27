@@ -99,16 +99,31 @@ cdk bootstrap aws://891709159344/us-west-2
 Deploy all the stacks at once:
 
 ```bash
+cd infrastructure
+cdk deploy --all --app "npx ts-node bin/app.ts"
+```
+
+Alternatively, you can create a `cdk.json` file in the infrastructure directory:
+
+```bash
+echo '{ "app": "npx ts-node bin/app.ts" }' > cdk.json
+```
+
+After creating this file, you can run:
+
+```bash
+cd infrastructure
 cdk deploy --all
 ```
 
 If you prefer to deploy one stack at a time:
 
 ```bash
-cdk deploy GabiYogaNetwork
-cdk deploy GabiYogaDatabase
-cdk deploy GabiYogaStorage
-cdk deploy GabiYogaWebApp
+cd infrastructure
+cdk deploy GabiYogaNetwork --app "npx ts-node bin/app.ts"
+cdk deploy GabiYogaDatabase --app "npx ts-node bin/app.ts"
+cdk deploy GabiYogaStorage --app "npx ts-node bin/app.ts"
+cdk deploy GabiYogaWebApp --app "npx ts-node bin/app.ts"
 ```
 
 ### 5. Post-Deployment Configuration
@@ -151,13 +166,116 @@ zip -r deployment.zip * .env
 
 2. Upload to each EC2 instance using AWS Systems Manager (SSM) Session Manager or SCP
 
-### 7. DNS Configuration
+### 7. DNS Configuration with Route53
 
-To configure DNS for your website:
+To configure DNS for your domain `gabi.yoga`:
 
-1. If using Route 53, create a hosted zone for your domain
-2. Create an A record that points to your load balancer's DNS name
-3. For SSL, request a certificate through ACM and configure it with your load balancer
+1. **Create a hosted zone in Route53:**
+
+   ```bash
+   aws route53 create-hosted-zone --name gabi.yoga --caller-reference $(date +%s)
+   ```
+
+2. **Note the nameservers** in the output, which will look like:
+   
+   ```
+   ns-123.awsdns-12.com.
+   ns-456.awsdns-34.net.
+   ns-789.awsdns-56.org.
+   ns-012.awsdns-78.co.uk.
+   ```
+
+3. **Register the domain** (if not already registered):
+   
+   ```bash
+   aws route53domains register-domain \
+     --domain-name gabi.yoga \
+     --admin-contact "..." \
+     --registrant-contact "..." \
+     --tech-contact "..." \
+     --years 1 \
+     --auto-renew
+   ```
+   
+   Note: You'll need to provide admin, registrant, and technical contact information.
+   
+   Alternatively, if the domain is already registered elsewhere, update the nameservers with your domain registrar.
+
+4. **Create an SSL certificate** using AWS Certificate Manager:
+
+   ```bash
+   aws acm request-certificate \
+     --domain-name gabi.yoga \
+     --validation-method DNS \
+     --region us-west-2
+   ```
+
+5. **Create validation DNS records** as prompted by AWS.
+
+6. **Create a Route53 record set** that points to your load balancer:
+
+   ```bash
+   # Get your load balancer DNS name from the outputs
+   LB_DNS_NAME=$(aws cloudformation describe-stacks \
+     --stack-name GabiYogaWebApp \
+     --query "Stacks[0].Outputs[?OutputKey=='LoadBalancerDNS'].OutputValue" \
+     --output text)
+   
+   # Create the A record alias to the load balancer
+   aws route53 change-resource-record-sets \
+     --hosted-zone-id YOUR_HOSTED_ZONE_ID \
+     --change-batch '{
+       "Changes": [{
+         "Action": "CREATE",
+         "ResourceRecordSet": {
+           "Name": "gabi.yoga",
+           "Type": "A",
+           "AliasTarget": {
+             "HostedZoneId": "YOUR_LOAD_BALANCER_HOSTED_ZONE_ID",
+             "DNSName": "'$LB_DNS_NAME'",
+             "EvaluateTargetHealth": true
+           }
+         }
+       }]
+     }'
+   ```
+
+   Note: Replace `YOUR_HOSTED_ZONE_ID` with the actual hosted zone ID and `YOUR_LOAD_BALANCER_HOSTED_ZONE_ID` with the hosted zone ID specific to your load balancer's region.
+
+7. **Configure www subdomain** (optional):
+
+   ```bash
+   aws route53 change-resource-record-sets \
+     --hosted-zone-id YOUR_HOSTED_ZONE_ID \
+     --change-batch '{
+       "Changes": [{
+         "Action": "CREATE",
+         "ResourceRecordSet": {
+           "Name": "www.gabi.yoga",
+           "Type": "CNAME",
+           "TTL": 300,
+           "ResourceRecords": [{
+             "Value": "gabi.yoga"
+           }]
+         }
+       }]
+     }'
+   ```
+
+8. **Update your load balancer** to use the new SSL certificate:
+
+   ```bash
+   aws elbv2 modify-listener \
+     --listener-arn YOUR_LISTENER_ARN \
+     --certificates CertificateArn=YOUR_CERTIFICATE_ARN \
+     --ssl-policy ELBSecurityPolicy-2016-08
+   ```
+
+9. **Verify DNS propagation** (this may take 24-48 hours):
+
+   ```bash
+   dig gabi.yoga
+   ```
 
 ### 8. Database Migration
 
