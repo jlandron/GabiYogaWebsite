@@ -62,13 +62,13 @@ export class WebAppStack extends cdk.Stack {
     // Create a user data script to configure the EC2 instance
     const userData = ec2.UserData.forLinux();
     userData.addCommands(
-      'apt-get update -y',
-      'apt-get install -y nodejs npm mysql-client',
-      'curl -fsSL https://deb.nodesource.com/setup_16.x | bash -',
-      'apt-get install -y nodejs',
+      'yum update -y',
+      'yum install -y mysql mariadb-client',
+      'curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -',
+      'yum install -y nodejs',
       
       // Install CloudWatch agent
-      'apt-get install -y amazon-cloudwatch-agent',
+      'yum install -y amazon-cloudwatch-agent',
       
       // Create application directory
       'mkdir -p /var/www/gabiyoga',
