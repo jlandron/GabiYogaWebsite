@@ -156,6 +156,47 @@ The detailed verification will:
 
 > ⚠️ **Note:** The detailed verification uses AWS Systems Manager (SSM), so make sure your instances have the SSM agent installed and appropriate IAM permissions.
 
+## Refreshing Service After Code Changes
+
+After pushing changes to your GitHub repository, you can use the `refresh-service.sh` script to update your running service on the EC2 instance:
+
+```bash
+# Make the script executable if needed
+chmod +x infrastructure/scripts/refresh-service.sh
+
+# Run the script with sudo privileges
+sudo ./infrastructure/scripts/refresh-service.sh
+```
+
+This script performs the following operations:
+- Pulls the latest changes from your GitHub repository
+- Handles any local conflicts (with interactive prompts)
+- Installs or updates npm dependencies
+- Checks for and can apply database schema changes
+- Restarts the application service
+- Verifies the service is running correctly
+- Provides troubleshooting guidance if issues are detected
+
+### Advanced Options
+
+You can customize the script behavior with these options:
+
+```bash
+# Specify a different application path
+sudo ./infrastructure/scripts/refresh-service.sh --path=/custom/app/path
+
+# Use a different Git repository
+sudo ./infrastructure/scripts/refresh-service.sh --repo=https://github.com/username/repo.git
+
+# Specify a different branch
+sudo ./infrastructure/scripts/refresh-service.sh --branch=develop
+
+# Use a different service name
+sudo ./infrastructure/scripts/refresh-service.sh --service=my-custom-service
+```
+
+For repositories not yet set up with Git, the script can help you initialize the repository and clone the code from GitHub.
+
 ## Troubleshooting Issues on EC2 Instances
 
 ### Service Not Starting
