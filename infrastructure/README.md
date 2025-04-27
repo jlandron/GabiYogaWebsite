@@ -1,166 +1,263 @@
-# GabiYoga Infrastructure Guide
+## Adding Admin User After Deployment
 
-This directory contains AWS CDK (Cloud Development Kit) code for deploying the infrastructure for the Gabi Yoga website.
+After deploying the application to AWS, you can add an admin user to the database using the provided scripts:
 
-## Components
+### Option 1: Local Script with AWS Session Manager (Recommended)
 
-The infrastructure consists of several stacks:
+The easiest way to add an admin user is to use the AWS helper script:
 
-1. **GabiYogaNetwork**: VPC and networking components
-2. **GabiYogaStorage**: S3 bucket and CloudFront distribution
-3. **GabiYogaDatabase**: RDS MySQL database
-4. **GabiYogaWebApp**: EC2 instances with Auto Scaling and Load Balancer
-5. **GabiYogaDns**: Route53 hosted zone and DNS records
+```bash
+# Make the script executable if needed
+chmod +x infrastructure/scripts/aws-add-admin.sh
 
-## Deployment Instructions
+# Run the script with required parameters
+./infrastructure/scripts/aws-add-admin.sh \
+  --email=admin@example.com \
+  --password=securepassword \
+  --first-name=Admin \
+  --last-name=User
+```
 
-### Prerequisites
+This script will:
+- Find a running EC2 instance in your Auto Scaling Group
+- Connect to it using AWS Session Manager
+- Execute the admin user creation script
+- Provide feedback on the operation
 
-- AWS CLI configured with appropriate credentials
-- Node.js and npm installed
-- AWS CDK installed (`npm install -g aws-cdk`)
+**Advanced options:**
+```bash
+# Specify a different AWS region
+./infrastructure/scripts/aws-add-admin.sh --region=us-east-1 ...
 
-### Steps
+# Specify a different Auto Scaling Group name
+./infrastructure/scripts/aws-add-admin.sh --asg=MyCustomASG ...
+```
 
-1. Install dependencies:
+### Option 2: Manual Execution via SSH or Session Manager
+
+If you prefer to manually connect to an EC2 instance:
+
+1. Connect to an EC2 instance using SSH or AWS Session Manager
+2. Navigate to the application directory
+3. Run the admin user creation script:
+   ```bash
+   cd /var/www/gabiyoga
+   node utils/add-admin-user.js \
+     --email=admin@example.com \
+     --password=securepassword \
+     --firstName=Admin \
+     --lastName=User
    ```
-   npm install
+
+### Option 3: Direct Database Access
+
+If you have direct access to the RDS database:
+
+1. Copy the `utils/add-admin-user.js` script to your local environment
+2. Install required dependencies:
+   ```bash
+   npm install dotenv bcryptjs mysql2
+   ```
+3. Configure the `.env` file with your database credentials
+4. Run the script locally:
+   ```bash
+   node add-admin-user.js \
+     --email=admin@example.com \
+     --password=securepassword \
+     --firstName=Admin \
+     --lastName=User
    ```
 
-2. Deploy the stacks:
-   ```
-   cdk deploy --all
-   ```
+## Applying Node.js Installation Changes
 
-3. For individual stack deployment:
-   ```
-   cdk deploy GabiYogaNetwork
-   cdk deploy GabiYogaStorage
-   cdk deploy GabiYogaDatabase
+After deploying the CDK updates for the Node.js installation method, the changes won't automatically apply to already running instances. Here's how to apply the changes:
+
+### Option 1: Automatic Instance Refresh (Recommended for production)
+
+To update all EC2 instances in the Auto Scaling Group:
+
+1. Deploy the CDK changes:
+   ```bash
+   cd infrastructure
    cdk deploy GabiYogaWebApp
-   cdk deploy GabiYogaDns
    ```
 
-## DNS Configuration Steps
-
-### IMPORTANT: Duplicate Hosted Zones Issue
-
-We've identified that there are two hosted zones for the same domain name "gabi.yoga":
-
-1. **Registrar-created zone** (Z0858162FM97J2FO2QJU):
-   - Created by the Route53 domain registrar
-   - Has nameservers:
-     - ns-1840.awsdns-38.co.uk
-     - ns-1021.awsdns-63.net
-     - ns-472.awsdns-59.com
-     - ns-1408.awsdns-48.org
-
-2. **CDK-created zone** (Z014284916RF6IYZT6XTQ):
-   - Created by the GabiYogaDns stack
-   - Has nameservers:
-     - ns-1446.awsdns-52.org
-     - ns-56.awsdns-07.com
-     - ns-689.awsdns-22.net
-     - ns-1636.awsdns-12.co.uk
-
-Having two hosted zones for the same domain will cause DNS issues. Here's how to resolve this:
-
-1. **Determine which zone to keep**:
-   - The registrar-created zone (recommended if domain was registered through Route53)
-   - OR the CDK-created zone (if you prefer to use this one)
-
-2. **Delete the unused hosted zone**:
-   ```
-   # To delete the CDK-created zone (recommended)
-   aws route53 delete-hosted-zone --id Z014284916RF6IYZT6XTQ
-
-   # OR to delete the registrar-created zone
-   aws route53 delete-hosted-zone --id Z0858162FM97J2FO2QJU
+2. Use the provided refresh script to initiate an instance refresh:
+   ```bash
+   ./scripts/refresh-instances.sh
    ```
 
-3. **Update the CDK code** to use the existing hosted zone:
-   - Modify `infrastructure/lib/dns-stack.ts` to import the existing hosted zone rather than creating a new one:
-   ```typescript
-   // Replace the hosted zone creation with:
-   this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
-     zoneName: props.domainName,
-     hostedZoneId: 'Z0858162FM97J2FO2QJU', // Use the ID of the zone you want to keep
-   });
+   The script will:
+   - Automatically find the Auto Scaling Group in the CloudFormation stack
+   - Show you the current instance count
+   - Ask for confirmation before starting the refresh
+   - Monitor the progress until completion
+   
+   **Advanced options:**
+   ```bash
+   # Customize the minimum healthy percentage (default 50%)
+   ./scripts/refresh-instances.sh --min-healthy 75
+   
+   # Start the refresh but don't wait for completion
+   ./scripts/refresh-instances.sh --no-wait
+   
+   # See all available options
+   ./scripts/refresh-instances.sh --help
    ```
 
-### DNS Configuration After Resolving Duplicate Zones
+### Option 2: Manual Update (For development/testing)
 
-Once you've resolved the duplicate zones issue, follow these steps:
+For quickly updating a single instance:
 
-1. **Get the Hosted Zone ID and Nameservers**:
-   ```
-   aws route53 get-hosted-zone --id Z0858162FM97J2FO2QJU --query "DelegationSet.NameServers" --output text
-   ```
+1. Deploy the CDK changes
+2. Identify the instance you want to update
+3. Terminate the instance (ASG will automatically create a new one with the updated configuration)
+4. Wait for the new instance to initialize (typically 5-10 minutes)
+5. Verify the Node.js installation is working correctly
 
-2. **Domain Registration** (if not already registered):
-   ```
-   # Create contact information JSON
-   CONTACT='{
-     "FirstName": "Your-First-Name",
-     "LastName": "Your-Last-Name",
-     "ContactType": "PERSON",
-     "OrganizationName": "Gabi Yoga",
-     "AddressLine1": "Your Address",
-     "City": "Your City",
-     "State": "Your State",
-     "CountryCode": "US",
-     "ZipCode": "Your ZIP",
-     "PhoneNumber": "+1.1234567890",
-     "Email": "your-email@example.com"
-   }'
+> ⚠️ **Note:** The instance refresh approach is preferable for production environments as it maintains availability by gradually replacing instances.
 
-   # Register the domain - IMPORTANT: This must run in us-east-1 region
-   aws --region us-east-1 route53domains register-domain \
-       --domain-name gabi.yoga \
-       --admin-contact "$CONTACT" \
-       --registrant-contact "$CONTACT" \
-       --tech-contact "$CONTACT" \
-       --duration-in-years 1 \
-       --auto-renew
-   ```
+## Verifying Node.js Installation
 
-3. **Update Nameservers** (if registered elsewhere):
-   Use the nameservers from step 1 to configure at your domain registrar.
+After deploying the CDK changes and refreshing the EC2 instances, you can verify that Node.js is installed correctly using the provided verification script:
 
-4. **Create/Update DNS Records**:
-   ```
-   # Use correct hosted zone ID
-   aws route53 change-resource-record-sets \
-        --hosted-zone-id Z0858162FM97J2FO2QJU \
-        --change-batch '{
-          "Changes": [{
-            "Action": "CREATE",
-            "ResourceRecordSet": {
-              "Name": "www.gabi.yoga",
-              "Type": "CNAME",
-              "TTL": 300,
-              "ResourceRecords": [{
-                "Value": "gabi.yoga"
-              }]
-            }
-          }]
-        }'
+```bash
+# Basic verification - lists instances in the Auto Scaling Group
+./scripts/verify-node-installation.sh
+
+# Detailed verification - runs checks on each instance via SSM
+./scripts/verify-node-installation.sh --detailed
+```
+
+The detailed verification will:
+- Check if Node.js is available at `/usr/local/bin/node`
+- Check if npm is available at `/usr/local/bin/npm`
+- Verify the NVM installation
+- Test Node.js via NVM
+- Check the status of the gabiyoga service
+- Check for listening ports
+- Show recent log entries
+
+> ⚠️ **Note:** The detailed verification uses AWS Systems Manager (SSM), so make sure your instances have the SSM agent installed and appropriate IAM permissions.
+
+## Troubleshooting Issues on EC2 Instances
+
+### Service Not Starting
+
+If after refreshing instances, the Node.js application service is not starting automatically, you can use the included fix-service.sh script to troubleshoot and repair the installation:
+
+1. SSH into the problematic EC2 instance:
+   ```bash
+   ssh -i your-key.pem ec2-user@instance-ip-address
    ```
 
-5. **Validate ACM Certificate**:
-   If your certificate is in the other hosted zone, you'll need to create new validation records:
+2. Copy the fix-service.sh script to the EC2 instance:
+   ```bash
+   # On your local machine
+   scp -i your-key.pem infrastructure/scripts/fix-service.sh ec2-user@instance-ip-address:~
    ```
-   aws acm describe-certificate --certificate-arn <CERTIFICATE_ARN> --query "Certificate.DomainValidationOptions[].ResourceRecord"
+
+3. Run the script on the EC2 instance:
+   ```bash
+   # On the EC2 instance
+   sudo chmod +x ~/fix-service.sh
+   sudo ./fix-service.sh
    ```
 
-   Then create those records in your chosen hosted zone.
+The script will:
+- Verify Node.js installation and fix symbolic links if needed
+- Check for the application directory and server.js file
+- Validate or repair the systemd service configuration
+- Enable and start the service
+- Perform connectivity tests
+- Provide a detailed report of any issues found
 
-6. **Add HTTPS Listener to Load Balancer**:
-   This might require updating the WebAppStack to include an HTTPS listener using the certificate.
+If the script doesn't fully resolve your issues, it will provide specific troubleshooting steps based on its findings.
 
-## Important Notes
+### npm and Node.js Path Issues
 
-- Having two hosted zones for the same domain causes DNS resolution issues and certificate validation problems.
-- After cleaning up the duplicate hosted zone, DNS propagation can take 24-48 hours to complete globally.
-- The AdminCDKUser IAM user needs appropriate Route53 permissions to manage DNS records.
-- If using the registrar-created hosted zone, you may need to request a new ACM certificate or move the validation records.
+If you encounter either of these errors:
+- `sudo: npm: command not found`
+- `/usr/bin/env: node: No such file or directory`
+
+Use our deployment scripts to fix these issues:
+
+#### For Basic npm Path Issues:
+
+1. SSH into the EC2 instance:
+   ```bash
+   ssh -i your-key.pem ec2-user@instance-ip-address
+   ```
+
+2. Copy the fixed deployment script to the EC2 instance:
+   ```bash
+   # On your local machine
+   scp -i your-key.pem infrastructure/scripts/deploy-app-files-fixed.sh ec2-user@instance-ip-address:~
+   ```
+
+3. Run the script on the EC2 instance:
+   ```bash
+   # On the EC2 instance
+   chmod +x ~/deploy-app-files-fixed.sh
+   sudo ./deploy-app-files-fixed.sh
+   ```
+
+#### For Persistent Node.js Path Issues:
+
+We provide two levels of solutions:
+
+##### Option 1: Basic Path Fix Script
+
+1. SSH into the EC2 instance:
+   ```bash
+   ssh -i your-key.pem ec2-user@instance-ip-address
+   ```
+
+2. Copy the deployment script to the EC2 instance:
+   ```bash
+   # On your local machine
+   scp -i your-key.pem infrastructure/scripts/deploy-app-files-final.sh ec2-user@instance-ip-address:~
+   ```
+
+3. Run the script on the EC2 instance:
+   ```bash
+   # On the EC2 instance
+   chmod +x ~/deploy-app-files-final.sh
+   sudo ./deploy-app-files-final.sh
+   ```
+
+This script:
+- Addresses `/usr/bin/env: node: No such file or directory` errors
+- Creates appropriate symbolic links for Node.js and npm
+- Sets the PATH environment variable in the systemd service
+
+##### Option 2: Ultimate Fix for Circular Symlinks (RECOMMENDED)
+
+If you encounter the "Too many levels of symbolic links" error, use our ultimate script:
+
+1. SSH into the EC2 instance:
+   ```bash
+   ssh -i your-key.pem ec2-user@instance-ip-address
+   ```
+
+2. Copy the ultimate deployment script to the EC2 instance:
+   ```bash
+   # On your local machine
+   scp -i your-key.pem infrastructure/scripts/deploy-app-files-ultimate.sh ec2-user@instance-ip-address:~
+   ```
+
+3. Run the script on the EC2 instance:
+   ```bash
+   # On the EC2 instance
+   chmod +x ~/deploy-app-files-ultimate.sh
+   sudo ./deploy-app-files-ultimate.sh
+   ```
+
+This comprehensive script:
+- **Fixes circular symlink issues** by safely removing problematic links
+- Directly locates the real Node.js binary from NVM without relying on existing symlinks
+- Creates clean symlinks that point directly to the actual binaries
+- Verifies symlinks work correctly before proceeding with deployment
+- Updates the systemd service to use the real Node.js path
+- Includes detailed error diagnostics and fallback installation methods
+- Tests the application to confirm it's working correctly
