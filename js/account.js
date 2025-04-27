@@ -559,6 +559,210 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'login.html';
             }
         }
+        
+        // Setup payment handlers for membership purchases
+        setupPaymentHandlers();
+    };
+    
+    // Set up payment handlers for memberships and packages
+    const setupPaymentHandlers = () => {
+        // One-time purchase handlers (class packs, workshops, etc.)
+        const purchaseButtons = document.querySelectorAll('.membership-actions button[title="Purchase More Classes"]');
+        purchaseButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get membership details from parent container
+                const membershipItem = this.closest('.membership-item');
+                const title = membershipItem.querySelector('.membership-title').textContent;
+                
+                // Open purchase modal
+                openPurchaseModal(title, '150.00', 'Class Pack');
+            });
+        });
+        
+        // Subscription handlers for memberships
+        const manageBillingButtons = document.querySelectorAll('.membership-actions button[title="Manage Billing"]');
+        manageBillingButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get membership details from parent container
+                const membershipItem = this.closest('.membership-item');
+                const title = membershipItem.querySelector('.membership-title').textContent;
+                const priceInfo = membershipItem.querySelector('.membership-info span:nth-child(3)').textContent;
+                
+                // Extract price from the displayed text (e.g. "$120/month")
+                const priceMatch = priceInfo.match(/\$(\d+(\.\d+)?)/);
+                const price = priceMatch ? priceMatch[1] : '120.00';
+                
+                // Open subscription modal
+                openSubscriptionModal(title, price);
+            });
+        });
+        
+        // Workshop registration buttons
+        const workshopRegisterButtons = document.querySelectorAll('.workshop-actions a[data-workshop]');
+        workshopRegisterButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get workshop details
+                const workshopItem = this.closest('.workshop-item');
+                const title = workshopItem.querySelector('.workshop-title').textContent;
+                const priceInfo = workshopItem.querySelector('.workshop-info span:last-child').textContent;
+                
+                // Extract price from the displayed text (e.g. "$45 ($40 for members)")
+                const priceMatch = priceInfo.match(/\$(\d+)/);
+                const price = priceMatch ? priceMatch[1] : '45.00';
+                
+                // Open purchase modal for workshop
+                openPurchaseModal(title, price, 'Workshop');
+            });
+        });
+        
+        // Retreat registration buttons
+        const retreatRegisterButtons = document.querySelectorAll('.retreat-actions a:nth-child(2)');
+        retreatRegisterButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get retreat details
+                const retreatItem = this.closest('.retreat-item');
+                const title = retreatItem.querySelector('.retreat-title').textContent;
+                const priceInfo = retreatItem.querySelector('.retreat-info span:last-child').textContent;
+                
+                // Extract price from the displayed text (e.g. "From $1,200")
+                const priceMatch = priceInfo.match(/\$([0-9,]+)/);
+                const priceText = priceMatch ? priceMatch[1].replace(',', '') : '1200';
+                
+                // Open purchase modal for retreat with deposit amount (usually 25%)
+                const depositAmount = (parseFloat(priceText) * 0.25).toFixed(2);
+                openPurchaseModal(`${title} - Deposit`, depositAmount, 'Retreat Deposit');
+            });
+        });
+        
+        // Private session booking buttons
+        const sessionBookButtons = document.querySelectorAll('.session-packages .btn-small');
+        sessionBookButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get session package details
+                const packageItem = this.closest('.session-package-item');
+                const title = packageItem.querySelector('.package-name').textContent;
+                const price = packageItem.querySelector('.package-price').textContent.substring(1);
+                
+                // Open purchase modal
+                openPurchaseModal(title, price, 'Private Session');
+            });
+        });
+        
+        // Set up close functionality for modals
+        setupModalCloseFunctionality();
+    };
+    
+    // Open purchase modal with item details
+    const openPurchaseModal = (title, price, type) => {
+        // Get modal and form elements
+        const modal = document.getElementById('purchase-modal');
+        const form = document.getElementById('purchase-form');
+        
+        if (!modal || !form) {
+            console.error('Purchase modal or form not found');
+            return;
+        }
+        
+        // Set form values
+        document.getElementById('purchase-type').value = `${type}: ${title}`;
+        document.getElementById('purchase-price').value = `$${price}`;
+        
+        // Pre-fill user information if available
+        const user = UserService.getUser();
+        if (user) {
+            const nameField = document.getElementById('purchase-name');
+            const emailField = document.getElementById('purchase-email');
+            const phoneField = document.getElementById('purchase-phone');
+            
+            if (nameField) nameField.value = `${user.firstName} ${user.lastName}`;
+            if (emailField) emailField.value = user.email || '';
+            if (phoneField && user.phone) phoneField.value = user.phone;
+        }
+        
+        // Initialize Stripe payment element
+        if (window.stripePaymentHandler) {
+            window.stripePaymentHandler.setupOneTimePayment(price, `${type}: ${title}`);
+        }
+        
+        // Show the modal
+        modal.style.display = 'block';
+    };
+    
+    // Open subscription modal with membership details
+    const openSubscriptionModal = (title, price) => {
+        // Get modal and form elements
+        const modal = document.getElementById('subscription-modal');
+        const form = document.getElementById('subscription-form');
+        
+        if (!modal || !form) {
+            console.error('Subscription modal or form not found');
+            return;
+        }
+        
+        // Set form values
+        document.getElementById('subscription-type').value = title;
+        document.getElementById('subscription-price').value = `$${price}/month`;
+        
+        // Set start date to today
+        const startDateInput = document.getElementById('subscription-start');
+        if (startDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            startDateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+        
+        // Pre-fill user information if available
+        const user = UserService.getUser();
+        if (user) {
+            const nameField = document.getElementById('subscription-name');
+            const emailField = document.getElementById('subscription-email');
+            const phoneField = document.getElementById('subscription-phone');
+            
+            if (nameField) nameField.value = `${user.firstName} ${user.lastName}`;
+            if (emailField) emailField.value = user.email || '';
+            if (phoneField && user.phone) phoneField.value = user.phone;
+        }
+        
+        // Show the modal
+        modal.style.display = 'block';
+    };
+    
+    // Set up modal close functionality
+    const setupModalCloseFunctionality = () => {
+        // Get all modals
+        const modals = document.querySelectorAll('.modal');
+        
+        // Add click event for closing modals
+        window.addEventListener('click', function(event) {
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+        
+        // Add click event for close buttons
+        const closeButtons = document.querySelectorAll('.close-modal');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
     };
     
     // Toggle password visibility

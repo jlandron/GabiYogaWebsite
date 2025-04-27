@@ -29,6 +29,7 @@ const adminPricingRoutes = require('./api/admin-pricing');
 const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
 const galleryRoutes = require('./api/gallery');
 const blogRoutes = require('./api/blog'); // Import blog routes
+const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
 const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
 // Removed mock routes to use real database data
 
@@ -145,6 +146,10 @@ app.use('/api/admin', adminRouter);
 app.use('/api', adminPricingRoutes); // For public pricing endpoint
 app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
 app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
+app.use('/api/stripe', stripeRoutes); // Stripe payment routes
+
+// Special case: Stripe webhook endpoint needs raw body for signature verification
+app.use('/api/stripe/webhook', express.raw({type: 'application/json'}), stripeRoutes);
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers

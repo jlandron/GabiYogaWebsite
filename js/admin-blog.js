@@ -515,7 +515,9 @@ class BlogManager {
             
             const viewBtn = row.querySelector('.view-post-btn');
             if (viewBtn) {
-                viewBtn.addEventListener('click', () => {
+                viewBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const postId = viewBtn.dataset.id;
                     this.viewPost(postId);
                 });
@@ -523,7 +525,9 @@ class BlogManager {
             
             const deleteBtn = row.querySelector('.delete-post-btn');
             if (deleteBtn) {
-                deleteBtn.addEventListener('click', () => {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const postId = deleteBtn.dataset.id;
                     this.confirmDeletePost(postId);
                 });
@@ -1001,7 +1005,7 @@ class BlogManager {
         }
         
         // Open post in a new tab
-        const url = `/blog/${post.slug}`;
+        const url = `/blog.html?post=${post.slug}`;
         window.open(url, '_blank');
     }
     
@@ -1216,10 +1220,10 @@ class BlogManager {
         
         // Render gallery images
         this.renderGalleryImages();
-        console.log('Rendering gallery images:', this.images)
+        
         // Show modal
         this.imageModal.classList.add('show');
-        console.log('Image modal shown:', this.imageModal)
+        this.imageModal.style.display = 'flex';
         this.selectImageBtn.disabled = true;
     }
     
@@ -1284,6 +1288,7 @@ class BlogManager {
     closeImageModal() {
         if (!this.imageModal) return;
         this.imageModal.classList.remove('show');
+        this.imageModal.style.display = 'none';
         this.imageInsertCallback = null;
         this.selectedImage = null;
     }

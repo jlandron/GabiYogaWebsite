@@ -455,21 +455,245 @@ function updateHomepageSessionPackages(sessionPackages) {
 }
 
 /**
- * Open purchase modal (placeholder function)
+ * Open purchase modal with Stripe integration
  */
-function openPurchaseModal(type, itemName) {
-    // This function would be implemented based on the site's purchase flow
-    console.log(`Opening purchase modal for ${type}: ${itemName}`);
-    alert(`Purchase modal for ${type}: ${itemName} would open here.`);
+function openPurchaseModal(type, itemName, price) {
+    console.log(`Opening purchase modal for ${type}: ${itemName} (${price})`);
+    
+    // Get modal and form elements
+    const modal = document.getElementById('purchase-modal');
+    if (!modal) {
+        console.error('Purchase modal not found');
+        return;
+    }
+    
+    const form = document.getElementById('purchase-form');
+    if (!form) {
+        console.error('Purchase form not found');
+        return;
+    }
+    
+    // Set form values
+    const typeInput = document.getElementById('purchase-type');
+    const priceInput = document.getElementById('purchase-price');
+    
+    if (typeInput) typeInput.value = `${type}: ${itemName}`;
+    if (priceInput) priceInput.value = price ? `$${price}` : 'Price upon request';
+    
+    // Pre-fill user information if available (logged in users)
+    prefillUserInfo('purchase');
+    
+    // Initialize Stripe payment element
+    if (window.stripePaymentHandler) {
+        const numericPrice = parseFloat(price || '0');
+        window.stripePaymentHandler.setupOneTimePayment(numericPrice, `${type}: ${itemName}`);
+    } else {
+        console.warn('Stripe payment handler not found');
+    }
+    
+    // Show the modal
+    modal.style.display = 'block';
+    
+    // Handle form submission if not already set up
+    if (!form.hasAttribute('data-initialized')) {
+        form.setAttribute('data-initialized', 'true');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
+            
+            // Let Stripe payment handler handle the submission
+            if (window.stripePaymentHandler) {
+                try {
+                    await window.stripePaymentHandler.handlePurchaseSubmit(e);
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    
+                    // Re-enable the button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Complete Purchase';
+                    }
+                    
+                    // Show error
+                    const errorDiv = document.getElementById('payment-errors');
+                    if (errorDiv) {
+                        errorDiv.textContent = error.message || 'An error occurred processing your payment.';
+                        errorDiv.style.display = 'block';
+                    }
+                }
+            }
+        });
+    }
 }
 
 /**
- * Open booking modal (placeholder function)
+ * Open subscription modal with Stripe Checkout
+ */
+function openSubscriptionModal(type, price) {
+    console.log(`Opening subscription modal for ${type} (${price}/month)`);
+    
+    // Get modal and form elements
+    const modal = document.getElementById('subscription-modal');
+    if (!modal) {
+        console.error('Subscription modal not found');
+        return;
+    }
+    
+    const form = document.getElementById('subscription-form');
+    if (!form) {
+        console.error('Subscription form not found');
+        return;
+    }
+    
+    // Set form values
+    const typeInput = document.getElementById('subscription-type');
+    const priceInput = document.getElementById('subscription-price');
+    
+    if (typeInput) typeInput.value = type;
+    if (priceInput) priceInput.value = price ? `$${price}/month` : 'Price upon request';
+    
+    // Set start date to today
+    const startDateInput = document.getElementById('subscription-start');
+    if (startDateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        startDateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+    
+    // Pre-fill user information if available
+    prefillUserInfo('subscription');
+    
+    // Show the modal
+    modal.style.display = 'block';
+    
+    // Handle form submission if not already set up
+    if (!form.hasAttribute('data-initialized')) {
+        form.setAttribute('data-initialized', 'true');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
+            
+            // Handle subscription creation
+            if (window.stripePaymentHandler) {
+                try {
+                    await window.stripePaymentHandler.handleSubscriptionSubmit(e);
+                } catch (error) {
+                    console.error('Subscription error:', error);
+                    
+                    // Re-enable the button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Start Membership';
+                    }
+                    
+                    // Show error as alert since subscription modal doesn't have an error element
+                    alert(`Subscription Error: ${error.message || 'An error occurred processing your subscription.'}`);
+                }
+            } else {
+                // Fallback if Stripe handler is not available
+                alert('Payment processing is currently unavailable. Please try again later.');
+                
+                // Re-enable the button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Start Membership';
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Open booking modal for private sessions
  */
 function openBookingModal(type, packageName) {
-    // This function would be implemented based on the site's booking flow
     console.log(`Opening booking modal for ${type}: ${packageName}`);
-    alert(`Booking modal for ${type}: ${packageName} would open here.`);
+    
+    // Show private booking modal
+    const modal = document.getElementById('private-booking-modal');
+    if (modal) {
+        // Pre-select the package
+        const sessionTypeSelect = document.getElementById('session-type');
+        if (sessionTypeSelect) {
+            // Find option that contains the package name text
+            for (let i = 0; i < sessionTypeSelect.options.length; i++) {
+                if (sessionTypeSelect.options[i].text.includes(packageName)) {
+                    sessionTypeSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        modal.style.display = 'block';
+    }
+}
+
+/**
+ * Pre-fill user info if available (for logged in users)
+ */
+function prefillUserInfo(formType) {
+    // Try to get user info from localStorage if available
+    let user = null;
+    try {
+        const userInfo = localStorage.getItem('user_info');
+        if (userInfo) {
+            user = JSON.parse(userInfo);
+        }
+    } catch (error) {
+        console.warn('Error retrieving user info from localStorage:', error);
+    }
+    
+    if (user) {
+        // Prefill purchase form
+        if (formType === 'purchase') {
+            const nameField = document.getElementById('purchase-name');
+            const emailField = document.getElementById('purchase-email');
+            const phoneField = document.getElementById('purchase-phone');
+            
+            if (nameField) nameField.value = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            if (emailField) emailField.value = user.email || '';
+            if (phoneField && user.phone) phoneField.value = user.phone;
+        }
+        
+        // Prefill subscription form
+        if (formType === 'subscription') {
+            const nameField = document.getElementById('subscription-name');
+            const emailField = document.getElementById('subscription-email');
+            const phoneField = document.getElementById('subscription-phone');
+            const addressField = document.getElementById('subscription-address');
+            
+            if (nameField) nameField.value = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            if (emailField) emailField.value = user.email || '';
+            if (phoneField && user.phone) phoneField.value = user.phone;
+            if (addressField && user.address) addressField.value = user.address;
+        }
+    }
 }
 
 /**

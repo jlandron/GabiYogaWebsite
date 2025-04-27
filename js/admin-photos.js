@@ -150,6 +150,7 @@ class PhotoGalleryManager {
                 },
                 uploadDate: img.created_at,
                 isProfilePhoto: img.is_profile_photo === 1,
+                showOnHomepage: img.show_on_homepage === 1,
                 data: `/api/gallery/images/${img.image_id}/data`
             }));
             
@@ -212,7 +213,8 @@ class PhotoGalleryManager {
                         size: photo.size,
                         width: photo.dimensions?.width,
                         height: photo.dimensions?.height,
-                        is_profile_photo: photo.isProfilePhoto
+                        is_profile_photo: photo.isProfilePhoto,
+                        show_on_homepage: photo.showOnHomepage
                     })
                 });
                 
@@ -235,7 +237,8 @@ class PhotoGalleryManager {
                         alt_text: photo.alt,
                         caption: photo.caption,
                         tags: photo.tags,
-                        is_profile_photo: photo.isProfilePhoto
+                        is_profile_photo: photo.isProfilePhoto,
+                        show_on_homepage: photo.showOnHomepage
                     })
                 });
                 
@@ -737,6 +740,11 @@ class PhotoGalleryManager {
             profileCheckbox.checked = photo.isProfilePhoto || false;
         }
         
+        const homepageCheckbox = document.getElementById('show-on-homepage');
+        if (homepageCheckbox) {
+            homepageCheckbox.checked = photo.showOnHomepage || false;
+        }
+        
         this.photoFilename.textContent = photo.title ? `${photo.title}${this.getFileExtension(photo.type)}` : '-';
         this.photoSize.textContent = this.formatFileSize(photo.size);
         this.photoDimensions.textContent = photo.dimensions ? `${photo.dimensions.width} × ${photo.dimensions.height}` : '-';
@@ -877,6 +885,10 @@ class PhotoGalleryManager {
         const useAsProfile = useAsProfileCheckbox?.checked || false;
         const wasProfilePhotoChanged = this.photos[photoIndex].isProfilePhoto !== useAsProfile;
         
+        const showOnHomepageCheckbox = document.getElementById('show-on-homepage');
+        const showOnHomepage = showOnHomepageCheckbox?.checked || false;
+        const wasHomepageStatusChanged = this.photos[photoIndex].showOnHomepage !== showOnHomepage;
+        
         // Update photo object locally
         this.photos[photoIndex].title = this.photoTitle?.value || '';
         this.photos[photoIndex].caption = this.photoCaption?.value || '';
@@ -886,6 +898,7 @@ class PhotoGalleryManager {
             .map(tag => tag.trim())
             .filter(tag => tag) || [];
         this.photos[photoIndex].isProfilePhoto = useAsProfile;
+        this.photos[photoIndex].showOnHomepage = showOnHomepage;
         
         // Show loading overlay
         this.showLoadingOverlay();

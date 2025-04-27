@@ -24,7 +24,7 @@ router.get('/images', async (req, res) => {
   try {
     const images = await db.query(`
       SELECT image_id, title, description, alt_text, caption, tags,
-        mime_type, size, width, height, is_profile_photo,
+        mime_type, size, width, height, is_profile_photo, show_on_homepage,
         display_order, active, created_at, updated_at
       FROM gallery_images 
       WHERE active = 1
@@ -35,6 +35,24 @@ router.get('/images', async (req, res) => {
   } catch (error) {
     console.error('Error fetching gallery images:', error);
     res.status(500).json({ error: 'Failed to fetch gallery images' });
+  }
+});
+
+// Get images for homepage display
+router.get('/images/homepage', async (req, res) => {
+  try {
+    const images = await db.query(`
+      SELECT image_id, title, description, alt_text, caption, tags,
+        mime_type, size, width, height
+      FROM gallery_images 
+      WHERE active = 1 AND show_on_homepage = 1
+      ORDER BY display_order ASC, created_at DESC
+    `);
+    
+    res.json({ images });
+  } catch (error) {
+    console.error('Error fetching homepage images:', error);
+    res.status(500).json({ error: 'Failed to fetch homepage images' });
   }
 });
 
@@ -112,7 +130,8 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       size,
       width,
       height,
-      is_profile_photo
+      is_profile_photo,
+      show_on_homepage
     } = req.body;
     
     // Validate required fields
@@ -132,9 +151,9 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     const result = await db.query(`
       INSERT INTO gallery_images (
         title, description, alt_text, caption, tags, image_data, 
-        mime_type, size, width, height, is_profile_photo,
+        mime_type, size, width, height, is_profile_photo, show_on_homepage,
         active, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
     `, [
       title || null, 
       description || null, 
@@ -147,6 +166,7 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       width || null,
       height || null,
       is_profile_photo ? 1 : 0,
+      show_on_homepage ? 1 : 0,
       now,
       now
     ]);
@@ -171,6 +191,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
       caption, 
       tags,
       is_profile_photo,
+      show_on_homepage,
       active,
       display_order
     } = req.body;
@@ -200,6 +221,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
         caption = ?,
         tags = ?,
         is_profile_photo = ?,
+        show_on_homepage = ?,
         active = ?,
         display_order = ?,
         updated_at = ?
@@ -211,6 +233,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
       caption || existingImage.caption,
       JSON.stringify(tags || []),
       is_profile_photo ? 1 : 0,
+      show_on_homepage ? 1 : 0,
       active !== undefined ? active : existingImage.active,
       display_order !== undefined ? display_order : existingImage.display_order,
       now,
