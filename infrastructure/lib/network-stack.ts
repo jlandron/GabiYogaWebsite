@@ -10,19 +10,15 @@ export class NetworkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: NetworkStackProps) {
     super(scope, id, props);
 
-    // Create VPC with public and private subnets across 2 AZs
-    this.vpc = new ec2.Vpc(this, 'GabiYogaVpc', {
+    // Create a new VPC with specific CIDR ranges to avoid conflicts
+    this.vpc = new ec2.Vpc(this, 'GabiYogaFreeVpc', { // Renamed to create new resource
+      ipAddresses: ec2.IpAddresses.cidr('10.1.0.0/16'), // Using a completely new CIDR range
       maxAzs: 2,
-      natGateways: 1, // Save costs by using a single NAT gateway
+      natGateways: 0, // No NAT gateways for free tier
       subnetConfiguration: [
         {
           name: 'public',
           subnetType: ec2.SubnetType.PUBLIC,
-          cidrMask: 24,
-        },
-        {
-          name: 'private',
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
           cidrMask: 24,
         },
         {

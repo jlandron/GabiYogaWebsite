@@ -73,7 +73,7 @@ export class StorageStack extends cdk.Stack {
           ttl: cdk.Duration.minutes(5),
         },
       ],
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use US, Canada, Europe, & Israel
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use US, Canada, Europe, & Israel - lowest cost option
       enableLogging: true,
       logBucket: new s3.Bucket(this, 'LogBucket', {
         removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -81,7 +81,7 @@ export class StorageStack extends cdk.Stack {
         objectOwnership: s3.ObjectOwnership.OBJECT_WRITER, // Enable ACL access for CloudFront logging
         lifecycleRules: [
           {
-            expiration: cdk.Duration.days(30),
+            expiration: cdk.Duration.days(7), // Reduced from 30 days to save storage costs
           },
         ],
       }),

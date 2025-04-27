@@ -22,7 +22,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/214cf988a448b9cf42e7beeca93a5ef7aea79cf5607fbba4f53cbc5c9d2ef2b6.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/4ffc517b69e8a2b9e64dd53026187dfa06f63ee586133f1d057efcaa4193073f.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -53,166 +53,106 @@
             ]
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/Resource": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcB4D40C5D"
+            "data": "GabiYogaFreeVpcA59DDC13"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/Subnet": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/Subnet": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1SubnetF78B4A21"
+            "data": "GabiYogaFreeVpcpublicSubnet1Subnet46DE1B15"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/RouteTable": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/RouteTable": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1RouteTable1F428903"
+            "data": "GabiYogaFreeVpcpublicSubnet1RouteTableC52730DE"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/RouteTableAssociation": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/RouteTableAssociation": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1RouteTableAssociation9FED36C8"
+            "data": "GabiYogaFreeVpcpublicSubnet1RouteTableAssociation0ECBD191"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/DefaultRoute": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/DefaultRoute": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1DefaultRoute13AFE268"
+            "data": "GabiYogaFreeVpcpublicSubnet1DefaultRoute69D04B10"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/EIP": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/Subnet": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1EIP096CF0CB"
+            "data": "GabiYogaFreeVpcpublicSubnet2SubnetFC1D6654"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet1/NATGateway": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/RouteTable": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet1NATGatewayE5CBB5D0"
+            "data": "GabiYogaFreeVpcpublicSubnet2RouteTable06592968"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet2/Subnet": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/RouteTableAssociation": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet2Subnet810C6076"
+            "data": "GabiYogaFreeVpcpublicSubnet2RouteTableAssociation5F3F18EE"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet2/RouteTable": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/DefaultRoute": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet2RouteTableC20D95EB"
+            "data": "GabiYogaFreeVpcpublicSubnet2DefaultRouteB3FF79CF"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet2/RouteTableAssociation": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/Subnet": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet2RouteTableAssociation53156C16"
+            "data": "GabiYogaFreeVpcisolatedSubnet1Subnet38080C97"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/publicSubnet2/DefaultRoute": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/RouteTable": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcpublicSubnet2DefaultRouteBB6A66FC"
+            "data": "GabiYogaFreeVpcisolatedSubnet1RouteTable5A57B848"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet1/Subnet": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/RouteTableAssociation": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet1Subnet2F4652B7"
+            "data": "GabiYogaFreeVpcisolatedSubnet1RouteTableAssociation31498B1B"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet1/RouteTable": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/Subnet": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet1RouteTableF3396FB0"
+            "data": "GabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet1/RouteTableAssociation": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/RouteTable": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet1RouteTableAssociationEDB2F379"
+            "data": "GabiYogaFreeVpcisolatedSubnet2RouteTableC279AB3F"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet1/DefaultRoute": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/RouteTableAssociation": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet1DefaultRoute035F325B"
+            "data": "GabiYogaFreeVpcisolatedSubnet2RouteTableAssociation25EBA232"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet2/Subnet": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/IGW": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet2Subnet0EC07943"
+            "data": "GabiYogaFreeVpcIGW2790D0A5"
           }
         ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet2/RouteTable": [
+        "/GabiYogaNetwork/GabiYogaFreeVpc/VPCGW": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet2RouteTableC905CE53"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet2/RouteTableAssociation": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet2RouteTableAssociationB2B363DB"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/privateSubnet2/DefaultRoute": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcprivateSubnet2DefaultRoute08344A9D"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/Subnet": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet1Subnet239155F5"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/RouteTable": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet1RouteTableDE27647D"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/RouteTableAssociation": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet1RouteTableAssociationAD95382C"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/Subnet": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet2SubnetA5C8DA17"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/RouteTable": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet2RouteTable242B88A0"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/RouteTableAssociation": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcisolatedSubnet2RouteTableAssociation847C5B6B"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/IGW": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcIGW50990E5E"
-          }
-        ],
-        "/GabiYogaNetwork/GabiYogaVpc/VPCGW": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "GabiYogaVpcVPCGW0EA06C91"
+            "data": "GabiYogaFreeVpcVPCGW597D0E6E"
           }
         ],
         "/GabiYogaNetwork/WebSecurityGroup/Resource": [
@@ -233,40 +173,40 @@
             "data": "CDKMetadata"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Fn::GetAtt\":[\"GabiYogaVpcB4D40C5D\",\"CidrBlock\"]}": [
+        "/GabiYogaNetwork/Exports/Output{\"Fn::GetAtt\":[\"GabiYogaFreeVpcA59DDC13\",\"CidrBlock\"]}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputFnGetAttGabiYogaVpcB4D40C5DCidrBlockDDDDDA97"
+            "data": "ExportsOutputFnGetAttGabiYogaFreeVpcA59DDC13CidrBlock668DB7C5"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaVpcB4D40C5D\"}": [
+        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaFreeVpcA59DDC13\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+            "data": "ExportsOutputRefGabiYogaFreeVpcA59DDC1394F0D6DE"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaVpcisolatedSubnet1Subnet239155F5\"}": [
+        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaFreeVpcisolatedSubnet1Subnet38080C97\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefGabiYogaVpcisolatedSubnet1Subnet239155F52268EAE8"
+            "data": "ExportsOutputRefGabiYogaFreeVpcisolatedSubnet1Subnet38080C97B84B7E08"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaVpcisolatedSubnet2SubnetA5C8DA17\"}": [
+        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefGabiYogaVpcisolatedSubnet2SubnetA5C8DA1718FD748B"
+            "data": "ExportsOutputRefGabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA777E03BA"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaVpcpublicSubnet1SubnetF78B4A21\"}": [
+        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaFreeVpcpublicSubnet1Subnet46DE1B15\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefGabiYogaVpcpublicSubnet1SubnetF78B4A2131BBBBCC"
+            "data": "ExportsOutputRefGabiYogaFreeVpcpublicSubnet1Subnet46DE1B152A307906"
           }
         ],
-        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaVpcpublicSubnet2Subnet810C6076\"}": [
+        "/GabiYogaNetwork/Exports/Output{\"Ref\":\"GabiYogaFreeVpcpublicSubnet2SubnetFC1D6654\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefGabiYogaVpcpublicSubnet2Subnet810C6076C62BA0AE"
+            "data": "ExportsOutputRefGabiYogaFreeVpcpublicSubnet2SubnetFC1D66542206F900"
           }
         ],
         "/GabiYogaNetwork/BootstrapVersion": [
@@ -305,7 +245,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/c2ba944a9faa63d7b75601659596ca9ea117c66ffecdc40b27f2da987434d84c.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/007c60ac3899d9e071fd0ff3ae64cee244cb5f6262fdc6a9ac3651dba82a2e0f.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -462,7 +402,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/0a9c381538efd531e20d3235b1e324d34e130d7f9f5d5de4488d23bc5fb54b16.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/f0994ad047d469ae0556fc4d29f5a1a43fc9b97eec617c74e1d4a3c25ac0ca16.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -536,12 +476,6 @@
             "data": "CDKMetadata"
           }
         ],
-        "/GabiYogaDatabase/Exports/Output{\"Ref\":\"DatabaseCredentialsAttachment7BAB329F\"}": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputRefDatabaseCredentialsAttachment7BAB329F508B30D6"
-          }
-        ],
         "/GabiYogaDatabase/BootstrapVersion": [
           {
             "type": "aws:cdk:logicalId",
@@ -578,7 +512,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/e37d4fc3fc7084a41aa6dac6bb871cfcfe153794d661c45cf6879b5e8f23cde0.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/9915d34272c2681a8da22415de00ae8b63541231947ad990fc86ceda224336c8.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -593,7 +527,6 @@
       "dependencies": [
         "GabiYogaDns",
         "GabiYogaNetwork",
-        "GabiYogaDatabase",
         "GabiYogaStorage",
         "GabiYogaWebApp.assets"
       ],
@@ -654,8 +587,8 @@
               "ApplicationListener.setDefaultAction (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener.js:1:11272)",
               "ApplicationListener.addAction (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener.js:1:7527)",
               "ApplicationListener.descriptor.value (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/metadata-resource.js:1:2296)",
-              "WebAppStack.addHttpsListener (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:201:23)",
-              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:56:13)",
+              "WebAppStack.addHttpsListener (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:313:23)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:54:13)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
               "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
@@ -726,7 +659,7 @@
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
               "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
               "new AutoScalingGroup (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-autoscaling/lib/auto-scaling-group.js:1:17942)",
-              "new WebAppStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:117:16)",
+              "new WebAppStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:232:16)",
               "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:36:21)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",

@@ -14,7 +14,7 @@
     "SecurityGroupIngress": [
      {
       "CidrIp": {
-       "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputFnGetAttGabiYogaVpcB4D40C5DCidrBlockDDDDDA97"
+       "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputFnGetAttGabiYogaFreeVpcA59DDC13CidrBlock668DB7C5"
       },
       "Description": "Allow MySQL connections from within the VPC",
       "FromPort": 3306,
@@ -33,7 +33,7 @@
      }
     ],
     "VpcId": {
-     "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+     "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcA59DDC1394F0D6DE"
     }
    },
    "Metadata": {
@@ -89,10 +89,10 @@
     "DBSubnetGroupDescription": "Subnet group for Database database",
     "SubnetIds": [
      {
-      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcisolatedSubnet1Subnet239155F52268EAE8"
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcisolatedSubnet1Subnet38080C97B84B7E08"
      },
      {
-      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcisolatedSubnet2SubnetA5C8DA1718FD748B"
+      "Fn::ImportValue": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA777E03BA"
      }
     ],
     "Tags": [
@@ -116,15 +116,15 @@
     "AllocatedStorage": "20",
     "AllowMajorVersionUpgrade": false,
     "AutoMinorVersionUpgrade": true,
-    "BackupRetentionPeriod": 7,
+    "BackupRetentionPeriod": 1,
     "CopyTagsToSnapshot": true,
-    "DBInstanceClass": "db.t3.small",
+    "DBInstanceClass": "db.t4g.micro",
     "DBName": "yoga",
     "DBSubnetGroupName": {
      "Ref": "DatabaseSubnetGroup7D60F180"
     },
-    "DeleteAutomatedBackups": false,
-    "DeletionProtection": true,
+    "DeleteAutomatedBackups": true,
+    "DeletionProtection": false,
     "Engine": "mysql",
     "EngineVersion": "8.0",
     "MasterUserPassword": {
@@ -151,7 +151,7 @@
       ]
      ]
     },
-    "MaxAllocatedStorage": 100,
+    "MaxAllocatedStorage": 20,
     "MultiAZ": false,
     "PubliclyAccessible": false,
     "StorageType": "gp2",
@@ -198,14 +198,6 @@
      "DatabaseB269D8BB",
      "Endpoint.Address"
     ]
-   }
-  },
-  "ExportsOutputRefDatabaseCredentialsAttachment7BAB329F508B30D6": {
-   "Value": {
-    "Ref": "DatabaseCredentialsAttachment7BAB329F"
-   },
-   "Export": {
-    "Name": "GabiYogaDatabase:ExportsOutputRefDatabaseCredentialsAttachment7BAB329F508B30D6"
    }
   }
  },

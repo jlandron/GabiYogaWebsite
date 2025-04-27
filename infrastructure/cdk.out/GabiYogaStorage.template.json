@@ -61,7 +61,7 @@
     "LifecycleConfiguration": {
      "Rules": [
       {
-       "ExpirationInDays": 30,
+       "ExpirationInDays": 7,
        "Status": "Enabled"
       }
      ]

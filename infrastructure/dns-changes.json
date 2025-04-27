@@ -7,7 +7,7 @@
         "Type": "A",
         "AliasTarget": {
           "HostedZoneId": "Z1H1FL5HABSF5",
-          "DNSName": "GabiYo-LoadB-go6jsRpXRCQ0-433005971.us-west-2.elb.amazonaws.com",
+          "DNSName": "GabiYo-LoadB-CHvBGgXAPQJ4-783673111.us-west-2.elb.amazonaws.com",
           "EvaluateTargetHealth": true
         }
       }

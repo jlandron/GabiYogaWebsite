@@ -1,9 +1,9 @@
 {
  "Resources": {
-  "GabiYogaVpcB4D40C5D": {
+  "GabiYogaFreeVpcA59DDC13": {
    "Type": "AWS::EC2::VPC",
    "Properties": {
-    "CidrBlock": "10.0.0.0/16",
+    "CidrBlock": "10.1.0.0/16",
     "EnableDnsHostnames": true,
     "EnableDnsSupport": true,
     "InstanceTenancy": "default",
@@ -14,7 +14,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc"
      },
      {
       "Key": "Project",
@@ -23,14 +23,14 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/Resource"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/Resource"
    }
   },
-  "GabiYogaVpcpublicSubnet1SubnetF78B4A21": {
+  "GabiYogaFreeVpcpublicSubnet1Subnet46DE1B15": {
    "Type": "AWS::EC2::Subnet",
    "Properties": {
     "AvailabilityZone": "us-west-2a",
-    "CidrBlock": "10.0.0.0/24",
+    "CidrBlock": "10.1.0.0/24",
     "MapPublicIpOnLaunch": true,
     "Tags": [
      {
@@ -47,7 +47,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1"
      },
      {
       "Key": "Project",
@@ -55,14 +55,14 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/Subnet"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/Subnet"
    }
   },
-  "GabiYogaVpcpublicSubnet1RouteTable1F428903": {
+  "GabiYogaFreeVpcpublicSubnet1RouteTableC52730DE": {
    "Type": "AWS::EC2::RouteTable",
    "Properties": {
     "Tags": [
@@ -72,7 +72,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1"
      },
      {
       "Key": "Project",
@@ -80,108 +80,50 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/RouteTable"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/RouteTable"
    }
   },
-  "GabiYogaVpcpublicSubnet1RouteTableAssociation9FED36C8": {
+  "GabiYogaFreeVpcpublicSubnet1RouteTableAssociation0ECBD191": {
    "Type": "AWS::EC2::SubnetRouteTableAssociation",
    "Properties": {
     "RouteTableId": {
-     "Ref": "GabiYogaVpcpublicSubnet1RouteTable1F428903"
+     "Ref": "GabiYogaFreeVpcpublicSubnet1RouteTableC52730DE"
     },
     "SubnetId": {
-     "Ref": "GabiYogaVpcpublicSubnet1SubnetF78B4A21"
+     "Ref": "GabiYogaFreeVpcpublicSubnet1Subnet46DE1B15"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/RouteTableAssociation"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/RouteTableAssociation"
    }
   },
-  "GabiYogaVpcpublicSubnet1DefaultRoute13AFE268": {
+  "GabiYogaFreeVpcpublicSubnet1DefaultRoute69D04B10": {
    "Type": "AWS::EC2::Route",
    "Properties": {
     "DestinationCidrBlock": "0.0.0.0/0",
     "GatewayId": {
-     "Ref": "GabiYogaVpcIGW50990E5E"
+     "Ref": "GabiYogaFreeVpcIGW2790D0A5"
     },
     "RouteTableId": {
-     "Ref": "GabiYogaVpcpublicSubnet1RouteTable1F428903"
+     "Ref": "GabiYogaFreeVpcpublicSubnet1RouteTableC52730DE"
     }
    },
    "DependsOn": [
-    "GabiYogaVpcVPCGW0EA06C91"
+    "GabiYogaFreeVpcVPCGW597D0E6E"
    ],
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/DefaultRoute"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet1/DefaultRoute"
    }
   },
-  "GabiYogaVpcpublicSubnet1EIP096CF0CB": {
-   "Type": "AWS::EC2::EIP",
-   "Properties": {
-    "Domain": "vpc",
-    "Tags": [
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ]
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/EIP"
-   }
-  },
-  "GabiYogaVpcpublicSubnet1NATGatewayE5CBB5D0": {
-   "Type": "AWS::EC2::NatGateway",
-   "Properties": {
-    "AllocationId": {
-     "Fn::GetAtt": [
-      "GabiYogaVpcpublicSubnet1EIP096CF0CB",
-      "AllocationId"
-     ]
-    },
-    "SubnetId": {
-     "Ref": "GabiYogaVpcpublicSubnet1SubnetF78B4A21"
-    },
-    "Tags": [
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ]
-   },
-   "DependsOn": [
-    "GabiYogaVpcpublicSubnet1DefaultRoute13AFE268",
-    "GabiYogaVpcpublicSubnet1RouteTableAssociation9FED36C8"
-   ],
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet1/NATGateway"
-   }
-  },
-  "GabiYogaVpcpublicSubnet2Subnet810C6076": {
+  "GabiYogaFreeVpcpublicSubnet2SubnetFC1D6654": {
    "Type": "AWS::EC2::Subnet",
    "Properties": {
     "AvailabilityZone": "us-west-2b",
-    "CidrBlock": "10.0.1.0/24",
+    "CidrBlock": "10.1.1.0/24",
     "MapPublicIpOnLaunch": true,
     "Tags": [
      {
@@ -198,7 +140,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2"
      },
      {
       "Key": "Project",
@@ -206,14 +148,14 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2/Subnet"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/Subnet"
    }
   },
-  "GabiYogaVpcpublicSubnet2RouteTableC20D95EB": {
+  "GabiYogaFreeVpcpublicSubnet2RouteTable06592968": {
    "Type": "AWS::EC2::RouteTable",
    "Properties": {
     "Tags": [
@@ -223,7 +165,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2"
      },
      {
       "Key": "Project",
@@ -231,230 +173,50 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2/RouteTable"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/RouteTable"
    }
   },
-  "GabiYogaVpcpublicSubnet2RouteTableAssociation53156C16": {
+  "GabiYogaFreeVpcpublicSubnet2RouteTableAssociation5F3F18EE": {
    "Type": "AWS::EC2::SubnetRouteTableAssociation",
    "Properties": {
     "RouteTableId": {
-     "Ref": "GabiYogaVpcpublicSubnet2RouteTableC20D95EB"
+     "Ref": "GabiYogaFreeVpcpublicSubnet2RouteTable06592968"
     },
     "SubnetId": {
-     "Ref": "GabiYogaVpcpublicSubnet2Subnet810C6076"
+     "Ref": "GabiYogaFreeVpcpublicSubnet2SubnetFC1D6654"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2/RouteTableAssociation"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/RouteTableAssociation"
    }
   },
-  "GabiYogaVpcpublicSubnet2DefaultRouteBB6A66FC": {
+  "GabiYogaFreeVpcpublicSubnet2DefaultRouteB3FF79CF": {
    "Type": "AWS::EC2::Route",
    "Properties": {
     "DestinationCidrBlock": "0.0.0.0/0",
     "GatewayId": {
-     "Ref": "GabiYogaVpcIGW50990E5E"
+     "Ref": "GabiYogaFreeVpcIGW2790D0A5"
     },
     "RouteTableId": {
-     "Ref": "GabiYogaVpcpublicSubnet2RouteTableC20D95EB"
+     "Ref": "GabiYogaFreeVpcpublicSubnet2RouteTable06592968"
     }
    },
    "DependsOn": [
-    "GabiYogaVpcVPCGW0EA06C91"
+    "GabiYogaFreeVpcVPCGW597D0E6E"
    ],
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/publicSubnet2/DefaultRoute"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/publicSubnet2/DefaultRoute"
    }
   },
-  "GabiYogaVpcprivateSubnet1Subnet2F4652B7": {
+  "GabiYogaFreeVpcisolatedSubnet1Subnet38080C97": {
    "Type": "AWS::EC2::Subnet",
    "Properties": {
     "AvailabilityZone": "us-west-2a",
-    "CidrBlock": "10.0.2.0/24",
-    "MapPublicIpOnLaunch": false,
-    "Tags": [
-     {
-      "Key": "aws-cdk:subnet-name",
-      "Value": "private"
-     },
-     {
-      "Key": "aws-cdk:subnet-type",
-      "Value": "Private"
-     },
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ],
-    "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1/Subnet"
-   }
-  },
-  "GabiYogaVpcprivateSubnet1RouteTableF3396FB0": {
-   "Type": "AWS::EC2::RouteTable",
-   "Properties": {
-    "Tags": [
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ],
-    "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1/RouteTable"
-   }
-  },
-  "GabiYogaVpcprivateSubnet1RouteTableAssociationEDB2F379": {
-   "Type": "AWS::EC2::SubnetRouteTableAssociation",
-   "Properties": {
-    "RouteTableId": {
-     "Ref": "GabiYogaVpcprivateSubnet1RouteTableF3396FB0"
-    },
-    "SubnetId": {
-     "Ref": "GabiYogaVpcprivateSubnet1Subnet2F4652B7"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1/RouteTableAssociation"
-   }
-  },
-  "GabiYogaVpcprivateSubnet1DefaultRoute035F325B": {
-   "Type": "AWS::EC2::Route",
-   "Properties": {
-    "DestinationCidrBlock": "0.0.0.0/0",
-    "NatGatewayId": {
-     "Ref": "GabiYogaVpcpublicSubnet1NATGatewayE5CBB5D0"
-    },
-    "RouteTableId": {
-     "Ref": "GabiYogaVpcprivateSubnet1RouteTableF3396FB0"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet1/DefaultRoute"
-   }
-  },
-  "GabiYogaVpcprivateSubnet2Subnet0EC07943": {
-   "Type": "AWS::EC2::Subnet",
-   "Properties": {
-    "AvailabilityZone": "us-west-2b",
-    "CidrBlock": "10.0.3.0/24",
-    "MapPublicIpOnLaunch": false,
-    "Tags": [
-     {
-      "Key": "aws-cdk:subnet-name",
-      "Value": "private"
-     },
-     {
-      "Key": "aws-cdk:subnet-type",
-      "Value": "Private"
-     },
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ],
-    "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2/Subnet"
-   }
-  },
-  "GabiYogaVpcprivateSubnet2RouteTableC905CE53": {
-   "Type": "AWS::EC2::RouteTable",
-   "Properties": {
-    "Tags": [
-     {
-      "Key": "Environment",
-      "Value": "Production"
-     },
-     {
-      "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2"
-     },
-     {
-      "Key": "Project",
-      "Value": "GabiYoga"
-     }
-    ],
-    "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2/RouteTable"
-   }
-  },
-  "GabiYogaVpcprivateSubnet2RouteTableAssociationB2B363DB": {
-   "Type": "AWS::EC2::SubnetRouteTableAssociation",
-   "Properties": {
-    "RouteTableId": {
-     "Ref": "GabiYogaVpcprivateSubnet2RouteTableC905CE53"
-    },
-    "SubnetId": {
-     "Ref": "GabiYogaVpcprivateSubnet2Subnet0EC07943"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2/RouteTableAssociation"
-   }
-  },
-  "GabiYogaVpcprivateSubnet2DefaultRoute08344A9D": {
-   "Type": "AWS::EC2::Route",
-   "Properties": {
-    "DestinationCidrBlock": "0.0.0.0/0",
-    "NatGatewayId": {
-     "Ref": "GabiYogaVpcpublicSubnet1NATGatewayE5CBB5D0"
-    },
-    "RouteTableId": {
-     "Ref": "GabiYogaVpcprivateSubnet2RouteTableC905CE53"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/privateSubnet2/DefaultRoute"
-   }
-  },
-  "GabiYogaVpcisolatedSubnet1Subnet239155F5": {
-   "Type": "AWS::EC2::Subnet",
-   "Properties": {
-    "AvailabilityZone": "us-west-2a",
-    "CidrBlock": "10.0.4.0/24",
+    "CidrBlock": "10.1.2.0/24",
     "MapPublicIpOnLaunch": false,
     "Tags": [
      {
@@ -471,7 +233,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1"
      },
      {
       "Key": "Project",
@@ -479,14 +241,14 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/Subnet"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/Subnet"
    }
   },
-  "GabiYogaVpcisolatedSubnet1RouteTableDE27647D": {
+  "GabiYogaFreeVpcisolatedSubnet1RouteTable5A57B848": {
    "Type": "AWS::EC2::RouteTable",
    "Properties": {
     "Tags": [
@@ -496,7 +258,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1"
      },
      {
       "Key": "Project",
@@ -504,32 +266,32 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/RouteTable"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/RouteTable"
    }
   },
-  "GabiYogaVpcisolatedSubnet1RouteTableAssociationAD95382C": {
+  "GabiYogaFreeVpcisolatedSubnet1RouteTableAssociation31498B1B": {
    "Type": "AWS::EC2::SubnetRouteTableAssociation",
    "Properties": {
     "RouteTableId": {
-     "Ref": "GabiYogaVpcisolatedSubnet1RouteTableDE27647D"
+     "Ref": "GabiYogaFreeVpcisolatedSubnet1RouteTable5A57B848"
     },
     "SubnetId": {
-     "Ref": "GabiYogaVpcisolatedSubnet1Subnet239155F5"
+     "Ref": "GabiYogaFreeVpcisolatedSubnet1Subnet38080C97"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet1/RouteTableAssociation"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet1/RouteTableAssociation"
    }
   },
-  "GabiYogaVpcisolatedSubnet2SubnetA5C8DA17": {
+  "GabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA": {
    "Type": "AWS::EC2::Subnet",
    "Properties": {
     "AvailabilityZone": "us-west-2b",
-    "CidrBlock": "10.0.5.0/24",
+    "CidrBlock": "10.1.3.0/24",
     "MapPublicIpOnLaunch": false,
     "Tags": [
      {
@@ -546,7 +308,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2"
      },
      {
       "Key": "Project",
@@ -554,14 +316,14 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/Subnet"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/Subnet"
    }
   },
-  "GabiYogaVpcisolatedSubnet2RouteTable242B88A0": {
+  "GabiYogaFreeVpcisolatedSubnet2RouteTableC279AB3F": {
    "Type": "AWS::EC2::RouteTable",
    "Properties": {
     "Tags": [
@@ -571,7 +333,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2"
      },
      {
       "Key": "Project",
@@ -579,28 +341,28 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/RouteTable"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/RouteTable"
    }
   },
-  "GabiYogaVpcisolatedSubnet2RouteTableAssociation847C5B6B": {
+  "GabiYogaFreeVpcisolatedSubnet2RouteTableAssociation25EBA232": {
    "Type": "AWS::EC2::SubnetRouteTableAssociation",
    "Properties": {
     "RouteTableId": {
-     "Ref": "GabiYogaVpcisolatedSubnet2RouteTable242B88A0"
+     "Ref": "GabiYogaFreeVpcisolatedSubnet2RouteTableC279AB3F"
     },
     "SubnetId": {
-     "Ref": "GabiYogaVpcisolatedSubnet2SubnetA5C8DA17"
+     "Ref": "GabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/isolatedSubnet2/RouteTableAssociation"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/isolatedSubnet2/RouteTableAssociation"
    }
   },
-  "GabiYogaVpcIGW50990E5E": {
+  "GabiYogaFreeVpcIGW2790D0A5": {
    "Type": "AWS::EC2::InternetGateway",
    "Properties": {
     "Tags": [
@@ -610,7 +372,7 @@
      },
      {
       "Key": "Name",
-      "Value": "GabiYogaNetwork/GabiYogaVpc"
+      "Value": "GabiYogaNetwork/GabiYogaFreeVpc"
      },
      {
       "Key": "Project",
@@ -619,21 +381,21 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/IGW"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/IGW"
    }
   },
-  "GabiYogaVpcVPCGW0EA06C91": {
+  "GabiYogaFreeVpcVPCGW597D0E6E": {
    "Type": "AWS::EC2::VPCGatewayAttachment",
    "Properties": {
     "InternetGatewayId": {
-     "Ref": "GabiYogaVpcIGW50990E5E"
+     "Ref": "GabiYogaFreeVpcIGW2790D0A5"
     },
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "GabiYogaNetwork/GabiYogaVpc/VPCGW"
+    "aws:cdk:path": "GabiYogaNetwork/GabiYogaFreeVpc/VPCGW"
    }
   },
   "WebSecurityGroup73AF7387": {
@@ -674,7 +436,7 @@
      }
     ],
     "VpcId": {
-     "Ref": "GabiYogaVpcB4D40C5D"
+     "Ref": "GabiYogaFreeVpcA59DDC13"
     }
    },
    "Metadata": {
@@ -684,7 +446,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OzQrCMBCEn8V7GrUnPZYi4kVLK14ljSuutklJdisifXfT+lNhYWY/ht2J5XwZy9lE3X2kT7eowlI+C1L6JgI6go7l89BokZ7NIUtFxmWFuuDSAPVsdLllgr0qKxj5yBLvrUZFaM0v3JvVJutlq2itCO7qITKHbbDj4Y0hcMF/A+8mny2hUPVSgyFRgGaH9Fg7y83Q4R90Igdv2enh7Y6pYeqEsSeQVz9t5wsZJp5cPWLk2BDWIPO3vgAB8BFwIwEAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OQQvCMAyFf8vuXXU96VE8iCfHJrtK10XMNtvRJg4R/7t1ihMCee8j5D0ls7WSy0SPITVNl/ZYy0dJ2nQiohMYJR/VYMT2bKt8K3KuezQl1xbozWZVOCY46rqHmc9sE4IzqAmd/R2L3ONNE8w/9pbAR72LdNT3b+jXbSi2ulzBkijBsEe677zjYYr7B09RQHDszdTkwDQwPYV1Dcg2LG7ZSsZRSRsQU8+W8Aqy+OwXHvc29A4BAAA="
    },
    "Metadata": {
     "aws:cdk:path": "GabiYogaNetwork/CDKMetadata/Default"
@@ -695,58 +457,58 @@
   "VpcId": {
    "Description": "VPC ID for Gabi Yoga application",
    "Value": {
-    "Ref": "GabiYogaVpcB4D40C5D"
+    "Ref": "GabiYogaFreeVpcA59DDC13"
    }
   },
-  "ExportsOutputFnGetAttGabiYogaVpcB4D40C5DCidrBlockDDDDDA97": {
+  "ExportsOutputFnGetAttGabiYogaFreeVpcA59DDC13CidrBlock668DB7C5": {
    "Value": {
     "Fn::GetAtt": [
-     "GabiYogaVpcB4D40C5D",
+     "GabiYogaFreeVpcA59DDC13",
      "CidrBlock"
     ]
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputFnGetAttGabiYogaVpcB4D40C5DCidrBlockDDDDDA97"
+    "Name": "GabiYogaNetwork:ExportsOutputFnGetAttGabiYogaFreeVpcA59DDC13CidrBlock668DB7C5"
    }
   },
-  "ExportsOutputRefGabiYogaVpcB4D40C5D5926D330": {
+  "ExportsOutputRefGabiYogaFreeVpcA59DDC1394F0D6DE": {
    "Value": {
-    "Ref": "GabiYogaVpcB4D40C5D"
+    "Ref": "GabiYogaFreeVpcA59DDC13"
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcB4D40C5D5926D330"
+    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcA59DDC1394F0D6DE"
    }
   },
-  "ExportsOutputRefGabiYogaVpcisolatedSubnet1Subnet239155F52268EAE8": {
+  "ExportsOutputRefGabiYogaFreeVpcisolatedSubnet1Subnet38080C97B84B7E08": {
    "Value": {
-    "Ref": "GabiYogaVpcisolatedSubnet1Subnet239155F5"
+    "Ref": "GabiYogaFreeVpcisolatedSubnet1Subnet38080C97"
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcisolatedSubnet1Subnet239155F52268EAE8"
+    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcisolatedSubnet1Subnet38080C97B84B7E08"
    }
   },
-  "ExportsOutputRefGabiYogaVpcisolatedSubnet2SubnetA5C8DA1718FD748B": {
+  "ExportsOutputRefGabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA777E03BA": {
    "Value": {
-    "Ref": "GabiYogaVpcisolatedSubnet2SubnetA5C8DA17"
+    "Ref": "GabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA"
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcisolatedSubnet2SubnetA5C8DA1718FD748B"
+    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcisolatedSubnet2Subnet5F4D55DA777E03BA"
    }
   },
-  "ExportsOutputRefGabiYogaVpcpublicSubnet1SubnetF78B4A2131BBBBCC": {
+  "ExportsOutputRefGabiYogaFreeVpcpublicSubnet1Subnet46DE1B152A307906": {
    "Value": {
-    "Ref": "GabiYogaVpcpublicSubnet1SubnetF78B4A21"
+    "Ref": "GabiYogaFreeVpcpublicSubnet1Subnet46DE1B15"
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet1SubnetF78B4A2131BBBBCC"
+    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcpublicSubnet1Subnet46DE1B152A307906"
    }
   },
-  "ExportsOutputRefGabiYogaVpcpublicSubnet2Subnet810C6076C62BA0AE": {
+  "ExportsOutputRefGabiYogaFreeVpcpublicSubnet2SubnetFC1D66542206F900": {
    "Value": {
-    "Ref": "GabiYogaVpcpublicSubnet2Subnet810C6076"
+    "Ref": "GabiYogaFreeVpcpublicSubnet2SubnetFC1D6654"
    },
    "Export": {
-    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaVpcpublicSubnet2Subnet810C6076C62BA0AE"
+    "Name": "GabiYogaNetwork:ExportsOutputRefGabiYogaFreeVpcpublicSubnet2SubnetFC1D66542206F900"
    }
   }
  },

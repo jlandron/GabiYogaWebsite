@@ -17,8 +17,6 @@ import * as path from 'path';
 
 export interface WebAppStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
-  database: rds.DatabaseInstance;
-  databaseSecurityGroup: ec2.SecurityGroup;
   bucket: s3.IBucket;
   distribution: cloudfront.Distribution;
 }
@@ -64,27 +62,144 @@ export class WebAppStack extends cdk.Stack {
     // Load and prepare user data script from file
     const userData = ec2.UserData.forLinux();
     
-    // Read the script file
-    const scriptPath = path.join(__dirname, '../scripts/install-node-with-nvm.sh');
-    let userDataScript = fs.readFileSync(scriptPath, 'utf8');
-    
     // Prepare database information
-    const dbHost = 'gabiyogadatabase-databaseb269d8bb-2ftmtodc9lpf.cxq64wemez5f.us-west-2.rds.amazonaws.com';
+    const dbHost = 'gabiyogadatabase-databaseb269d8bb-tfil5ifuv2c3.cxq64wemez5f.us-west-2.rds.amazonaws.com';
     const dbPassword = '8O4Lfa8tq10wgAg8'; // In production, fetch from Secrets Manager
     const awsRegion = 'us-west-2';
-    
-    // Replace placeholders with actual values - using regex to ensure all occurrences are replaced
-    userDataScript = userDataScript.replace(/\${DB_HOST}/g, dbHost);
-    userDataScript = userDataScript.replace(/\${DB_PASSWORD}/g, dbPassword);
-    userDataScript = userDataScript.replace(/\${AWS_REGION}/g, awsRegion);
-    userDataScript = userDataScript.replace(/\${S3_BUCKET_NAME}/g, props.bucket.bucketName);
-    userDataScript = userDataScript.replace(/\${CLOUDFRONT_DISTRIBUTION_ID}/g, props.distribution.distributionId);
-    
-    // Add the entire script as a single command with logging
+    const bucketName = props.bucket.bucketName;
+    const cfDistId = props.distribution.distributionId;
+
+    // Add the user data commands directly in the file
     userData.addCommands(
       'echo "Starting user data script execution at $(date)"',
       'set -x', // Echo commands for better debugging
-      userDataScript,
+      
+      // User data script for Gabi Yoga web application
+      'yum update -y',
+      'yum install -y mysql git mariadb-client',
+      
+      // Install NVM and Node.js
+      'echo "Installing NVM..."',
+      'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash',
+      'export NVM_DIR="$HOME/.nvm"',
+      '[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"',
+      '[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"',
+      
+      // Source bashrc to ensure NVM is available
+      'source ~/.bashrc || source ~/.bash_profile || true',
+      'nvm install 16',
+      'nvm use 16',
+      'nvm alias default 16',
+      
+      // Make NVM available in system profile
+      'echo "export NVM_DIR=\\"\\\$HOME/.nvm\\"" >> /etc/profile.d/nvm.sh',
+      'echo "[ -s \\\"\\\$NVM_DIR/nvm.sh\\\" ] && \\\\. \\\"\\\$NVM_DIR/nvm.sh\\\"" >> /etc/profile.d/nvm.sh',
+      'echo "[ -s \\\"\\\$NVM_DIR/bash_completion\\\" ] && \\\\. \\\"\\\$NVM_DIR/bash_completion\\\"" >> /etc/profile.d/nvm.sh',
+      'chmod +x /etc/profile.d/nvm.sh',
+      
+      // Create application directory
+      'mkdir -p /var/www/gabiyoga',
+      
+      // Clone the repository
+      'echo "Cloning application repository..."',
+      'git clone https://github.com/jlandron/GabiYogaWebsite.git /var/www/gabiyoga-temp',
+      
+      // Copy files if clone succeeds
+      'if [ $? -eq 0 ]; then',
+      '  cp -R /var/www/gabiyoga-temp/* /var/www/gabiyoga/',
+      '  cp -R /var/www/gabiyoga-temp/.* /var/www/gabiyoga/ 2>/dev/null || echo "No hidden files to copy"',
+      '  rm -rf /var/www/gabiyoga-temp',
+      '  echo "✅ Repository cloned successfully"',
+      'else',
+      '  echo "⚠️ Repository clone failed, creating minimal application"',
+      '  # Create server.js file',
+      '  cat > /var/www/gabiyoga/server.js << \'EOF\'',
+      '// Minimal Express server for Gabi Yoga',
+      'const express = require(\'express\');',
+      'const app = express();',
+      'const port = process.env.PORT || 5001;',
+      '',
+      '// Middleware',
+      'app.use(express.json());',
+      'app.use(express.static(\'public\'));',
+      '',
+      '// Health check endpoint',
+      'app.get(\'/api/health\', (req, res) => {',
+      '  res.json({ status: \'ok\', message: \'Server is running\' });',
+      '});',
+      '',
+      'app.listen(port, () => {',
+      '  console.log(`Server running on port ${port}`);',
+      '});',
+      'EOF',
+      '',
+      '  # Create package.json',
+      '  cat > /var/www/gabiyoga/package.json << \'EOF\'',
+      '{',
+      '  "name": "gabi-yoga",',
+      '  "version": "1.0.0",',
+      '  "description": "Gabi Yoga Web Application",',
+      '  "main": "server.js",',
+      '  "scripts": {',
+      '    "start": "node server.js"',
+      '  },',
+      '  "dependencies": {',
+      '    "express": "^4.17.1"',
+      '  }',
+      '}',
+      'EOF',
+      '',
+      '  # Create public directory and index.html',
+      '  mkdir -p /var/www/gabiyoga/public',
+      '  echo "<!DOCTYPE html><html><body><h1>Gabi Yoga</h1><p>Server is running</p></body></html>" > /var/www/gabiyoga/public/index.html',
+      'fi',
+      
+      // Create environment file 
+      'cat > /var/www/gabiyoga/.env << EOF',
+      `NODE_ENV=production`,
+      `PORT=5001`,
+      `DB_HOST=${dbHost}`,
+      `DB_PORT=3306`,
+      `DB_NAME=yoga`,
+      `DB_USER=admin`,
+      `DB_PASSWORD=${dbPassword}`,
+      `AWS_REGION=${awsRegion}`,
+      `S3_BUCKET_NAME=${bucketName}`,
+      `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
+      'EOF',
+      
+      // Install dependencies
+      'cd /var/www/gabiyoga',
+      'npm install --production',
+      
+      // Setup systemd service
+      'cat > /etc/systemd/system/gabiyoga.service << EOF',
+      '[Unit]',
+      'Description=Gabi Yoga Web Application',
+      'After=network.target',
+      '',
+      '[Service]',
+      'Type=simple',
+      'User=root',
+      'WorkingDirectory=/var/www/gabiyoga',
+      'ExecStart=/usr/bin/node /var/www/gabiyoga/server.js',
+      'Restart=on-failure',
+      'RestartSec=10',
+      'StandardOutput=journal',
+      'StandardError=journal',
+      'SyslogIdentifier=gabiyoga',
+      'Environment=NODE_ENV=production',
+      '',
+      '[Install]',
+      'WantedBy=multi-user.target',
+      'EOF',
+      
+      // Start service
+      'systemctl daemon-reload',
+      'systemctl enable gabiyoga',
+      'systemctl start gabiyoga',
+      'echo "Gabi Yoga web application startup completed"',
+      
       'echo "User data script completed at $(date)"'
     );
 
@@ -101,25 +216,25 @@ export class WebAppStack extends cdk.Stack {
       open: true,
     });
 
-    // Create Launch Template
+    // Create Launch Template - Using t2.micro for free tier
     const launchTemplate = new ec2.LaunchTemplate(this, 'WebServerLaunchTemplate', {
       machineImage: ec2.MachineImage.latestAmazonLinux2(),
       instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE3,
-        ec2.InstanceSize.SMALL
+        ec2.InstanceClass.BURSTABLE2,
+        ec2.InstanceSize.MICRO // t2.micro is free tier eligible
       ),
       role: webServerRole,
       securityGroup: webSg,
       userData,
     });
 
-    // Create Auto Scaling Group with Launch Template
+    // Create Auto Scaling Group with Launch Template - Reduced capacity for free tier
     this.asg = new autoscaling.AutoScalingGroup(this, 'WebServerASG', {
       vpc: props.vpc,
       launchTemplate: launchTemplate,
-      minCapacity: 2,
-      maxCapacity: 4,
-      desiredCapacity: 2,
+      minCapacity: 1, // Reduced to 1 instance for free tier
+      maxCapacity: 1, // Capped at 1 instance for free tier
+      desiredCapacity: 1, // Using just 1 instance to stay within free tier
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     });
 
@@ -143,10 +258,7 @@ export class WebAppStack extends cdk.Stack {
       cooldown: cdk.Duration.seconds(300),
     });
 
-    // Grant the instances access to retrieve database credentials
-    if (props.database.secret) {
-      props.database.secret.grantRead(webServerRole);
-    }
+    // Database access code removed - we're deploying without a database for free tier
 
     // Create CloudWatch log group
     const logGroup = new logs.LogGroup(this, 'WebAppLogs', {

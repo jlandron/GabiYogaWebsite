@@ -69,13 +69,10 @@ mkdir -p /var/www/gabiyoga
 
 # Clone the actual repository now that it's public
 echo "Cloning application repository..."
-git clone https://github.com/jlandron/GabiYogaWebsite.git /var/www/gabiyoga-temp
+git clone https://github.com/jlandron/GabiYogaWebsite.git /var/www/gabiyoga
 
 # If git clone succeeds, copy the files; otherwise create minimal application
 if [ $? -eq 0 ]; then
-  cp -R /var/www/gabiyoga-temp/* /var/www/gabiyoga/
-  cp -R /var/www/gabiyoga-temp/.* /var/www/gabiyoga/ 2>/dev/null || echo "No hidden files to copy"
-  rm -rf /var/www/gabiyoga-temp
   echo "✅ Repository cloned successfully"
 else
   echo "⚠️ Repository clone failed, creating minimal application"
@@ -171,7 +168,7 @@ DB_PASSWORD=${DB_PASSWORD}
 AWS_REGION=${AWS_REGION}
 S3_BUCKET_NAME=${S3_BUCKET_NAME}
 CLOUDFRONT_DISTRIBUTION_ID=${CLOUDFRONT_DISTRIBUTION_ID}
-JWT_SECRET=8b6b566f9125ce96c553d5bc46f6a0e0758bb8211500515e9a24dfe2d6cdebc6e721bb398906c203a7cde28b70b75561e470607cd8eeb49849d34bc8f5782f36131ccbcd516408028fdc85f5bde689f7cf5f2f47287ef28d5ae55728d92db6fc90db2137e781ce15be1744346ea857ee6b8082b672ab9c8ef4eea9062a9ff72c658e0527e98b217bf6d565361ccac0a543306ee220afaf0ecd3aef6dcc4711808389566ffd4b6e1d317b26225e94bfd8598745dcf2c3a9a2a339227c5b2c7ada2b4d8dc840e938f1f1575f7c5cc9c96cc6a084efaa186360bdd64c9dedf1b15c14e3868713710b9f90e90f64feb2a36e587e7f38d09ee5c40be3c4a4d57e35fe
+JWT_SECRET=${JWT_SECRET}
 EOL
 
 # Install dependencies with logging

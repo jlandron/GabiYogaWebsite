@@ -32,12 +32,10 @@ const databaseStack = new DatabaseStack(app, 'GabiYogaDatabase', {
   vpc: networkStack.vpc
 });
 
-// Create WebApp stack and store a reference to it
+// Create WebApp stack and store a reference to it - skipping database for free tier
 const webAppStack = new WebAppStack(app, 'GabiYogaWebApp', {
   env,
   vpc: networkStack.vpc,
-  database: databaseStack.database,
-  databaseSecurityGroup: databaseStack.databaseSecurityGroup,
   bucket: storageStack.storageBucket,
   distribution: storageStack.distribution
 });

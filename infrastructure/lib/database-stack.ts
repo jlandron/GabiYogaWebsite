@@ -35,31 +35,31 @@ export class DatabaseStack extends cdk.Stack {
       },
     });
 
-    // Create RDS MySQL database
+    // Create RDS MySQL database - Free tier eligible
     this.database = new rds.DatabaseInstance(this, 'Database', {
       engine: rds.DatabaseInstanceEngine.mysql({
-        version: rds.MysqlEngineVersion.VER_8_0
+        version: rds.MysqlEngineVersion.VER_8_0 // MySQL 8.0 is compatible with t4g.micro
       }),
       instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE3,
-        ec2.InstanceSize.SMALL
+        ec2.InstanceClass.BURSTABLE4_GRAVITON, // t4g (Arm-based Graviton processors)
+        ec2.InstanceSize.MICRO // db.t4g.micro is free tier eligible
       ),
       vpc: props.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
       },
       securityGroups: [this.databaseSecurityGroup],
-      allocatedStorage: 20,
-      maxAllocatedStorage: 100,
+      allocatedStorage: 20, // Minimum for free tier
+      maxAllocatedStorage: 20, // Cap at free tier eligible size
       allowMajorVersionUpgrade: false,
       autoMinorVersionUpgrade: true,
-      backupRetention: cdk.Duration.days(7),
-      deleteAutomatedBackups: false,
-      deletionProtection: true,
+      backupRetention: cdk.Duration.days(1), // Reduced backup retention for free tier
+      deleteAutomatedBackups: true, // Remove automated backups to save costs
+      deletionProtection: false, // Disabled for easier testing and cleanup
       databaseName: 'yoga',
       credentials: rds.Credentials.fromSecret(this.databaseSecret),
-      multiAz: false, // Set to true for production
-      storageType: rds.StorageType.GP2,
+      multiAz: false, // Single AZ for free tier
+      storageType: rds.StorageType.GP2, // GP2 is free tier eligible
       publiclyAccessible: false,
     });
 
