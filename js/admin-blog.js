@@ -306,14 +306,7 @@ class BlogManager {
             }
         });
         
-        // Handle image toolbar button
-        const imageButton = toolbar.querySelector('button[data-format="image"]');
-        if (imageButton && this.editorImageUpload) {
-            imageButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openImageSelectionModal('content');
-            });
-        }
+        // No need for a separate image button handler as it's already handled in the switch statement above
     }
     
     /**
@@ -1180,12 +1173,12 @@ class BlogManager {
             this.showNotification('Failed to process image. Please try again.', 'error');
             this.hideLoadingOverlay();
         }
-        
-        // Reset file input
-        if (this.featuredImageUpload) {
-            this.featuredImageUpload.value = '';
+            
+            // Reset file input
+            if (this.featuredImageUpload) {
+                this.featuredImageUpload.value = '';
+            }
         }
-    }
     
     /**
      * Load images from the gallery
@@ -1223,9 +1216,10 @@ class BlogManager {
         
         // Render gallery images
         this.renderGalleryImages();
-        
+        console.log('Rendering gallery images:', this.images)
         // Show modal
         this.imageModal.classList.add('show');
+        console.log('Image modal shown:', this.imageModal)
         this.selectImageBtn.disabled = true;
     }
     
@@ -1233,6 +1227,7 @@ class BlogManager {
      * Render images in the gallery selection modal
      */
     renderGalleryImages() {
+        console.log('Rendering gallery images:', this.images)
         if (!this.imageGallery) return;
         
         // Clear gallery
@@ -1245,6 +1240,7 @@ class BlogManager {
         
         // Add images to gallery
         this.images.forEach(image => {
+            console.log('Rendering image:', image)
             const imgItem = document.createElement('div');
             imgItem.className = 'gallery-image-item';
             imgItem.dataset.id = image.image_id;
@@ -1257,9 +1253,10 @@ class BlogManager {
             imgItem.innerHTML = `<img src="${imgSrc}" alt="${image.alt_text || ''}">`;
             
             this.imageGallery.appendChild(imgItem);
-            
+            console.log('Image item added:', imgItem)
             // Add click event
             imgItem.addEventListener('click', () => {
+                console.log('Image clicked:', image)
                 // Remove selected class from all items
                 this.imageGallery.querySelectorAll('.gallery-image-item').forEach(item => {
                     item.classList.remove('selected');

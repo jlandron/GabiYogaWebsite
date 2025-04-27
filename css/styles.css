@@ -612,6 +612,11 @@ header {
     overflow: auto;
 }
 
+/* Show class for modal display */
+.modal.show {
+    display: flex;
+}
+
 .modal-content {
     position: relative;
     background-color: #fff;
