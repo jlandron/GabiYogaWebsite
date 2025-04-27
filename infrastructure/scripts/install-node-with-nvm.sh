@@ -293,6 +293,59 @@ chown root:root /var/log/gabiyoga/server.log
 # Add a message indicating setup is complete
 echo "GabiYoga webapp setup complete at $(date)" >> /var/log/gabiyoga/setup.log
 
+# Create admin scripts directory and ensure scripts are available
+echo "Setting up admin scripts..."
+APP_PATH="/var/www/gabiyoga"
+mkdir -p /home/ec2-user/admin-scripts
+
+# Copy admin user creation script for easy access
+cp $APP_PATH/utils/add-admin-user.js /home/ec2-user/admin-scripts/ 2>/dev/null || echo "⚠️ Warning: Could not copy add-admin-user.js"
+cp $APP_PATH/infrastructure/scripts/ec2-add-admin.sh /home/ec2-user/admin-scripts/ 2>/dev/null || echo "⚠️ Warning: Could not copy ec2-add-admin.sh"
+cp $APP_PATH/infrastructure/scripts/refresh-service.sh /home/ec2-user/admin-scripts/ 2>/dev/null || echo "⚠️ Warning: Could not copy refresh-service.sh"
+
+# If files weren't copied successfully, create them manually
+if [ ! -f /home/ec2-user/admin-scripts/add-admin-user.js ]; then
+  echo "Creating add-admin-user.js manually..."
+  curl -s https://raw.githubusercontent.com/jlandron/GabiYogaWebsite/main/utils/add-admin-user.js > /home/ec2-user/admin-scripts/add-admin-user.js || echo "⚠️ Failed to download add-admin-user.js"
+fi
+
+if [ ! -f /home/ec2-user/admin-scripts/ec2-add-admin.sh ]; then
+  echo "Creating ec2-add-admin.sh manually..."
+  curl -s https://raw.githubusercontent.com/jlandron/GabiYogaWebsite/main/infrastructure/scripts/ec2-add-admin.sh > /home/ec2-user/admin-scripts/ec2-add-admin.sh || echo "⚠️ Failed to download ec2-add-admin.sh"
+fi
+
+if [ ! -f /home/ec2-user/admin-scripts/refresh-service.sh ]; then
+  echo "Creating refresh-service.sh manually..."
+  curl -s https://raw.githubusercontent.com/jlandron/GabiYogaWebsite/main/infrastructure/scripts/refresh-service.sh > /home/ec2-user/admin-scripts/refresh-service.sh || echo "⚠️ Failed to download refresh-service.sh"
+fi
+
+# Make scripts executable
+chmod +x /home/ec2-user/admin-scripts/*.sh
+chmod +x /home/ec2-user/admin-scripts/add-admin-user.js
+
+# Set appropriate ownership
+chown -R ec2-user:ec2-user /home/ec2-user/admin-scripts
+
+# Create instructions file
+cat > /home/ec2-user/admin-scripts/README.txt << 'EOL'
+Gabi Yoga Admin Scripts
+=======================
+
+This directory contains administrative scripts for managing the Gabi Yoga website:
+
+1. Add Admin User:
+   sudo ./ec2-add-admin.sh --email=admin@example.com --password=securepassword --first-name=Admin --last-name=User
+
+2. Refresh Service (after GitHub updates):
+   sudo ./refresh-service.sh
+
+For more options, use the --help flag with any script:
+   ./ec2-add-admin.sh --help
+   ./refresh-service.sh --help
+EOL
+
+echo "Admin scripts installed to /home/ec2-user/admin-scripts"
+
 # Create a manual server check script
 cat > /home/ec2-user/check-server.sh << EOL
 #!/bin/bash
