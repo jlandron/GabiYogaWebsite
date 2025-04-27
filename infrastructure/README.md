@@ -33,21 +33,37 @@ This script will:
 ./infrastructure/scripts/aws-add-admin.sh --asg=MyCustomASG ...
 ```
 
-### Option 2: Manual Execution via SSH or Session Manager
+### Option 2: Using EC2 Script Directly on the Instance
 
-If you prefer to manually connect to an EC2 instance:
+If you're already connected to the EC2 instance or prefer to run the script directly on the server:
 
-1. Connect to an EC2 instance using SSH or AWS Session Manager
-2. Navigate to the application directory
-3. Run the admin user creation script:
+1. Connect to the EC2 instance using SSH or AWS Session Manager
+2. Copy the script to the instance (if not already there):
    ```bash
-   cd /var/www/gabiyoga
-   node utils/add-admin-user.js \
+   # From your local machine to EC2 instance
+   scp -i your-key.pem infrastructure/scripts/ec2-add-admin.sh ec2-user@instance-ip:/home/ec2-user/
+   ```
+3. Make it executable and run it:
+   ```bash
+   # On the EC2 instance
+   chmod +x ec2-add-admin.sh
+   sudo ./ec2-add-admin.sh \
      --email=admin@example.com \
      --password=securepassword \
-     --firstName=Admin \
-     --lastName=User
+     --first-name=Admin \
+     --last-name=User
    ```
+
+The script will:
+- Navigate to the application directory
+- Verify the admin user creation script exists
+- Execute it with the provided parameters
+- Report the results of the operation
+
+You can also specify a custom application path if needed:
+```bash
+sudo ./ec2-add-admin.sh --path=/custom/app/path --email=admin@example.com ...
+```
 
 ### Option 3: Direct Database Access
 
