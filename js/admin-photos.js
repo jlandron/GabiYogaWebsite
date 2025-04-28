@@ -989,39 +989,53 @@ class PhotoGalleryManager {
             // Get authentication token
             const token = localStorage.getItem('auth_token');
             if (!token) {
-                throw new Error('Authentication required. Please log in again.');
+                this.hideLoadingOverlay();
+                // Redirect to login if no token exists
+                this.showNotification('Authentication required. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                }, 2000);
+                return;
             }
             
             // Delete from database
-            const response = await fetch(`/api/gallery/images/${photoId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            try {
+                const response = await fetch(`/api/gallery/images/${photoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json().catch(() => ({}));
+                
+                if (!response.ok) {
+                    const errorMessage = data.error || response.statusText;
+                    throw new Error(`Failed to delete photo: ${errorMessage}`);
                 }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to delete photo: ${response.statusText}`);
+                
+                // Filter out the photo from local collection
+                this.photos = this.photos.filter(photo => photo.id !== photoId);
+                
+                // Remove from selected photos if it's there
+                const selectedIndex = this.selectedPhotos.indexOf(photoId);
+                if (selectedIndex !== -1) {
+                    this.selectedPhotos.splice(selectedIndex, 1);
+                }
+                
+                // Update gallery display
+                this.renderGallery();
+                
+                // Show notification
+                let message = 'Photo deleted successfully.';
+                if (wasProfilePhoto) {
+                    message += ' Note: This was your profile photo. Please select a new profile photo.';
+                }
+                this.showNotification(message);
+            } catch (fetchError) {
+                console.error('Network error when deleting photo:', fetchError);
+                throw new Error(`Network error: ${fetchError.message}`);
             }
-            
-            // Filter out the photo from local collection
-            this.photos = this.photos.filter(photo => photo.id !== photoId);
-            
-            // Remove from selected photos if it's there
-            const selectedIndex = this.selectedPhotos.indexOf(photoId);
-            if (selectedIndex !== -1) {
-                this.selectedPhotos.splice(selectedIndex, 1);
-            }
-            
-            // Update gallery display
-            this.renderGallery();
-            
-            // Show notification
-            let message = 'Photo deleted successfully.';
-            if (wasProfilePhoto) {
-                message += ' Note: This was your profile photo. Please select a new profile photo.';
-            }
-            this.showNotification(message);
         } catch (error) {
             console.error('Error deleting photo:', error);
             this.showNotification(`Failed to delete photo: ${error.message}`, 'error');
