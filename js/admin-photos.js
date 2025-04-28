@@ -574,20 +574,25 @@ class PhotoGalleryManager {
     // Compress an image file using browser-image-compression library
     async compressImage(imageFile) {
         const options = {
-            maxSizeMB: 5,
-            maxWidthOrHeight: 2560,
+            maxSizeMB: 2, // Reduced from 5MB to 2MB
+            maxWidthOrHeight: 1920, // Reduced from 2560 to 1920
             useWebWorker: true,
             preserveExif: true,
-            initialQuality: 0.9,
+            initialQuality: 0.8, // Reduced from 0.9 to 0.8
             alwaysKeepResolution: false
         };
 
         if (imageFile.size > 10 * 1024 * 1024) {
-            options.maxSizeMB = 3;
-            options.initialQuality = 0.85;
-        } else if (imageFile.size < 1 * 1024 * 1024) {
+            options.maxSizeMB = 1.5; // Reduced from 3MB to 1.5MB
+            options.initialQuality = 0.75; // Reduced from 0.85 to 0.75
+            options.maxWidthOrHeight = 1600; // Added size limit
+        } else if (imageFile.size > 5 * 1024 * 1024) {
             options.maxSizeMB = 1;
-            options.initialQuality = 0.95;
+            options.initialQuality = 0.8;
+            options.maxWidthOrHeight = 1800;
+        } else if (imageFile.size < 1 * 1024 * 1024) {
+            options.maxSizeMB = 0.8; // Reduced from 1MB to 0.8MB
+            options.initialQuality = 0.9; // Reduced from 0.95 to 0.9
         }
         
         if (imageFile.type === 'image/png') {
