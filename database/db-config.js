@@ -64,7 +64,30 @@ if (DB_TYPE === 'sqlite') {
     password: process.env.DB_PASSWORD,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    // Add configuration for handling large data
+    maxAllowedPacket: 16 * 1024 * 1024, // 16MB packet size (client side)
+    connectTimeout: 60000, // 60 seconds
+    acquireTimeout: 60000, // 60 seconds
+    timeout: 60000, // 60 seconds
+    // Enable compression to help with large data transfers
+    compress: true,
+    // Better error handling
+    debug: process.env.NODE_ENV !== 'production',
+    // Use streams for BLOBs for better memory management
+    supportBigNumbers: true,
+    bigNumberStrings: true
+  });
+
+  // Log connection details
+  console.log('MySQL connection configured with extended parameters for handling large files');
+  
+  // Handle pool errors globally
+  pool.on('error', (err) => {
+    console.error('MySQL Pool Error:', err);
+    if (err.code === 'ER_PACKET_TOO_LARGE') {
+      console.error('MySQL Error: Packet too large. Consider increasing max_allowed_packet on MySQL server.');
+    }
   });
   
   // Promisify for async/await usage
