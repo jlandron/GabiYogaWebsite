@@ -963,6 +963,50 @@ const PrivateSessionOperations = {
   },
   
   /**
+   * Save instructor availability settings
+   */
+  saveAvailabilitySettings: async (settings) => {
+    try {
+      const { available_days, blocked_dates } = settings;
+      
+      // Convert to JSON strings for storage
+      const availableDaysJson = JSON.stringify(available_days || []);
+      const blockedDatesJson = JSON.stringify(blocked_dates || []);
+      
+      // Check if settings already exist
+      const existingSettings = await db.query(`
+        SELECT id FROM instructor_availability WHERE id = 1
+      `);
+      
+      if (existingSettings.length > 0) {
+        // Update existing settings
+        await db.query(`
+          UPDATE instructor_availability
+          SET 
+            available_days = ?, 
+            blocked_dates = ?,
+            updated_at = datetime('now')
+          WHERE id = 1
+        `, [availableDaysJson, blockedDatesJson]);
+      } else {
+        // Insert new settings
+        await db.query(`
+          INSERT INTO instructor_availability (id, available_days, blocked_dates, created_at, updated_at)
+          VALUES (1, ?, ?, datetime('now'), datetime('now'))
+        `, [availableDaysJson, blockedDatesJson]);
+      }
+      
+      return {
+        available_days,
+        blocked_dates
+      };
+    } catch (error) {
+      console.error('Error saving availability settings:', error);
+      throw error;
+    }
+  },
+  
+  /**
    * Get all private sessions
    */
   getPrivateSessions: async () => {

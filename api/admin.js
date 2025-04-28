@@ -906,6 +906,44 @@ router.get('/retreats/:id/registrations', requireAdmin, async (req, res) => {
 });
 
 /**
+ * Save instructor availability settings
+ * POST /api/admin/sessions/availability
+ */
+router.post('/sessions/availability', requireAdmin, async (req, res) => {
+  try {
+    const { available_days, blocked_dates } = req.body;
+    
+    // Validate input
+    if (!available_days || !Array.isArray(available_days)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Available days are required and must be an array'
+      });
+    }
+    
+    // Save availability to database
+    // Use PrivateSessionOperations to save the availability settings
+    const result = await PrivateSessionOperations.saveAvailabilitySettings({
+      available_days,
+      blocked_dates: blocked_dates || []
+    });
+    
+    return res.json({
+      success: true,
+      message: 'Availability settings saved successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error saving availability settings:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to save availability settings',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
  * Update retreat registration payment status
  * PUT /api/admin/retreats/registrations/:id/payment
  */

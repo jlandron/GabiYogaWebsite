@@ -407,6 +407,17 @@ const createSchema = async () => {
       await db.query(`CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter_subscribers (email)`);
     }
     
+    // Instructor Availability Settings table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS instructor_availability (
+        id INTEGER PRIMARY KEY,
+        available_days TEXT NOT NULL, -- JSON array of available days with times
+        blocked_dates TEXT, -- JSON array of blocked dates
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
+    
     // Website Settings table
     await db.query(`
       CREATE TABLE IF NOT EXISTS website_settings (
