@@ -14,6 +14,7 @@
     "cdk-synth": "cd infrastructure && cdk synth"
   },
   "dependencies": {
+    "aws-sdk": "^2.1442.0",
     "bcryptjs": "^2.4.3",
     "browser-image-compression": "^2.0.2",
     "cors": "^2.8.5",
@@ -25,7 +26,8 @@
     "puppeteer": "^24.6.1",
     "sqlite3": "^5.1.6",
     "stripe": "^12.18.0",
-    "aws-sdk": "^2.1442.0"
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "aws-cdk": "^2.100.0",

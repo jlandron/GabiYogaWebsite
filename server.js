@@ -11,6 +11,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { sendSuccess, sendError, asyncHandler } = require('./utils/api-response');
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
+const logger = require('./utils/logger');
 const { initializeDatabase } = require('./database/schema');
 const { initializePricingDatabase } = require('./database/schema-pricing');
 const { initializeBlogDatabase } = require('./database/schema-blog');
@@ -41,8 +42,9 @@ const PORT = process.env.PORT || 5001; // Use port 5001 instead of 5000
 // Set JWT secret from environment variable with validation
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET environment variable is not set!');
-  console.error('Please set JWT_SECRET in your .env file');
+  logger.error('JWT_SECRET environment variable is not set!', {
+    suggestion: 'Please set JWT_SECRET in your .env file'
+  });
   process.exit(1);
 }
 
@@ -52,8 +54,9 @@ const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
 // Validate environment
 if (process.env.NODE_ENV === 'production') {
   if (JWT_SECRET === 'CHANGE_THIS_IN_PRODUCTION_TO_SECURE_RANDOM_STRING') {
-    console.error('ERROR: Default JWT_SECRET detected in production environment!');
-    console.error('Please change the JWT_SECRET to a secure random string before deploying to production');
+    logger.error('Default JWT_SECRET detected in production environment!', {
+      suggestion: 'Please change the JWT_SECRET to a secure random string before deploying to production'
+    });
     process.exit(1);
   }
 }
@@ -63,6 +66,9 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.static(path.join(__dirname)));
+
+// Add request logging middleware
+app.use(logger.requestLogger);
 
 // Add headers to allow larger requests and increase timeout
 app.use((req, res, next) => {
@@ -169,6 +175,24 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Log all unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Promise Rejection', {
+    reason: reason.toString(),
+    stack: reason.stack || 'No stack trace available'
+  });
+});
+
+// Log uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception', {
+    error: error.message,
+    stack: error.stack
+  });
+  // Give logger time to flush logs before exiting
+  setTimeout(() => process.exit(1), 1000);
+});
+
 // Error handling and not found middleware (must come after all routes)
 app.use(notFoundHandler); // Handle 404 for unknown API routes
 app.use(errorHandler);    // Handle all other errors
@@ -177,25 +201,27 @@ app.use(errorHandler);    // Handle all other errors
 const startServer = async () => {
   try {
     // Initialize core database tables
+    logger.info('Initializing core database tables...');
     await initializeDatabase();
 
     // Initialize pricing tables
+    logger.info('Initializing pricing database tables...');
     await initializePricingDatabase();
     
     // Initialize blog tables
+    logger.info('Initializing blog database tables...');
     await initializeBlogDatabase();
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`http://localhost:${PORT}`);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Running in development mode');
-      }
+      logger.info(`Server started successfully on port ${PORT}`, {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        url: `http://localhost:${PORT}`
+      });
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server', { error: error.message, stack: error.stack });
     process.exit(1);
   }
 };

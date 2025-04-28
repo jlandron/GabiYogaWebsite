@@ -5,6 +5,8 @@
  * to ensure consistent response structure across the application.
  */
 
+const logger = require('./logger');
+
 /**
  * Send a successful response
  * 
@@ -14,6 +16,15 @@
  * @param {number} statusCode - HTTP status code (default: 200)
  */
 const sendSuccess = (res, data = {}, message = 'Operation successful', statusCode = 200) => {
+  // Log successful operations at debug level (to avoid log spam)
+  if (statusCode !== 200 || process.env.LOG_LEVEL === 'debug') {
+    logger.debug(`API Success: ${message}`, { 
+      statusCode,
+      requestId: res.req?.requestId,
+      path: res.req?.originalUrl
+    });
+  }
+  
   return res.status(statusCode).json({
     success: true,
     message,
@@ -35,6 +46,20 @@ const sendError = (res, message = 'An error occurred', error = null, statusCode 
     message
   };
   
+  // Log the error (if not already logged by error-handler middleware)
+  const meta = {
+    statusCode,
+    requestId: res.req?.requestId,
+    path: res.req?.originalUrl
+  };
+  
+  // Choose log level based on status code
+  if (statusCode >= 500) {
+    logger.error(`API Error: ${message}`, { ...meta, error: error?.message, stack: error?.stack });
+  } else if (statusCode >= 400) {
+    logger.warn(`API Error: ${message}`, meta);
+  }
+  
   // Include error details if in development mode
   if (process.env.NODE_ENV === 'development' && error) {
     response.error = error.message || String(error);
@@ -54,7 +79,15 @@ const asyncHandler = (routeHandler) => {
     try {
       await routeHandler(req, res, next);
     } catch (error) {
-      console.error(`API Error: ${error.message}`, error);
+      // Log the error with request context
+      logger.error(`API Error in ${req.method} ${req.originalUrl}`, {
+        requestId: req.requestId,
+        path: req.originalUrl,
+        method: req.method,
+        error: error.message,
+        stack: error.stack
+      });
+      
       sendError(res, 'An unexpected error occurred', error);
     }
   };
