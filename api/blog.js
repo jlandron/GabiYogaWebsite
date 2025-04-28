@@ -13,12 +13,17 @@ const { authenticateToken } = require('./auth');
 const { asyncHandler } = require('../utils/api-response');
 const { query } = require('../database/db-config'); // Use the centralized database config
 
+// Get the DB_TYPE from process.env or based on NODE_ENV
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
+const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
+
 // Initialize blog tables
 (async () => {
   try {
     // Create blog_posts table
     await query(`CREATE TABLE IF NOT EXISTS blog_posts (
-      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
       title TEXT NOT NULL,
       slug TEXT NOT NULL,
       content TEXT NOT NULL,
@@ -35,7 +40,7 @@ const { query } = require('../database/db-config'); // Use the centralized datab
     
     // Create blog_tags table
     await query(`CREATE TABLE IF NOT EXISTS blog_tags (
-      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
       tag TEXT NOT NULL,
       UNIQUE(tag)
     )`);
@@ -51,7 +56,7 @@ const { query } = require('../database/db-config'); // Use the centralized datab
     
     // Create blog_post_images table
     await query(`CREATE TABLE IF NOT EXISTS blog_post_images (
-      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
       post_id INTEGER NOT NULL,
       url TEXT NOT NULL,
       alt TEXT,
@@ -394,16 +399,25 @@ const BlogOperations = {
       if (!tags.length) return;
       
       for (const tag of tags) {
-        // Insert or get tag ID (for MySQL, use INSERT IGNORE)
-        await query('INSERT IGNORE INTO blog_tags (tag) VALUES (?)', [tag]);
+        // Insert or get tag ID (using database-specific syntax)
+        if (DB_TYPE === 'mysql') {
+          await query('INSERT IGNORE INTO blog_tags (tag) VALUES (?)', [tag]);
+        } else {
+          await query('INSERT OR IGNORE INTO blog_tags (tag) VALUES (?)', [tag]);
+        }
         
         // Get tag ID
         const rows = await query('SELECT id FROM blog_tags WHERE tag = ?', [tag]);
         const tagId = rows[0].id;
         
         // Link tag to post
-        await query('INSERT IGNORE INTO blog_post_tags (post_id, tag_id) VALUES (?, ?)', 
-          [postId, tagId]);
+        if (DB_TYPE === 'mysql') {
+          await query('INSERT IGNORE INTO blog_post_tags (post_id, tag_id) VALUES (?, ?)', 
+            [postId, tagId]);
+        } else {
+          await query('INSERT OR IGNORE INTO blog_post_tags (post_id, tag_id) VALUES (?, ?)', 
+            [postId, tagId]);
+        }
       }
     } catch (error) {
       console.error('Error adding tags to post:', error);
