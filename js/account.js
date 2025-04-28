@@ -194,26 +194,31 @@ const ApiService = {
    * Make registration request
    */
   register: async (userData) => {
-    const response = await fetch(API_ENDPOINTS.register, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(userData)
-    });
+    try {
+      const response = await fetch(API_ENDPOINTS.register, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
 
-    const json = await response.json();
+      const json = await response.json();
 
-    if (!response.ok) {
-      throw new Error(json.message || 'Registration failed');
+      if (!response.ok) {
+        throw new Error(json.message || 'Registration failed');
+      }
+
+      if (json.token && json.user) {
+        TokenService.setToken(json.token);
+        UserService.setUser(json.user);
+      }
+
+      return json;
+    } catch (error) {
+      console.error('Registration API error:', error);
+      throw error;
     }
-
-    if (json.token && json.user) {
-      TokenService.setToken(json.token);
-      UserService.setUser(json.user);
-    }
-
-    return json;
   },
 
   /**
@@ -403,6 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             try {
+                // Check if user has agreed to terms & conditions
+                const termsAgreed = document.getElementById('terms-agree').checked;
+                if (!termsAgreed) {
+                    showErrorMessage('You must agree to the Terms & Conditions to create an account.', 'registration-form');
+                    setFormLoading(false);
+                    return;
+                }
+                
                 // Attempt registration with API
                 await ApiService.register({ firstName, lastName, email, password });
                 
@@ -410,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'dashboard.html';
             } catch (error) {
                 console.error('Registration error:', error);
-                showErrorMessage(error.message, 'registration-form');
+                showErrorMessage(error.message || 'An error occurred during registration', 'registration-form');
                 setFormLoading(false);
             }
         });

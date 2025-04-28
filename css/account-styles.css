@@ -159,6 +159,55 @@
     margin-top: 15px;
 }
 
+/* Terms & Conditions Modal */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-footer {
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    text-align: right;
+}
+
+.terms-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.terms-content h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.terms-content h3:first-child {
+    margin-top: 0;
+}
+
+.terms-content p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    color: #444;
+}
+
 /* Dashboard Styles */
 .dashboard-header {
     display: flex;
@@ -390,5 +439,9 @@
         margin-top: 10px;
         width: 100%;
         justify-content: flex-end;
+    }
+    
+    .terms-content {
+        max-height: 300px;
     }
 }
