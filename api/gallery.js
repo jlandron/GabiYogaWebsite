@@ -12,6 +12,69 @@ const { authenticateToken } = require('./auth');
 const logger = require('../utils/logger');
 const imageStorage = require('../utils/image-storage');
 
+// Ensure the file_path column exists in the gallery_images table
+const ensureFilePathColumn = async () => {
+  try {
+    const NODE_ENV = process.env.NODE_ENV || 'development';
+    const DB_TYPE = process.env.DB_TYPE || (NODE_ENV === 'production' ? 'mysql' : 'sqlite');
+    
+    // Check if column already exists
+    let columnExists = false;
+    
+    if (DB_TYPE === 'sqlite') {
+      // For SQLite
+      const result = await query(`PRAGMA table_info(gallery_images)`);
+      
+      if (Array.isArray(result)) {
+        columnExists = result.some(column => column && column.name === 'file_path');
+      } else if (result && typeof result === 'object' && 'length' in result) {
+        for (let i = 0; i < result.length; i++) {
+          if (result[i] && result[i].name === 'file_path') {
+            columnExists = true;
+            break;
+          }
+        }
+      }
+    } else {
+      // For MySQL
+      try {
+        const result = await query(`
+          SELECT COUNT(*) as count 
+          FROM information_schema.columns 
+          WHERE table_schema = DATABASE() 
+          AND table_name = 'gallery_images'
+          AND column_name = 'file_path'
+        `);
+        
+        columnExists = result && result[0] && result[0].count > 0;
+      } catch (error) {
+        logger.warn('Error checking for file_path column:', { error: error.message });
+      }
+    }
+    
+    if (!columnExists) {
+      logger.info('Adding file_path column to gallery_images table');
+      await query(`ALTER TABLE gallery_images ADD COLUMN file_path TEXT`);
+      logger.info('file_path column added successfully');
+    }
+    
+    return true;
+  } catch (error) {
+    logger.error('Error ensuring file_path column exists:', { error: error.message, stack: error.stack });
+    // Don't throw - let the app continue even if this fails
+    return false;
+  }
+};
+
+// Call this when the module is loaded to ensure the column exists
+ensureFilePathColumn()
+  .then(() => {
+    logger.info('Gallery API initialized with file_path column check');
+  })
+  .catch(error => {
+    logger.error('Error during gallery API initialization:', { error: error.message });
+  });
+
 // Authentication middleware to ensure user is admin
 const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') {
