@@ -1,33 +1,48 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps, Duration, CustomResource, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as rds from 'aws-cdk-lib/aws-rds';
-import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as cr from 'aws-cdk-lib/custom-resources';
-import * as iam from 'aws-cdk-lib/aws-iam';
+import { 
+  SecurityGroup, 
+  Peer, 
+  Port, 
+  Vpc, 
+  InstanceType, 
+  InstanceClass, 
+  InstanceSize, 
+  SubnetType 
+} from 'aws-cdk-lib/aws-ec2';
+import { 
+  DatabaseInstance, 
+  DatabaseInstanceEngine, 
+  MysqlEngineVersion,
+  Credentials,
+  StorageType 
+} from 'aws-cdk-lib/aws-rds';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda';
+import { Provider } from 'aws-cdk-lib/custom-resources';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
-export interface DatabaseStackProps extends cdk.StackProps {
-  vpc: ec2.Vpc;
+export interface DatabaseStackProps extends StackProps {
+  vpc: Vpc;
 }
 
-export class DatabaseStack extends cdk.Stack {
-  public readonly database: rds.DatabaseInstance;
-  public readonly databaseSecurityGroup: ec2.SecurityGroup;
-  public readonly databaseSecret: secrets.Secret;
+export class DatabaseStack extends Stack {
+  public readonly database: DatabaseInstance;
+  public readonly databaseSecurityGroup: SecurityGroup;
+  public readonly databaseSecret: Secret;
 
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
 
     // Create security group for database
-    this.databaseSecurityGroup = new ec2.SecurityGroup(this, 'DatabaseSecurityGroup', {
+    this.databaseSecurityGroup = new SecurityGroup(this, 'DatabaseSecurityGroup', {
       vpc: props.vpc,
       description: 'Allow database connections',
       allowAllOutbound: true,
     });
 
     // Create a secret for database credentials
-    this.databaseSecret = new secrets.Secret(this, 'DatabaseCredentials', {
+    this.databaseSecret = new Secret(this, 'DatabaseCredentials', {
       secretName: 'gabi-yoga-db-credentials',
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: 'admin' }),
@@ -39,30 +54,30 @@ export class DatabaseStack extends cdk.Stack {
     });
 
     // Create RDS MySQL database - Free tier eligible
-    this.database = new rds.DatabaseInstance(this, 'Database', {
-      engine: rds.DatabaseInstanceEngine.mysql({
-        version: rds.MysqlEngineVersion.VER_8_0 // MySQL 8.0 is compatible with t4g.micro
+    this.database = new DatabaseInstance(this, 'Database', {
+      engine: DatabaseInstanceEngine.mysql({
+        version: MysqlEngineVersion.VER_8_0 // MySQL 8.0 is compatible with t4g.micro
       }),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE4_GRAVITON, // t4g (Arm-based Graviton processors)
-        ec2.InstanceSize.MICRO // db.t4g.micro is free tier eligible
+      instanceType: InstanceType.of(
+        InstanceClass.BURSTABLE4_GRAVITON, // t4g (Arm-based Graviton processors)
+        InstanceSize.MICRO // db.t4g.micro is free tier eligible
       ),
       vpc: props.vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        subnetType: SubnetType.PRIVATE_ISOLATED,
       },
       securityGroups: [this.databaseSecurityGroup],
       allocatedStorage: 20, // Minimum for free tier
       maxAllocatedStorage: 20, // Cap at free tier eligible size
       allowMajorVersionUpgrade: false,
       autoMinorVersionUpgrade: true,
-      backupRetention: cdk.Duration.days(1), // Reduced backup retention for free tier
+      backupRetention: Duration.days(1), // Reduced backup retention for free tier
       deleteAutomatedBackups: true, // Remove automated backups to save costs
       deletionProtection: false, // Disabled for easier testing and cleanup
       databaseName: 'yoga',
-      credentials: rds.Credentials.fromSecret(this.databaseSecret),
+      credentials: Credentials.fromSecret(this.databaseSecret),
       multiAz: false, // Single AZ for free tier
-      storageType: rds.StorageType.GP2, // GP2 is free tier eligible
+      storageType: StorageType.GP2, // GP2 is free tier eligible
       publiclyAccessible: false,
     });
 
@@ -70,20 +85,20 @@ export class DatabaseStack extends cdk.Stack {
     // We ONLY use this general rule to avoid circular dependencies
     // DO NOT add any references to the WebApp security group here!
     this.databaseSecurityGroup.addIngressRule(
-      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
-      ec2.Port.tcp(3306),
+      Peer.ipv4(props.vpc.vpcCidrBlock),
+      Port.tcp(3306),
       'Allow MySQL connections from within the VPC'
     );
 
     // Create a custom resource to configure MySQL user for any host using '%'
-    const setupMysqlUsersFunction = new lambda.Function(this, 'SetupMysqlUsersFunction', {
-      runtime: lambda.Runtime.NODEJS_16_X,
+    const setupMysqlUsersFunction = new Function(this, 'SetupMysqlUsersFunction', {
+      runtime: Runtime.NODEJS_16_X,
       handler: 'index.handler',
       // Removing VPC configuration to allow internet access
       // No need for VPC since we're not directly connecting to MySQL anymore
-      timeout: cdk.Duration.seconds(30), // Reduced timeout since we're doing less work
+      timeout: Duration.seconds(30), // Reduced timeout since we're doing less work
       memorySize: 256, // Keep increased memory for better performance
-      code: lambda.Code.fromInline(`
+      code: Code.fromInline(`
 const AWS = require('aws-sdk');
 
 exports.handler = async (event) => {
@@ -187,12 +202,12 @@ async function sendResponse(event, status, data) {
     this.databaseSecret.grantRead(setupMysqlUsersFunction);
     
     // Create a custom resource provider
-    const provider = new cr.Provider(this, 'SetupMysqlUsersProvider', {
+    const provider = new Provider(this, 'SetupMysqlUsersProvider', {
       onEventHandler: setupMysqlUsersFunction,
     });
     
     // Create the custom resource
-    const setupMysqlUsers = new cdk.CustomResource(this, 'SetupMysqlUsers', {
+    const setupMysqlUsers = new CustomResource(this, 'SetupMysqlUsers', {
       serviceToken: provider.serviceToken,
       properties: {
         UpdatedAt: Date.now(), // Force update on each deployment
@@ -203,12 +218,12 @@ async function sendResponse(event, status, data) {
     setupMysqlUsers.node.addDependency(this.database);
 
     // Outputs
-    new cdk.CfnOutput(this, 'DatabaseEndpoint', {
+    new CfnOutput(this, 'DatabaseEndpoint', {
       value: this.database.dbInstanceEndpointAddress,
       description: 'Database endpoint',
     });
 
-    new cdk.CfnOutput(this, 'DatabaseSecretArn', {
+    new CfnOutput(this, 'DatabaseSecretArn', {
       value: this.databaseSecret.secretArn,
       description: 'Database credentials secret ARN',
     });

@@ -1,29 +1,37 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps, Duration, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import * as iam from 'aws-cdk-lib/aws-iam';
-import * as cloudfront_origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import { Bucket, IBucket, ObjectOwnership, CfnBucketPolicy } from 'aws-cdk-lib/aws-s3';
+import { 
+  Distribution, 
+  CfnDistribution, 
+  CfnOriginAccessControl,
+  AllowedMethods,
+  ViewerProtocolPolicy,
+  CachedMethods,
+  CachePolicy,
+  PriceClass,
+  SecurityPolicyProtocol
+} from 'aws-cdk-lib/aws-cloudfront';
+import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 
-export interface StorageStackProps extends cdk.StackProps {}
+export interface StorageStackProps extends StackProps {}
 
-export class StorageStack extends cdk.Stack {
-  public readonly storageBucket: s3.IBucket;
-  public readonly distribution: cloudfront.Distribution;
+export class StorageStack extends Stack {
+  public readonly storageBucket: IBucket;
+  public readonly distribution: Distribution;
 
   constructor(scope: Construct, id: string, props?: StorageStackProps) {
     super(scope, id, props);
 
     // Reference the existing S3 bucket
-    this.storageBucket = s3.Bucket.fromBucketName(
+    this.storageBucket = Bucket.fromBucketName(
       this,
       'StorageBucket', 
       'gabi-yoga-uploads'
     );
 
     // Create Origin Access Control (OAC) - modern replacement for OAI
-    const cfnOriginAccessControl = new cloudfront.CfnOriginAccessControl(this, 'OriginAccessControl', {
+    const cfnOriginAccessControl = new CfnOriginAccessControl(this, 'OriginAccessControl', {
       originAccessControlConfig: {
         name: 'GabiYogaS3Access',
         originAccessControlOriginType: 's3',
@@ -34,7 +42,7 @@ export class StorageStack extends cdk.Stack {
     });
     
     // Create a separate policy for the bucket (since we can't use addToResourcePolicy on imported bucket)
-    new s3.CfnBucketPolicy(this, 'BucketPolicy', {
+    new CfnBucketPolicy(this, 'BucketPolicy', {
       bucket: this.storageBucket.bucketName,
       policyDocument: {
         Version: '2012-10-17',
@@ -55,14 +63,14 @@ export class StorageStack extends cdk.Stack {
     });
 
     // Create CloudFront distribution for the S3 bucket
-    this.distribution = new cloudfront.Distribution(this, 'Distribution', {
+    this.distribution = new Distribution(this, 'Distribution', {
       defaultBehavior: {
-        origin: new origins.S3Origin(this.storageBucket),
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+        origin: new S3Origin(this.storageBucket),
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachedMethods: CachedMethods.CACHE_GET_HEAD,
         compress: true,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        cachePolicy: CachePolicy.CACHING_OPTIMIZED,
       },
       defaultRootObject: 'index.html',
       errorResponses: [
@@ -70,28 +78,28 @@ export class StorageStack extends cdk.Stack {
           httpStatus: 403,
           responseHttpStatus: 404,
           responsePagePath: '/404.html',
-          ttl: cdk.Duration.minutes(5),
+          ttl: Duration.minutes(5),
         },
       ],
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use US, Canada, Europe, & Israel - lowest cost option
+      priceClass: PriceClass.PRICE_CLASS_100, // Use US, Canada, Europe, & Israel - lowest cost option
       enableLogging: true,
-      logBucket: new s3.Bucket(this, 'LogBucket', {
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      logBucket: new Bucket(this, 'LogBucket', {
+        removalPolicy: RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
-        objectOwnership: s3.ObjectOwnership.OBJECT_WRITER, // Enable ACL access for CloudFront logging
+        objectOwnership: ObjectOwnership.OBJECT_WRITER, // Enable ACL access for CloudFront logging
         lifecycleRules: [
           {
-            expiration: cdk.Duration.days(7), // Reduced from 30 days to save storage costs
+            expiration: Duration.days(7), // Reduced from 30 days to save storage costs
           },
         ],
       }),
       logFilePrefix: 'cloudfront-logs/',
-      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
     });
 
     // Attach the Origin Access Control to the CloudFront distribution
     // This needs to be done at the CloudFormation level since the CDK high-level construct doesn't support OAC directly
-    const cfnDistribution = this.distribution.node.defaultChild as cloudfront.CfnDistribution;
+    const cfnDistribution = this.distribution.node.defaultChild as CfnDistribution;
     const cfnDistributionConfig = cfnDistribution.distributionConfig as any;
     
     // Get the S3 origin configuration (this assumes it's the first/default origin)
@@ -103,17 +111,17 @@ export class StorageStack extends cdk.Stack {
     }
 
     // Outputs
-    new cdk.CfnOutput(this, 'BucketName', {
+    new CfnOutput(this, 'BucketName', {
       value: this.storageBucket.bucketName,
       description: 'S3 bucket name for uploads',
     });
 
-    new cdk.CfnOutput(this, 'CloudFrontURL', {
+    new CfnOutput(this, 'CloudFrontURL', {
       value: `https://${this.distribution.distributionDomainName}`,
       description: 'CloudFront URL for assets',
     });
 
-    new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
+    new CfnOutput(this, 'CloudFrontDistributionId', {
       value: this.distribution.distributionId,
       description: 'CloudFront distribution ID',
     });

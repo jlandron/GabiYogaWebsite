@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
-import * as dotenv from 'dotenv';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as iam from 'aws-cdk-lib/aws-iam';
+import { App, Tags } from 'aws-cdk-lib';
+import { config } from 'dotenv';
 import { DatabaseStack } from '../lib/database-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { WebAppStack } from '../lib/webapp-stack';
@@ -11,7 +9,7 @@ import { NetworkStack } from '../lib/network-stack';
 import { DnsStack } from '../lib/dns-stack';
 
 // Load environment variables from .env file in root directory
-dotenv.config({ path: '../.env' });
+config({ path: '../.env' });
 
 // Get AWS account ID from environment or use default
 const accountId = process.env.AWS_ACCOUNT_ID || '891709159344';
@@ -21,7 +19,7 @@ const env = { account: accountId, region };
 // Define domain name for DNS configuration
 const domainName = 'gabi.yoga';
 
-const app = new cdk.App();
+const app = new App();
 
 // Create the stacks with proper dependencies
 const networkStack = new NetworkStack(app, 'GabiYogaNetwork', { env });
@@ -65,5 +63,5 @@ webAppStack.addDependency(dnsStack);
 webAppStack.addHttpsListener(dnsStack.certificate);
 
 // Add tags to all resources
-cdk.Tags.of(app).add('Project', 'GabiYoga');
-cdk.Tags.of(app).add('Environment', 'Production');
+Tags.of(app).add('Project', 'GabiYoga');
+Tags.of(app).add('Environment', 'Production');

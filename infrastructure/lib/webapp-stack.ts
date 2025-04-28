@@ -1,39 +1,63 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps, Duration, CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as iam from 'aws-cdk-lib/aws-iam';
-import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
-import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
-import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as rds from 'aws-cdk-lib/aws-rds';
-import * as logs from 'aws-cdk-lib/aws-logs';
-import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
-import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as targets from 'aws-cdk-lib/aws-route53-targets';
-import * as acm from 'aws-cdk-lib/aws-certificatemanager';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as dotenv from 'dotenv';
+import { 
+  SecurityGroup, 
+  Peer, 
+  Port, 
+  Vpc, 
+  UserData, 
+  LaunchTemplate, 
+  MachineImage,
+  InstanceType,
+  InstanceClass,
+  InstanceSize,
+  SubnetType
+} from 'aws-cdk-lib/aws-ec2';
+import { 
+  Role, 
+  ServicePrincipal, 
+  ManagedPolicy 
+} from 'aws-cdk-lib/aws-iam';
+import { 
+  ApplicationLoadBalancer, 
+  ApplicationListener, 
+  ListenerAction, 
+  ApplicationProtocol,
+  SslPolicy 
+} from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { 
+  AutoScalingGroup 
+} from 'aws-cdk-lib/aws-autoscaling';
+import { 
+  IBucket 
+} from 'aws-cdk-lib/aws-s3';
+import { 
+  Distribution 
+} from 'aws-cdk-lib/aws-cloudfront';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { config } from 'dotenv';
 
-export interface WebAppStackProps extends cdk.StackProps {
-  vpc: ec2.Vpc;
-  bucket: s3.IBucket;
-  distribution: cloudfront.Distribution;
+export interface WebAppStackProps extends StackProps {
+  vpc: Vpc;
+  bucket: IBucket;
+  distribution: Distribution;
   databaseEndpoint?: string; // We'll use this to configure the EC2 instances
 }
 
-export class WebAppStack extends cdk.Stack {
-  public readonly loadBalancer: elbv2.ApplicationLoadBalancer;
-  public readonly webSecurityGroup: ec2.SecurityGroup;
-  public readonly asg: autoscaling.AutoScalingGroup;
-  private httpListener: elbv2.ApplicationListener;
+export class WebAppStack extends Stack {
+  public readonly loadBalancer: ApplicationLoadBalancer;
+  public readonly webSecurityGroup: SecurityGroup;
+  public readonly asg: AutoScalingGroup;
+  private httpListener: ApplicationListener;
   
   constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
 
     // Create security group for web instances
-    this.webSecurityGroup = new ec2.SecurityGroup(this, 'WebSecurityGroup', {
+    this.webSecurityGroup = new SecurityGroup(this, 'WebSecurityGroup', {
       vpc: props.vpc,
       description: 'Security group for web servers',
       allowAllOutbound: true,
@@ -42,19 +66,19 @@ export class WebAppStack extends cdk.Stack {
     const webSg = this.webSecurityGroup; // For readability in the rest of the code
 
     // Allow inbound HTTP and HTTPS traffic
-    webSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP');
-    webSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443), 'Allow HTTPS');
+    webSg.addIngressRule(Peer.anyIpv4(), Port.tcp(80), 'Allow HTTP');
+    webSg.addIngressRule(Peer.anyIpv4(), Port.tcp(443), 'Allow HTTPS');
 
     // Allow SSH access (for administration only - consider using SSM in production)
-    webSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(22), 'Allow SSH');
+    webSg.addIngressRule(Peer.anyIpv4(), Port.tcp(22), 'Allow SSH');
 
     // Create IAM role for EC2 instances
-    const webServerRole = new iam.Role(this, 'WebServerRole', {
-      assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+    const webServerRole = new Role(this, 'WebServerRole', {
+      assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'), // For SSM
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'), // For S3 access
-        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'), // For CloudWatch
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'), // For SSM
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'), // For S3 access
+        ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'), // For CloudWatch
       ],
     });
 
@@ -62,7 +86,7 @@ export class WebAppStack extends cdk.Stack {
     props.bucket.grantReadWrite(webServerRole);
 
     // Load and prepare user data script from file
-    const userData = ec2.UserData.forLinux();
+    const userData = UserData.forLinux();
     
     // Prepare database information
     // Use the provided database endpoint or a fallback value
@@ -263,7 +287,7 @@ export class WebAppStack extends cdk.Stack {
     );
 
     // Create load balancer
-    this.loadBalancer = new elbv2.ApplicationLoadBalancer(this, 'LoadBalancer', {
+    this.loadBalancer = new ApplicationLoadBalancer(this, 'LoadBalancer', {
       vpc: props.vpc,
       internetFacing: true,
       securityGroup: webSg,
@@ -276,11 +300,11 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Create Launch Template - Using t2.micro for free tier
-    const launchTemplate = new ec2.LaunchTemplate(this, 'WebServerLaunchTemplate', {
-      machineImage: ec2.MachineImage.latestAmazonLinux2(),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE2,
-        ec2.InstanceSize.MICRO // t2.micro is free tier eligible
+    const launchTemplate = new LaunchTemplate(this, 'WebServerLaunchTemplate', {
+      machineImage: MachineImage.latestAmazonLinux2(),
+      instanceType: InstanceType.of(
+        InstanceClass.BURSTABLE2,
+        InstanceSize.MICRO // t2.micro is free tier eligible
       ),
       role: webServerRole,
       securityGroup: webSg,
@@ -288,24 +312,24 @@ export class WebAppStack extends cdk.Stack {
     });
 
     // Create Auto Scaling Group with Launch Template - Reduced capacity for free tier
-    this.asg = new autoscaling.AutoScalingGroup(this, 'WebServerASG', {
+    this.asg = new AutoScalingGroup(this, 'WebServerASG', {
       vpc: props.vpc,
       launchTemplate: launchTemplate,
       minCapacity: 1, // Reduced to 1 instance for free tier
       maxCapacity: 1, // Capped at 1 instance for free tier
       desiredCapacity: 1, // Using just 1 instance to stay within free tier
-      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      vpcSubnets: { subnetType: SubnetType.PUBLIC },
     });
 
     // Add ASG to target group
     this.httpListener.addTargets('WebTarget', {
       port: 5001,
-      protocol: elbv2.ApplicationProtocol.HTTP,
+      protocol: ApplicationProtocol.HTTP,
       targets: [this.asg],
       healthCheck: {
         path: '/api/health',
-        interval: cdk.Duration.seconds(30),
-        timeout: cdk.Duration.seconds(5),
+        interval: Duration.seconds(30),
+        timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 5,
       },
@@ -314,46 +338,46 @@ export class WebAppStack extends cdk.Stack {
     // Scale based on CPU usage
     this.asg.scaleOnCpuUtilization('CpuScaling', {
       targetUtilizationPercent: 70,
-      cooldown: cdk.Duration.seconds(300),
+      cooldown: Duration.seconds(300),
     });
 
     // Create CloudWatch log group
-    const logGroup = new logs.LogGroup(this, 'WebAppLogs', {
-      retention: logs.RetentionDays.TWO_WEEKS,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    const logGroup = new LogGroup(this, 'WebAppLogs', {
+      retention: RetentionDays.TWO_WEEKS,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     // Outputs
-    new cdk.CfnOutput(this, 'LoadBalancerDNS', {
+    new CfnOutput(this, 'LoadBalancerDNS', {
       value: this.loadBalancer.loadBalancerDnsName,
       description: 'Load balancer DNS name',
     });
 
-    new cdk.CfnOutput(this, 'WebServerSecurityGroup', {
+    new CfnOutput(this, 'WebServerSecurityGroup', {
       value: webSg.securityGroupId,
       description: 'Web server security group ID',
     });
   }
   
   // Add a method to enable HTTPS with the certificate
-  public addHttpsListener(certificate: acm.ICertificate) {
+  public addHttpsListener(certificate: ICertificate) {
     // Add HTTPS listener
     const httpsListener = this.loadBalancer.addListener('HttpsListener', {
       port: 443,
       certificates: [certificate],
       open: true,
-      sslPolicy: elbv2.SslPolicy.RECOMMENDED
+      sslPolicy: SslPolicy.RECOMMENDED
     });
 
     // Add target group to the HTTPS listener
     httpsListener.addTargets('HttpsWebTarget', {
       port: 5001,
-      protocol: elbv2.ApplicationProtocol.HTTP,
+      protocol: ApplicationProtocol.HTTP,
       targets: [this.asg],
       healthCheck: {
         path: '/api/health',
-        interval: cdk.Duration.seconds(30),
-        timeout: cdk.Duration.seconds(5),
+        interval: Duration.seconds(30),
+        timeout: Duration.seconds(5),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 5,
       }
@@ -361,7 +385,7 @@ export class WebAppStack extends cdk.Stack {
     
     // Add a redirect from HTTP to HTTPS
     this.httpListener.addAction('HttpToHttpsRedirect', {
-      action: elbv2.ListenerAction.redirect({
+      action: ListenerAction.redirect({
         protocol: 'HTTPS',
         port: '443',
         permanent: true

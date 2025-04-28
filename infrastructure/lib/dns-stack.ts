@@ -1,34 +1,33 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as route53 from 'aws-cdk-lib/aws-route53';
-import * as targets from 'aws-cdk-lib/aws-route53-targets';
-import * as acm from 'aws-cdk-lib/aws-certificatemanager';
-import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { IHostedZone, HostedZone } from 'aws-cdk-lib/aws-route53';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 
-export interface DnsStackProps extends cdk.StackProps {
-  loadBalancer: elbv2.ApplicationLoadBalancer;
+export interface DnsStackProps extends StackProps {
+  loadBalancer: ApplicationLoadBalancer;
   domainName: string;
 }
 
-export class DnsStack extends cdk.Stack {
-  public readonly hostedZone: route53.IHostedZone;
-  public readonly certificate: acm.Certificate;
+export class DnsStack extends Stack {
+  public readonly hostedZone: IHostedZone;
+  public readonly certificate: Certificate;
 
   constructor(scope: Construct, id: string, props: DnsStackProps) {
     super(scope, id, props);
 
     // Use existing hosted zone created by the Route53 domain registrar
     // instead of creating a new one to avoid duplicate hosted zones
-    this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
+    this.hostedZone = HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
       zoneName: props.domainName,
       hostedZoneId: 'Z0858162FM97J2FO2QJU', // Registrar-created zone
     });
 
     // Create an ACM certificate for the domain and www subdomain
-    this.certificate = new acm.Certificate(this, 'Certificate', {
+    this.certificate = new Certificate(this, 'Certificate', {
       domainName: props.domainName,
       subjectAlternativeNames: [`www.${props.domainName}`],
-      validation: acm.CertificateValidation.fromDns(this.hostedZone),
+      validation: CertificateValidation.fromDns(this.hostedZone),
     });
     
     // Note: We don't create target groups or HTTPS listeners here to avoid circular dependencies
@@ -39,17 +38,17 @@ export class DnsStack extends cdk.Stack {
     // If you need to update these records, use the AWS Console or CLI instead
     
     // Output the nameservers and hosted zone ID
-    new cdk.CfnOutput(this, 'HostedZoneId', {
+    new CfnOutput(this, 'HostedZoneId', {
       value: this.hostedZone.hostedZoneId,
       description: 'Route53 Hosted Zone ID',
     });
 
-    new cdk.CfnOutput(this, 'CertificateArn', {
+    new CfnOutput(this, 'CertificateArn', {
       value: this.certificate.certificateArn,
       description: 'ACM Certificate ARN',
     });
 
-    new cdk.CfnOutput(this, 'DnsConfigInstructions', {
+    new CfnOutput(this, 'DnsConfigInstructions', {
       value: `
         Using existing hosted zone ID: ${this.hostedZone.hostedZoneId}
         
