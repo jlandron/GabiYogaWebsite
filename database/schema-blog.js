@@ -21,10 +21,10 @@ const initializeBlogDatabase = async () => {
     await query(`CREATE TABLE IF NOT EXISTS blog_posts (
       id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
       title TEXT NOT NULL,
-      slug TEXT NOT NULL,
+      slug ${DB_TYPE === 'mysql' ? 'VARCHAR(255)' : 'TEXT'} NOT NULL,
       content TEXT NOT NULL,
       excerpt TEXT,
-      author TEXT DEFAULT 'Gabi',
+      author ${DB_TYPE === 'mysql' ? 'VARCHAR(100)' : 'TEXT'} DEFAULT 'Gabi',
       published BOOLEAN DEFAULT FALSE,
       published_at TIMESTAMP NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -37,7 +37,7 @@ const initializeBlogDatabase = async () => {
     // Create blog_tags table
     await query(`CREATE TABLE IF NOT EXISTS blog_tags (
       id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
-      tag TEXT NOT NULL,
+      tag ${DB_TYPE === 'mysql' ? 'VARCHAR(100)' : 'TEXT'} NOT NULL,
       UNIQUE(tag)
     )`);
     

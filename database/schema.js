@@ -50,8 +50,8 @@ const createSchema = async () => {
         membership_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         user_id INTEGER NOT NULL,
         membership_type TEXT NOT NULL, -- 'Monthly Unlimited', 'Annual Unlimited', 'Class Pack', etc.
-        start_date TEXT NOT NULL,
-        end_date TEXT,
+        start_date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
+        end_date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'},
         classes_remaining INTEGER, -- Only for class packs
         auto_renew BOOLEAN DEFAULT 0,
         status ${DB_TYPE === 'mysql' ? 'VARCHAR(50)' : 'TEXT'} DEFAULT 'Active', -- 'Active', 'Expired', 'Cancelled', 'Pending'
@@ -87,7 +87,7 @@ const createSchema = async () => {
         template_id INTEGER,
         name TEXT NOT NULL,
         day_of_week INTEGER NOT NULL, -- 0 = Sunday, 1 = Monday, etc.
-        start_time TEXT NOT NULL, -- '14:00', '09:30'
+        start_time ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL, -- '14:00', '09:30'
         duration INTEGER NOT NULL, -- in minutes
         instructor TEXT,
         level TEXT, -- 'All Levels', 'Beginner', 'Intermediate', 'Advanced'
@@ -106,7 +106,7 @@ const createSchema = async () => {
         booking_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         user_id INTEGER NOT NULL,
         class_id INTEGER NOT NULL,
-        date TEXT NOT NULL, -- The specific date for this booking
+        date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL, -- The specific date for this booking
         status ${DB_TYPE === 'mysql' ? 'VARCHAR(50)' : 'TEXT'} NOT NULL DEFAULT 'Confirmed', -- 'Confirmed', 'Cancelled', 'Waitlist', 'Attended', 'No-show'
         booking_date TEXT NOT NULL,
         created_at TEXT NOT NULL,
@@ -122,7 +122,7 @@ const createSchema = async () => {
         workshop_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         title TEXT NOT NULL,
         description TEXT,
-        date TEXT NOT NULL,
+        date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
         start_time TEXT NOT NULL,
         end_time TEXT NOT NULL,
         instructor TEXT,
@@ -166,7 +166,7 @@ const createSchema = async () => {
       CREATE TABLE IF NOT EXISTS private_sessions (
         session_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         user_id INTEGER NOT NULL,
-        date TEXT NOT NULL,
+        date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
         start_time TEXT NOT NULL,
         duration INTEGER NOT NULL, -- in minutes
         focus TEXT, -- 'Beginners Introduction', 'Alignment & Technique', etc.
@@ -191,7 +191,7 @@ const createSchema = async () => {
         payment_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         user_id INTEGER NOT NULL,
         amount REAL NOT NULL,
-        payment_date TEXT NOT NULL,
+        payment_date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
         payment_method TEXT NOT NULL, -- 'Credit Card', 'Cash', 'Check', etc.
         payment_reference TEXT, -- Reference from payment gateway
         payment_type TEXT NOT NULL, -- 'membership', 'workshop', 'private_session', 'retail'
@@ -262,8 +262,8 @@ const createSchema = async () => {
         detailed_itinerary TEXT,
         accommodations TEXT,
         included_items TEXT,
-        start_date TEXT NOT NULL,
-        end_date TEXT NOT NULL,
+        start_date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
+        end_date ${DB_TYPE === 'mysql' ? 'VARCHAR(10)' : 'TEXT'} NOT NULL,
         location TEXT NOT NULL,
         venue_name TEXT,
         price REAL NOT NULL,
@@ -326,10 +326,34 @@ const createSchema = async () => {
     if (NODE_ENV === 'production' || DB_TYPE.toLowerCase() === 'mysql') {
       console.log('Using MySQL-compatible index creation (no IF NOT EXISTS)');
       
+      // Helper function to check if index exists in MySQL
+      const indexExists = async (indexName, tableName) => {
+        try {
+          const result = await db.query(`
+            SELECT COUNT(*) as count FROM information_schema.statistics 
+            WHERE table_schema = DATABASE() 
+            AND table_name = ? 
+            AND index_name = ?
+          `, [tableName, indexName]);
+          
+          return result[0].count > 0;
+        } catch (err) {
+          console.error(`Error checking if index ${indexName} exists:`, err);
+          return false; // Assume it doesn't exist if we can't check
+        }
+      };
+      
       // MySQL doesn't support "IF NOT EXISTS" for indexes and requires key length for TEXT columns
       // Helper function to create MySQL-compatible indexes with proper error handling and TEXT column length
       const createMySQLIndex = async (indexName, tableName, columns) => {
         try {
+          // First check if the index already exists
+          const exists = await indexExists(indexName, tableName);
+          if (exists) {
+            console.log(`Index ${indexName} already exists (skipping creation)`);
+            return;
+          }
+          
           console.log(`Creating index ${indexName} on ${tableName}(${columns})...`);
           
           // For MySQL, TEXT/BLOB columns need length specification
@@ -350,6 +374,7 @@ const createSchema = async () => {
           // If error is about index already existing, ignore it
           if (err.message && (err.message.includes('Duplicate') || err.message.includes('already exists'))) {
             console.log(`Index ${indexName} already exists (expected)`);
+            // Don't propagate this error
           } else {
             console.error(`Error creating index ${indexName}:`, err);
             // Log but don't throw the error so we can continue with other indexes

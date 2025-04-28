@@ -57,9 +57,33 @@ const createPricingSchema = async () => {
     if (NODE_ENV === 'production' || DB_TYPE.toLowerCase() === 'mysql') {
       console.log('Using MySQL-compatible index creation (no IF NOT EXISTS)');
       
+      // Helper function to check if index exists in MySQL
+      const indexExists = async (indexName, tableName) => {
+        try {
+          const result = await db.query(`
+            SELECT COUNT(*) as count FROM information_schema.statistics 
+            WHERE table_schema = DATABASE() 
+            AND table_name = ? 
+            AND index_name = ?
+          `, [tableName, indexName]);
+          
+          return result[0].count > 0;
+        } catch (err) {
+          console.error(`Error checking if index ${indexName} exists:`, err);
+          return false; // Assume it doesn't exist if we can't check
+        }
+      };
+      
       // Helper function to create MySQL-compatible indexes with proper length for TEXT fields
       const createMySQLIndex = async (indexName, tableName, columns, textLength = 32) => {
         try {
+          // First check if the index already exists
+          const exists = await indexExists(indexName, tableName);
+          if (exists) {
+            console.log(`Index ${indexName} already exists (skipping creation)`);
+            return;
+          }
+          
           console.log(`Creating index ${indexName} on ${tableName}(${columns})...`);
           // For TEXT columns, we need to specify a length
           const formattedColumns = columns.includes('status') ? `${columns}(${textLength})` : columns;
@@ -69,9 +93,11 @@ const createPricingSchema = async () => {
           // If error is about index already existing, ignore it
           if (err.message && (err.message.includes('Duplicate') || err.message.includes('already exists'))) {
             console.log(`Index ${indexName} already exists (expected)`);
+            // Don't propagate this error
           } else {
             console.error(`Error creating index ${indexName}:`, err);
             console.log(`Failed to create index ${indexName}, but continuing: ${err.message}`);
+            // Don't propagate non-critical errors during index creation
           }
         }
       };
