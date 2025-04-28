@@ -74,23 +74,15 @@ export class DatabaseStack extends cdk.Stack {
       ec2.Port.tcp(3306),
       'Allow MySQL connections from within the VPC'
     );
-    
-    // Create a security group for the Lambda function
-    const lambdaSecurityGroup = new ec2.SecurityGroup(this, 'LambdaSecurityGroup', {
-      vpc: props.vpc,
-      description: 'Security group for Lambda function',
-      allowAllOutbound: true,
-    });
 
     // Create a custom resource to configure MySQL user for any host using '%'
     const setupMysqlUsersFunction = new lambda.Function(this, 'SetupMysqlUsersFunction', {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: 'index.handler',
-      vpc: props.vpc, // Run in the same VPC as the RDS instance
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED // Use the same subnet type as RDS
-      },
-      securityGroups: [lambdaSecurityGroup], // Add security group for the Lambda
+      // Removing VPC configuration to allow internet access
+      // No need for VPC since we're not directly connecting to MySQL anymore
+      timeout: cdk.Duration.seconds(30), // Reduced timeout since we're doing less work
+      memorySize: 256, // Keep increased memory for better performance
       code: lambda.Code.fromInline(`
 const AWS = require('aws-sdk');
 
@@ -104,6 +96,7 @@ exports.handler = async (event) => {
   
   try {
     // Get the database credentials from Secrets Manager
+    console.log('Fetching credentials from Secrets Manager');
     const secretsManager = new AWS.SecretsManager();
     const secretData = await secretsManager.getSecretValue({
       SecretId: process.env.SECRET_ARN
@@ -115,41 +108,20 @@ exports.handler = async (event) => {
     const dbEndpoint = process.env.DB_ENDPOINT;
     const dbName = process.env.DB_NAME;
     
-    // Create SQL commands that need to be executed
-    const createUserSql = \`CREATE USER IF NOT EXISTS '\${username}'@'%' IDENTIFIED BY '\${password}';\`;
-    const grantPrivilegesSql = \`GRANT ALL PRIVILEGES ON \${dbName}.* TO '\${username}'@'%';\`;
-    const flushPrivilegesSql = \`FLUSH PRIVILEGES;\`;
+    console.log('Retrieved database endpoint:', dbEndpoint);
+    console.log('Using database name:', dbName);
     
-    console.log('Setting up MySQL user via a direct DB connection...');
+    // SIMPLIFIED APPROACH: Instead of trying to connect directly to MySQL,
+    // we'll simply return success here as the EC2 user data script 
+    // will handle user creation as needed.
+    console.log('Skipping direct database connection - EC2 will handle user creation');
     
-    // Use the MySQL client already installed on the Lambda to connect to RDS
-    // Using raw TCP socket connection to MySQL to avoid needing the mysql2 module
-    const net = require('net');
-    const socket = net.createConnection({
-      host: dbEndpoint,
-      port: 3306
-    });
+    // Log success for CloudWatch
+    console.log('Custom resource execution completed successfully');
     
-    socket.on('connect', () => {
-      console.log('Connected to MySQL database, executing commands...');
-      // Note: Using direct socket connection is complex and not ideal
-      // This is just a placeholder - in practice we would return a success since
-      // the direct MySQL connection will be made by the EC2 instances now
-      socket.end();
-    });
-    
-    socket.on('error', (err) => {
-      console.log('Socket connection error:', err);
-      // Not failing as this is expected - direct socket programming for MySQL 
-      // authentication would be complex
-    });
-    
-    // Since direct MySQL programming is complex, we're using a workaround
-    // In reality, the EC2 user data script will create the user for us (as
-    // implemented in webapp-stack.ts)
-    
+    // Return success immediately
     return await sendResponse(event, 'SUCCESS', {
-      Message: 'MySQL user will be configured by EC2 user data script'
+      Message: 'MySQL user will be configured by EC2 user data script in webapp-stack.ts'
     });
   } catch (error) {
     console.error('Error configuring MySQL user:', error);
@@ -204,7 +176,6 @@ async function sendResponse(event, status, data) {
   });
 }
       `),
-      timeout: cdk.Duration.seconds(60),
       environment: {
         SECRET_ARN: this.databaseSecret.secretArn,
         DB_ENDPOINT: this.database.dbInstanceEndpointAddress,
@@ -214,13 +185,6 @@ async function sendResponse(event, status, data) {
     
     // Add required permissions
     this.databaseSecret.grantRead(setupMysqlUsersFunction);
-    
-    // The Lambda will need network connectivity for Secrets Manager and CloudWatch
-    lambdaSecurityGroup.addEgressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(443),
-      'Allow HTTPS outbound for AWS API calls'
-    );
     
     // Create a custom resource provider
     const provider = new cr.Provider(this, 'SetupMysqlUsersProvider', {

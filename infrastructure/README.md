@@ -1,3 +1,81 @@
+# Yoga Website Infrastructure
+
+This directory contains AWS CDK (Cloud Development Kit) code for deploying and managing the yoga website infrastructure. The infrastructure is defined as code, allowing for consistent, repeatable deployments and easier management of cloud resources.
+
+## Infrastructure Components
+
+The application is deployed on AWS using the following components, each defined in its own stack:
+
+### CDK Stacks
+
+- **Network Stack** (`network-stack.ts`): VPC, subnets, security groups, and other networking resources
+- **Database Stack** (`database-stack.ts`): RDS MySQL database instance
+- **Storage Stack** (`storage-stack.ts`): S3 buckets for static assets and user uploads
+- **DNS Stack** (`dns-stack.ts`): Route53 DNS configuration and domain management
+- **WebApp Stack** (`webapp-stack.ts`): EC2 instances within an Auto Scaling Group, Load Balancer
+- **Credentials Stack** (`credentials-stack.ts`): Secrets Manager for secure credential storage
+- **Security Stack** (`security-stack.ts`): IAM roles and security policies
+
+## Deployment Process
+
+### Prerequisites
+
+- AWS CLI installed and configured
+- AWS CDK installed (`npm install -g aws-cdk`)
+- Node.js and npm
+
+### Initial Deployment
+
+1. Install dependencies:
+   ```bash
+   cd infrastructure
+   npm install
+   ```
+
+2. Bootstrap your AWS environment (one-time step):
+   ```bash
+   cdk bootstrap
+   ```
+
+3. Build the TypeScript code:
+   ```bash
+   npm run build
+   ```
+
+4. Deploy all stacks:
+   ```bash
+   cdk deploy --all
+   ```
+
+   Or deploy specific stacks:
+   ```bash
+   cdk deploy GabiYogaNetwork GabiYogaDatabase GabiYogaWebApp
+   ```
+
+### Making Changes to Infrastructure
+
+1. Modify the relevant CDK stack TypeScript files
+2. Build the code:
+   ```bash
+   npm run build
+   ```
+3. Deploy the changes:
+   ```bash
+   cdk deploy GabiYogaWebApp  # Replace with the specific stack you modified
+   ```
+4. For EC2 instance changes, you may need to refresh instances (see below)
+
+## Scripts
+
+The `scripts` directory contains several utility scripts to help manage the infrastructure:
+
+- `build-clean.sh`: Cleans and rebuilds the CDK project
+- `deploy.sh`: Simplified deployment script with options
+- `refresh-instances.sh`: Updates EC2 instances with latest configuration
+- `aws-add-admin.sh`: Adds admin users after deployment
+- `ec2-add-admin.sh`: Direct EC2 script for adding admin users
+- `install-node-with-nvm.sh`: Installs Node.js using NVM on EC2 instances
+
 ## Adding Admin User After Deployment
 
 After deploying the application to AWS, you can add an admin user to the database using the provided scripts:
@@ -54,17 +132,6 @@ If you're already connected to the EC2 instance or prefer to run the script dire
      --last-name=User
    ```
 
-The script will:
-- Navigate to the application directory
-- Verify the admin user creation script exists
-- Execute it with the provided parameters
-- Report the results of the operation
-
-You can also specify a custom application path if needed:
-```bash
-sudo ./ec2-add-admin.sh --path=/custom/app/path --email=admin@example.com ...
-```
-
 ### Option 3: Direct Database Access
 
 If you have direct access to the RDS database:
@@ -86,7 +153,7 @@ If you have direct access to the RDS database:
 
 ## Applying Node.js Installation Changes
 
-After deploying the CDK updates for the Node.js installation method, the changes won't automatically apply to already running instances. Here's how to apply the changes:
+After deploying CDK updates for the Node.js installation method, you need to refresh the EC2 instances:
 
 ### Option 1: Automatic Instance Refresh (Recommended for production)
 
@@ -103,12 +170,6 @@ To update all EC2 instances in the Auto Scaling Group:
    ./scripts/refresh-instances.sh
    ```
 
-   The script will:
-   - Automatically find the Auto Scaling Group in the CloudFormation stack
-   - Show you the current instance count
-   - Ask for confirmation before starting the refresh
-   - Monitor the progress until completion
-   
    **Advanced options:**
    ```bash
    # Customize the minimum healthy percentage (default 50%)
@@ -116,9 +177,6 @@ To update all EC2 instances in the Auto Scaling Group:
    
    # Start the refresh but don't wait for completion
    ./scripts/refresh-instances.sh --no-wait
-   
-   # See all available options
-   ./scripts/refresh-instances.sh --help
    ```
 
 ### Option 2: Manual Update (For development/testing)
@@ -128,193 +186,26 @@ For quickly updating a single instance:
 1. Deploy the CDK changes
 2. Identify the instance you want to update
 3. Terminate the instance (ASG will automatically create a new one with the updated configuration)
-4. Wait for the new instance to initialize (typically 5-10 minutes)
-5. Verify the Node.js installation is working correctly
 
-> ⚠️ **Note:** The instance refresh approach is preferable for production environments as it maintains availability by gradually replacing instances.
+## Troubleshooting
 
-## Verifying Node.js Installation
+If you encounter issues with the application deployment or operation, refer to the following resources:
 
-After deploying the CDK changes and refreshing the EC2 instances, you can verify that Node.js is installed correctly using the provided verification script:
+1. [Manual Server Restart Guide](./webapp-stack-https.md) - For troubleshooting EC2 instance issues
+2. Check CloudWatch Logs for application and infrastructure logs
+3. Examine CloudFormation stack events for deployment issues
 
-```bash
-# Basic verification - lists instances in the Auto Scaling Group
-./scripts/verify-node-installation.sh
-
-# Detailed verification - runs checks on each instance via SSM
-./scripts/verify-node-installation.sh --detailed
-```
-
-The detailed verification will:
-- Check if Node.js is available at `/usr/local/bin/node`
-- Check if npm is available at `/usr/local/bin/npm`
-- Verify the NVM installation
-- Test Node.js via NVM
-- Check the status of the gabiyoga service
-- Check for listening ports
-- Show recent log entries
-
-> ⚠️ **Note:** The detailed verification uses AWS Systems Manager (SSM), so make sure your instances have the SSM agent installed and appropriate IAM permissions.
-
-## Refreshing Service After Code Changes
-
-After pushing changes to your GitHub repository, you can use the `refresh-service.sh` script to update your running service on the EC2 instance:
+For specific Node.js path issues or npm installation problems, use our provided fix scripts:
 
 ```bash
-# Make the script executable if needed
-chmod +x infrastructure/scripts/refresh-service.sh
-
-# Run the script with sudo privileges
-sudo ./infrastructure/scripts/refresh-service.sh
+# On the EC2 instance
+sudo ./infrastructure/scripts/fix-service.sh
 ```
 
-This script performs the following operations:
-- Pulls the latest changes from your GitHub repository
-- Handles any local conflicts (with interactive prompts)
-- Installs or updates npm dependencies
-- Checks for and can apply database schema changes
-- Restarts the application service
-- Verifies the service is running correctly
-- Provides troubleshooting guidance if issues are detected
+## Security Notes
 
-### Advanced Options
-
-You can customize the script behavior with these options:
-
-```bash
-# Specify a different application path
-sudo ./infrastructure/scripts/refresh-service.sh --path=/custom/app/path
-
-# Use a different Git repository
-sudo ./infrastructure/scripts/refresh-service.sh --repo=https://github.com/username/repo.git
-
-# Specify a different branch
-sudo ./infrastructure/scripts/refresh-service.sh --branch=develop
-
-# Use a different service name
-sudo ./infrastructure/scripts/refresh-service.sh --service=my-custom-service
-```
-
-For repositories not yet set up with Git, the script can help you initialize the repository and clone the code from GitHub.
-
-## Troubleshooting Issues on EC2 Instances
-
-### Service Not Starting
-
-If after refreshing instances, the Node.js application service is not starting automatically, you can use the included fix-service.sh script to troubleshoot and repair the installation:
-
-1. SSH into the problematic EC2 instance:
-   ```bash
-   ssh -i your-key.pem ec2-user@instance-ip-address
-   ```
-
-2. Copy the fix-service.sh script to the EC2 instance:
-   ```bash
-   # On your local machine
-   scp -i your-key.pem infrastructure/scripts/fix-service.sh ec2-user@instance-ip-address:~
-   ```
-
-3. Run the script on the EC2 instance:
-   ```bash
-   # On the EC2 instance
-   sudo chmod +x ~/fix-service.sh
-   sudo ./fix-service.sh
-   ```
-
-The script will:
-- Verify Node.js installation and fix symbolic links if needed
-- Check for the application directory and server.js file
-- Validate or repair the systemd service configuration
-- Enable and start the service
-- Perform connectivity tests
-- Provide a detailed report of any issues found
-
-If the script doesn't fully resolve your issues, it will provide specific troubleshooting steps based on its findings.
-
-### npm and Node.js Path Issues
-
-If you encounter either of these errors:
-- `sudo: npm: command not found`
-- `/usr/bin/env: node: No such file or directory`
-
-Use our deployment scripts to fix these issues:
-
-#### For Basic npm Path Issues:
-
-1. SSH into the EC2 instance:
-   ```bash
-   ssh -i your-key.pem ec2-user@instance-ip-address
-   ```
-
-2. Copy the fixed deployment script to the EC2 instance:
-   ```bash
-   # On your local machine
-   scp -i your-key.pem infrastructure/scripts/deploy-app-files-fixed.sh ec2-user@instance-ip-address:~
-   ```
-
-3. Run the script on the EC2 instance:
-   ```bash
-   # On the EC2 instance
-   chmod +x ~/deploy-app-files-fixed.sh
-   sudo ./deploy-app-files-fixed.sh
-   ```
-
-#### For Persistent Node.js Path Issues:
-
-We provide two levels of solutions:
-
-##### Option 1: Basic Path Fix Script
-
-1. SSH into the EC2 instance:
-   ```bash
-   ssh -i your-key.pem ec2-user@instance-ip-address
-   ```
-
-2. Copy the deployment script to the EC2 instance:
-   ```bash
-   # On your local machine
-   scp -i your-key.pem infrastructure/scripts/deploy-app-files-final.sh ec2-user@instance-ip-address:~
-   ```
-
-3. Run the script on the EC2 instance:
-   ```bash
-   # On the EC2 instance
-   chmod +x ~/deploy-app-files-final.sh
-   sudo ./deploy-app-files-final.sh
-   ```
-
-This script:
-- Addresses `/usr/bin/env: node: No such file or directory` errors
-- Creates appropriate symbolic links for Node.js and npm
-- Sets the PATH environment variable in the systemd service
-
-##### Option 2: Ultimate Fix for Circular Symlinks (RECOMMENDED)
-
-If you encounter the "Too many levels of symbolic links" error, use our ultimate script:
-
-1. SSH into the EC2 instance:
-   ```bash
-   ssh -i your-key.pem ec2-user@instance-ip-address
-   ```
-
-2. Copy the ultimate deployment script to the EC2 instance:
-   ```bash
-   # On your local machine
-   scp -i your-key.pem infrastructure/scripts/deploy-app-files-ultimate.sh ec2-user@instance-ip-address:~
-   ```
-
-3. Run the script on the EC2 instance:
-   ```bash
-   # On the EC2 instance
-   chmod +x ~/deploy-app-files-ultimate.sh
-   sudo ./deploy-app-files-ultimate.sh
-   ```
-
-This comprehensive script:
-- **Fixes circular symlink issues** by safely removing problematic links
-- Directly locates the real Node.js binary from NVM without relying on existing symlinks
-- Creates clean symlinks that point directly to the actual binaries
-- Verifies symlinks work correctly before proceeding with deployment
-- Updates the systemd service to use the real Node.js path
-- Includes detailed error diagnostics and fallback installation methods
-- Tests the application to confirm it's working correctly
+- Keep your AWS access keys secure and never commit them to version control
+- Use the principle of least privilege for IAM roles and policies
+- Regularly rotate credentials, especially database passwords
+- Ensure security groups are properly configured to minimize attack surface
+- Use HTTPS for all public endpoints via the configured ACM certificates

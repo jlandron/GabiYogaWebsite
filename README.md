@@ -1,67 +1,133 @@
-# Yoga Business Website Mockup
+# Yoga Business Website
 
-This is a responsive website mockup for a yoga business, featuring sections for:
-- Instructor bio
-- Photo gallery
-- Class offerings
-- Membership and package options
-- Class registration
-- Private lesson booking
-- Retreat information
+A full-featured yoga business web application with comprehensive admin dashboard, customer management, payment processing, and blog functionality.
 
-## How to View the Website
+## Project Overview
 
-1. Simply open the `index.html` file in any web browser.
-2. The website is fully responsive and works on mobile, tablet, and desktop devices.
+This project provides a complete solution for yoga studios and instructors, featuring:
 
-## Customizing the Website
+- Public-facing website with responsive design
+- Secure admin dashboard for business management
+- Customer accounts and membership management
+- Class scheduling and booking system
+- Payment processing with Stripe
+- Blog and photo gallery management
+- AWS infrastructure for production deployment
 
-### Adding Your Information
+## Local Development
 
-1. Open `index.html` in a text editor to:
-   - Replace "Your Name" with your actual name
-   - Update your bio in the About section
-   - Customize class offerings, schedules, and pricing
-   - Update contact information
+### Prerequisites
 
-### Adding Images
+- Node.js (v12 or later)
+- npm (v6 or later)
+- Git
 
-1. Place your image files in the `images/` folder
-2. Replace placeholder image paths in the HTML:
-   - Hero image: Replace `images/hero.jpg` 
-   - Instructor photo: Replace `images/instructor.jpg`
-   - Gallery images: Replace `images/gallery1.jpg` through `images/gallery6.jpg`
-   - Retreat images: Replace `images/retreat1.jpg` through `images/retreat3.jpg`
+### Setup
 
-### Customizing Colors
-
-1. Open `css/styles.css` and modify the color variables at the top:
-   ```css
-   :root {
-       --primary-color: #7ba69a;    /* Main brand color */
-       --secondary-color: #f8f3eb;  /* Light background color */
-       --accent-color: #e0a458;     /* Highlight color */
-       --text-color: #4a4a4a;       /* Main text color */
-       --light-text: #f8f3eb;       /* Text color for dark backgrounds */
-       --dark-bg: #2c3e50;          /* Dark background color */
-   }
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd yoga-website
    ```
 
-## Features
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-- **Responsive Design**: Adapts to all screen sizes
-- **Mobile Navigation**: Hamburger menu for mobile devices
-- **Class Sign-up Modal**: Interactive form for class registration
-- **Smooth Scroll**: Smooth scrolling to page sections
-- **Form Validation**: Client-side validation for all forms
-- **Image Placeholders**: Visual indicators where real images would go
-- **Scroll Animations**: Elements animate as they come into view
+3. Set up environment variables:
+   ```
+   cp .env.example .env
+   ```
+   Edit the `.env` file with your configuration settings.
 
-## Next Steps for a Production Site
+4. Start the development server:
+   ```
+   npm run dev
+   ```
 
-1. Add real images for the gallery, hero section, and profile
-2. Set up a backend for form processing
-3. Connect to a class management system
-4. Implement actual payment processing
-5. Add SEO metadata
-6. Set up analytics tracking
+5. Access the application:
+   - Website: http://localhost:5001
+   - Admin Dashboard: http://localhost:5001/admin-dashboard.html
+
+## Project Structure
+
+- `/api` - Backend API routes and controllers
+- `/css` - Stylesheets for the application
+- `/database` - Database configuration, schema, and models
+- `/images` - Static image assets
+- `/infrastructure` - AWS CDK deployment configuration
+- `/js` - Client-side JavaScript files
+- `/middleware` - Express middleware functions
+- `/uploads` - Directory for user-uploaded content
+- `/utils` - Utility functions and tools
+
+## Key Features
+
+### Public Website
+- Responsive design for all devices
+- Class information and scheduling
+- Membership and pricing details
+- Blog with latest posts
+- Photo gallery
+- Contact information
+
+### Admin Dashboard
+- Secure authentication system
+- Customer management
+- Class and workshop scheduling
+- Pricing and membership management
+- Blog post creation and editing
+- Photo gallery management
+- System settings and configuration
+
+### Database
+- Support for both SQLite (development) and MySQL (production)
+- Complete schema for users, memberships, classes, bookings, etc.
+- Automatic environment-based configuration
+
+### API
+- RESTful API endpoints for all functionality
+- JWT authentication
+- Role-based access control
+- Stripe payment integration
+
+## Deployment
+
+The application is designed to be deployed to AWS using the included CDK infrastructure code.
+
+For complete deployment instructions, see:
+- [Infrastructure README](./infrastructure/README.md)
+- [Database README](./database/README.md)
+- [Manual Server Restart Guide](./infrastructure/webapp-stack-https.md)
+
+## Utilities
+
+### JWT Token Generator
+
+For development and testing, a JWT token generator is included:
+- [JWT Token Generator Documentation](./utils/README-jwt-generator.md)
+
+## Production Deployment
+
+For production deployment to AWS:
+
+1. Configure AWS credentials
+2. Update environment variables for production
+3. Deploy using the infrastructure scripts:
+   ```
+   cd infrastructure
+   npm install
+   npm run build
+   npm run deploy
+   ```
+
+4. Follow the post-deployment steps in the infrastructure README
+
+## Security Notes
+
+- Update default credentials before deploying to production
+- Secure your database with appropriate access controls
+- Protect API endpoints with proper authentication
+- Use HTTPS in production environments
+- Regularly update dependencies to patch security vulnerabilities

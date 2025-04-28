@@ -6,6 +6,9 @@
  */
 
 const db = require('./db-config');
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
+const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
 
 /**
  * Create pricing-related database tables
@@ -17,15 +20,15 @@ const createPricingSchema = async () => {
     // Membership Types table
     await db.query(`
       CREATE TABLE IF NOT EXISTS membership_types (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        type TEXT NOT NULL,
+        id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
+        type ${DB_TYPE === 'mysql' ? 'VARCHAR(100)' : 'TEXT'} NOT NULL,
         description TEXT,
         price REAL NOT NULL,
         duration_days INTEGER,
         classes INTEGER,
         auto_renew_allowed BOOLEAN DEFAULT 1,
         most_popular BOOLEAN DEFAULT 0,
-        status TEXT DEFAULT 'active' NOT NULL, -- 'active', 'inactive'
+        status ${DB_TYPE === 'mysql' ? 'VARCHAR(50)' : 'TEXT'} DEFAULT 'active' NOT NULL, -- 'active', 'inactive'
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -34,22 +37,54 @@ const createPricingSchema = async () => {
     // Session Packages table
     await db.query(`
       CREATE TABLE IF NOT EXISTS session_packages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
+        name ${DB_TYPE === 'mysql' ? 'VARCHAR(100)' : 'TEXT'} NOT NULL,
         description TEXT,
         sessions INTEGER NOT NULL,
         price REAL NOT NULL,
         session_duration INTEGER DEFAULT 60 NOT NULL, -- in minutes
         focus_options TEXT, -- JSON array of focus option strings
-        status TEXT DEFAULT 'active' NOT NULL, -- 'active', 'inactive'
+        status ${DB_TYPE === 'mysql' ? 'VARCHAR(50)' : 'TEXT'} DEFAULT 'active' NOT NULL, -- 'active', 'inactive'
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
     `);
     
     // Create indexes for better performance
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_membership_types_status ON membership_types (status)`);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_session_packages_status ON session_packages (status)`);
+    console.log(`Creating indexes with database type: ${DB_TYPE} (NODE_ENV: ${NODE_ENV})`);
+    
+    // Force MySQL approach for production or if DB_TYPE is mysql (case insensitive)
+    if (NODE_ENV === 'production' || DB_TYPE.toLowerCase() === 'mysql') {
+      console.log('Using MySQL-compatible index creation (no IF NOT EXISTS)');
+      
+      // Helper function to create MySQL-compatible indexes with proper length for TEXT fields
+      const createMySQLIndex = async (indexName, tableName, columns, textLength = 32) => {
+        try {
+          console.log(`Creating index ${indexName} on ${tableName}(${columns})...`);
+          // For TEXT columns, we need to specify a length
+          const formattedColumns = columns.includes('status') ? `${columns}(${textLength})` : columns;
+          await db.query(`CREATE INDEX ${indexName} ON ${tableName} (${formattedColumns})`);
+          console.log(`Successfully created index ${indexName}`);
+        } catch (err) {
+          // If error is about index already existing, ignore it
+          if (err.message && (err.message.includes('Duplicate') || err.message.includes('already exists'))) {
+            console.log(`Index ${indexName} already exists (expected)`);
+          } else {
+            console.error(`Error creating index ${indexName}:`, err);
+            console.log(`Failed to create index ${indexName}, but continuing: ${err.message}`);
+          }
+        }
+      };
+      
+      // Create indexes with error handling for each
+      await createMySQLIndex('idx_membership_types_status', 'membership_types', 'status');
+      await createMySQLIndex('idx_session_packages_status', 'session_packages', 'status');
+    } else {
+      console.log('Using SQLite-compatible index creation (with IF NOT EXISTS)');
+      // SQLite supports IF NOT EXISTS for indexes
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_membership_types_status ON membership_types (status)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_session_packages_status ON session_packages (status)`);
+    }
     
     console.log('Pricing schema tables created successfully');
   } catch (error) {

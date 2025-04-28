@@ -185,7 +185,9 @@ export class WebAppStack extends cdk.Stack {
     
     // Fetch database credentials from Secrets Manager
     `echo "Fetching database credentials from Secrets Manager"`,
-    `SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ${dbSecretName} --query SecretString --output text)`,
+    `export AWS_DEFAULT_REGION=${awsRegion}`,
+    `echo "Using AWS region: ${awsRegion}"`,
+    `SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ${dbSecretName} --region ${awsRegion} --query SecretString --output text)`,
     `DB_USERNAME=$(echo $SECRET_JSON | jq -r '.username')`,
     `DB_PASSWORD=$(echo $SECRET_JSON | jq -r '.password')`,
     
@@ -200,8 +202,8 @@ export class WebAppStack extends cdk.Stack {
     `DB_HOST=${dbHost}`,
     'DB_PORT=3306',
     'DB_NAME=yoga',
-    'DB_USER=$DB_USERNAME',
-    'DB_PASSWORD=$DB_PASSWORD',
+    'DB_USER=${DB_USERNAME}',
+    'DB_PASSWORD=${DB_PASSWORD}',
     `AWS_REGION=${awsRegion}`,
     `S3_BUCKET_NAME=${bucketName}`,
     `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
@@ -244,6 +246,7 @@ export class WebAppStack extends cdk.Stack {
       'StandardError=journal',
       'SyslogIdentifier=gabiyoga',
       'Environment=NODE_ENV=production',
+      'EnvironmentFile=/var/www/gabiyoga/.env',
       '',
       '[Install]',
       'WantedBy=multi-user.target',
