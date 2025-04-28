@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../database/db-config');
 const { authenticateToken } = require('./auth');
+const logger = require('../utils/logger');
 
 // Authentication middleware to ensure user is admin
 const requireAdmin = (req, res, next) => {
@@ -33,7 +34,7 @@ router.get('/images', async (req, res) => {
     
     res.json({ images });
   } catch (error) {
-    console.error('Error fetching gallery images:', error);
+    logger.error('Error fetching gallery images:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch gallery images' });
   }
 });
@@ -51,7 +52,7 @@ router.get('/images/homepage', async (req, res) => {
     
     res.json({ images });
   } catch (error) {
-    console.error('Error fetching homepage images:', error);
+    logger.error('Error fetching homepage images:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch homepage images' });
   }
 });
@@ -69,15 +70,15 @@ router.get('/images/:id', async (req, res) => {
     
     res.json({ image });
   } catch (error) {
-    console.error('Error fetching image:', error);
+    logger.error('Error fetching image:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch image' });
   }
 });
 
 // Get image data as binary for display
 router.get('/images/:id/data', async (req, res) => {
-  try {
-    console.log(`Fetching image data for ID: ${req.params.id}`);
+    try {
+    logger.debug(`Fetching image data for ID: ${req.params.id}`);
     
     const [image] = await query(`
       SELECT image_data, mime_type, size FROM gallery_images WHERE image_id = ?
@@ -88,7 +89,7 @@ router.get('/images/:id/data', async (req, res) => {
     }
     
     if (!image.image_data) {
-      console.error(`Image ${req.params.id} exists but has no data`);
+      logger.error(`Image ${req.params.id} exists but has no data`);
       return res.status(404).json({ error: 'Image has no data' });
     }
     
@@ -99,7 +100,7 @@ router.get('/images/:id/data', async (req, res) => {
       
       // Check if the buffer size matches expected size
       if (imageBuffer.length !== image.size) {
-        console.warn(`Image ${req.params.id} size mismatch: Expected ${image.size}, got ${imageBuffer.length}`);
+        logger.warn(`Image ${req.params.id} size mismatch: Expected ${image.size}, got ${imageBuffer.length}`);
       }
       
       // Set proper headers for the image
@@ -110,13 +111,13 @@ router.get('/images/:id/data', async (req, res) => {
       // Send the image buffer directly instead of creating a new Buffer
       res.send(imageBuffer);
       
-      console.log(`Successfully sent image ${req.params.id} (${imageBuffer.length} bytes)`);
+      logger.debug(`Successfully sent image ${req.params.id} (${imageBuffer.length} bytes)`);
     } catch (bufferError) {
-      console.error(`Error processing image buffer for ID ${req.params.id}:`, bufferError);
+      logger.error(`Error processing image buffer for ID ${req.params.id}:`, { error: bufferError.message, stack: bufferError.stack });
       return res.status(500).json({ error: 'Image data is corrupt or invalid' });
     }
   } catch (error) {
-    console.error(`Error fetching image data for ID ${req.params.id}:`, error);
+    logger.error(`Error fetching image data for ID ${req.params.id}:`, { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch image data' });
   }
 });
@@ -124,7 +125,7 @@ router.get('/images/:id/data', async (req, res) => {
 // Get profile photo image data
 router.get('/profile-photo', async (req, res) => {
   try {
-    console.log('Fetching profile photo image data');
+    logger.debug('Fetching profile photo image data');
     
     const [profilePhoto] = await query(`
       SELECT image_data, mime_type, size, image_id
@@ -138,7 +139,7 @@ router.get('/profile-photo', async (req, res) => {
     }
     
     if (!profilePhoto.image_data) {
-      console.error('Profile photo exists but has no data');
+      logger.error('Profile photo exists but has no data');
       return res.status(404).json({ error: 'Profile photo has no data' });
     }
     
@@ -148,7 +149,7 @@ router.get('/profile-photo', async (req, res) => {
       
       // Check if the buffer size matches expected size
       if (profilePhoto.size && imageBuffer.length !== profilePhoto.size) {
-        console.warn(`Profile photo size mismatch: Expected ${profilePhoto.size}, got ${imageBuffer.length}`);
+        logger.warn(`Profile photo size mismatch: Expected ${profilePhoto.size}, got ${imageBuffer.length}`);
       }
       
       // Set proper headers for the image
@@ -159,13 +160,13 @@ router.get('/profile-photo', async (req, res) => {
       // Send the image buffer
       res.send(imageBuffer);
       
-      console.log(`Successfully sent profile photo (ID: ${profilePhoto.image_id}, ${imageBuffer.length} bytes)`);
+      logger.debug(`Successfully sent profile photo (ID: ${profilePhoto.image_id}, ${imageBuffer.length} bytes)`);
     } catch (bufferError) {
-      console.error('Error processing profile photo buffer:', bufferError);
+      logger.error('Error processing profile photo buffer:', { error: bufferError.message, stack: bufferError.stack });
       return res.status(500).json({ error: 'Profile photo data is corrupt or invalid' });
     }
   } catch (error) {
-    console.error('Error fetching profile photo:', error);
+    logger.error('Error fetching profile photo:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch profile photo' });
   }
 });
@@ -220,10 +221,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       const expectedSize = Math.floor(base64Data.length * 0.75);
       const actualSize = imageBuffer.length;
       
-      console.log(`Image processing - Expected: ~${expectedSize} bytes, Actual: ${actualSize} bytes`);
+      logger.debug(`Image processing - Expected: ~${expectedSize} bytes, Actual: ${actualSize} bytes`);
       
       if (Math.abs(expectedSize - actualSize) > expectedSize * 0.1) {
-        console.warn(`Possible data integrity issue - size mismatch: expected ~${expectedSize}, got ${actualSize}`);
+        logger.warn(`Possible data integrity issue - size mismatch: expected ~${expectedSize}, got ${actualSize}`);
       }
       
       // Enforce maximum size
@@ -232,7 +233,7 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
         return res.status(400).json({ error: 'Image size exceeds the maximum allowed size of 8MB' });
       }
     } catch (error) {
-      console.error('Error processing image data:', error);
+      logger.error('Error processing image data:', { error: error.message, stack: error.stack });
       return res.status(400).json({ error: 'Failed to process image data' });
     }
     
@@ -266,7 +267,7 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       image_id: result.lastID 
     });
   } catch (error) {
-    console.error('Error uploading image:', error);
+    logger.error('Error uploading image:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to upload image' });
   }
 });
@@ -332,7 +333,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
     
     res.json({ message: 'Image updated successfully' });
   } catch (error) {
-    console.error('Error updating image:', error);
+    logger.error('Error updating image:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to update image' });
   }
 });
@@ -355,7 +356,7 @@ router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) =
       was_profile_photo: image.is_profile_photo === 1
     });
   } catch (error) {
-    console.error('Error deleting image:', error);
+    logger.error('Error deleting image:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to delete image' });
   }
 });
