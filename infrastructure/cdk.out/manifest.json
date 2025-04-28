@@ -402,7 +402,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/f0994ad047d469ae0556fc4d29f5a1a43fc9b97eec617c74e1d4a3c25ac0ca16.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/dcd8c1b33265192234017dcab9abea76a3dbe89c94ebd64c1e259b65c9375f16.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -464,16 +464,113 @@
             "data": "DatabaseB269D8BB"
           }
         ],
+        "/GabiYogaDatabase/LambdaSecurityGroup": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customized rules, set allowAllOutbound=false on the SecurityGroup [ack: @aws-cdk/aws-ec2:ipv4IgnoreEgressRule]",
+            "trace": [
+              "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
+              "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
+              "SecurityGroup.addEgressRule (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-ec2/lib/security-group.js:1:8282)",
+              "SecurityGroup.descriptor.value (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/metadata-resource.js:1:2296)",
+              "new DatabaseStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/database-stack.ts:219:25)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:31:23)",
+              "Module._compile (node:internal/modules/cjs/loader:1256:14)",
+              "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
+              "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
+              "Object.require.extensions.<computed> [as .ts] (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1621:12)",
+              "Module.load (node:internal/modules/cjs/loader:1119:32)",
+              "Function.Module._load (node:internal/modules/cjs/loader:960:12)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:86:12)",
+              "phase4 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:649:14)",
+              "bootstrap (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:95:10)",
+              "main (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:55:10)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:800:3)",
+              "Module._compile (node:internal/modules/cjs/loader:1256:14)",
+              "Object.Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
+              "Module.load (node:internal/modules/cjs/loader:1119:32)",
+              "Function.Module._load (node:internal/modules/cjs/loader:960:12)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:86:12)",
+              "node:internal/main/run_main_module:23:47"
+            ]
+          }
+        ],
+        "/GabiYogaDatabase/LambdaSecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaSecurityGroup0BD9FC99"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersFunction/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersFunctionServiceRole080F9ABB"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersFunction/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersFunctionServiceRoleDefaultPolicyB1808503"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersFunction2D5AC7B4"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersProvider/framework-onEvent/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersProviderframeworkonEventServiceRole675B63A7"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersProviderframeworkonEventServiceRoleDefaultPolicy91AB5279"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsersProvider/framework-onEvent/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsersProviderframeworkonEventB60CA822"
+          }
+        ],
+        "/GabiYogaDatabase/SetupMysqlUsers/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SetupMysqlUsers"
+          }
+        ],
         "/GabiYogaDatabase/DatabaseEndpoint": [
           {
             "type": "aws:cdk:logicalId",
             "data": "DatabaseEndpoint"
           }
         ],
+        "/GabiYogaDatabase/DatabaseSecretArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DatabaseSecretArn"
+          }
+        ],
         "/GabiYogaDatabase/CDKMetadata/Default": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadata"
+          }
+        ],
+        "/GabiYogaDatabase/Exports/Output{\"Ref\":\"DatabaseCredentials8547B3E7\"}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExportsOutputRefDatabaseCredentials8547B3E729671DA7"
+          }
+        ],
+        "/GabiYogaDatabase/Exports/Output{\"Fn::GetAtt\":[\"DatabaseB269D8BB\",\"Endpoint.Address\"]}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExportsOutputFnGetAttDatabaseB269D8BBEndpointAddressA4DBD059"
           }
         ],
         "/GabiYogaDatabase/BootstrapVersion": [
@@ -512,7 +609,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/cd0fa840d5a8bffe3e45bbd7ffca57a9b808f88944636a4a2edf8162e0f1fc0d.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/bbe5220f05495474f805ba6381b5df60c9df70779dcdf946df3a2c2a28327922.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -527,6 +624,7 @@
       "dependencies": [
         "GabiYogaDns",
         "GabiYogaNetwork",
+        "GabiYogaDatabase",
         "GabiYogaStorage",
         "GabiYogaWebApp.assets"
       ],
@@ -587,8 +685,8 @@
               "ApplicationListener.setDefaultAction (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener.js:1:11272)",
               "ApplicationListener.addAction (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener.js:1:7527)",
               "ApplicationListener.descriptor.value (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/metadata-resource.js:1:2296)",
-              "WebAppStack.addHttpsListener (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:337:23)",
-              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:54:13)",
+              "WebAppStack.addHttpsListener (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:360:23)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:65:13)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
               "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
@@ -659,8 +757,8 @@
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
               "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
               "new AutoScalingGroup (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-autoscaling/lib/auto-scaling-group.js:1:17942)",
-              "new WebAppStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:256:16)",
-              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:36:21)",
+              "new WebAppStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:288:16)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:37:21)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
               "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
@@ -709,12 +807,6 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "WebServerSecurityGroup"
-          }
-        ],
-        "/GabiYogaWebApp/DeploymentInstructions": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "DeploymentInstructions"
           }
         ],
         "/GabiYogaWebApp/CDKMetadata/Default": [

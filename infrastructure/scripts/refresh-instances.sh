@@ -10,6 +10,9 @@ STACK_NAME="GabiYogaWebApp"
 REGION=$(aws configure get region || echo "us-west-2")
 WAIT_FOR_COMPLETION=true
 
+# Option flag for non-interactive mode
+INTERACTIVE=true
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -29,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       WAIT_FOR_COMPLETION=false
       shift
       ;;
+    --no-confirm)
+      INTERACTIVE=false
+      shift
+      ;;
     -h|--help)
       echo "Usage: $0 [options]"
       echo ""
@@ -37,6 +44,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --min-healthy PERCENT  Minimum healthy percentage during refresh (default: 50)"
       echo "  --region REGION        AWS region (default: from AWS config or us-west-2)"
       echo "  --no-wait              Don't wait for refresh to complete"
+      echo "  --no-confirm           Skip confirmation prompt (non-interactive mode)"
       echo "  -h, --help             Display this help message"
       exit 0
       ;;
@@ -83,11 +91,15 @@ INSTANCE_COUNT=$(aws autoscaling describe-auto-scaling-groups \
   --output text)
 echo "Current instance count: $INSTANCE_COUNT"
 
-# Confirm with user before proceeding
-read -p "Do you want to start an instance refresh? This will gradually replace all instances. (y/n): " CONFIRM
-if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
-  echo "Operation cancelled."
-  exit 0
+# Confirm with user before proceeding (if in interactive mode)
+if [[ "$INTERACTIVE" == "true" ]]; then
+  read -p "Do you want to start an instance refresh? This will gradually replace all instances. (y/n): " CONFIRM
+  if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+    echo "Operation cancelled."
+    exit 0
+  fi
+else
+  echo "Proceeding with instance refresh in non-interactive mode..."
 fi
 
 # Start the instance refresh

@@ -14,11 +14,13 @@ import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 
 export interface WebAppStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
   bucket: s3.IBucket;
   distribution: cloudfront.Distribution;
+  databaseEndpoint?: string; // We'll use this to configure the EC2 instances
 }
 
 export class WebAppStack extends cdk.Stack {
@@ -63,12 +65,13 @@ export class WebAppStack extends cdk.Stack {
     const userData = ec2.UserData.forLinux();
     
     // Prepare database information
-    const dbHost = 'gabiyogadatabase-databaseb269d8bb-tfil5ifuv2c3.cxq64wemez5f.us-west-2.rds.amazonaws.com';
-    const dbPassword = '8O4Lfa8tq10wgAg8'; // In production, fetch from Secrets Manager
-    const awsRegion = 'us-west-2';
+    // Use the provided database endpoint or a fallback value
+    const dbHost = props.databaseEndpoint || 'localhost';
+    const awsRegion = this.region || 'us-west-2';
     const bucketName = props.bucket.bucketName;
     const cfDistId = props.distribution.distributionId;
-
+    const dbSecretName = 'gabi-yoga-db-credentials';
+    
     // Add the user data commands directly in the file
     userData.addCommands(
       'echo "Starting user data script execution at $(date)"',
@@ -177,19 +180,48 @@ export class WebAppStack extends cdk.Stack {
       '  echo "<!DOCTYPE html><html><body><h1>Gabi Yoga</h1><p>Server is running</p></body></html>" > /var/www/gabiyoga/public/index.html',
       'fi',
       
-      // Create environment file 
-      'cat > /var/www/gabiyoga/.env << EOF',
-      `NODE_ENV=production`,
-      `PORT=5001`,
-      `DB_HOST=${dbHost}`,
-      `DB_PORT=3306`,
-      `DB_NAME=yoga`,
-      `DB_USER=admin`,
-      `DB_PASSWORD=${dbPassword}`,
-      `AWS_REGION=${awsRegion}`,
-      `S3_BUCKET_NAME=${bucketName}`,
-      `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
-      'EOF',
+    // Install required tools
+    'yum install -y jq',
+    
+    // Fetch database credentials from Secrets Manager
+    `echo "Fetching database credentials from Secrets Manager"`,
+    `SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id ${dbSecretName} --query SecretString --output text)`,
+    `DB_USERNAME=$(echo $SECRET_JSON | jq -r '.username')`,
+    `DB_PASSWORD=$(echo $SECRET_JSON | jq -r '.password')`,
+    
+    // Generate environment file with fetched credentials
+    'echo "Creating .env file with secure credentials"',
+    'cat > /var/www/gabiyoga/.env << EOF',
+    'NODE_ENV=production',
+    'PORT=5001',
+    'JWT_SECRET=$(openssl rand -hex 64)',
+    'JWT_EXPIRY=24h',
+    `DB_TYPE=mysql`,
+    `DB_HOST=${dbHost}`,
+    'DB_PORT=3306',
+    'DB_NAME=yoga',
+    'DB_USER=$DB_USERNAME',
+    'DB_PASSWORD=$DB_PASSWORD',
+    `AWS_REGION=${awsRegion}`,
+    `S3_BUCKET_NAME=${bucketName}`,
+    `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
+    `STRIPE_PUBLISHABLE_KEY=pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9`,
+    `STRIPE_SECRET_KEY=sk_test_your_secret_key`,
+    `STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret`,
+    'EOF',
+    
+    // Create MySQL user with wildcard host for EC2 connectivity
+    'echo "Creating MySQL user with wildcard host..."',
+    'mysql -h $DB_HOST -u $DB_USERNAME -p$DB_PASSWORD << EOF',
+    'CREATE USER IF NOT EXISTS \'$DB_USERNAME\'@\'%\' IDENTIFIED BY \'$DB_PASSWORD\';',
+    'GRANT ALL PRIVILEGES ON yoga.* TO \'$DB_USERNAME\'@\'%\';',
+    'FLUSH PRIVILEGES;',
+    'EOF',
+    
+    // Create data directory for SQLite (for development mode or explicit override)
+    'mkdir -p /var/www/gabiyoga/data',
+    'touch /var/www/gabiyoga/data/yoga.sqlite',
+    'chmod 644 /var/www/gabiyoga/.env',
       
       // Install dependencies
       'cd /var/www/gabiyoga',
@@ -282,15 +314,11 @@ export class WebAppStack extends cdk.Stack {
       cooldown: cdk.Duration.seconds(300),
     });
 
-    // Database access code removed - we're deploying without a database for free tier
-
     // Create CloudWatch log group
     const logGroup = new logs.LogGroup(this, 'WebAppLogs', {
       retention: logs.RetentionDays.TWO_WEEKS,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-
-    // Security group rule for database access will be added in app.ts to avoid circular dependencies
 
     // Outputs
     new cdk.CfnOutput(this, 'LoadBalancerDNS', {
@@ -301,11 +329,6 @@ export class WebAppStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'WebServerSecurityGroup', {
       value: webSg.securityGroupId,
       description: 'Web server security group ID',
-    });
-
-    new cdk.CfnOutput(this, 'DeploymentInstructions', {
-      value: 'Replace placeholders in user data script and update your application code',
-      description: 'Follow-up instructions for deployment',
     });
   }
   

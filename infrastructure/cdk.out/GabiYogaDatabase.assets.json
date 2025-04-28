@@ -1,7 +1,22 @@
 {
   "version": "41.0.0",
   "files": {
-    "f0994ad047d469ae0556fc4d29f5a1a43fc9b97eec617c74e1d4a3c25ac0ca16": {
+    "bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca": {
+      "displayName": "SetupMysqlUsersProvider/framework-onEvent/Code",
+      "source": {
+        "path": "asset.bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "891709159344-us-west-2": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
+          "objectKey": "bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca.zip",
+          "region": "us-west-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
+        }
+      }
+    },
+    "dcd8c1b33265192234017dcab9abea76a3dbe89c94ebd64c1e259b65c9375f16": {
       "displayName": "GabiYogaDatabase Template",
       "source": {
         "path": "GabiYogaDatabase.template.json",
@@ -10,7 +25,7 @@
       "destinations": {
         "891709159344-us-west-2": {
           "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
-          "objectKey": "f0994ad047d469ae0556fc4d29f5a1a43fc9b97eec617c74e1d4a3c25ac0ca16.json",
+          "objectKey": "dcd8c1b33265192234017dcab9abea76a3dbe89c94ebd64c1e259b65c9375f16.json",
           "region": "us-west-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
         }

@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import * as dotenv from 'dotenv';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { DatabaseStack } from '../lib/database-stack';
 import { StorageStack } from '../lib/storage-stack';
 import { WebAppStack } from '../lib/webapp-stack';
@@ -26,19 +27,29 @@ const app = new cdk.App();
 const networkStack = new NetworkStack(app, 'GabiYogaNetwork', { env });
 const storageStack = new StorageStack(app, 'GabiYogaStorage', { env });
 
-// Create database stack
+// Create database stack FIRST
 const databaseStack = new DatabaseStack(app, 'GabiYogaDatabase', {
   env,
   vpc: networkStack.vpc
 });
 
-// Create WebApp stack and store a reference to it - skipping database for free tier
+// Then create WebApp stack WITHOUT any database security group references
 const webAppStack = new WebAppStack(app, 'GabiYogaWebApp', {
   env,
   vpc: networkStack.vpc,
   bucket: storageStack.storageBucket,
-  distribution: storageStack.distribution
+  distribution: storageStack.distribution,
+  // Pass database endpoints and secrets but NOT security groups
+  databaseEndpoint: databaseStack.database.dbInstanceEndpointAddress,
 });
+
+// Grant read access to the database secret to the webapp's IAM role
+// This is a one-way dependency, not circular
+databaseStack.databaseSecret.grantRead(webAppStack.asg.role);
+
+// Note: The database stack already has a VPC-wide ingress rule
+// which allows connections from all EC2 instances in the VPC
+// We do NOT add a specific reference to the webapp security group here
 
 // Create DNS stack with Route53 configuration
 const dnsStack = new DnsStack(app, 'GabiYogaDns', {
@@ -52,9 +63,6 @@ webAppStack.addDependency(dnsStack);
 
 // Now pass the certificate to the WebAppStack to enable HTTPS
 webAppStack.addHttpsListener(dnsStack.certificate);
-
-// We'll manage security group access by allowing all traffic within the VPC
-// This avoids creating circular dependencies between stacks
 
 // Add tags to all resources
 cdk.Tags.of(app).add('Project', 'GabiYoga');
