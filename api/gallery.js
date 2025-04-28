@@ -458,6 +458,60 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Get profile photo URL - for frontend use
+router.get('/profile-photo-url', async (req, res) => {
+  try {
+    logger.debug('Fetching profile photo URL');
+    
+    const [profilePhoto] = await query(`
+      SELECT file_path, image_id
+      FROM gallery_images 
+      WHERE is_profile_photo = 1 
+      LIMIT 1
+    `);
+    
+    if (!profilePhoto) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Profile photo not found' 
+      });
+    }
+    
+    if (!profilePhoto.file_path) {
+      logger.error('Profile photo exists but has no file path');
+      return res.status(404).json({ 
+        success: false,
+        error: 'Profile photo has no file path' 
+      });
+    }
+    
+    try {
+      // Generate URL for the profile photo
+      const url = await imageStorage.getPresignedUrl(profilePhoto.file_path);
+      
+      res.json({
+        success: true,
+        url,
+        image_id: profilePhoto.image_id
+      });
+      
+      logger.debug(`Generated URL for profile photo (ID: ${profilePhoto.image_id})`);
+    } catch (error) {
+      logger.error('Error generating URL for profile photo:', { error: error.message, stack: error.stack });
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to generate URL for profile photo' 
+      });
+    }
+  } catch (error) {
+    logger.error('Error fetching profile photo URL:', { error: error.message, stack: error.stack });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch profile photo URL' 
+    });
+  }
+});
+
 // Delete an image
 router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {

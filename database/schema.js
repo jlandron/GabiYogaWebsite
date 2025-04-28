@@ -359,7 +359,7 @@ const createSchema = async () => {
           
           // For MySQL, TEXT/BLOB columns need length specification
           const textColumns = ['date', 'start_date', 'end_date', 'payment_date', 'booking_date', 
-                              'workshop_slug', 'retreat_slug', 'email'];
+                              'workshop_slug', 'retreat_slug', 'email', 'start_time'];
           
           // Format columns with proper length for TEXT fields
           const formattedColumns = columns.split(',').map(col => {
