@@ -106,18 +106,29 @@ const requestLogger = (req, res, next) => {
   // Add request ID to the request object for tracking 
   req.requestId = requestId;
   
-  // Log the incoming request
-  logger.info(`Request received: ${req.method} ${req.originalUrl}`, {
-    requestId,
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip || req.connection.remoteAddress,
-    userAgent: req.headers['user-agent']
-  });
+  // Check if this is a health check request
+  const isHealthCheck = req.originalUrl === '/api/health';
+  
+  // Log the incoming request (skip health checks)
+  if (!isHealthCheck) {
+    logger.info(`Request received: ${req.method} ${req.originalUrl}`, {
+      requestId,
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent']
+    });
+  }
   
   // Capture response data when finished
   res.on('finish', () => {
     const duration = Date.now() - start;
+    
+    // Skip logging health check responses
+    if (isHealthCheck) {
+      return; 
+    }
+    
     const logData = {
       requestId,
       method: req.method,
@@ -135,7 +146,7 @@ const requestLogger = (req, res, next) => {
       logger.info(`Request completed: ${req.method} ${req.originalUrl} - ${res.statusCode}`, logData);
     }
     
-    // Create HTTP access log-style entry in a separate transport
+    // Create HTTP access log-style entry in a separate transport (skip health checks)
     logger.http(`${req.ip} - - [${new Date().toISOString()}] "${req.method} ${req.originalUrl}" ${res.statusCode} ${duration}ms "${req.headers['user-agent']}"`, {
       requestId
     });
