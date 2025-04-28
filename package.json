@@ -12,6 +12,9 @@
     "setup-images": "node setup-image-storage.js",
     "migrate-images": "node migrate-images-cli.js",
     "add-file-path-column": "node database/add-file-path-column.js",
+    "export-templates": "node database/seed-templates.js --export-only",
+    "import-templates": "node database/seed-templates.js --import-only",
+    "sync-templates": "node database/seed-templates.js",
     "deploy": "cd infrastructure && cdk deploy --all",
     "cdk-bootstrap": "cd infrastructure && cdk bootstrap",
     "cdk-synth": "cd infrastructure && cdk synth"

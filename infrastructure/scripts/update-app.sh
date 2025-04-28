@@ -135,6 +135,8 @@ for INSTANCE_ID in $(echo "$INSTANCES" | jq -r '.[]'); do
         "cp -f .env.production.bak .env",
         "echo \"Ensuring production mode is set...\"",
         "grep -q \"^NODE_ENV=production\" .env || sed -i \"s/^NODE_ENV=.*/NODE_ENV=production/\" .env",
+        "echo \"Running template seeding to import new class templates...\"",
+        "node database/seed-templates.js --production",
         "echo \"Installing dependencies...\"",
         "npm install --production",
         "echo \"Restarting service...\"",
