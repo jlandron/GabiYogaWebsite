@@ -47,9 +47,27 @@
     margin-bottom: 5px;
 }
 
-.admin-role {
+/* Login Status indicator */
+.login-status {
     font-size: 14px;
     color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #777;
+}
+
+.status-indicator.active {
+    background-color: #27ae60;
+    box-shadow: 0 0 5px rgba(39, 174, 96, 0.5);
 }
 
 .admin-nav {

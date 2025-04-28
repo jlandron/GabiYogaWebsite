@@ -10,7 +10,7 @@ const ADMIN_SIDEBAR_HTML = `
         <i class="fas fa-user"></i>
     </div>
     <div class="admin-name">Gabi Jyoti</div>
-    <div class="admin-role">Administrator</div>
+    <div class="login-status"><span class="status-indicator active"></span>Online</div>
 </div>
 
 <ul class="admin-nav">
