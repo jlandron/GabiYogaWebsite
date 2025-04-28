@@ -7,7 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../database/db-config');
+const { query } = require('../database/db-config');
 const { AuthOperations } = require('../database/data-access');
 
 // Authentication middleware to ensure user is admin
@@ -53,7 +53,7 @@ router.get('/profile', requireAdmin, async (req, res) => {
  */
 router.get('/customer-dashboard/bookings', requireAdmin, async (req, res) => {
   try {
-    const bookings = await db.query(`
+    const bookings = await query(`
       SELECT 
         b.booking_id,
         c.name as class_name,
@@ -85,7 +85,7 @@ router.get('/customer-dashboard/bookings', requireAdmin, async (req, res) => {
  */
 router.get('/customer-dashboard/memberships', requireAdmin, async (req, res) => {
   try {
-    const memberships = await db.query(`
+    const memberships = await query(`
       SELECT 
         membership_id,
         membership_type,
@@ -117,7 +117,7 @@ router.get('/customer-dashboard/memberships', requireAdmin, async (req, res) => 
  */
 router.get('/customer-dashboard/payments', requireAdmin, async (req, res) => {
   try {
-    const payments = await db.query(`
+    const payments = await query(`
       SELECT 
         payment_id,
         amount,
@@ -150,7 +150,7 @@ router.get('/customer-dashboard/payments', requireAdmin, async (req, res) => {
 router.get('/customer-dashboard/workshops', requireAdmin, async (req, res) => {
   try {
     // Get workshops the admin is registered for
-    const registeredWorkshops = await db.query(`
+    const registeredWorkshops = await query(`
       SELECT 
         w.workshop_id,
         w.title,
@@ -168,7 +168,7 @@ router.get('/customer-dashboard/workshops', requireAdmin, async (req, res) => {
     `, [req.user.user_id]);
     
     // Get other upcoming workshops
-    const upcomingWorkshops = await db.query(`
+    const upcomingWorkshops = await query(`
       SELECT 
         w.workshop_id,
         w.title,
@@ -210,7 +210,7 @@ router.get('/customer-dashboard/workshops', requireAdmin, async (req, res) => {
 router.get('/customer-dashboard/retreats', requireAdmin, async (req, res) => {
   try {
     // Get featured and upcoming retreats
-    const retreats = await db.query(`
+    const retreats = await query(`
       SELECT 
         r.retreat_id,
         r.title,
@@ -246,7 +246,7 @@ router.get('/customer-dashboard/retreats', requireAdmin, async (req, res) => {
  */
 router.get('/customer-dashboard/sessions', requireAdmin, async (req, res) => {
   try {
-    const sessions = await db.query(`
+    const sessions = await query(`
       SELECT 
         session_id,
         date,

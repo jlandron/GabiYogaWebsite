@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../database/db-config');
+const { query } = require('../database/db-config');
 const { authenticateToken } = require('./auth');
 
 // Authentication middleware to ensure user is admin
@@ -22,7 +22,7 @@ const requireAdmin = (req, res, next) => {
 // Get all gallery images
 router.get('/images', async (req, res) => {
   try {
-    const images = await db.query(`
+    const images = await query(`
       SELECT image_id, title, description, alt_text, caption, tags,
         mime_type, size, width, height, is_profile_photo, show_on_homepage,
         display_order, active, created_at, updated_at
@@ -41,7 +41,7 @@ router.get('/images', async (req, res) => {
 // Get images for homepage display
 router.get('/images/homepage', async (req, res) => {
   try {
-    const images = await db.query(`
+    const images = await query(`
       SELECT image_id, title, description, alt_text, caption, tags,
         mime_type, size, width, height
       FROM gallery_images 
@@ -59,7 +59,7 @@ router.get('/images/homepage', async (req, res) => {
 // Get a single image with image data
 router.get('/images/:id', async (req, res) => {
   try {
-    const [image] = await db.query(`
+    const [image] = await query(`
       SELECT * FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
@@ -77,7 +77,7 @@ router.get('/images/:id', async (req, res) => {
 // Get image data as binary for display
 router.get('/images/:id/data', async (req, res) => {
   try {
-    const [image] = await db.query(`
+    const [image] = await query(`
       SELECT image_data, mime_type FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
@@ -96,7 +96,7 @@ router.get('/images/:id/data', async (req, res) => {
 // Get profile photo image data
 router.get('/profile-photo', async (req, res) => {
   try {
-    const [profilePhoto] = await db.query(`
+    const [profilePhoto] = await query(`
       SELECT image_data, mime_type 
       FROM gallery_images 
       WHERE is_profile_photo = 1 
@@ -141,14 +141,14 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     
     // If this is a profile photo, unset any existing profile photo
     if (is_profile_photo) {
-      await db.query(`
+      await query(`
         UPDATE gallery_images SET is_profile_photo = 0 WHERE is_profile_photo = 1
       `);
     }
     
     // Insert new image
     const now = new Date().toISOString();
-    const result = await db.query(`
+    const result = await query(`
       INSERT INTO gallery_images (
         title, description, alt_text, caption, tags, image_data, 
         mime_type, size, width, height, is_profile_photo, show_on_homepage,
@@ -196,7 +196,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
       display_order
     } = req.body;
     
-    const [existingImage] = await db.query(`
+    const [existingImage] = await query(`
       SELECT * FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
@@ -206,14 +206,14 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
     
     // If setting as profile photo, unset any existing profile photo
     if (is_profile_photo) {
-      await db.query(`
+      await query(`
         UPDATE gallery_images SET is_profile_photo = 0 WHERE is_profile_photo = 1
       `);
     }
     
     // Update image details
     const now = new Date().toISOString();
-    await db.query(`
+    await query(`
       UPDATE gallery_images SET
         title = ?,
         description = ?,
@@ -250,7 +250,7 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
 // Delete an image
 router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const [image] = await db.query(`
+    const [image] = await query(`
       SELECT is_profile_photo FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
@@ -258,7 +258,7 @@ router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) =
       return res.status(404).json({ error: 'Image not found' });
     }
     
-    await db.query(`DELETE FROM gallery_images WHERE image_id = ?`, [req.params.id]);
+    await query(`DELETE FROM gallery_images WHERE image_id = ?`, [req.params.id]);
     
     res.json({ 
       message: 'Image deleted successfully',

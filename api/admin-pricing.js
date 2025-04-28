@@ -7,7 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../database/db-config');
+const { query } = require('../database/db-config');
 
 // Authentication middleware to ensure user is admin
 const requireAdmin = (req, res, next) => {
@@ -27,7 +27,7 @@ const requireAdmin = (req, res, next) => {
 router.get('/pricing/memberships', requireAdmin, async (req, res) => {
   try {
     // Query for all membership types
-    const memberships = await db.query(`
+    const memberships = await query(`
       SELECT 
         m.id,
         m.type,
@@ -86,10 +86,10 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
     
     // If this membership is being set as "most popular", remove that flag from all other memberships
     if (most_popular) {
-      await db.query(`UPDATE membership_types SET most_popular = 0`);
+      await query(`UPDATE membership_types SET most_popular = 0`);
     }
     
-    const result = await db.query(`
+    const result = await query(`
       INSERT INTO membership_types (
         type,
         description,
@@ -116,7 +116,7 @@ router.post('/pricing/memberships', requireAdmin, async (req, res) => {
     ]);
     
     // Get the newly created membership
-    const newMembership = await db.query(`
+    const newMembership = await query(`
       SELECT 
         m.id,
         m.type,
@@ -173,7 +173,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     }
     
     // Check if membership exists
-    const existingMembership = await db.query(`
+    const existingMembership = await query(`
       SELECT id FROM membership_types WHERE id = ?
     `, [membershipId]);
     
@@ -189,10 +189,10 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     
     // If this membership is being set as "most popular", remove that flag from all other memberships
     if (most_popular) {
-      await db.query(`UPDATE membership_types SET most_popular = 0 WHERE id != ?`, [membershipId]);
+      await query(`UPDATE membership_types SET most_popular = 0 WHERE id != ?`, [membershipId]);
     }
     
-    await db.query(`
+    await query(`
       UPDATE membership_types
       SET 
         type = ?,
@@ -219,7 +219,7 @@ router.put('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     ]);
     
     // Get the updated membership
-    const updatedMembership = await db.query(`
+    const updatedMembership = await query(`
       SELECT 
         m.id,
         m.type,
@@ -258,7 +258,7 @@ router.delete('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     const membershipId = req.params.id;
     
     // Check if membership exists
-    const existingMembership = await db.query(`
+    const existingMembership = await query(`
       SELECT id FROM membership_types WHERE id = ?
     `, [membershipId]);
     
@@ -270,7 +270,7 @@ router.delete('/pricing/memberships/:id', requireAdmin, async (req, res) => {
     }
     
     // Delete membership type
-    await db.query(`DELETE FROM membership_types WHERE id = ?`, [membershipId]);
+    await query(`DELETE FROM membership_types WHERE id = ?`, [membershipId]);
     
     return res.json({
       success: true,
@@ -293,7 +293,7 @@ router.delete('/pricing/memberships/:id', requireAdmin, async (req, res) => {
 router.get('/pricing/session-packages', requireAdmin, async (req, res) => {
   try {
     // Query for all session packages
-    const packages = await db.query(`
+    const packages = await query(`
       SELECT 
         p.id,
         p.name,
@@ -355,7 +355,7 @@ router.post('/pricing/session-packages', requireAdmin, async (req, res) => {
     const now = new Date().toISOString();
     const focusOptionsJSON = JSON.stringify(focus_options || []);
     
-    const result = await db.query(`
+    const result = await query(`
       INSERT INTO session_packages (
         name,
         description,
@@ -380,7 +380,7 @@ router.post('/pricing/session-packages', requireAdmin, async (req, res) => {
     ]);
     
     // Get the newly created package
-    const newPackage = await db.query(`
+    const newPackage = await query(`
       SELECT 
         p.id,
         p.name,
@@ -440,7 +440,7 @@ router.put('/pricing/session-packages/:id', requireAdmin, async (req, res) => {
     }
     
     // Check if package exists
-    const existingPackage = await db.query(`
+    const existingPackage = await query(`
       SELECT id FROM session_packages WHERE id = ?
     `, [packageId]);
     
@@ -455,7 +455,7 @@ router.put('/pricing/session-packages/:id', requireAdmin, async (req, res) => {
     const now = new Date().toISOString();
     const focusOptionsJSON = JSON.stringify(focus_options || []);
     
-    await db.query(`
+    await query(`
       UPDATE session_packages
       SET 
         name = ?,
@@ -480,7 +480,7 @@ router.put('/pricing/session-packages/:id', requireAdmin, async (req, res) => {
     ]);
     
     // Get the updated package
-    const updatedPackage = await db.query(`
+    const updatedPackage = await query(`
       SELECT 
         p.id,
         p.name,
@@ -523,7 +523,7 @@ router.delete('/pricing/session-packages/:id', requireAdmin, async (req, res) =>
     const packageId = req.params.id;
     
     // Check if package exists
-    const existingPackage = await db.query(`
+    const existingPackage = await query(`
       SELECT id FROM session_packages WHERE id = ?
     `, [packageId]);
     
@@ -535,7 +535,7 @@ router.delete('/pricing/session-packages/:id', requireAdmin, async (req, res) =>
     }
     
     // Delete session package
-    await db.query(`DELETE FROM session_packages WHERE id = ?`, [packageId]);
+    await query(`DELETE FROM session_packages WHERE id = ?`, [packageId]);
     
     return res.json({
       success: true,
@@ -559,7 +559,7 @@ router.delete('/pricing/session-packages/:id', requireAdmin, async (req, res) =>
 router.get('/pricing', async (req, res) => {
   try {
     // Get active membership types
-    const memberships = await db.query(`
+    const memberships = await query(`
       SELECT 
         type,
         description,
@@ -575,7 +575,7 @@ router.get('/pricing', async (req, res) => {
     `);
     
     // Get active session packages
-    const packages = await db.query(`
+    const packages = await query(`
       SELECT 
         name,
         description,
