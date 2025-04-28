@@ -13,6 +13,7 @@ const { sendSuccess, sendError, asyncHandler } = require('./utils/api-response')
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 const { initializeDatabase } = require('./database/schema');
 const { initializePricingDatabase } = require('./database/schema-pricing');
+const { initializeBlogDatabase } = require('./database/schema-blog');
 const {
   AuthOperations,
   ClassOperations,
@@ -175,11 +176,14 @@ app.use(errorHandler);    // Handle all other errors
 // Initialize database and start server
 const startServer = async () => {
   try {
-    // Initialize database
+    // Initialize core database tables
     await initializeDatabase();
 
     // Initialize pricing tables
     await initializePricingDatabase();
+    
+    // Initialize blog tables
+    await initializeBlogDatabase();
 
     // Start server
     app.listen(PORT, () => {
