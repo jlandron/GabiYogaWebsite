@@ -9,6 +9,9 @@
     "seed": "node database/seed.js",
     "init-db": "node -e \"require('./database/schema').initializeDatabase()\"",
     "reset-db": "NODE_ENV=development node database/seed.js",
+    "setup-images": "node setup-image-storage.js",
+    "migrate-images": "node migrate-images-cli.js",
+    "add-file-path-column": "node database/add-file-path-column.js",
     "deploy": "cd infrastructure && cdk deploy --all",
     "cdk-bootstrap": "cd infrastructure && cdk bootstrap",
     "cdk-synth": "cd infrastructure && cdk synth"

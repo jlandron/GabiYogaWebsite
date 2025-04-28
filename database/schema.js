@@ -229,7 +229,7 @@ const createSchema = async () => {
       )
     `);
 
-    // Gallery Images table - Updated to use BLOB storage
+    // Gallery Images table - Using file-based storage instead of BLOB storage
     await db.query(`
       CREATE TABLE IF NOT EXISTS gallery_images (
         image_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
@@ -238,7 +238,8 @@ const createSchema = async () => {
         alt_text TEXT,
         caption TEXT,
         tags TEXT,
-        image_data BLOB,
+        file_path TEXT, -- Path to stored image file (local or S3)
+        image_data BLOB, -- Keeping for backward compatibility, will be null for new images
         mime_type TEXT NOT NULL,
         size INTEGER NOT NULL,
         width INTEGER,

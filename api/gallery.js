@@ -1,13 +1,16 @@
 /**
  * Gallery API
- * Handles uploading, retrieving, updating, and deleting gallery images in the database
+ * Handles uploading, retrieving, updating, and deleting gallery images
+ * Images are stored in the file system (development) or S3 (production)
  */
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const { query } = require('../database/db-config');
 const { authenticateToken } = require('./auth');
 const logger = require('../utils/logger');
+const imageStorage = require('../utils/image-storage');
 
 // Authentication middleware to ensure user is admin
 const requireAdmin = (req, res, next) => {
@@ -26,13 +29,27 @@ router.get('/images', async (req, res) => {
     const images = await query(`
       SELECT image_id, title, description, alt_text, caption, tags,
         mime_type, size, width, height, is_profile_photo, show_on_homepage,
-        display_order, active, created_at, updated_at
+        display_order, active, file_path, created_at, updated_at
       FROM gallery_images 
       WHERE active = 1
       ORDER BY display_order ASC, created_at DESC
     `);
     
-    res.json({ images });
+    // Add URL field for each image
+    const imagesWithUrls = await Promise.all(images.map(async (image) => {
+      try {
+        if (image.file_path) {
+          image.url = await imageStorage.getPresignedUrl(image.file_path);
+        }
+        return image;
+      } catch (err) {
+        logger.error(`Error generating URL for image ${image.image_id}:`, { error: err.message });
+        image.url = null;
+        return image;
+      }
+    }));
+    
+    res.json({ images: imagesWithUrls });
   } catch (error) {
     logger.error('Error fetching gallery images:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch gallery images' });
@@ -44,28 +61,55 @@ router.get('/images/homepage', async (req, res) => {
   try {
     const images = await query(`
       SELECT image_id, title, description, alt_text, caption, tags,
-        mime_type, size, width, height
+        mime_type, size, width, height, file_path
       FROM gallery_images 
       WHERE active = 1 AND show_on_homepage = 1
       ORDER BY display_order ASC, created_at DESC
     `);
     
-    res.json({ images });
+    // Add URL field for each image
+    const imagesWithUrls = await Promise.all(images.map(async (image) => {
+      try {
+        if (image.file_path) {
+          image.url = await imageStorage.getPresignedUrl(image.file_path);
+        }
+        return image;
+      } catch (err) {
+        logger.error(`Error generating URL for image ${image.image_id}:`, { error: err.message });
+        image.url = null;
+        return image;
+      }
+    }));
+    
+    res.json({ images: imagesWithUrls });
   } catch (error) {
     logger.error('Error fetching homepage images:', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch homepage images' });
   }
 });
 
-// Get a single image with image data
+// Get a single image with metadata
 router.get('/images/:id', async (req, res) => {
   try {
     const [image] = await query(`
-      SELECT * FROM gallery_images WHERE image_id = ?
+      SELECT image_id, title, description, alt_text, caption, tags,
+        mime_type, size, width, height, is_profile_photo, show_on_homepage,
+        display_order, active, file_path, created_at, updated_at
+      FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
     if (!image) {
       return res.status(404).json({ error: 'Image not found' });
+    }
+    
+    // Add URL if file path exists
+    if (image.file_path) {
+      try {
+        image.url = await imageStorage.getPresignedUrl(image.file_path);
+      } catch (err) {
+        logger.error(`Error generating URL for image ${image.image_id}:`, { error: err.message });
+        image.url = null;
+      }
     }
     
     res.json({ image });
@@ -77,44 +121,38 @@ router.get('/images/:id', async (req, res) => {
 
 // Get image data as binary for display
 router.get('/images/:id/data', async (req, res) => {
-    try {
+  try {
     logger.debug(`Fetching image data for ID: ${req.params.id}`);
     
     const [image] = await query(`
-      SELECT image_data, mime_type, size FROM gallery_images WHERE image_id = ?
+      SELECT file_path, mime_type, size FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
     if (!image) {
       return res.status(404).json({ error: 'Image not found' });
     }
     
-    if (!image.image_data) {
-      logger.error(`Image ${req.params.id} exists but has no data`);
-      return res.status(404).json({ error: 'Image has no data' });
+    if (!image.file_path) {
+      logger.error(`Image ${req.params.id} exists but has no file path`);
+      return res.status(404).json({ error: 'Image has no file path' });
     }
     
-    // Validate image data before sending
     try {
-      // Even though image_data is already a Buffer, we create a new one to ensure integrity
-      const imageBuffer = Buffer.from(image.image_data);
-      
-      // Check if the buffer size matches expected size
-      if (imageBuffer.length !== image.size) {
-        logger.warn(`Image ${req.params.id} size mismatch: Expected ${image.size}, got ${imageBuffer.length}`);
-      }
+      // Retrieve image data from file storage
+      const imageBuffer = await imageStorage.retrieveImage(image.file_path);
       
       // Set proper headers for the image
       res.setHeader('Content-Type', image.mime_type);
       res.setHeader('Content-Length', imageBuffer.length);
       res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
       
-      // Send the image buffer directly instead of creating a new Buffer
+      // Send the image buffer
       res.send(imageBuffer);
       
       logger.debug(`Successfully sent image ${req.params.id} (${imageBuffer.length} bytes)`);
-    } catch (bufferError) {
-      logger.error(`Error processing image buffer for ID ${req.params.id}:`, { error: bufferError.message, stack: bufferError.stack });
-      return res.status(500).json({ error: 'Image data is corrupt or invalid' });
+    } catch (retrieveError) {
+      logger.error(`Error retrieving image file for ID ${req.params.id}:`, { error: retrieveError.message, stack: retrieveError.stack });
+      return res.status(500).json({ error: 'Failed to retrieve image file' });
     }
   } catch (error) {
     logger.error(`Error fetching image data for ID ${req.params.id}:`, { error: error.message, stack: error.stack });
@@ -128,7 +166,7 @@ router.get('/profile-photo', async (req, res) => {
     logger.debug('Fetching profile photo image data');
     
     const [profilePhoto] = await query(`
-      SELECT image_data, mime_type, size, image_id
+      SELECT file_path, mime_type, size, image_id
       FROM gallery_images 
       WHERE is_profile_photo = 1 
       LIMIT 1
@@ -138,19 +176,14 @@ router.get('/profile-photo', async (req, res) => {
       return res.status(404).json({ error: 'Profile photo not found' });
     }
     
-    if (!profilePhoto.image_data) {
-      logger.error('Profile photo exists but has no data');
-      return res.status(404).json({ error: 'Profile photo has no data' });
+    if (!profilePhoto.file_path) {
+      logger.error('Profile photo exists but has no file path');
+      return res.status(404).json({ error: 'Profile photo has no file path' });
     }
     
-    // Validate image data before sending
     try {
-      const imageBuffer = Buffer.from(profilePhoto.image_data);
-      
-      // Check if the buffer size matches expected size
-      if (profilePhoto.size && imageBuffer.length !== profilePhoto.size) {
-        logger.warn(`Profile photo size mismatch: Expected ${profilePhoto.size}, got ${imageBuffer.length}`);
-      }
+      // Retrieve image data from file storage
+      const imageBuffer = await imageStorage.retrieveImage(profilePhoto.file_path);
       
       // Set proper headers for the image
       res.setHeader('Content-Type', profilePhoto.mime_type);
@@ -161,9 +194,9 @@ router.get('/profile-photo', async (req, res) => {
       res.send(imageBuffer);
       
       logger.debug(`Successfully sent profile photo (ID: ${profilePhoto.image_id}, ${imageBuffer.length} bytes)`);
-    } catch (bufferError) {
-      logger.error('Error processing profile photo buffer:', { error: bufferError.message, stack: bufferError.stack });
-      return res.status(500).json({ error: 'Profile photo data is corrupt or invalid' });
+    } catch (retrieveError) {
+      logger.error('Error retrieving profile photo file:', { error: retrieveError.message, stack: retrieveError.stack });
+      return res.status(500).json({ error: 'Failed to retrieve profile photo file' });
     }
   } catch (error) {
     logger.error('Error fetching profile photo:', { error: error.message, stack: error.stack });
@@ -191,8 +224,8 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     } = req.body;
     
     // Validate required fields
-    if (!image_data || !mime_type || !size) {
-      return res.status(400).json({ error: 'Image data, mime type, and size are required' });
+    if (!image_data || !mime_type) {
+      return res.status(400).json({ error: 'Image data and mime type are required' });
     }
     
     // If this is a profile photo, unset any existing profile photo
@@ -204,6 +237,8 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     
     // Process the image data with validation
     let imageBuffer;
+    let originalFilename = 'image.jpg';
+    
     try {
       // Extract base64 data properly
       const base64Data = image_data.split(',')[1]; 
@@ -232,16 +267,36 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       if (imageBuffer.length > maxSize) {
         return res.status(400).json({ error: 'Image size exceeds the maximum allowed size of 8MB' });
       }
+      
+      // Create a filename from title if available
+      if (title) {
+        originalFilename = `${title.toLowerCase().replace(/[^a-z0-9]/gi, '-')}.jpg`;
+      }
     } catch (error) {
       logger.error('Error processing image data:', { error: error.message, stack: error.stack });
       return res.status(400).json({ error: 'Failed to process image data' });
     }
     
-    // Insert new image
+    // Store the image file
+    let imageInfo;
+    try {
+      imageInfo = await imageStorage.storeImage(
+        imageBuffer, 
+        originalFilename, 
+        mime_type
+      );
+      
+      logger.debug('Image stored successfully:', { filePath: imageInfo.filePath, url: imageInfo.url });
+    } catch (storageError) {
+      logger.error('Error storing image:', { error: storageError.message, stack: storageError.stack });
+      return res.status(500).json({ error: 'Failed to store image file' });
+    }
+    
+    // Insert new image record in database
     const now = new Date().toISOString();
     const result = await query(`
       INSERT INTO gallery_images (
-        title, description, alt_text, caption, tags, image_data, 
+        title, description, alt_text, caption, tags, file_path,
         mime_type, size, width, height, is_profile_photo, show_on_homepage,
         active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
@@ -251,9 +306,9 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       alt_text || null, 
       caption || null, 
       JSON.stringify(tags || []), 
-      imageBuffer, // Use the validated buffer
+      imageInfo.filePath, // Store file path rather than binary data
       mime_type,
-      imageBuffer.length, // Use actual buffer length, not reported size
+      imageBuffer.length, // Actual size
       width || null,
       height || null,
       is_profile_photo ? 1 : 0,
@@ -264,7 +319,9 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     
     res.status(201).json({ 
       message: 'Image uploaded successfully', 
-      image_id: result.lastID 
+      image_id: result.lastID,
+      file_path: imageInfo.filePath,
+      url: imageInfo.url
     });
   } catch (error) {
     logger.error('Error uploading image:', { error: error.message, stack: error.stack });
@@ -342,13 +399,28 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
 router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const [image] = await query(`
-      SELECT is_profile_photo FROM gallery_images WHERE image_id = ?
+      SELECT is_profile_photo, file_path FROM gallery_images WHERE image_id = ?
     `, [req.params.id]);
     
     if (!image) {
       return res.status(404).json({ error: 'Image not found' });
     }
     
+    // Delete the image file if it exists
+    if (image.file_path) {
+      try {
+        await imageStorage.deleteImage(image.file_path);
+        logger.debug(`Deleted image file: ${image.file_path}`);
+      } catch (deleteError) {
+        logger.error(`Error deleting image file ${image.file_path}:`, { 
+          error: deleteError.message, 
+          stack: deleteError.stack
+        });
+        // Continue with database deletion even if file deletion failed
+      }
+    }
+    
+    // Delete the database record
     await query(`DELETE FROM gallery_images WHERE image_id = ?`, [req.params.id]);
     
     res.json({ 

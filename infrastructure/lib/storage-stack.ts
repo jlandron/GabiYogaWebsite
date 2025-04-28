@@ -47,6 +47,7 @@ export class StorageStack extends Stack {
       policyDocument: {
         Version: '2012-10-17',
         Statement: [
+          // CloudFront access for public reading
           {
             Action: ['s3:GetObject'],
             Effect: 'Allow',
@@ -57,6 +58,21 @@ export class StorageStack extends Stack {
                 'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/*`
               }
             }
+          },
+          // Allow EC2 instances from our webapp to read/write to the bucket
+          {
+            Action: [
+              's3:GetObject',
+              's3:PutObject',
+              's3:DeleteObject',
+              's3:ListBucket'
+            ],
+            Effect: 'Allow',
+            Principal: { Service: 'ec2.amazonaws.com' },
+            Resource: [
+              `${this.storageBucket.bucketArn}/*`, // For operations on objects
+              `${this.storageBucket.bucketArn}`    // For operations on the bucket itself (like listing)
+            ]
           }
         ]
       }

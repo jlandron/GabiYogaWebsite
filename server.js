@@ -67,6 +67,12 @@ app.use(express.json({ limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.static(path.join(__dirname)));
 
+// Serve files from uploads directory (for image storage)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '1d', // Cache static files for 1 day
+  etag: true,   // Use ETags for cache validation
+}));
+
 // Add request logging middleware
 app.use(logger.requestLogger);
 
