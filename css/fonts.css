@@ -9,3 +9,11 @@
     font-style: normal;
     font-display: swap;
 }
+
+@font-face {
+    font-family: 'Themunday';
+    src: url('../fonts/Themundayfreeversion-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

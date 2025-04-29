@@ -353,7 +353,11 @@ class BlogManager {
                 { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" },
                 { value: "'Architects Daughter', cursive", label: "Architects Daughter" },
                 { value: "'Comic Neue', cursive", label: "Comic Neue" },
-                { value: "'Courgette', cursive", label: "Courgette" }
+                { value: "'Courgette', cursive", label: "Courgette" },
+                
+                // Custom fonts
+                { value: "'Julietta', serif", label: "Julietta" },
+                { value: "'Themunday', serif", label: "Themunday" }
             ];
             
             fonts.forEach(font => {

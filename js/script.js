@@ -139,9 +139,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Private sessions button event handler
+    // Private sessions buttons event handlers
     if (privateSessionBtn) {
         privateSessionBtn.addEventListener('click', () => {
+            openPrivateBookingModal();
+        });
+    }
+    
+    // Private sessions section main CTA button
+    const privateSectionsBtn = document.getElementById('private-sessions-btn');
+    if (privateSectionsBtn) {
+        privateSectionsBtn.addEventListener('click', () => {
             openPrivateBookingModal();
         });
     }
@@ -305,6 +313,43 @@ function applyVisibilitySettings(sectionToggles) {
         if (membershipSection) {
             membershipSection.style.display = 'none';
         }
+    }
+    
+    if (!sectionToggles.privateSessionsSection) {
+        const privateSessionsSection = document.getElementById('private-sessions');
+        if (privateSessionsSection) {
+            privateSessionsSection.style.display = 'none';
+        }
+        
+        // Also hide any links to private sessions section
+        const privateSessionsLinks = document.querySelectorAll('a[href="#private-sessions"]');
+        privateSessionsLinks.forEach(link => {
+            if (link.parentElement) {
+                link.parentElement.style.display = 'none';
+            }
+        });
+        
+        // Disable private session buttons
+        const privateSessionBtns = document.querySelectorAll('#private-session-btn, #private-sessions-btn');
+        privateSessionBtns.forEach(btn => {
+            btn.style.display = 'none';
+        });
+    }
+    
+    if (!sectionToggles.privateLessonsSection) {
+        // Hide the Private Lessons offering card in the offerings section
+        const privateLessonsCard = document.querySelector('.offering-card:nth-child(2)');
+        if (privateLessonsCard) {
+            privateLessonsCard.style.display = 'none';
+        }
+        
+        // Also hide any links specifically to private lessons (separate from private sessions)
+        const privateLessonsLinks = document.querySelectorAll('a[href="#private-lessons"]');
+        privateLessonsLinks.forEach(link => {
+            if (link.parentElement) {
+                link.parentElement.style.display = 'none';
+            }
+        });
     }
     
     // Apply offering buttons visibility

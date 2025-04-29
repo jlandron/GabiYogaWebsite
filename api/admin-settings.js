@@ -185,7 +185,8 @@ router.put('/settings/section-toggles', requireAdmin, async (req, res) => {
     // Validation
     const requiredToggles = [
       'groupClasses', 'privateLessons', 'workshops', 'retreats',
-      'retreatsSection', 'scheduleSection', 'membershipSection', 'gallerySection'
+      'retreatsSection', 'scheduleSection', 'membershipSection', 'gallerySection',
+      'privateSessionsSection', 'privateLessonsSection'
     ];
     
     const missingToggles = requiredToggles.filter(toggle => sectionToggles[toggle] === undefined);
