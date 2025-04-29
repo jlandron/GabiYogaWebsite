@@ -361,10 +361,31 @@ function applyVisibilitySettings(sectionToggles) {
     }
     
     if (!sectionToggles.privateLessons) {
+        // Hide the Private Lessons offering card in the Classes & Offerings section
         const privateLessonsCard = document.querySelector('.offering-card:nth-child(2)');
         if (privateLessonsCard) {
             privateLessonsCard.style.display = 'none';
         }
+        
+        // Also hide the Private Sessions section
+        const privateSessionsSection = document.getElementById('private-sessions');
+        if (privateSessionsSection) {
+            privateSessionsSection.style.display = 'none';
+        }
+        
+        // Hide the Private Sessions tab in the Customer dashboard
+        const privateSessionsLinks = document.querySelectorAll('a[href="#private-sessions"]');
+        privateSessionsLinks.forEach(link => {
+            if (link.parentElement) {
+                link.parentElement.style.display = 'none';
+            }
+        });
+        
+        // Disable private session buttons
+        const privateSessionBtns = document.querySelectorAll('#private-session-btn, #private-sessions-btn');
+        privateSessionBtns.forEach(btn => {
+            btn.style.display = 'none';
+        });
     }
     
     if (!sectionToggles.workshops) {
