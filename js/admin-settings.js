@@ -478,6 +478,7 @@ function collectSettingsData() {
         retreatsSection: document.getElementById('toggle-retreats-section').checked,
         scheduleSection: document.getElementById('toggle-schedule-section').checked,
         membershipSection: document.getElementById('toggle-membership-section').checked,
+        privateSessionsSection: document.getElementById('toggle-private-sessions-section').checked,
         gallerySection: document.getElementById('toggle-gallery-section').checked
     };
     
@@ -702,6 +703,13 @@ function applySettingsFromAPI(settings) {
     document.getElementById('toggle-retreats-section').checked = settings.sectionToggles.retreatsSection;
     document.getElementById('toggle-schedule-section').checked = settings.sectionToggles.scheduleSection;
     document.getElementById('toggle-membership-section').checked = settings.sectionToggles.membershipSection;
+    
+    // Handle the private sessions section toggle (might be missing in older settings)
+    const privateSessionsToggle = document.getElementById('toggle-private-sessions-section');
+    if (privateSessionsToggle) {
+        privateSessionsToggle.checked = settings.sectionToggles.privateSessionsSection !== false;
+    }
+    
     document.getElementById('toggle-gallery-section').checked = settings.sectionToggles.gallerySection;
     
     // Contact info

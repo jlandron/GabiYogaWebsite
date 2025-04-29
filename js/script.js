@@ -315,6 +315,7 @@ function applyVisibilitySettings(sectionToggles) {
         }
     }
     
+    // Private Sessions Section toggle from admin settings
     if (!sectionToggles.privateSessionsSection) {
         const privateSessionsSection = document.getElementById('private-sessions');
         if (privateSessionsSection) {
@@ -330,25 +331,9 @@ function applyVisibilitySettings(sectionToggles) {
         });
         
         // Disable private session buttons
-        const privateSessionBtns = document.querySelectorAll('#private-session-btn, #private-sessions-btn');
+        const privateSessionBtns = document.querySelectorAll('#private-sessions-btn');
         privateSessionBtns.forEach(btn => {
             btn.style.display = 'none';
-        });
-    }
-    
-    if (!sectionToggles.privateLessonsSection) {
-        // Hide the Private Lessons offering card in the offerings section
-        const privateLessonsCard = document.querySelector('.offering-card:nth-child(2)');
-        if (privateLessonsCard) {
-            privateLessonsCard.style.display = 'none';
-        }
-        
-        // Also hide any links specifically to private lessons (separate from private sessions)
-        const privateLessonsLinks = document.querySelectorAll('a[href="#private-lessons"]');
-        privateLessonsLinks.forEach(link => {
-            if (link.parentElement) {
-                link.parentElement.style.display = 'none';
-            }
         });
     }
     
@@ -367,25 +352,11 @@ function applyVisibilitySettings(sectionToggles) {
             privateLessonsCard.style.display = 'none';
         }
         
-        // Also hide the Private Sessions section
-        const privateSessionsSection = document.getElementById('private-sessions');
-        if (privateSessionsSection) {
-            privateSessionsSection.style.display = 'none';
+        // Disable private session buttons that appear in the offerings cards
+        const privateSessionBtn = document.getElementById('private-session-btn');
+        if (privateSessionBtn) {
+            privateSessionBtn.style.display = 'none';
         }
-        
-        // Hide the Private Sessions tab in the Customer dashboard
-        const privateSessionsLinks = document.querySelectorAll('a[href="#private-sessions"]');
-        privateSessionsLinks.forEach(link => {
-            if (link.parentElement) {
-                link.parentElement.style.display = 'none';
-            }
-        });
-        
-        // Disable private session buttons
-        const privateSessionBtns = document.querySelectorAll('#private-session-btn, #private-sessions-btn');
-        privateSessionBtns.forEach(btn => {
-            btn.style.display = 'none';
-        });
     }
     
     if (!sectionToggles.workshops) {

@@ -92,7 +92,7 @@ function applyDashboardSettings(settings) {
     // Show/hide dashboard private sessions tab and panel based on admin settings
     const privateSessionsTab = document.querySelector('.dashboard-nav-item[data-panel="private-sessions"]');
     const privateSessionsPanel = document.getElementById('private-sessions-panel');
-    if (privateSessionsTab && !toggles.privateLessons) {
+    if (privateSessionsTab && !toggles.privateSessionsSection) {
       privateSessionsTab.style.display = 'none';
       if (privateSessionsPanel) privateSessionsPanel.style.display = 'none';
     }
@@ -103,7 +103,7 @@ function applyDashboardSettings(settings) {
       activeTab && 
       ((activeTab.getAttribute('data-panel') === 'workshops' && !toggles.workshops) ||
        (activeTab.getAttribute('data-panel') === 'retreats' && !toggles.retreats) ||
-       (activeTab.getAttribute('data-panel') === 'private-sessions' && !toggles.privateLessons))
+       (activeTab.getAttribute('data-panel') === 'private-sessions' && !toggles.privateSessionsSection))
     ) {
       // Find the bookings tab and simulate a click to make it active
       const bookingsTab = document.querySelector('.dashboard-nav-item[data-panel="bookings"]');

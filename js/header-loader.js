@@ -63,12 +63,17 @@ function initMobileMenu() {
 function highlightCurrentPage() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('.nav-links a');
+    const logoLink = document.querySelector('.logo a');
     
+    // Handle logo active state for home page
+    if (logoLink && (currentPage === 'index.html' || currentPage === '')) {
+        logoLink.classList.add('active');
+    }
+    
+    // Handle navigation links
     navLinks.forEach(link => {
         const href = link.getAttribute('href').split('#')[0];
-        if ((href === currentPage) || 
-            (href === '' && currentPage === 'index.html') ||
-            (currentPage === 'index.html' && link.getAttribute('href').includes('#home'))) {
+        if (href === currentPage) {
             link.classList.add('active');
         }
     });
