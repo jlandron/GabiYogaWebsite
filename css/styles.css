@@ -371,7 +371,12 @@ header {
 
 /* Schedule Section */
 .schedule {
-    background-color: #fff;
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), 
+        url('../images/joeri-romer-Xne1N4yZuOY-unsplash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 .schedule-container {
@@ -839,7 +844,12 @@ header {
 
 /* Contact Section */
 .contact {
-    background-color: var(--secondary-color);
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), 
+        url('../images/sara-bach-YXn56G46MSU-unsplash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 .contact-container {

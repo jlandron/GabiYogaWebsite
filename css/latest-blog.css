@@ -1,7 +1,12 @@
 /* Latest Blog Post Styles */
 .latest-blog {
     padding: 4rem 0;
-    background-color: #dffbf1;
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), 
+        url('../images/austin-1bVPBM3bDDE-unsplash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 .latest-blog .container {
