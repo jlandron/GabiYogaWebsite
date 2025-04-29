@@ -309,6 +309,62 @@ class BlogManager {
         // Handle font selector
         const fontSelector = document.getElementById('font-selector');
         if (fontSelector) {
+            // Clear existing options
+            while (fontSelector.firstChild) {
+                fontSelector.removeChild(fontSelector.firstChild);
+            }
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Font';
+            fontSelector.appendChild(defaultOption);
+            
+            // Add font options
+            const fonts = [
+                // Site theme fonts
+                { value: "'Playfair Display', serif", label: "Playfair Display (Site Headers)" },
+                { value: "'Open Sans', sans-serif", label: "Open Sans (Site Body)" },
+                
+                // Standard fonts
+                { value: "Arial, sans-serif", label: "Arial" },
+                { value: "'Times New Roman', serif", label: "Times New Roman" },
+                { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica Neue" },
+                { value: "Georgia, serif", label: "Georgia" },
+                { value: "'Courier New', monospace", label: "Courier New" },
+                { value: "'Roboto', sans-serif", label: "Roboto" },
+                
+                // Cursive and script fonts
+                { value: "'Dancing Script', cursive", label: "Dancing Script" },
+                { value: "'Great Vibes', cursive", label: "Great Vibes" },
+                { value: "'Pacifico', cursive", label: "Pacifico" },
+                { value: "'Sacramento', cursive", label: "Sacramento" },
+                { value: "'Allura', cursive", label: "Allura" },
+                { value: "'Satisfy', cursive", label: "Satisfy" },
+                { value: "'Pinyon Script', cursive", label: "Pinyon Script" },
+                { value: "'Tangerine', cursive", label: "Tangerine" },
+                { value: "'Alex Brush', cursive", label: "Alex Brush" },
+                
+                // Creative and organic fonts
+                { value: "'Amatic SC', cursive", label: "Amatic SC" },
+                { value: "'Caveat', cursive", label: "Caveat" },
+                { value: "'Indie Flower', cursive", label: "Indie Flower" },
+                { value: "'Kalam', cursive", label: "Kalam" },
+                { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" },
+                { value: "'Architects Daughter', cursive", label: "Architects Daughter" },
+                { value: "'Comic Neue', cursive", label: "Comic Neue" },
+                { value: "'Courgette', cursive", label: "Courgette" }
+            ];
+            
+            fonts.forEach(font => {
+                const option = document.createElement('option');
+                option.value = font.value;
+                option.textContent = font.label;
+                option.style.fontFamily = font.value;
+                fontSelector.appendChild(option);
+            });
+            
+            // Add change event listener
             fontSelector.addEventListener('change', () => {
                 const fontFamily = fontSelector.value;
                 if (!fontFamily) return;
@@ -318,9 +374,6 @@ class BlogManager {
                 
                 // Apply font to selected text
                 this.insertFormatting(`<span style="font-family: ${fontFamily}">`, '</span>');
-                
-                // Reset the selector to the default option after applying
-                // fontSelector.selectedIndex = 0;
             });
         }
     }

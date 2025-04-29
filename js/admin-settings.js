@@ -52,15 +52,17 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
     
     // Add font options
     const fonts = [
+        // Site theme fonts
+        { value: "'Playfair Display', serif", label: "Playfair Display (Site Headers)" },
+        { value: "'Open Sans', sans-serif", label: "Open Sans (Site Body)" },
+        
         // Standard fonts
         { value: "Arial, sans-serif", label: "Arial" },
         { value: "'Times New Roman', serif", label: "Times New Roman" },
         { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica Neue" },
         { value: "Georgia, serif", label: "Georgia" },
         { value: "'Courier New', monospace", label: "Courier New" },
-        { value: "'Open Sans', sans-serif", label: "Open Sans" },
         { value: "'Roboto', sans-serif", label: "Roboto" },
-        { value: "'Playfair Display', serif", label: "Playfair Display" },
         
         // Cursive and script fonts
         { value: "'Dancing Script', cursive", label: "Dancing Script" },
