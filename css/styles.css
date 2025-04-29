@@ -291,7 +291,7 @@ header {
 
 /* Gallery Section */
 .gallery {
-    background-color: #fff;
+    background-color: var(--secondary-color);
 }
 
 .gallery-grid {

@@ -194,8 +194,6 @@ class StripePaymentHandler {
     this.purchaseSubmitBtn = this.purchaseForm?.querySelector('button[type="submit"]');
     this.purchaseType = document.getElementById('purchase-type');
     this.purchasePrice = document.getElementById('purchase-price');
-    this.purchaseName = document.getElementById('purchase-name');
-    this.purchaseEmail = document.getElementById('purchase-email');
     
     if (!this.clientSecret) {
       this.showPaymentError('Payment not properly set up. Please try again.');
@@ -208,8 +206,19 @@ class StripePaymentHandler {
       this.purchaseSubmitBtn.textContent = 'Processing...';
     }
     
-    const name = this.purchaseName?.value || '';
-    const email = this.purchaseEmail?.value || '';
+    // Get user data from the user data manager
+    let name = '';
+    let email = '';
+    
+    try {
+      if (window.userDataManager) {
+        name = await window.userDataManager.getFullName();
+        email = await window.userDataManager.getEmail();
+      }
+    } catch (userDataError) {
+      console.warn('Failed to load user data:', userDataError);
+      // Continue with payment process even if user data cannot be loaded
+    }
     
     try {
       const { error } = await this.stripe.confirmPayment({
@@ -256,25 +265,27 @@ class StripePaymentHandler {
     }
     
     // Form may have been updated since initialization, so get fresh references
-    this.purchaseForm = document.getElementById('purchase-form');
-    this.purchaseSubmitBtn = this.purchaseForm?.querySelector('button[type="submit"]');
-    this.purchaseType = document.getElementById('purchase-type');
-    this.purchasePrice = document.getElementById('purchase-price');
-    this.purchaseName = document.getElementById('purchase-name');
-    this.purchaseEmail = document.getElementById('purchase-email');
-    
-    // Same for subscription form elements
     this.subscriptionForm = document.getElementById('subscription-form');
     this.subscriptionSubmitBtn = this.subscriptionForm?.querySelector('button[type="submit"]');
     this.subscriptionType = document.getElementById('subscription-type');
     this.subscriptionPrice = document.getElementById('subscription-price');
-    this.subscriptionName = document.getElementById('subscription-name');
-    this.subscriptionEmail = document.getElementById('subscription-email');
     
-    const name = this.subscriptionName?.value || '';
-    const email = this.subscriptionEmail?.value || '';
     const subscriptionType = this.subscriptionType?.value || '';
     const price = this.subscriptionPrice?.value || '';
+    
+    // Get user data from the user data manager
+    let name = '';
+    let email = '';
+    
+    try {
+      if (window.userDataManager) {
+        name = await window.userDataManager.getFullName();
+        email = await window.userDataManager.getEmail();
+      }
+    } catch (userDataError) {
+      console.warn('Failed to load user data for subscription:', userDataError);
+      // Continue with subscription process even if user data cannot be loaded
+    }
     
     // Disable form submission to prevent multiple clicks
     if (this.subscriptionSubmitBtn) {

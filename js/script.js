@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle private booking form submission
         const privateBookingForm = document.getElementById('private-booking-form');
         if (privateBookingForm) {
-            privateBookingForm.addEventListener('submit', (e) => {
+            privateBookingForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 // Gather form data
@@ -62,9 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sessionFocus = document.getElementById('session-focus').value;
                 const date1 = document.getElementById('date1').value;
                 const time1 = document.getElementById('time1').value;
-                const name = document.getElementById('booking-name').value;
-                const email = document.getElementById('booking-email').value;
-                const phone = document.getElementById('booking-phone').value;
+                const notes = document.getElementById('booking-notes').value;
+                
+                // Get user data from user data manager
+                let name = '';
+                let email = '';
+                let userId = null;
+                
+                try {
+                    if (window.userDataManager) {
+                        name = await window.userDataManager.getFullName();
+                        email = await window.userDataManager.getEmail();
+                        userId = await window.userDataManager.getUserId();
+                    }
+                } catch (userDataError) {
+                    console.warn('Failed to load user data for private booking:', userDataError);
+                }
                 
                 // Focus area names for the alert message
                 const focusNames = {
@@ -82,8 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 const packageData = window.sessionPackageData ? window.sessionPackageData[sessionType] : null;
                 const packageName = packageData ? packageData.name : sessionTypeText;
                 
+                // Save booking to the API
+                try {
+                    const response = await fetch('/api/private-sessions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId,
+                            sessionType,
+                            sessionFocus,
+                            packageName,
+                            date1,
+                            time1,
+                            date2: document.getElementById('date2').value || null,
+                            time2: document.getElementById('time2').value || null,
+                            date3: document.getElementById('date3').value || null,
+                            time3: document.getElementById('time3').value || null,
+                            notes,
+                            name,
+                            email
+                        }),
+                        credentials: 'include' // Include cookies for auth
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Private session booking saved successfully');
+                    } else {
+                        console.warn('Error saving private session booking:', await response.text());
+                    }
+                } catch (error) {
+                    console.error('Error submitting private session booking:', error);
+                }
+                
                 // Show success message
-                alert(`Thank you, ${name}! Your ${packageName} focusing on ${focusNames[sessionFocus]} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours at ${email} or ${phone} to confirm your booking.`);
+                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusNames[sessionFocus]} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
                 
                 privateBookingModal.style.display = 'none';
                 document.body.style.overflow = '';
