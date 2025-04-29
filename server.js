@@ -156,6 +156,12 @@ app.get('/api/website-settings', asyncHandler(async (req, res) => {
   return sendSuccess(res, { settings }, 'Website settings fetched successfully');
 }));
 
+// Public API endpoint for section visibility settings
+app.get('/api/settings', asyncHandler(async (req, res) => {
+  const settings = await WebsiteSettingsOperations.getSettings();
+  return sendSuccess(res, { settings }, 'Settings fetched successfully');
+}));
+
 // Create an admin router with authentication middleware
 const adminRouter = express.Router();
 adminRouter.use(authenticateToken);
@@ -165,8 +171,6 @@ adminRouter.use('/', adminRoutes);
 adminRouter.use('/', adminSettingsRoutes);
 adminRouter.use('/', adminPricingRoutes);
 adminRouter.use('/', adminCustomerDashboardRoutes);
-
-// Remove the special case webhook handler - it's already defined in the stripe routes module
 
 // Register API routes
 app.use('/api/admin', adminRouter);
