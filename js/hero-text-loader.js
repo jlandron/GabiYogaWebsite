@@ -31,6 +31,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (heading.text) heroHeading.textContent = heading.text;
                 if (heading.font) heroHeading.style.fontFamily = heading.font;
                 if (heading.size) heroHeading.style.fontSize = heading.size;
+                // Add text formatting styles
+                if (heading.fontWeight) heroHeading.style.fontWeight = heading.fontWeight;
+                if (heading.fontStyle) heroHeading.style.fontStyle = heading.fontStyle;
+                if (heading.textDecoration) heroHeading.style.textDecoration = heading.textDecoration;
+                // Ensure the text alignment is set to center
+                heroHeading.style.textAlign = heading.textAlign || 'center';
+            } else {
+                // Default to normal weight if no settings are available
+                heroHeading.style.fontWeight = 'normal';
+                heroHeading.style.fontStyle = 'normal';
+                heroHeading.style.textDecoration = 'none';
             }
             
             // Update subheading
@@ -38,6 +49,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (subheading.text) heroSubheading.textContent = subheading.text;
                 if (subheading.font) heroSubheading.style.fontFamily = subheading.font;
                 if (subheading.size) heroSubheading.style.fontSize = subheading.size;
+                // Add text formatting styles
+                if (subheading.fontWeight) heroSubheading.style.fontWeight = subheading.fontWeight;
+                if (subheading.fontStyle) heroSubheading.style.fontStyle = subheading.fontStyle;
+                if (subheading.textDecoration) heroSubheading.style.textDecoration = subheading.textDecoration;
+                // Ensure the text alignment is set to center
+                heroSubheading.style.textAlign = subheading.textAlign || 'center';
+            } else {
+                // Default to normal weight if no settings are available
+                heroSubheading.style.fontWeight = 'normal';
+                heroSubheading.style.fontStyle = 'normal';
+                heroSubheading.style.textDecoration = 'none';
             }
             
             console.log('Hero text updated successfully');

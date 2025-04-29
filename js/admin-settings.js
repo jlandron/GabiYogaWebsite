@@ -1,25 +1,13 @@
 /**
  * Admin Settings JavaScript for Gabi Jyoti Yoga
- * 
- * This file handles the functionality for the admin settings page,
- * including profile updates, certification management, and section toggling.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Load existing settings from the API
+    // Init all functionality
     fetchExistingSettings();
-    
-    // Initialize toggle switches
     initializeToggles();
-    
-    // Initialize certification management
     initializeCertifications();
-    
-    // Initialize photo upload preview
     initializePhotoPreview();
-
-    // Initialize text editor controls with default values
-    // Will be updated when settings are loaded from API
     initializeTextEditors();
     
     // Initialize save button
@@ -28,20 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Create text editor controls dynamically
- * @param {string} containerId - ID of the container where controls should be added
- * @param {string} targetId - ID of the text element to style
- * @param {string} defaultFont - Default font family
- * @param {string} defaultSize - Default font size
- * @returns {Object} - Object containing the created font and size selectors
  */
 function createTextEditorControls(containerId, targetId, defaultFont, defaultSize) {
     const container = document.getElementById(containerId);
     if (!container) return { fontSelector: null, sizeSelector: null };
     
-    // Clear existing controls if any
+    // Clear existing controls
     container.innerHTML = '';
     
-    // Create the controls structure
+    // Create controls
     const fontSelector = document.createElement('select');
     fontSelector.id = `${targetId}-font`;
     fontSelector.className = 'font-selector';
@@ -56,6 +39,10 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
         { value: "'Playfair Display', serif", label: "Playfair Display (Site Headers)" },
         { value: "'Open Sans', sans-serif", label: "Open Sans (Site Body)" },
         
+        // Custom fonts
+        { value: "'Julietta', serif", label: "Julietta" },
+        { value: "'Themunday', serif", label: "Themunday" },
+        
         // Standard fonts
         { value: "Arial, sans-serif", label: "Arial" },
         { value: "'Times New Roman', serif", label: "Times New Roman" },
@@ -64,26 +51,18 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
         { value: "'Courier New', monospace", label: "Courier New" },
         { value: "'Roboto', sans-serif", label: "Roboto" },
         
-        // Cursive and script fonts
+        // Script fonts 
         { value: "'Dancing Script', cursive", label: "Dancing Script" },
         { value: "'Great Vibes', cursive", label: "Great Vibes" },
         { value: "'Pacifico', cursive", label: "Pacifico" },
         { value: "'Sacramento', cursive", label: "Sacramento" },
         { value: "'Allura', cursive", label: "Allura" },
         { value: "'Satisfy', cursive", label: "Satisfy" },
-        { value: "'Pinyon Script', cursive", label: "Pinyon Script" },
-        { value: "'Tangerine', cursive", label: "Tangerine" },
-        { value: "'Alex Brush', cursive", label: "Alex Brush" },
         
-        // Creative and organic fonts
+        // Creative fonts
         { value: "'Amatic SC', cursive", label: "Amatic SC" },
         { value: "'Caveat', cursive", label: "Caveat" },
-        { value: "'Indie Flower', cursive", label: "Indie Flower" },
-        { value: "'Kalam', cursive", label: "Kalam" },
-        { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" },
-        { value: "'Architects Daughter', cursive", label: "Architects Daughter" },
-        { value: "'Comic Neue', cursive", label: "Comic Neue" },
-        { value: "'Courgette', cursive", label: "Courgette" }
+        { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" }
     ];
     
     fonts.forEach(font => {
@@ -94,10 +73,10 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
         fontSelector.appendChild(option);
     });
     
-    // Add size options - different ranges for headings vs. body text
+    // Add size options
     const sizes = targetId.includes('heading') ? 
-        ["16px", "18px", "20px", "24px", "28px", "32px", "36px", "42px", "48px", "56px"] :
-        ["14px", "16px", "18px", "20px", "22px", "24px"];
+        ["16px", "18px", "20px", "24px", "28px", "32px", "36px", "42px", "48px", "56px", "64px", "72px"] :
+        ["12px", "14px", "16px", "18px", "20px", "22px", "24px", "26px", "28px", "32px"];
     
     sizes.forEach(size => {
         const option = document.createElement('option');
@@ -106,24 +85,124 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
         sizeSelector.appendChild(option);
     });
     
-    // Add the selectors to the container
-    container.appendChild(fontSelector);
-    container.appendChild(sizeSelector);
+    // Create text formatting controls
+    const formattingControls = document.createElement('div');
+    formattingControls.className = 'formatting-controls';
     
-    // Get the target element
+    // Bold button
+    const boldButton = document.createElement('button');
+    boldButton.type = 'button';
+    boldButton.className = 'format-button';
+    boldButton.innerHTML = '<i class="fas fa-bold"></i>';
+    boldButton.title = 'Bold';
+    
+    // Italic button
+    const italicButton = document.createElement('button');
+    italicButton.type = 'button';
+    italicButton.className = 'format-button';
+    italicButton.innerHTML = '<i class="fas fa-italic"></i>';
+    italicButton.title = 'Italic';
+    
+    // Underline button
+    const underlineButton = document.createElement('button');
+    underlineButton.type = 'button';
+    underlineButton.className = 'format-button';
+    underlineButton.innerHTML = '<i class="fas fa-underline"></i>';
+    underlineButton.title = 'Underline';
+    
+    // For hero text, set text-align to center by default
+    if (targetId.includes('hero')) {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.style.textAlign = 'center';
+        }
+    }
+    
+    // Add buttons to controls
+    formattingControls.appendChild(boldButton);
+    formattingControls.appendChild(italicButton);
+    formattingControls.appendChild(underlineButton);
+    
+    // Add divider
+    formattingControls.appendChild(document.createElement('span')).className = 'divider';
+    
+    // Add the selectors to the formatting controls (all in one row)
+    fontSelector.style.marginLeft = '4px';
+    formattingControls.appendChild(fontSelector);
+    formattingControls.appendChild(sizeSelector);
+    
+    // Add to container
+    container.appendChild(formattingControls);
+    
+    // Get target element
     const targetElement = document.getElementById(targetId);
     if (!targetElement) return { fontSelector, sizeSelector };
     
     // Add event listeners
     fontSelector.addEventListener('change', function() {
         targetElement.style.fontFamily = this.value;
-        
-        // Also update the font selector dropdown to show the text in the selected font
         this.style.fontFamily = this.value;
+        
+        // Update homepage text preview
+        if (targetId.includes('hero')) {
+            updateHomepageText();
+        }
     });
     
     sizeSelector.addEventListener('change', function() {
         targetElement.style.fontSize = this.value;
+        
+        if (targetId.includes('hero')) {
+            updateHomepageText();
+        }
+    });
+    
+    // Bold button
+    boldButton.addEventListener('click', function() {
+        const currentWeight = getComputedStyle(targetElement).fontWeight;
+        if (currentWeight === 'bold' || currentWeight >= 700) {
+            targetElement.style.fontWeight = 'normal';
+            this.classList.remove('active');
+        } else {
+            targetElement.style.fontWeight = 'bold';
+            this.classList.add('active');
+        }
+        
+        if (targetId.includes('hero')) {
+            updateHomepageText();
+        }
+    });
+    
+    // Italic button
+    italicButton.addEventListener('click', function() {
+        const currentStyle = getComputedStyle(targetElement).fontStyle;
+        if (currentStyle === 'italic') {
+            targetElement.style.fontStyle = 'normal';
+            this.classList.remove('active');
+        } else {
+            targetElement.style.fontStyle = 'italic';
+            this.classList.add('active');
+        }
+        
+        if (targetId.includes('hero')) {
+            updateHomepageText();
+        }
+    });
+    
+    // Underline button
+    underlineButton.addEventListener('click', function() {
+        const currentDecoration = getComputedStyle(targetElement).textDecoration;
+        if (currentDecoration.includes('underline')) {
+            targetElement.style.textDecoration = 'none';
+            this.classList.remove('active');
+        } else {
+            targetElement.style.textDecoration = 'underline';
+            this.classList.add('active');
+        }
+        
+        if (targetId.includes('hero')) {
+            updateHomepageText();
+        }
     });
     
     // Set default values
@@ -134,24 +213,75 @@ function createTextEditorControls(containerId, targetId, defaultFont, defaultSiz
     targetElement.style.fontFamily = defaultFont;
     targetElement.style.fontSize = defaultSize;
     
+    // Center hero elements
+    if (targetId.includes('hero')) {
+        targetElement.style.textAlign = 'center';
+    }
+    
     return { fontSelector, sizeSelector };
 }
 
 /**
- * Initialize text editors for fonts and sizes
+ * Update homepage preview with current settings
+ */
+function updateHomepageText() {
+    console.log('Updating homepage text preview with current settings');
+    
+    // Get current settings
+    const heroHeading = document.getElementById('hero-heading');
+    const heroSubheading = document.getElementById('hero-subheading');
+    
+    if (heroHeading && heroSubheading) {
+        // Log current settings
+        console.log('Hero Heading:', {
+            text: heroHeading.value,
+            font: heroHeading.style.fontFamily,
+            size: heroHeading.style.fontSize,
+            weight: heroHeading.style.fontWeight,
+            style: heroHeading.style.fontStyle,
+            decoration: heroHeading.style.textDecoration,
+            align: 'center'
+        });
+        
+        // Update preview elements if they exist
+        const previewHeading = document.getElementById('preview-hero-heading');
+        const previewSubheading = document.getElementById('preview-hero-subheading');
+        
+        if (previewHeading) {
+            previewHeading.textContent = heroHeading.value;
+            previewHeading.style.fontFamily = heroHeading.style.fontFamily;
+            previewHeading.style.fontSize = heroHeading.style.fontSize;
+            previewHeading.style.fontWeight = heroHeading.style.fontWeight;
+            previewHeading.style.fontStyle = heroHeading.style.fontStyle;
+            previewHeading.style.textDecoration = heroHeading.style.textDecoration;
+            previewHeading.style.textAlign = 'center';
+        }
+        
+        if (previewSubheading) {
+            previewSubheading.textContent = heroSubheading.value;
+            previewSubheading.style.fontFamily = heroSubheading.style.fontFamily;
+            previewSubheading.style.fontSize = heroSubheading.style.fontSize;
+            previewSubheading.style.fontWeight = heroSubheading.style.fontWeight;
+            previewSubheading.style.fontStyle = heroSubheading.style.fontStyle;
+            previewSubheading.style.textDecoration = heroSubheading.style.textDecoration;
+            previewSubheading.style.textAlign = 'center';
+        }
+    }
+}
+
+/**
+ * Initialize text editors
  */
 function initializeTextEditors() {
-    // Create text editor controls for each editable text element
     createTextEditorControls('hero-heading-controls', 'hero-heading', "'Playfair Display', serif", "48px");
     createTextEditorControls('hero-subheading-controls', 'hero-subheading', "'Open Sans', sans-serif", "20px");
     createTextEditorControls('instructor-bio-controls', 'instructor-bio', "'Open Sans', sans-serif", "16px");
 }
 
 /**
- * Fetch existing settings from the API
+ * Fetch settings from API
  */
 function fetchExistingSettings() {
-    // First try to get settings from the authenticated admin endpoint
     const authToken = localStorage.getItem('auth_token');
     
     if (authToken) {
@@ -161,59 +291,47 @@ function fetchExistingSettings() {
             }
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch settings');
-            }
+            if (!response.ok) throw new Error('Failed to fetch settings');
             return response.json();
         })
         .then(data => {
             if (data.success && data.settings) {
-                // Apply the settings to the form
                 applySettingsFromAPI(data.settings);
-                console.log('Settings loaded successfully from admin API:', data.settings);
+                updateHomepageText();
             }
         })
         .catch(error => {
-            console.error('Error fetching settings from admin API:', error);
-            // Fall back to the public endpoint
+            console.error('Error fetching settings:', error);
             fallbackToPublicSettings();
         });
     } else {
-        // No auth token, fall back to public endpoint
-        console.log('No authentication token found. Please log in to edit settings.');
+        console.log('No auth token found. Please log in to edit settings.');
         fallbackToPublicSettings();
     }
 }
 
 /**
  * Fallback to public settings endpoint
- * This is used to pre-fill the form even when not authenticated
  */
 function fallbackToPublicSettings() {
     fetch('/api/website-settings')
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.settings) {
-            // Apply the settings to the form
-            applySettingsFromAPI(data.settings);
-            console.log('Settings loaded successfully from public API:', data.settings);
-        } else {
-            console.error('Error loading settings from public API:', data.message || 'Unknown error');
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching public settings:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.settings) {
+                applySettingsFromAPI(data.settings);
+                updateHomepageText();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching public settings:', error);
+        });
 }
 
 /**
- * Initialize toggle switches with change event listeners
+ * Initialize toggle switches
  */
 function initializeToggles() {
-    // Get all toggle switches
     const toggleSwitches = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
-    
-    // Add change event listener to each toggle
     toggleSwitches.forEach(toggle => {
         toggle.addEventListener('change', function() {
             console.log(`Toggle ${this.id} changed to: ${this.checked}`);
@@ -222,30 +340,22 @@ function initializeToggles() {
 }
 
 /**
- * Initialize certification management (add/remove)
+ * Initialize certification management
  */
 function initializeCertifications() {
-    // Add certification button
     document.getElementById('add-certification').addEventListener('click', function() {
         const table = document.getElementById('certifications-table').getElementsByTagName('tbody')[0];
-        
-        // Create new row
         const newRow = table.insertRow();
-        
-        // Create cells
         const cell1 = newRow.insertCell(0);
         const cell2 = newRow.insertCell(1);
         
-        // Add content to cells
         cell1.innerHTML = '<input type="text" class="admin-form-control" placeholder="Enter certification">';
         cell2.classList.add('admin-table-actions');
         cell2.innerHTML = '<button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>';
         
-        // Add event listener to the delete button
         addDeleteCertificationListener(cell2.querySelector('.delete-certification'));
     });
     
-    // Add event listeners to existing delete buttons
     const deleteButtons = document.querySelectorAll('.delete-certification');
     deleteButtons.forEach(button => {
         addDeleteCertificationListener(button);
@@ -253,20 +363,17 @@ function initializeCertifications() {
 }
 
 /**
- * Add event listener to certification delete button
+ * Add delete event listener
  */
 function addDeleteCertificationListener(button) {
     button.addEventListener('click', function() {
-        // Get the row to delete
         const row = this.closest('tr');
-        
-        // Remove the row from the table
         row.parentNode.removeChild(row);
     });
 }
 
 /**
- * Initialize photo preview functionality
+ * Initialize photo preview
  */
 function initializePhotoPreview() {
     const photoInput = document.getElementById('instructor-photo');
@@ -274,14 +381,11 @@ function initializePhotoPreview() {
     
     photoInput.addEventListener('change', function() {
         const file = this.files[0];
-        
         if (file) {
             const reader = new FileReader();
-            
             reader.addEventListener('load', function() {
                 photoPreview.src = reader.result;
             });
-            
             reader.readAsDataURL(file);
         }
     });
@@ -291,10 +395,8 @@ function initializePhotoPreview() {
  * Save all settings
  */
 function saveAllSettings() {
-    // Gather all settings data
     const settingsData = collectSettingsData();
     
-    // Send settings to the server
     fetch('/api/admin/settings', {
         method: 'PUT',
         headers: {
@@ -306,11 +408,9 @@ function saveAllSettings() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success notification
             showNotification();
-            console.log('Settings saved successfully:', data);
+            updateHomepageText();
         } else {
-            console.error('Error saving settings:', data.message);
             alert('Error saving settings: ' + data.message);
         }
     })
@@ -321,20 +421,32 @@ function saveAllSettings() {
 }
 
 /**
- * Collect all settings data from the form
+ * Collect form data
  */
 function collectSettingsData() {
-    // Hero Text
+    const heroHeading = document.getElementById('hero-heading');
+    const heroSubheading = document.getElementById('hero-subheading');
+    const instructorBio = document.getElementById('instructor-bio');
+    
+    // Hero text
     const heroTextData = {
         heading: {
-            text: document.getElementById('hero-heading').value,
+            text: heroHeading.value,
             font: document.getElementById('hero-heading-font').value,
-            size: document.getElementById('hero-heading-size').value
+            size: document.getElementById('hero-heading-size').value,
+            fontWeight: getComputedStyle(heroHeading).fontWeight,
+            fontStyle: getComputedStyle(heroHeading).fontStyle,
+            textDecoration: getComputedStyle(heroHeading).textDecoration,
+            textAlign: 'center' 
         },
         subheading: {
-            text: document.getElementById('hero-subheading').value,
+            text: heroSubheading.value,
             font: document.getElementById('hero-subheading-font').value,
-            size: document.getElementById('hero-subheading-size').value
+            size: document.getElementById('hero-subheading-size').value,
+            fontWeight: getComputedStyle(heroSubheading).fontWeight,
+            fontStyle: getComputedStyle(heroSubheading).fontStyle,
+            textDecoration: getComputedStyle(heroSubheading).textDecoration,
+            textAlign: 'center'
         }
     };
 
@@ -342,33 +454,34 @@ function collectSettingsData() {
     const aboutData = {
         name: document.getElementById('instructor-name').value,
         subtitle: document.getElementById('instructor-subtitle').value,
-        bio: document.getElementById('instructor-bio').value,
+        bio: instructorBio.value,
         bioFont: document.getElementById('instructor-bio-font').value,
-        bioSize: document.getElementById('instructor-bio-size').value
+        bioSize: document.getElementById('instructor-bio-size').value,
+        bioFontWeight: getComputedStyle(instructorBio).fontWeight,
+        bioFontStyle: getComputedStyle(instructorBio).fontStyle,
+        bioTextDecoration: getComputedStyle(instructorBio).textDecoration,
+        bioTextAlign: getComputedStyle(instructorBio).textAlign
     };
     
     // Certifications
     const certificationRows = document.querySelectorAll('#certifications-table tbody tr');
-    const certifications = Array.from(certificationRows).map(row => {
-        return row.querySelector('input').value;
-    }).filter(cert => cert.trim() !== '');
+    const certifications = Array.from(certificationRows)
+        .map(row => row.querySelector('input').value)
+        .filter(cert => cert.trim() !== '');
     
-    // Homepage section toggles
+    // Toggles
     const sectionToggles = {
-        // Classes & Offerings
         groupClasses: document.getElementById('toggle-group-classes').checked,
         privateLessons: document.getElementById('toggle-private-lessons').checked,
         workshops: document.getElementById('toggle-workshops').checked,
         retreats: document.getElementById('toggle-retreats').checked,
-        
-        // Other Sections
         retreatsSection: document.getElementById('toggle-retreats-section').checked,
         scheduleSection: document.getElementById('toggle-schedule-section').checked,
         membershipSection: document.getElementById('toggle-membership-section').checked,
         gallerySection: document.getElementById('toggle-gallery-section').checked
     };
     
-    // Contact information
+    // Contact info
     const contactInfo = {
         address: document.getElementById('contact-address').value,
         phone: document.getElementById('contact-phone').value,
@@ -380,7 +493,6 @@ function collectSettingsData() {
         }
     };
     
-    // Return compiled settings object
     return {
         heroText: heroTextData,
         about: aboutData,
@@ -391,26 +503,21 @@ function collectSettingsData() {
 }
 
 /**
- * Show a success notification
+ * Show notification
  */
 function showNotification() {
     const notification = document.getElementById('settings-notification');
-    
-    // Add active class to show notification
     notification.classList.add('active');
-    
-    // Remove active class after 3 seconds
     setTimeout(() => {
         notification.classList.remove('active');
     }, 3000);
 }
 
 /**
- * Apply settings from API
- * This would be used when the page loads to populate the form with existing settings
+ * Apply settings from API response
  */
 function applySettingsFromAPI(settings) {
-    // Populate Hero Text section with text and font settings
+    // Hero Text
     if (settings.heroText) {
         if (settings.heroText.heading) {
             const heroHeading = document.getElementById('hero-heading');
@@ -430,8 +537,42 @@ function applySettingsFromAPI(settings) {
                 heroHeadingSize.value = settings.heroText.heading.size;
                 heroHeading.style.fontSize = settings.heroText.heading.size;
             }
+            
+            // Apply formatting
+            if (heroHeading) {
+                // Font weight
+                if (settings.heroText.heading.fontWeight) {
+                    heroHeading.style.fontWeight = settings.heroText.heading.fontWeight;
+                    const boldButton = heroHeading.closest('.admin-form-group').querySelector('button[title="Bold"]');
+                    if (boldButton && (settings.heroText.heading.fontWeight === 'bold' || parseInt(settings.heroText.heading.fontWeight) >= 700)) {
+                        boldButton.classList.add('active');
+                    }
+                }
+                
+                // Font style
+                if (settings.heroText.heading.fontStyle) {
+                    heroHeading.style.fontStyle = settings.heroText.heading.fontStyle;
+                    const italicButton = heroHeading.closest('.admin-form-group').querySelector('button[title="Italic"]');
+                    if (italicButton && settings.heroText.heading.fontStyle === 'italic') {
+                        italicButton.classList.add('active');
+                    }
+                }
+                
+                // Text decoration
+                if (settings.heroText.heading.textDecoration) {
+                    heroHeading.style.textDecoration = settings.heroText.heading.textDecoration;
+                    const underlineButton = heroHeading.closest('.admin-form-group').querySelector('button[title="Underline"]');
+                    if (underlineButton && settings.heroText.heading.textDecoration.includes('underline')) {
+                        underlineButton.classList.add('active');
+                    }
+                }
+                
+                // Center alignment
+                heroHeading.style.textAlign = 'center';
+            }
         }
         
+        // Subheading
         if (settings.heroText.subheading) {
             const heroSubheading = document.getElementById('hero-subheading');
             const heroSubheadingFont = document.getElementById('hero-subheading-font');
@@ -450,15 +591,48 @@ function applySettingsFromAPI(settings) {
                 heroSubheadingSize.value = settings.heroText.subheading.size;
                 heroSubheading.style.fontSize = settings.heroText.subheading.size;
             }
+            
+            // Apply formatting
+            if (heroSubheading) {
+                // Font weight
+                if (settings.heroText.subheading.fontWeight) {
+                    heroSubheading.style.fontWeight = settings.heroText.subheading.fontWeight;
+                    const boldButton = heroSubheading.closest('.admin-form-group').querySelector('button[title="Bold"]');
+                    if (boldButton && (settings.heroText.subheading.fontWeight === 'bold' || parseInt(settings.heroText.subheading.fontWeight) >= 700)) {
+                        boldButton.classList.add('active');
+                    }
+                }
+                
+                // Font style
+                if (settings.heroText.subheading.fontStyle) {
+                    heroSubheading.style.fontStyle = settings.heroText.subheading.fontStyle;
+                    const italicButton = heroSubheading.closest('.admin-form-group').querySelector('button[title="Italic"]');
+                    if (italicButton && settings.heroText.subheading.fontStyle === 'italic') {
+                        italicButton.classList.add('active');
+                    }
+                }
+                
+                // Text decoration
+                if (settings.heroText.subheading.textDecoration) {
+                    heroSubheading.style.textDecoration = settings.heroText.subheading.textDecoration;
+                    const underlineButton = heroSubheading.closest('.admin-form-group').querySelector('button[title="Underline"]');
+                    if (underlineButton && settings.heroText.subheading.textDecoration.includes('underline')) {
+                        underlineButton.classList.add('active');
+                    }
+                }
+                
+                // Center alignment
+                heroSubheading.style.textAlign = 'center';
+            }
         }
     }
     
-    // Populate About section
+    // About section
     document.getElementById('instructor-name').value = settings.about.name;
     document.getElementById('instructor-subtitle').value = settings.about.subtitle;
     document.getElementById('instructor-bio').value = settings.about.bio;
     
-    // Apply font settings for biography if they exist
+    // Apply bio formatting
     const biographyFont = document.getElementById('instructor-bio-font');
     const biographySize = document.getElementById('instructor-bio-size');
     const biography = document.getElementById('instructor-bio');
@@ -473,17 +647,43 @@ function applySettingsFromAPI(settings) {
         biography.style.fontSize = settings.about.bioSize;
     }
     
-    // Populate certifications
-    // First clear existing rows
+    if (biography) {
+        // Font weight
+        if (settings.about.bioFontWeight) {
+            biography.style.fontWeight = settings.about.bioFontWeight;
+            const boldButton = biography.closest('.admin-form-group').querySelector('button[title="Bold"]');
+            if (boldButton && (settings.about.bioFontWeight === 'bold' || parseInt(settings.about.bioFontWeight) >= 700)) {
+                boldButton.classList.add('active');
+            }
+        }
+        
+        // Font style
+        if (settings.about.bioFontStyle) {
+            biography.style.fontStyle = settings.about.bioFontStyle;
+            const italicButton = biography.closest('.admin-form-group').querySelector('button[title="Italic"]');
+            if (italicButton && settings.about.bioFontStyle === 'italic') {
+                italicButton.classList.add('active');
+            }
+        }
+        
+        // Text decoration
+        if (settings.about.bioTextDecoration) {
+            biography.style.textDecoration = settings.about.bioTextDecoration;
+            const underlineButton = biography.closest('.admin-form-group').querySelector('button[title="Underline"]');
+            if (underlineButton && settings.about.bioTextDecoration.includes('underline')) {
+                underlineButton.classList.add('active');
+            }
+        }
+    }
+    
+    // Certifications
     const certTable = document.getElementById('certifications-table').getElementsByTagName('tbody')[0];
     while (certTable.firstChild) {
         certTable.removeChild(certTable.firstChild);
     }
     
-    // Add each certification
     settings.certifications.forEach(cert => {
         const newRow = certTable.insertRow();
-        
         const cell1 = newRow.insertCell(0);
         const cell2 = newRow.insertCell(1);
         
@@ -494,22 +694,20 @@ function applySettingsFromAPI(settings) {
         addDeleteCertificationListener(cell2.querySelector('.delete-certification'));
     });
     
-    // Set toggle switches
+    // Toggles
     document.getElementById('toggle-group-classes').checked = settings.sectionToggles.groupClasses;
     document.getElementById('toggle-private-lessons').checked = settings.sectionToggles.privateLessons;
     document.getElementById('toggle-workshops').checked = settings.sectionToggles.workshops;
     document.getElementById('toggle-retreats').checked = settings.sectionToggles.retreats;
-    
     document.getElementById('toggle-retreats-section').checked = settings.sectionToggles.retreatsSection;
     document.getElementById('toggle-schedule-section').checked = settings.sectionToggles.scheduleSection;
     document.getElementById('toggle-membership-section').checked = settings.sectionToggles.membershipSection;
     document.getElementById('toggle-gallery-section').checked = settings.sectionToggles.gallerySection;
     
-    // Set contact information
+    // Contact info
     document.getElementById('contact-address').value = settings.contactInfo.address;
     document.getElementById('contact-phone').value = settings.contactInfo.phone;
     document.getElementById('contact-email').value = settings.contactInfo.email;
-    
     document.getElementById('social-facebook').value = settings.contactInfo.socialMedia.facebook;
     document.getElementById('social-instagram').value = settings.contactInfo.socialMedia.instagram;
     document.getElementById('social-youtube').value = settings.contactInfo.socialMedia.youtube;
