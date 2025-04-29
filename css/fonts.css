@@ -1,0 +1,11 @@
+/**
+ * Custom Font Definitions
+ */
+
+@font-face {
+    font-family: 'Julietta';
+    src: url('../fonts/Julietta-Messie-Demo.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

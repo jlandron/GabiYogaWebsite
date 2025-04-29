@@ -1,0 +1,75 @@
+/**
+ * Header Loader Script
+ * Loads the reusable header component on all pages
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Find the placeholder where the header should be inserted
+    const headerPlaceholder = document.getElementById('header-placeholder');
+    if (!headerPlaceholder) {
+        console.warn('Header placeholder not found in the document');
+        return;
+    }
+    
+    // Fetch the header component
+    fetch('/components/header.html')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch header component');
+            }
+            return response.text();
+        })
+        .then(html => {
+            // Insert the header HTML into the placeholder
+            headerPlaceholder.innerHTML = html;
+            
+            // Initialize mobile menu functionality after header is loaded
+            initMobileMenu();
+            
+            // Add active class to current page nav link
+            highlightCurrentPage();
+        })
+        .catch(error => {
+            console.error('Error loading header component:', error);
+            headerPlaceholder.innerHTML = `<header><nav class="navbar"><div class="logo"><h1>Gabi Yoga</h1></div></nav></header>`;
+        });
+});
+
+/**
+ * Initialize mobile menu toggle functionality
+ */
+function initMobileMenu() {
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    }
+}
+
+/**
+ * Add active class to current page nav link
+ */
+function highlightCurrentPage() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const navLinks = document.querySelectorAll('.nav-links a');
+    
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href').split('#')[0];
+        if ((href === currentPage) || 
+            (href === '' && currentPage === 'index.html') ||
+            (currentPage === 'index.html' && link.getAttribute('href').includes('#home'))) {
+            link.classList.add('active');
+        }
+    });
+}
