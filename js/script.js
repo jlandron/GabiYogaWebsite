@@ -372,6 +372,9 @@ function applyVisibilitySettings(sectionToggles) {
             retreatsCard.style.display = 'none';
         }
     }
+    
+    // Dispatch event to trigger background alternation
+    window.dispatchEvent(new CustomEvent('sectionsVisibilityChanged'));
 }
 
 // Function to apply website settings from API data

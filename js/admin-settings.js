@@ -9,10 +9,34 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCertifications();
     initializePhotoPreview();
     initializeTextEditors();
+    initializeFloatingSaveButton();
     
-    // Initialize save button
+    // Initialize save buttons
     document.getElementById('save-all-settings').addEventListener('click', saveAllSettings);
+    document.getElementById('save-all-settings-fixed').addEventListener('click', saveAllSettings);
 });
+
+/**
+ * Initialize floating save button
+ */
+function initializeFloatingSaveButton() {
+    const fixedButton = document.getElementById('fixed-save-button');
+    const originalButton = document.getElementById('save-all-settings');
+    let lastScrollTop = 0;
+    
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Show button when scrolling down past original button
+        if (scrollTop > originalButton.getBoundingClientRect().bottom + window.scrollY) {
+            fixedButton.classList.add('visible');
+        } else {
+            fixedButton.classList.remove('visible');
+        }
+        
+        lastScrollTop = scrollTop;
+    });
+}
 
 /**
  * Create text editor controls dynamically
@@ -335,6 +359,8 @@ function initializeToggles() {
     toggleSwitches.forEach(toggle => {
         toggle.addEventListener('change', function() {
             console.log(`Toggle ${this.id} changed to: ${this.checked}`);
+            // Trigger event for section background alternation
+            window.dispatchEvent(new CustomEvent('sectionsVisibilityChanged'));
         });
     });
 }
@@ -410,6 +436,8 @@ function saveAllSettings() {
         if (data.success) {
             showNotification();
             updateHomepageText();
+            // Trigger event for section background alternation
+            window.dispatchEvent(new CustomEvent('sectionsVisibilityChanged'));
         } else {
             alert('Error saving settings: ' + data.message);
         }
