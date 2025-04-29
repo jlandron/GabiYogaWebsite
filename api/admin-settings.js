@@ -264,18 +264,18 @@ router.put('/settings/contact', requireAdmin, async (req, res) => {
  */
 router.put('/settings', requireAdmin, async (req, res) => {
   try {
-    const { about, certifications, sectionToggles, contactInfo } = req.body;
+    const { heroText, about, certifications, sectionToggles, contactInfo } = req.body;
     
     // Validation
-    if (!about || !certifications || !sectionToggles || !contactInfo) {
+    if (!heroText || !about || !certifications || !sectionToggles || !contactInfo) {
       return res.status(400).json({
         success: false,
-        message: 'All sections (about, certifications, sectionToggles, contactInfo) are required'
+        message: 'All sections (heroText, about, certifications, sectionToggles, contactInfo) are required'
       });
     }
     
     // Save settings to the database
-    const settings = { about, certifications, sectionToggles, contactInfo };
+    const settings = { heroText, about, certifications, sectionToggles, contactInfo };
     const { WebsiteSettingsOperations } = require('../database/data-access');
     const savedSettings = await WebsiteSettingsOperations.saveSettings(settings);
     

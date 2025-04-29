@@ -306,7 +306,23 @@ class BlogManager {
             }
         });
         
-        // No need for a separate image button handler as it's already handled in the switch statement above
+        // Handle font selector
+        const fontSelector = document.getElementById('font-selector');
+        if (fontSelector) {
+            fontSelector.addEventListener('change', () => {
+                const fontFamily = fontSelector.value;
+                if (!fontFamily) return;
+                
+                // Update the display of the font selector itself to show the selected font
+                fontSelector.style.fontFamily = fontFamily;
+                
+                // Apply font to selected text
+                this.insertFormatting(`<span style="font-family: ${fontFamily}">`, '</span>');
+                
+                // Reset the selector to the default option after applying
+                // fontSelector.selectedIndex = 0;
+            });
+        }
     }
     
     /**

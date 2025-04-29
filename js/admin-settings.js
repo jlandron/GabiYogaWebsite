@@ -17,10 +17,133 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize photo upload preview
     initializePhotoPreview();
+
+    // Initialize text editor controls with default values
+    // Will be updated when settings are loaded from API
+    initializeTextEditors();
     
     // Initialize save button
     document.getElementById('save-all-settings').addEventListener('click', saveAllSettings);
 });
+
+/**
+ * Create text editor controls dynamically
+ * @param {string} containerId - ID of the container where controls should be added
+ * @param {string} targetId - ID of the text element to style
+ * @param {string} defaultFont - Default font family
+ * @param {string} defaultSize - Default font size
+ * @returns {Object} - Object containing the created font and size selectors
+ */
+function createTextEditorControls(containerId, targetId, defaultFont, defaultSize) {
+    const container = document.getElementById(containerId);
+    if (!container) return { fontSelector: null, sizeSelector: null };
+    
+    // Clear existing controls if any
+    container.innerHTML = '';
+    
+    // Create the controls structure
+    const fontSelector = document.createElement('select');
+    fontSelector.id = `${targetId}-font`;
+    fontSelector.className = 'font-selector';
+    
+    const sizeSelector = document.createElement('select');
+    sizeSelector.id = `${targetId}-size`;
+    sizeSelector.className = 'size-selector';
+    
+    // Add font options
+    const fonts = [
+        // Standard fonts
+        { value: "Arial, sans-serif", label: "Arial" },
+        { value: "'Times New Roman', serif", label: "Times New Roman" },
+        { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica Neue" },
+        { value: "Georgia, serif", label: "Georgia" },
+        { value: "'Courier New', monospace", label: "Courier New" },
+        { value: "'Open Sans', sans-serif", label: "Open Sans" },
+        { value: "'Roboto', sans-serif", label: "Roboto" },
+        { value: "'Playfair Display', serif", label: "Playfair Display" },
+        
+        // Cursive and script fonts
+        { value: "'Dancing Script', cursive", label: "Dancing Script" },
+        { value: "'Great Vibes', cursive", label: "Great Vibes" },
+        { value: "'Pacifico', cursive", label: "Pacifico" },
+        { value: "'Sacramento', cursive", label: "Sacramento" },
+        { value: "'Allura', cursive", label: "Allura" },
+        { value: "'Satisfy', cursive", label: "Satisfy" },
+        { value: "'Pinyon Script', cursive", label: "Pinyon Script" },
+        { value: "'Tangerine', cursive", label: "Tangerine" },
+        { value: "'Alex Brush', cursive", label: "Alex Brush" },
+        
+        // Creative and organic fonts
+        { value: "'Amatic SC', cursive", label: "Amatic SC" },
+        { value: "'Caveat', cursive", label: "Caveat" },
+        { value: "'Indie Flower', cursive", label: "Indie Flower" },
+        { value: "'Kalam', cursive", label: "Kalam" },
+        { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" },
+        { value: "'Architects Daughter', cursive", label: "Architects Daughter" },
+        { value: "'Comic Neue', cursive", label: "Comic Neue" },
+        { value: "'Courgette', cursive", label: "Courgette" }
+    ];
+    
+    fonts.forEach(font => {
+        const option = document.createElement('option');
+        option.value = font.value;
+        option.textContent = font.label;
+        option.style.fontFamily = font.value;
+        fontSelector.appendChild(option);
+    });
+    
+    // Add size options - different ranges for headings vs. body text
+    const sizes = targetId.includes('heading') ? 
+        ["16px", "18px", "20px", "24px", "28px", "32px", "36px", "42px", "48px", "56px"] :
+        ["14px", "16px", "18px", "20px", "22px", "24px"];
+    
+    sizes.forEach(size => {
+        const option = document.createElement('option');
+        option.value = size;
+        option.textContent = size;
+        sizeSelector.appendChild(option);
+    });
+    
+    // Add the selectors to the container
+    container.appendChild(fontSelector);
+    container.appendChild(sizeSelector);
+    
+    // Get the target element
+    const targetElement = document.getElementById(targetId);
+    if (!targetElement) return { fontSelector, sizeSelector };
+    
+    // Add event listeners
+    fontSelector.addEventListener('change', function() {
+        targetElement.style.fontFamily = this.value;
+        
+        // Also update the font selector dropdown to show the text in the selected font
+        this.style.fontFamily = this.value;
+    });
+    
+    sizeSelector.addEventListener('change', function() {
+        targetElement.style.fontSize = this.value;
+    });
+    
+    // Set default values
+    fontSelector.value = defaultFont;
+    sizeSelector.value = defaultSize;
+    
+    // Apply initial styles
+    targetElement.style.fontFamily = defaultFont;
+    targetElement.style.fontSize = defaultSize;
+    
+    return { fontSelector, sizeSelector };
+}
+
+/**
+ * Initialize text editors for fonts and sizes
+ */
+function initializeTextEditors() {
+    // Create text editor controls for each editable text element
+    createTextEditorControls('hero-heading-controls', 'hero-heading', "'Playfair Display', serif", "48px");
+    createTextEditorControls('hero-subheading-controls', 'hero-subheading', "'Open Sans', sans-serif", "20px");
+    createTextEditorControls('instructor-bio-controls', 'instructor-bio', "'Open Sans', sans-serif", "16px");
+}
 
 /**
  * Fetch existing settings from the API
@@ -199,11 +322,27 @@ function saveAllSettings() {
  * Collect all settings data from the form
  */
 function collectSettingsData() {
+    // Hero Text
+    const heroTextData = {
+        heading: {
+            text: document.getElementById('hero-heading').value,
+            font: document.getElementById('hero-heading-font').value,
+            size: document.getElementById('hero-heading-size').value
+        },
+        subheading: {
+            text: document.getElementById('hero-subheading').value,
+            font: document.getElementById('hero-subheading-font').value,
+            size: document.getElementById('hero-subheading-size').value
+        }
+    };
+
     // About section
     const aboutData = {
         name: document.getElementById('instructor-name').value,
         subtitle: document.getElementById('instructor-subtitle').value,
-        bio: document.getElementById('instructor-bio').value
+        bio: document.getElementById('instructor-bio').value,
+        bioFont: document.getElementById('instructor-bio-font').value,
+        bioSize: document.getElementById('instructor-bio-size').value
     };
     
     // Certifications
@@ -241,6 +380,7 @@ function collectSettingsData() {
     
     // Return compiled settings object
     return {
+        heroText: heroTextData,
         about: aboutData,
         certifications: certifications,
         sectionToggles: sectionToggles,
@@ -268,13 +408,68 @@ function showNotification() {
  * This would be used when the page loads to populate the form with existing settings
  */
 function applySettingsFromAPI(settings) {
-    // This function would be called with the settings data from the API
-    // For this demo, it's not being called but would be used in a real application
+    // Populate Hero Text section with text and font settings
+    if (settings.heroText) {
+        if (settings.heroText.heading) {
+            const heroHeading = document.getElementById('hero-heading');
+            const heroHeadingFont = document.getElementById('hero-heading-font');
+            const heroHeadingSize = document.getElementById('hero-heading-size');
+            
+            if (heroHeading && settings.heroText.heading.text) {
+                heroHeading.value = settings.heroText.heading.text;
+            }
+            
+            if (heroHeadingFont && settings.heroText.heading.font) {
+                heroHeadingFont.value = settings.heroText.heading.font;
+                heroHeading.style.fontFamily = settings.heroText.heading.font;
+            }
+            
+            if (heroHeadingSize && settings.heroText.heading.size) {
+                heroHeadingSize.value = settings.heroText.heading.size;
+                heroHeading.style.fontSize = settings.heroText.heading.size;
+            }
+        }
+        
+        if (settings.heroText.subheading) {
+            const heroSubheading = document.getElementById('hero-subheading');
+            const heroSubheadingFont = document.getElementById('hero-subheading-font');
+            const heroSubheadingSize = document.getElementById('hero-subheading-size');
+            
+            if (heroSubheading && settings.heroText.subheading.text) {
+                heroSubheading.value = settings.heroText.subheading.text;
+            }
+            
+            if (heroSubheadingFont && settings.heroText.subheading.font) {
+                heroSubheadingFont.value = settings.heroText.subheading.font;
+                heroSubheading.style.fontFamily = settings.heroText.subheading.font;
+            }
+            
+            if (heroSubheadingSize && settings.heroText.subheading.size) {
+                heroSubheadingSize.value = settings.heroText.subheading.size;
+                heroSubheading.style.fontSize = settings.heroText.subheading.size;
+            }
+        }
+    }
     
     // Populate About section
     document.getElementById('instructor-name').value = settings.about.name;
     document.getElementById('instructor-subtitle').value = settings.about.subtitle;
     document.getElementById('instructor-bio').value = settings.about.bio;
+    
+    // Apply font settings for biography if they exist
+    const biographyFont = document.getElementById('instructor-bio-font');
+    const biographySize = document.getElementById('instructor-bio-size');
+    const biography = document.getElementById('instructor-bio');
+    
+    if (biographyFont && settings.about.bioFont) {
+        biographyFont.value = settings.about.bioFont;
+        biography.style.fontFamily = settings.about.bioFont;
+    }
+    
+    if (biographySize && settings.about.bioSize) {
+        biographySize.value = settings.about.bioSize;
+        biography.style.fontSize = settings.about.bioSize;
+    }
     
     // Populate certifications
     // First clear existing rows

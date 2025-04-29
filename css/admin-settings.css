@@ -1,5 +1,41 @@
 /* Admin Settings Styles */
 
+/* Text Editor Controls */
+.text-editor-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.font-selector,
+.size-selector {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+}
+
+.font-selector {
+    flex-grow: 1;
+}
+
+.font-selector option {
+    padding: 8px;
+    min-height: 24px;
+    display: block;
+    font-size: 16px; /* Consistent size for better readability */
+}
+
+/* Style for the selected option in the dropdown */
+.font-selector:focus option:checked {
+    background-color: #f0f0f0;
+    font-weight: normal; /* Prevents distortion of font appearance */
+}
+
+.size-selector {
+    width: 80px;
+}
+
 /* Toggle Switch */
 .toggle-switch {
     position: relative;

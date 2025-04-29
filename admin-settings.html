@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/admin-styles.css">
     <link rel="stylesheet" href="css/admin-settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="admin-container">
@@ -30,6 +31,27 @@
                     </div>
                 </div>
                 
+                <!-- Hero Text Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Homepage Hero Text</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="hero-text-form">
+                        <div class="admin-form-group">
+                            <label for="hero-heading">Main Heading</label>
+                            <div id="hero-heading-controls" class="text-editor-controls"></div>
+                            <input type="text" id="hero-heading" class="admin-form-control" value="Find Your Inner Peace" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="hero-subheading">Subheading</label>
+                            <div id="hero-subheading-controls" class="text-editor-controls"></div>
+                            <input type="text" id="hero-subheading" class="admin-form-control" value="Join our community and transform your mind, body, and spirit" required>
+                        </div>
+                    </form>
+                </div>
+                
                 <!-- About Me Section -->
                 <div class="admin-panel">
                     <div class="admin-panel-header">
@@ -49,6 +71,7 @@
                         
                         <div class="admin-form-group">
                             <label for="instructor-bio">Biography</label>
+                            <div id="instructor-bio-controls" class="text-editor-controls"></div>
                             <textarea id="instructor-bio" class="admin-form-control" rows="6" required>Welcome to Gabi Yoga! I've been practicing yoga for over 10 years and teaching for 5. My journey began when I was seeking balance in my hectic life, and yoga provided the perfect sanctuary.
 
 I specialize in Vinyasa, Hatha, and Restorative yoga practices. My teaching philosophy centers around making yoga accessible to practitioners of all levels while honoring its traditional roots.
