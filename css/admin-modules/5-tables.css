@@ -1,0 +1,111 @@
+/*******************************
+ * 5. TABLES
+ *******************************/
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table th {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.admin-table-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    color: var(--text-muted);
+    transition: color 0.2s;
+    padding: var(--spacing-xs);
+}
+
+.admin-table-actions button.view:hover,
+.admin-table-actions button.view-session:hover {
+    color: var(--primary-color);
+}
+
+.admin-table-actions button.edit:hover,
+.admin-table-actions button.edit-class:hover {
+    color: var(--warning-color);
+}
+
+.admin-table-actions button.delete:hover,
+.admin-table-actions button.delete-class:hover,
+.admin-table-actions button.remove-blocked-date:hover,
+.admin-table-actions button.cancel-session:hover {
+    color: var(--danger-color);
+}
+
+.admin-table-actions button.confirm-session:hover {
+    color: var(--success-color);
+}
+
+.admin-table-actions button.reschedule-session:hover {
+    color: var(--info-color);
+}
+
+.admin-table-responsive {
+    overflow-x: auto;
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    margin-bottom: 2rem;
+}
+
+/* Blog Posts Table Styles */
+.blog-posts-table td {
+    vertical-align: middle;
+}
+
+.blog-posts-table .post-title {
+    font-weight: 600;
+}
+
+.blog-posts-table .post-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.blog-posts-table .post-title a:hover {
+    color: var(--primary-color);
+}
+
+/* Loading & Error States */
+.admin-table-loading,
+.admin-table-error,
+.admin-table-empty,
+.blog-posts-empty {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.blog-posts-empty {
+    padding: 40px;
+    text-align: center;
+    background-color: var(--hover-bg);
+    border-radius: var(--border-radius-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.admin-table-error {
+    color: var(--danger-color);
+}

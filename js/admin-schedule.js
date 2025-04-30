@@ -511,58 +511,6 @@ async function loadTemplateOptions() {
 /**
  * Save class data
  */
-// Add a direct debug method that bypasses the AdminApiService wrapper
-async function directAPICall(endpoint, method, data) {
-    console.log(`Making direct API call to ${endpoint} with method ${method}`);
-    console.log('Data:', data);
-    
-    const token = TokenService.getToken();
-    if (!token) {
-        console.error('No auth token found!');
-        showErrorMessage('Authentication token missing. Please log in again.');
-        return null;
-    }
-    
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-    
-    try {
-        const response = await fetch(endpoint, {
-            method: method,
-            headers: headers,
-            credentials: 'include',
-            body: data ? JSON.stringify(data) : undefined
-        });
-        
-        const responseData = await response.json();
-        console.log('API Response:', responseData);
-        
-        if (!response.ok) {
-            throw new Error(responseData.message || `API request failed with status ${response.status}`);
-        }
-        
-        return responseData;
-    } catch (error) {
-        console.error('Direct API call error:', error);
-        throw error;
-    }
-}
-
-// Override the AdminApiService.createClass method with our custom implementation for debugging
-const originalCreateClass = AdminApiService.createClass;
-AdminApiService.createClass = async function(classData) {
-    console.log('Custom createClass called with data:', classData);
-    try {
-        // Try the direct API call first
-        return await directAPICall(API_ENDPOINTS.classes, 'POST', classData);
-    } catch (error) {
-        console.error('Error in custom createClass:', error);
-        throw error;
-    }
-};
-
 async function saveClass(form) {
     try {
         console.log('Form submission starting'); // Debug log

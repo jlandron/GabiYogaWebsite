@@ -1,0 +1,298 @@
+/*******************************
+ * 14. PRICING SPECIFIC STYLES
+ *******************************/
+/* Pricing Plans */
+.pricing-plans {
+    margin-bottom: var(--spacing-xl);
+}
+
+.pricing-plan-card {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+}
+
+.pricing-plan-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pricing-plan-title {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+}
+
+.pricing-plan-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.pricing-plan-content {
+    padding: var(--spacing-lg);
+}
+
+.pricing-plan-price {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: var(--spacing-md);
+}
+
+.pricing-price-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-right: 5px;
+}
+
+.pricing-price-period {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--spacing-lg) 0;
+}
+
+.pricing-feature-item {
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.pricing-feature-item:last-child {
+    border-bottom: none;
+}
+
+.pricing-feature-item i {
+    margin-right: var(--spacing-sm);
+    color: var(--primary-color);
+}
+
+/* Pricing Features */
+.pricing-feature-editor {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+}
+
+.pricing-feature-header {
+    background-color: var(--hover-bg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pricing-feature-header h3 {
+    margin: 0;
+}
+
+.pricing-feature-items {
+    padding: var(--spacing-md);
+}
+
+.pricing-feature-item-editor {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-xs);
+}
+
+.pricing-feature-item-editor:hover {
+    background-color: var(--hover-bg);
+}
+
+.feature-drag-handle {
+    cursor: move;
+    padding: var(--spacing-xs);
+    color: var(--text-muted);
+}
+
+.feature-text {
+    flex: 1;
+    margin: 0 var(--spacing-md);
+}
+
+.feature-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+/* Pricing Availability & Schedule */
+.pricing-availability {
+    margin-top: var(--spacing-xl);
+}
+
+.calendar-view-toggle,
+.pricing-status-toggle {
+    display: flex;
+    margin-bottom: var(--spacing-md);
+}
+
+.calendar-view-toggle button,
+.pricing-status-toggle button {
+    flex: 1;
+    background-color: var(--hover-bg);
+    border: 1px solid var(--border-dark);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    transition: all 0.2s;
+}
+
+.calendar-view-toggle button:first-child,
+.pricing-status-toggle button:first-child {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.calendar-view-toggle button:last-child,
+.pricing-status-toggle button:last-child {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.calendar-view-toggle button.active,
+.pricing-status-toggle button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Pricing Calendar & Date Blocking */
+.pricing-calendar {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+}
+
+.calendar-header {
+    background-color: var(--hover-bg);
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.calendar-title {
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+}
+
+.calendar-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: var(--border-color);
+}
+
+.calendar-day-header {
+    background-color: var(--hover-bg);
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: 600;
+}
+
+.calendar-day {
+    background-color: white;
+    min-height: 100px;
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: var(--primary-bg);
+}
+
+.calendar-day.other-month {
+    opacity: 0.5;
+}
+
+.calendar-day.blocked {
+    background-color: var(--danger-bg);
+}
+
+.calendar-day.today {
+    box-shadow: inset 0 0 0 2px var(--primary-color);
+}
+
+.day-number {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    margin-bottom: var(--spacing-xs);
+}
+
+.calendar-day.today .day-number {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Blocked Dates List */
+.blocked-dates-list {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+}
+
+.blocked-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.blocked-date-item:last-child {
+    border-bottom: none;
+}
+
+.blocked-date-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.blocked-date-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.blocked-date-range {
+    font-weight: 500;
+}
+
+.blocked-date-reason {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}

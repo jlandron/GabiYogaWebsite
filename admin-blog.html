@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Posts - Gabi Yoga Admin</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/account-styles.css">
     <link rel="stylesheet" href="css/admin-unified.css">
     <link rel="stylesheet" href="css/fonts.css">
+    <!-- Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-modules/resizable-image.css">
+    <link rel="stylesheet" href="css/admin-modules/blog-image-gallery.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/admin-unified.css">
+    
 </head>
 <body>
     <div class="admin-container">
@@ -107,68 +109,20 @@
                             
                             <div class="admin-form-group">
                                 <label for="post-content">Content</label>
-                                <div class="editor-toolbar">
-                                    <button type="button" data-format="bold" title="Bold"><i class="fas fa-bold"></i></button>
-                                    <button type="button" data-format="italic" title="Italic"><i class="fas fa-italic"></i></button>
-                                    <button type="button" data-format="underline" title="Underline"><i class="fas fa-underline"></i></button>
-                                    <span class="toolbar-divider"></span>
-                                    <select id="font-selector" class="font-selector" title="Font Family">
-                                        <option value="">Font</option>
-                                        <!-- Custom Fonts -->
-                                        <option value="'Julietta', serif" style="font-family: 'Julietta', serif">Julietta</option>
-                                        <option value="'Themunday', serif" style="font-family: 'Themunday', serif">Themunday</option>
-                                        
-                                        <!-- Site Fonts -->
-                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif">Playfair Display</option>
-                                        <option value="'Open Sans', sans-serif" style="font-family: 'Open Sans', sans-serif">Open Sans</option>
-                                        
-                                        <!-- Standard Fonts -->
-                                        <option value="Arial, sans-serif" style="font-family: Arial, sans-serif">Arial</option>
-                                        <option value="'Times New Roman', serif" style="font-family: 'Times New Roman', serif">Times New Roman</option>
-                                        <option value="'Helvetica Neue', Helvetica, sans-serif" style="font-family: 'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option>
-                                        <option value="Georgia, serif" style="font-family: Georgia, serif">Georgia</option>
-                                        <option value="'Courier New', monospace" style="font-family: 'Courier New', monospace">Courier New</option>
-                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif">Roboto</option>
-                                        
-                                        <!-- Decorative Fonts -->
-                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive">Dancing Script</option>
-                                        <option value="'Great Vibes', cursive" style="font-family: 'Great Vibes', cursive">Great Vibes</option>
-                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive">Pacifico</option>
-                                        <option value="'Sacramento', cursive" style="font-family: 'Sacramento', cursive">Sacramento</option>
-                                        <option value="'Allura', cursive" style="font-family: 'Allura', cursive">Allura</option>
-                                        <option value="'Satisfy', cursive" style="font-family: 'Satisfy', cursive">Satisfy</option>
-                                        <option value="'Pinyon Script', cursive" style="font-family: 'Pinyon Script', cursive">Pinyon Script</option>
-                                        <option value="'Tangerine', cursive" style="font-family: 'Tangerine', cursive">Tangerine</option>
-                                        <option value="'Alex Brush', cursive" style="font-family: 'Alex Brush', cursive">Alex Brush</option>
-                                        <option value="'Amatic SC', cursive" style="font-family: 'Amatic SC', cursive">Amatic SC</option>
-                                        <option value="'Caveat', cursive" style="font-family: 'Caveat', cursive">Caveat</option>
-                                        <option value="'Indie Flower', cursive" style="font-family: 'Indie Flower', cursive">Indie Flower</option>
-                                        <option value="'Kalam', cursive" style="font-family: 'Kalam', cursive">Kalam</option>
-                                        <option value="'Shadows Into Light', cursive" style="font-family: 'Shadows Into Light', cursive">Shadows Into Light</option>
-                                        <option value="'Architects Daughter', cursive" style="font-family: 'Architects Daughter', cursive">Architects Daughter</option>
-                                        <option value="'Comic Neue', cursive" style="font-family: 'Comic Neue', cursive">Comic Neue</option>
-                                        <option value="'Courgette', cursive" style="font-family: 'Courgette', cursive">Courgette</option>
-                                    </select>
-                                    <span class="toolbar-divider"></span>
-                                    <button type="button" data-format="h2" title="Heading 2"><i class="fas fa-heading"></i>2</button>
-                                    <button type="button" data-format="h3" title="Heading 3"><i class="fas fa-heading"></i>3</button>
-                                    <button type="button" data-format="h4" title="Heading 4"><i class="fas fa-heading"></i>4</button>
-                                    <span class="toolbar-divider"></span>
-                                    <button type="button" data-format="ul" title="Bullet List"><i class="fas fa-list-ul"></i></button>
-                                    <button type="button" data-format="ol" title="Numbered List"><i class="fas fa-list-ol"></i></button>
-                                    <span class="toolbar-divider"></span>
-                                    <button type="button" data-format="link" title="Insert Link"><i class="fas fa-link"></i></button>
-                                    <button type="button" data-format="image" title="Insert Image"><i class="fas fa-image"></i></button>
-                                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
-                                </div>
+                                    <!-- Quill toolbar will be inserted here automatically -->
                                 <textarea id="post-content" class="admin-form-control post-editor" rows="15" placeholder="Write your post content here..."></textarea>
                             </div>
                             
                             <div class="admin-form-group" id="blog-images-container" style="display: none;">
                                 <label>Image Gallery</label>
-                                <p class="form-hint">Images that are included in your post</p>
+                                <p class="form-hint">Images that are included in your post. Click an image to insert it into the content at cursor position.</p>
                                 <div class="blog-images-gallery" id="blog-images-gallery">
                                     <!-- Images will be displayed here when added to the post -->
+                                </div>
+                                <div class="image-gallery-actions">
+                                    <button type="button" class="admin-btn admin-btn-sm admin-btn-secondary" id="add-more-images-btn">
+                                        <i class="fas fa-plus"></i> Add More Images
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -302,6 +256,11 @@
     <script src="js/admin-sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="js/admin-quill-editor.js"></script>
+    <script src="js/admin-quill-resizable-image.js"></script>
+    <script src="js/admin-image-upload-handler.js"></script>
     <script src="js/admin-blog.js"></script>
 </body>
 </html>

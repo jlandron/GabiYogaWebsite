@@ -1,0 +1,110 @@
+/*******************************
+ * 6. BUTTONS
+ *******************************/
+.admin-btn,
+.admin-btn-primary,
+.admin-btn-secondary,
+.admin-btn-danger {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    border: none;
+    font-size: var(--font-size-base);
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-family: var(--font-family);
+}
+
+.admin-btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.admin-btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.admin-btn-secondary {
+    background-color: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.admin-btn-secondary:hover {
+    background-color: var(--hover-bg);
+}
+
+.admin-btn-danger {
+    background-color: white;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+.admin-btn-danger:hover {
+    background-color: var(--danger-bg);
+}
+
+.admin-btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    transition: color 0.2s;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-btn-icon:hover {
+    color: var(--primary-color);
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    padding-right: 40px;
+}
+
+.search-box .search-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.search-box .search-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Fixed Save Button */
+.fixed-save-button {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 999;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateY(var(--spacing-lg));
+    pointer-events: none;
+}
+
+.fixed-save-button.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}

@@ -1,0 +1,512 @@
+/*******************************
+ * 10. LOGIN & ACCOUNT STYLES
+ *******************************/
+
+/* Account Section */
+.account-section {
+    min-height: calc(100vh - 80px);
+    padding-top: 120px;
+    padding-bottom: 60px;
+    background-color: var(--secondary-color);
+}
+
+.account-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Account Card */
+.account-card {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    padding: 30px;
+    margin-bottom: 40px;
+}
+
+.account-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.account-header h2 {
+    margin-bottom: 10px;
+}
+
+.account-header p {
+    color: var(--text-light);
+    font-size: var(--font-size-base);
+}
+
+/* Account Forms */
+.account-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}
+
+.btn-full-width {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Secondary Button Style */
+.btn-secondary {
+    background-color: #fff;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-3px);
+}
+
+/* Google Sign-in Button */
+.btn-google {
+    background-color: #fff;
+    color: #757575;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    padding-left: 50px;
+}
+
+.btn-google:hover {
+    background-color: #f8f8f8;
+    color: #4285f4;
+    transform: translateY(-3px);
+}
+
+.btn-google i {
+    font-size: 1.2rem;
+    color: #4285f4;
+    position: absolute;
+    left: 15px;
+}
+
+/* Password Visibility Toggle */
+.password-container {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.toggle-password:hover {
+    color: var(--primary-color);
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    height: 5px;
+    margin-top: 8px;
+    border-radius: var(--border-radius-sm);
+    background-color: #eee;
+    overflow: hidden;
+}
+
+.password-strength-meter {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s, background-color 0.3s;
+}
+
+.password-strength-meter.weak {
+    width: 25%;
+    background-color: #e74c3c;
+}
+
+.password-strength-meter.medium {
+    width: 50%;
+    background-color: #f39c12;
+}
+
+.password-strength-meter.strong {
+    width: 75%;
+    background-color: #3498db;
+}
+
+.password-strength-meter.very-strong {
+    width: 100%;
+    background-color: #2ecc71;
+}
+
+.password-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-light);
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Form Separator */
+.form-separator {
+    text-align: center;
+    margin: 30px 0 20px;
+    position: relative;
+}
+
+.form-separator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    z-index: 0;
+}
+
+.form-separator span {
+    position: relative;
+    background-color: #fff;
+    padding: 0 15px;
+    color: var(--text-light);
+    z-index: 1;
+}
+
+/* Toggle between login and registration */
+.hidden {
+    display: none;
+}
+
+/* Forgot password link */
+.forgot-password {
+    margin-left: auto;
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.forgot-password:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Checkbox group with flexbox */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Terms & Conditions Modal */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-footer {
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    text-align: right;
+}
+
+.terms-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+}
+
+.terms-content h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: var(--font-size-md);
+}
+
+.terms-content h3:first-child {
+    margin-top: 0;
+}
+
+.terms-content p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: var(--font-size-sm);
+    color: var(--text-dark);
+}
+
+/* Dashboard Styles */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.welcome-message h2 {
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.dashboard-actions .btn {
+    margin-left: 10px;
+}
+
+/* Dashboard Navigation */
+.dashboard-nav {
+    display: flex;
+    background-color: var(--primary-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.dashboard-nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    color: #fff;
+    transition: var(--transition);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.dashboard-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-nav-item.active {
+    background-color: var(--accent-color);
+}
+
+/* Dashboard Content Panels */
+.dashboard-content {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+}
+
+.dashboard-panel {
+    display: none;
+}
+
+.dashboard-panel.active {
+    display: block;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.panel-header h3 {
+    margin-bottom: 0;
+}
+
+/* Class Booking List */
+.booking-list, 
+.membership-list {
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.booking-item, 
+.membership-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition);
+}
+
+.booking-item:last-child, 
+.membership-item:last-child {
+    border-bottom: none;
+}
+
+.booking-item:hover, 
+.membership-item:hover {
+    background-color: #f9f9f9;
+}
+
+.booking-details, 
+.membership-details {
+    flex: 1;
+}
+
+.booking-title, 
+.membership-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.booking-info, 
+.membership-info {
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+    display: flex;
+    gap: 15px;
+}
+
+.booking-actions, 
+.membership-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.booking-actions button, 
+.membership-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary-color);
+    font-size: var(--font-size-base);
+    transition: var(--transition);
+}
+
+.booking-actions button:hover, 
+.membership-actions button:hover {
+    color: var(--accent-color);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+}
+
+/* Profile section */
+.profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 20px;
+    position: relative;
+    background-color: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image .upload-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 5px;
+    font-size: var(--font-size-xs);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    opacity: 0;
+}
+
+.profile-image:hover .upload-overlay {
+    opacity: 1;
+}
+
+.profile-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        grid-gap: 0;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .dashboard-actions {
+        margin-top: 15px;
+        width: 100%;
+        display: flex;
+    }
+    
+    .dashboard-actions .btn {
+        flex: 1;
+        margin: 0 5px;
+        text-align: center;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .dashboard-nav {
+        flex-direction: column;
+    }
+    
+    .booking-item, 
+    .membership-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .booking-actions, 
+    .membership-actions {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .terms-content {
+        max-height: 300px;
+    }
+}

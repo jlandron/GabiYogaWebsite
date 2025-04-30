@@ -1,0 +1,357 @@
+/*******************************
+ * 16. PURCHASE & PAYMENT STYLES
+ *******************************/
+
+/* Payment Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.close-modal:hover {
+  color: var(--primary-color);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.form-group input, 
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  transition: var(--transition);
+}
+
+.form-group input:focus, 
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(110, 124, 144, 0.2);
+}
+
+.form-group input[readonly] {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.card-details {
+  display: flex;
+  gap: 15px;
+}
+
+.expiry-date {
+  flex: 1;
+}
+
+.cvv {
+  flex: 0 0 100px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
+.form-note {
+  margin-top: 15px;
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+  text-align: center;
+}
+
+.payment-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.payment-section h3 {
+  margin-bottom: 15px;
+  color: var(--text-dark);
+}
+
+/* Stripe Elements Styling */
+#payment-element-container {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.payment-errors {
+  display: none;
+  color: var(--danger-color);
+  background-color: rgba(223, 27, 65, 0.1);
+  border-left: 3px solid var(--danger-color);
+  padding: 10px 15px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-size: var(--font-size-sm);
+  margin-bottom: 15px;
+}
+
+.payment-success-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.payment-success-content {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: zoomIn 0.4s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.payment-success-content i {
+  font-size: 60px;
+  color: var(--success-color);
+  margin-bottom: 20px;
+}
+
+.payment-success-content h2 {
+  color: var(--text-dark);
+  margin-bottom: 15px;
+}
+
+.payment-success-content p {
+  margin-bottom: 25px;
+}
+
+.payment-success-content button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.payment-success-content button:hover {
+  background-color: var(--accent-color);
+}
+
+/* Payment Result Pages Styles */
+.payment-result-container {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+}
+
+.payment-result {
+  max-width: 700px;
+  width: 100%;
+  background-color: white;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.icon-container {
+  margin-bottom: 30px;
+}
+
+.payment-result.success .icon-container i {
+  font-size: 80px;
+  color: var(--success-color);
+}
+
+.payment-result.cancelled .icon-container i {
+  font-size: 80px;
+  color: var(--danger-color);
+}
+
+.payment-result h1 {
+  margin-bottom: 20px;
+  color: var(--text-dark);
+}
+
+.payment-result p.message {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: var(--text-medium);
+}
+
+.next-steps {
+  background-color: #f5f7fa;
+  padding: 20px 30px;
+  border-radius: var(--border-radius);
+  margin: 30px 0;
+  text-align: left;
+}
+
+.next-steps h3 {
+  margin-bottom: 15px;
+  color: var(--text-dark);
+}
+
+.next-steps ul {
+  padding-left: 20px;
+}
+
+.next-steps li {
+  margin-bottom: 8px;
+  color: var(--text-medium);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 12px 25px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-color);
+}
+
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: var(--text-dark);
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+  background-color: #e9e9e9;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .modal-content {
+    margin: 10% auto;
+    padding: 20px;
+    width: 95%;
+  }
+  
+  .card-details {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .payment-result {
+    padding: 25px;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .payment-success-content {
+    padding: 25px;
+  }
+  
+  .next-steps {
+    padding: 15px;
+  }
+  
+  .payment-result h1 {
+    font-size: 1.7rem;
+  }
+  
+  .payment-result p.message {
+    font-size: 1rem;
+  }
+}

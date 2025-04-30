@@ -1,0 +1,476 @@
+/*******************************
+ * 15. CALENDAR & SCHEDULING
+ *******************************/
+/* Weekly Calendar */
+.weekly-calendar {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
+    padding: 0 20px 20px;
+    overflow-x: auto;
+}
+
+.weekly-calendar-header {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    background-color: var(--panel-bg);
+    border-bottom: 2px solid var(--primary-color);
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-top: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.day-column-header {
+    padding: var(--spacing-md) var(--spacing-sm);
+    text-align: center;
+    font-weight: 600;
+    background-color: #7ba69a;
+    color: white;
+    border-radius: 6px 6px 0 0;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.day-column-header:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.day-time-slot {
+    background-color: #ffffff;
+    border-radius: 6px;
+    min-height: 80px;
+    position: relative;
+    border: 1px solid #eaeaea;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.day-time-slot:hover {
+    border-color: #7ba69a;
+    box-shadow: 0 0 0 1px rgba(123, 166, 154, 0.3);
+    background-color: #f9fafb;
+}
+
+.day-time-slot.empty:hover::after {
+    content: "+ Add Class";
+    color: #7ba69a;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 4px 12px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.time-column-header {
+    padding: 10px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.weekly-calendar-body {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    min-height: 600px;
+    gap: 8px;
+    background-color: var(--panel-bg);
+}
+
+.time-slot {
+    padding: 10px;
+    text-align: right;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    height: 80px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.time-slot-row {
+    display: contents;
+}
+
+.time-slot-row:nth-child(odd) .day-time-slot {
+    background-color: #fbfbfb;
+}
+
+.time-slot-row:nth-child(even) .day-time-slot {
+    background-color: #ffffff;
+}
+
+.day-column {
+    position: relative;
+    background-color: var(--panel-bg);
+}
+
+.calendar-hour-cell {
+    height: 80px;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #eaeaea;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-hour-cell:hover {
+    border-color: #7ba69a;
+    box-shadow: 0 0 0 1px rgba(123, 166, 154, 0.3);
+    background-color: #f9fafb;
+}
+
+.calendar-hour-cell::after {
+    content: "+ Add Class";
+    color: #7ba69a;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 4px 12px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.calendar-hour-cell:hover::after {
+    opacity: 1;
+}
+
+.schedule-class {
+    position: absolute;
+    width: calc(100% - 12px);
+    left: 6px;
+    border-radius: 8px;
+    padding: 12px;
+    background-color: white;
+    border-left: 4px solid #7ba69a;
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease-in-out;
+    z-index: 5;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.schedule-class:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translate(0, -2px) scale(1.02);
+    z-index: 10;
+}
+
+.schedule-class.yoga-flow {
+    border-left-color: #7ba69a;
+    background-color: rgba(123, 166, 154, 0.03);
+}
+
+.schedule-class.meditation {
+    border-left-color: #6b7db3;
+    background-color: rgba(107, 125, 179, 0.03);
+}
+
+.schedule-class.yin {
+    border-left-color: #a67b98;
+    background-color: rgba(166, 123, 152, 0.03);
+}
+
+.schedule-class.power-yoga {
+    border-left-color: #a67b7b;
+    background-color: rgba(166, 123, 123, 0.03);
+}
+
+.schedule-class.restorative {
+    border-left-color: #7ba684;
+    background-color: rgba(123, 166, 132, 0.03);
+}
+
+/* Default class style if no specific class type is set */
+.schedule-class:not(.yoga-flow):not(.meditation):not(.yin):not(.power-yoga):not(.restorative) {
+    border-left-color: var(--primary-color);
+}
+
+.calendar-class-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.calendar-class-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.calendar-class-details span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.calendar-class-details i {
+    font-size: 11px;
+    color: #7ba69a;
+}
+
+.calendar-class-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    padding: 2px;
+    box-shadow: var(--shadow-sm);
+}
+
+.schedule-class:hover .calendar-class-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.calendar-class-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #777;
+    transition: all 0.2s;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.calendar-class-actions button.edit-class:hover {
+    color: #f39c12;
+    background-color: rgba(243, 156, 18, 0.1);
+}
+
+.calendar-class-actions button.delete-class:hover {
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.current-time-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: red;
+    z-index: 10;
+}
+
+.current-time-indicator::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+}
+
+/* Class Templates */
+.class-template-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-sm);
+    transition: all 0.2s;
+}
+
+.class-template-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.class-template-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.class-template-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.class-template-details {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.class-template-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* Schedule Builder */
+.schedule-builder {
+    padding: var(--spacing-lg);
+}
+
+.schedule-tools {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    background-color: var(--panel-bg);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.schedule-filters {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.schedule-date-navigation {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.schedule-date-navigation button {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.schedule-date-navigation button:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.current-week {
+    font-weight: 600;
+    min-width: 200px;
+    text-align: center;
+    color: var(--primary-dark);
+}
+
+/* Class Sessions */
+.session-list {
+    margin-top: var(--spacing-xl);
+}
+
+.session-item {
+    display: flex;
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+
+.session-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.session-color-tag {
+    width: 8px;
+}
+
+.session-item.confirmed .session-color-tag {
+    background-color: var(--success-color);
+}
+
+.session-item.pending .session-color-tag {
+    background-color: var(--warning-color);
+}
+
+.session-item.cancelled .session-color-tag {
+    background-color: var(--danger-color);
+}
+
+.session-info {
+    padding: var(--spacing-md) var(--spacing-lg);
+    flex: 1;
+}
+
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-sm);
+}
+
+.session-title {
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+    margin: 0 0 5px 0;
+}
+
+.session-meta {
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-sm) 0;
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.session-status {
+    align-self: flex-start;
+}
+
+.session-details {
+    display: flex;
+    gap: var(--spacing-xl);
+}
+
+.session-attendee {
+    flex: 1;
+}
+
+.session-attendee-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.session-attendee-info {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.session-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--hover-bg);
+}

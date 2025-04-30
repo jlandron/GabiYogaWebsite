@@ -337,6 +337,12 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 0 20px;
+    padding-top: 100px; /* Add padding to account for fixed header */
+}
+
+/* Style for blog post pages specifically */
+body.blog-post-page .header {
+    position: absolute; /* Change from fixed to absolute for blog post pages */
 }
 
 .back-to-posts {
@@ -369,7 +375,10 @@
 
 .post-header {
     margin-bottom: 30px;
+    margin-top: 20px;
     text-align: center;
+    position: relative; /* Ensure proper stacking context */
+    z-index: 1; /* Lower than the header but higher than regular content */
 }
 
 .post-title {

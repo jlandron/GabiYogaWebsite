@@ -1,0 +1,132 @@
+/*******************************
+ * 8. MODALS & POPUPS
+ *******************************/
+
+/* Modal Base */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    overflow: auto;
+}
+
+/* Show class for modal display */
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    animation: modalFadeIn 0.4s;
+}
+
+/* Workshop Modal Content - wider for better display */
+.workshop-modal-content {
+    max-width: 900px;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    text-align: right;
+}
+
+/* Close Button */
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--accent-color);
+}
+
+/* Modal Animation */
+@keyframes modalFadeIn {
+    from {opacity: 0; transform: translateY(-50px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* Terms & Conditions Modal */
+.terms-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+}
+
+.terms-content h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: var(--font-size-md);
+}
+
+.terms-content h3:first-child {
+    margin-top: 0;
+}
+
+.terms-content p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: var(--font-size-sm);
+    color: var(--text-dark);
+}
+
+/* Responsive Modals */
+@media screen and (max-width: 768px) {
+    .modal-content {
+        margin-top: 15%;
+    }
+    
+    .workshop-modal-content {
+        width: 95%;
+    }
+    
+    .terms-content {
+        max-height: 300px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .modal-content {
+        margin-top: 20%;
+        padding: 20px;
+    }
+}

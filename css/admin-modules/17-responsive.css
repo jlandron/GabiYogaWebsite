@@ -1,0 +1,243 @@
+/*******************************
+ * 17. RESPONSIVE ADJUSTMENTS
+ *******************************/
+@media (max-width: 1200px) {
+    /* Adjustments for large screens (notebooks, small desktops) */
+    .admin-content {
+        padding: var(--spacing-lg);
+    }
+    
+    .blog-editor-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .blog-editor-sidebar {
+        max-width: none;
+        margin-top: var(--spacing-lg);
+    }
+    
+    .blog-editor-content {
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .photo-detail-container {
+        flex-direction: column;
+    }
+    
+    .photo-detail-image {
+        max-width: none;
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .session-details {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .member-profiles {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    /* Adjustments for medium screens (tablets) */
+    .admin-form-row {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .admin-cards {
+        flex-direction: column;
+    }
+    
+    .admin-card {
+        min-width: 100%;
+    }
+    
+    .blog-post-card {
+        flex-direction: column;
+    }
+    
+    .blog-post-image {
+        width: 100%;
+        max-width: none;
+        height: 200px;
+    }
+    
+    .session-item {
+        flex-direction: column;
+    }
+    
+    .session-color-tag {
+        height: 6px;
+        width: 100%;
+    }
+    
+    .session-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    
+    .weekly-calendar-header,
+    .weekly-calendar-body {
+        grid-template-columns: 60px repeat(7, 1fr);
+    }
+    
+    .calendar-hour-cell {
+        height: 50px;
+    }
+    
+    .time-slot {
+        height: 50px;
+        font-size: 10px;
+    }
+    
+    .schedule-class {
+        padding: var(--spacing-xs);
+    }
+}
+
+@media (max-width: 768px) {
+    /* Adjustments for small screens (mobile landscape) */
+    .admin-container {
+        flex-direction: column;
+    }
+    
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        padding: var(--spacing-sm) 0;
+    }
+    
+    .admin-profile {
+        padding: var(--spacing-sm);
+    }
+    
+    .admin-content {
+        margin-left: 0;
+        padding: var(--spacing-md);
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+    
+    .admin-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .admin-search-input {
+        width: 100%;
+    }
+    
+    .weekly-calendar-header {
+        grid-template-columns: 40px repeat(7, 1fr);
+    }
+    
+    .day-column-header {
+        padding: var(--spacing-xs);
+        font-size: 12px;
+    }
+    
+    .weekly-calendar-body {
+        grid-template-columns: 40px repeat(7, 1fr);
+        min-height: 400px;
+    }
+    
+    .schedule-class-title {
+        font-size: 10px;
+    }
+    
+    .schedule-class-time,
+    .schedule-class-instructor {
+        display: none;
+    }
+    
+    .member-profiles {
+        grid-template-columns: 1fr;
+    }
+    
+    .toggle-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .toggle-switch {
+        align-self: flex-end;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: var(--spacing-sm);
+        font-size: 12px;
+    }
+    
+    .admin-modal-content, 
+    .modal-content {
+        width: 95%;
+        margin: 10px auto;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Adjustments for extra small screens (mobile portrait) */
+    .admin-title {
+        font-size: 20px;
+    }
+    
+    .admin-panel-title {
+        font-size: 18px;
+    }
+    
+    .admin-btn,
+    .admin-btn-primary,
+    .admin-btn-secondary,
+    .admin-btn-danger {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .admin-table-responsive {
+        padding: 0;
+    }
+    
+    .weekly-calendar-header {
+        display: flex;
+        overflow-x: auto;
+    }
+    
+    .weekly-calendar-body {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .day-column {
+        min-width: 100px;
+    }
+    
+    .modal-body {
+        max-height: 80vh;
+    }
+    
+    .photo-gallery {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .blog-post-title {
+        font-size: var(--font-size-lg);
+    }
+    
+    .blog-post-excerpt {
+        -webkit-line-clamp: 2;
+    }
+    
+    .admin-form {
+        padding: var(--spacing-sm);
+    }
+}

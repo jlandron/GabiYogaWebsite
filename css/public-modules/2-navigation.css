@@ -1,0 +1,227 @@
+/*******************************
+ * 2. NAVIGATION
+ *******************************/
+
+/* Header */
+header {
+    background-color: #fff;
+    box-shadow: var(--box-shadow);
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Logo */
+.logo h1, 
+.logo a h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0;
+    font-family: var(--font-display);
+}
+
+.logo a {
+    text-decoration: none;
+    display: block;
+}
+
+.logo a:hover h1 {
+    color: var(--accent-color);
+}
+
+/* Navigation Links */
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    color: var(--text-color);
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent-color);
+    bottom: -5px;
+    left: 0;
+    transition: var(--transition);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-links a.active {
+    color: var(--primary-color);
+}
+
+.nav-links a.active::after {
+    width: 100%;
+    background-color: var(--primary-color);
+}
+
+/* Mobile Navigation */
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: var(--text-color);
+    transition: var(--transition);
+}
+
+/* Responsive Navigation */
+@media screen and (max-width: 768px) {
+    .nav-links {
+        position: fixed;
+        top: -100%;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background-color: #fff;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        gap: 15px;
+    }
+    
+    .nav-links.active {
+        top: 70px;
+    }
+    
+    .hamburger {
+        display: block;
+    }
+    
+    .hamburger.active .bar:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active .bar:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+    }
+}
+
+/* Secondary Navigation */
+.secondary-nav {
+    background-color: var(--secondary-color);
+    padding: 10px 0;
+}
+
+.secondary-nav .container {
+    padding: 0 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.secondary-nav ul {
+    display: flex;
+    gap: 20px;
+}
+
+.secondary-nav a {
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+}
+
+.secondary-nav a:hover {
+    color: var(--primary-color);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    background-color: var(--secondary-color);
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumbs .container {
+    padding: 0 20px;
+}
+
+.breadcrumbs-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.breadcrumbs-item {
+    display: flex;
+    align-items: center;
+    color: var(--text-light);
+    font-size: var(--font-size-sm);
+}
+
+.breadcrumbs-item:not(:last-child)::after {
+    content: '/';
+    margin: 0 10px;
+    color: var(--text-muted);
+}
+
+.breadcrumbs-item a {
+    color: var(--text-color);
+}
+
+.breadcrumbs-item a:hover {
+    color: var(--primary-color);
+}
+
+.breadcrumbs-item.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Scroll-to-top Button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: 999;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-top:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-3px);
+}

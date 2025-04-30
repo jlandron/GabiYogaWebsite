@@ -31,10 +31,7 @@
     <meta property="twitter:image" content="https://gabiyoga.com/images/twitter-image.jpg">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/purchase-styles.css">
-    <link rel="stylesheet" href="css/gallery-styles.css">
-    <link rel="stylesheet" href="css/latest-blog.css">
+    <link rel="stylesheet" href="css/public-unified.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/fonts.css">
@@ -66,9 +63,7 @@
                 <div class="about-text">
                     <h3></h3>
                     <p class="subtitle"></p>
-                    <p></p>
-                    <p></p>
-                    <p></p>
+                    <!-- Bio content will be inserted here by bio-content-loader.js -->
                     <div class="certifications">
                         <h4>Certifications:</h4>
                         <ul>
@@ -642,79 +637,7 @@
         </div>
     </div>
 
-    <!-- Include the purchase and subscription modals -->
-    <div id="purchase-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Complete Your Purchase</h2>
-            <form id="purchase-form">
-                <div class="form-group">
-                    <label for="purchase-type">Selected Package:</label>
-                    <input type="text" id="purchase-type" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="purchase-price">Price:</label>
-                    <input type="text" id="purchase-price" readonly>
-                </div>
-                <div class="form-group payment-section">
-                    <h3>Payment Details</h3>
-                    <div id="payment-element-container" class="form-group">
-                        <!-- Stripe Elements will be mounted here -->
-                        <div id="payment-element"></div>
-                    </div>
-                    <div id="payment-errors" class="payment-errors"></div>
-                </div>
-                <div class="form-group">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="terms-conditions" required>
-                        <label for="terms-conditions">I agree to the terms and conditions</label>
-                    </div>
-                </div>
-                <button type="submit" class="btn">Complete Purchase</button>
-                <p class="form-note">* Your card will be charged immediately upon submission.</p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Subscription Modal (hidden by default) -->
-    <div id="subscription-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Start Your Membership</h2>
-            <form id="subscription-form">
-                <div class="form-group">
-                    <label for="subscription-type">Selected Membership:</label>
-                    <input type="text" id="subscription-type" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="subscription-price">Price:</label>
-                    <input type="text" id="subscription-price" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="subscription-start">Start Date:</label>
-                    <input type="date" id="subscription-start" required>
-                </div>
-                <div class="form-group payment-section">
-                    <h3>Payment Details</h3>
-                    <!-- For subscriptions, we'll use Stripe Checkout instead of Elements -->
-                    <p>You'll be redirected to a secure payment page to complete your subscription.</p>
-                </div>
-                <div class="form-group">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="subscription-terms" required>
-                        <label for="subscription-terms">I agree to the membership terms and conditions</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="auto-renew" checked>
-                        <label for="auto-renew">Enable auto-renewal (can be canceled anytime)</label>
-                    </div>
-                </div>
-                <button type="submit" class="btn">Start Membership</button>
-                <p class="form-note">* Your membership starts immediately. You will be charged today and then on your monthly/annual renewal date.</p>
-            </form>
-        </div>
-    </div>
-
+    <!-- Scripts -->
     <script src="js/user-data-manager.js"></script>
     <script src="js/header-loader.js"></script>
     <script src="js/script.js"></script>
@@ -724,6 +647,8 @@
     <script src="js/stripe-payment.js"></script>
     <script src="js/profile-loader.js"></script>
     <script src="js/hero-text-loader.js"></script>
+    <script src="js/bio-content-loader.js"></script>
+    <script src="js/offerings-content-loader.js"></script>
     <script src="js/section-background-alternator.js"></script>
 </body>
 </html>

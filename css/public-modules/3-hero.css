@@ -1,0 +1,187 @@
+/*******************************
+ * 3. HERO SECTIONS
+ *******************************/
+
+/* Main Hero Section */
+.hero {
+    background: 
+        /* Semi-transparent overlay for text readability */
+        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+        /* Hero image background */
+        url('../../images/photo-1615729947596-a598e5de0ab3.jpeg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-top: 80px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+    max-width: 800px;
+    padding: 20px;
+    opacity: 0; /* Start with content hidden for fade-in animation */
+    visibility: visible; /* Maintain layout */
+    animation: fadeIn 1s forwards 0.5s;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    animation: fadeIn 1s forwards 1s;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    animation: fadeIn 1s forwards 1.5s;
+}
+
+.hero-content .btn {
+    opacity: 0;
+    animation: fadeIn 1s forwards 2s;
+}
+
+/* Blog Hero Section */
+.blog-hero {
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('../images/photo-1615729947596-a598e5de0ab3.jpeg');
+    background-size: cover;
+    background-position: center;
+    height: 40vh;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-top: 80px;
+}
+
+.blog-hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.blog-hero-content h1 {
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.blog-hero-content p {
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Account Hero Section */
+.account-hero {
+    background-color: var(--secondary-color);
+    padding-top: 100px;
+    padding-bottom: 40px;
+    text-align: center;
+}
+
+.account-hero-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.account-hero h1 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+}
+
+.account-hero p {
+    color: var(--text-light);
+}
+
+/* Page Hero (Generic) */
+.page-hero {
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+        var(--hero-image, url('../images/sara-bach-YXn56G46MSU-unsplash.jpg'));
+    background-size: cover;
+    background-position: center;
+    height: 35vh;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-top: 80px;
+}
+
+.page-hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.page-hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.page-hero-content p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive Hero Sections */
+@media screen and (max-width: 768px) {
+    .hero-content h1, 
+    .page-hero-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .blog-hero-content h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero-content p,
+    .blog-hero-content p,
+    .page-hero-content p {
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .blog-hero {
+        min-height: 250px;
+    }
+    
+    .blog-hero-content h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Hero Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

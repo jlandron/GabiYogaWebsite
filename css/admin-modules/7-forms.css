@@ -1,0 +1,127 @@
+/*******************************
+ * 7. FORMS
+ *******************************/
+.admin-form {
+    padding: var(--spacing-lg);
+}
+
+.admin-form-row {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.admin-form-group {
+    flex: 1;
+    margin-bottom: var(--spacing-lg);
+}
+
+.admin-form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-form-control {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="date"],
+.admin-form input[type="time"],
+.admin-form textarea,
+.admin-form select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+}
+
+.admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+/* Input with Icon */
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: var(--spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.input-with-icon input {
+    padding-left: 35px !important;
+}
+
+/* Form Divider */
+.admin-form-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: var(--spacing-xl) 0;
+}
+
+.admin-form-note,
+.admin-form-help,
+.form-hint {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    margin-top: -5px;
+    margin-bottom: var(--spacing-md);
+}
+
+.form-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+}
+
+.admin-form-checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.admin-form-checkbox input[type="checkbox"] {
+    margin-right: var(--spacing-sm);
+}
+
+/* Price fields */
+input[type="number"].admin-form-control {
+    text-align: right;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin: 0;
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    display: inline;
+}

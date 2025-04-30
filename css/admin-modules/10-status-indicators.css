@@ -1,0 +1,51 @@
+/*******************************
+ * 10. STATUS INDICATORS & BADGES
+ *******************************/
+/* Admin Tags */
+.admin-tag {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.admin-tag.green {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.admin-tag.yellow {
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
+}
+
+.admin-tag.red {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.admin-tag.blue {
+    background-color: var(--info-bg);
+    color: var(--info-color);
+}
+
+/* Post Status */
+.post-status {
+    display: inline-block;
+    padding: 4px var(--spacing-xs);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-published {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-draft {
+    background-color: #f5f5f5;
+    color: var(--text-secondary);
+}

@@ -265,7 +265,7 @@ router.put('/settings/contact', requireAdmin, async (req, res) => {
  */
 router.put('/settings', requireAdmin, async (req, res) => {
   try {
-    const { heroText, about, certifications, sectionToggles, contactInfo } = req.body;
+    const { heroText, about, certifications, offeringsContent, sectionToggles, contactInfo } = req.body;
     
     // Validation
     if (!heroText || !about || !certifications || !sectionToggles || !contactInfo) {
@@ -275,8 +275,28 @@ router.put('/settings', requireAdmin, async (req, res) => {
       });
     }
     
+    // Validate offeringsContent if provided
+    if (offeringsContent && 
+        (typeof offeringsContent !== 'object' || 
+         !offeringsContent.hasOwnProperty('groupClasses') || 
+         !offeringsContent.hasOwnProperty('privateLessons') || 
+         !offeringsContent.hasOwnProperty('workshops') || 
+         !offeringsContent.hasOwnProperty('retreats'))) {
+      return res.status(400).json({
+        success: false,
+        message: 'offeringsContent must include groupClasses, privateLessons, workshops, and retreats'
+      });
+    }
+    
     // Save settings to the database
-    const settings = { heroText, about, certifications, sectionToggles, contactInfo };
+    const settings = { 
+      heroText, 
+      about, 
+      certifications, 
+      offeringsContent: offeringsContent || {}, 
+      sectionToggles, 
+      contactInfo 
+    };
     const { WebsiteSettingsOperations } = require('../database/data-access');
     const savedSettings = await WebsiteSettingsOperations.saveSettings(settings);
     

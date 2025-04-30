@@ -54,14 +54,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Update heading
             if (heading) {
-                if (heading.text) heroHeading.textContent = heading.text || 'Find Your Inner Peace';
+                // Check if text is HTML or plain text
+                if (heading.text) {
+                    if (heading.text.trim().startsWith('<')) {
+                        // If it's HTML, use innerHTML
+                        heroHeading.innerHTML = heading.text;
+                    } else {
+                        // If it's plain text, use textContent
+                        heroHeading.textContent = heading.text;
+                    }
+                } else {
+                    heroHeading.textContent = 'Find Your Inner Peace';
+                }
+                
+                // Apply styles
                 if (heading.font) heroHeading.style.fontFamily = heading.font;
                 if (heading.size) heroHeading.style.fontSize = heading.size;
-                // Add text formatting styles
                 if (heading.fontWeight) heroHeading.style.fontWeight = heading.fontWeight;
                 if (heading.fontStyle) heroHeading.style.fontStyle = heading.fontStyle;
                 if (heading.textDecoration) heroHeading.style.textDecoration = heading.textDecoration;
-                // Ensure the text alignment is set to center
                 heroHeading.style.textAlign = heading.textAlign || 'center';
             } else {
                 // Default text and styles if no settings are available
@@ -69,18 +80,30 @@ document.addEventListener('DOMContentLoaded', async function() {
                 heroHeading.style.fontWeight = 'normal';
                 heroHeading.style.fontStyle = 'normal';
                 heroHeading.style.textDecoration = 'none';
+                heroHeading.style.textAlign = 'center';
             }
             
             // Update subheading
             if (subheading) {
-                if (subheading.text) heroSubheading.textContent = subheading.text || 'Join our community and transform your mind, body, and spirit';
+                // Check if text is HTML or plain text
+                if (subheading.text) {
+                    if (subheading.text.trim().startsWith('<')) {
+                        // If it's HTML, use innerHTML
+                        heroSubheading.innerHTML = subheading.text;
+                    } else {
+                        // If it's plain text, use textContent
+                        heroSubheading.textContent = subheading.text;
+                    }
+                } else {
+                    heroSubheading.textContent = 'Join our community and transform your mind, body, and spirit';
+                }
+                
+                // Apply styles
                 if (subheading.font) heroSubheading.style.fontFamily = subheading.font;
                 if (subheading.size) heroSubheading.style.fontSize = subheading.size;
-                // Add text formatting styles
                 if (subheading.fontWeight) heroSubheading.style.fontWeight = subheading.fontWeight;
                 if (subheading.fontStyle) heroSubheading.style.fontStyle = subheading.fontStyle;
                 if (subheading.textDecoration) heroSubheading.style.textDecoration = subheading.textDecoration;
-                // Ensure the text alignment is set to center
                 heroSubheading.style.textAlign = subheading.textAlign || 'center';
             } else {
                 // Default text and styles if no settings are available
@@ -88,6 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 heroSubheading.style.fontWeight = 'normal';
                 heroSubheading.style.fontStyle = 'normal';
                 heroSubheading.style.textDecoration = 'none';
+                heroSubheading.style.textAlign = 'center';
             }
             
             // Update the button text if it exists

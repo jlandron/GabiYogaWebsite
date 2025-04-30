@@ -48,8 +48,9 @@ class BlogManager {
         this.previewPostBtn = document.getElementById('preview-post-btn');
         this.saveDraftBtn = document.getElementById('save-draft-btn');
         this.publishPostBtn = document.getElementById('publish-post-btn');
+        this.addMoreImagesBtn = document.getElementById('add-more-images-btn');
         
-        // Blog images container
+        // Blog images elements
         this.blogImagesContainer = document.getElementById('blog-images-container');
         this.blogImagesGallery = document.getElementById('blog-images-gallery');
         
@@ -85,6 +86,9 @@ class BlogManager {
         this.postToDelete = null;
         this.isEditMode = false;
         
+        // Object URL tracking for proper cleanup
+        this._previousFeaturedImageObjectUrl = null;
+        
         // Image compression options
         this.imageOptions = {
             maxSizeMB: 1,
@@ -113,7 +117,7 @@ class BlogManager {
             // Load blog posts
             await this.loadPosts();
             
-            // Load images for selection
+            // We'll comment out loadImages for now as it's not implemented
             await this.loadImages();
         } catch (error) {
             console.error('Error initializing blog manager:', error);
@@ -122,30 +126,9 @@ class BlogManager {
     }
     
     /**
-     * Bind event handlers to elements
+     * Bind event handlers
      */
     bindEvents() {
-        // Main navigation events
-        if (this.newPostBtn) {
-            this.newPostBtn.addEventListener('click', () => this.createNewPost());
-        }
-        
-        if (this.backToPostsBtn) {
-            this.backToPostsBtn.addEventListener('click', () => this.showBlogPanel());
-        }
-        
-        // Editor events
-        if (this.postForm) {
-            this.postForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.savePost();
-            });
-        }
-        
-        if (this.postTitle) {
-            this.postTitle.addEventListener('input', () => this.updateSlugFromTitle());
-        }
-        
         if (this.previewPostBtn) {
             this.previewPostBtn.addEventListener('click', () => this.previewPost());
         }
@@ -169,6 +152,11 @@ class BlogManager {
         
         if (this.removeFeaturedImageBtn) {
             this.removeFeaturedImageBtn.addEventListener('click', () => this.removeFeaturedImage());
+        }
+        
+        // Add More Images button
+        if (this.addMoreImagesBtn) {
+            this.addMoreImagesBtn.addEventListener('click', () => this.openImageSelectionModal('content'));
         }
         
         // Image selection modal events
@@ -256,239 +244,169 @@ class BlogManager {
     }
     
     /**
-     * Initialize the text editor toolbar
+     * Initialize the QuillJS text editor
      */
     initEditorToolbar() {
-        const toolbar = document.querySelector('.editor-toolbar');
-        if (!toolbar || !this.postContent) return;
+        console.log('Initializing blog post editor with resizable image support');
         
-        // Handle toolbar button clicks
-        toolbar.addEventListener('click', (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-            
-            const format = button.dataset.format;
-            if (!format) return;
-            
-            e.preventDefault();
-            
-            switch (format) {
-                case 'bold':
-                    this.insertFormatting('**', '**');
-                    break;
-                case 'italic':
-                    this.insertFormatting('*', '*');
-                    break;
-                case 'underline':
-                    this.insertFormatting('<u>', '</u>');
-                    break;
-                case 'h2':
-                    this.insertFormatting('## ', '');
-                    break;
-                case 'h3':
-                    this.insertFormatting('### ', '');
-                    break;
-                case 'h4':
-                    this.insertFormatting('#### ', '');
-                    break;
-                case 'ul':
-                    this.insertList('- ');
-                    break;
-                case 'ol':
-                    this.insertList('1. ');
-                    break;
-                case 'link':
-                    this.insertLink();
-                    break;
-                case 'image':
-                    this.openImageSelectionModal('content');
-                    break;
-            }
+        // Check if the textarea exists
+        if (!this.postContent) {
+            console.error('Post content textarea not found');
+            return;
+        }
+        
+        // Create image uploader instance for direct uploads
+        this.imageUploader = new QuillImageUploader({
+            endpoint: '/api/blog/images/upload',
+            onSuccess: (result) => {
+                console.log('Image uploaded successfully:', result);
+                
+                // Add image to post images if not already there
+                if (this.currentPost && this.currentPost.images) {
+                    const existingImage = this.currentPost.images.find(img => img.url === result.url);
+                    if (!existingImage) {
+                        this.currentPost.images.push({
+                            url: result.url,
+                            alt: '',
+                            caption: ''
+                        });
+                        
+                        // Show the blog images container if hidden
+                        if (this.blogImagesContainer) {
+                            this.blogImagesContainer.style.display = '';
+                        }
+                        
+                        // Render blog images
+                        this.renderBlogImages(this.currentPost.images);
+                    }
+                }
+            },
+            onError: (error) => {
+                console.error('Image upload error:', error);
+                this.showNotification('Failed to upload image. Please try again.', 'error');
+            },
+            showLoading: () => this.showLoadingOverlay(),
+            hideLoading: () => this.hideLoadingOverlay(),
+            showError: (message) => this.showNotification(message, 'error')
         });
         
-        // Handle font selector
-        const fontSelector = document.getElementById('font-selector');
-        if (fontSelector) {
-            // Clear existing options
-            while (fontSelector.firstChild) {
-                fontSelector.removeChild(fontSelector.firstChild);
+        // Configure custom image handler for toolbar button
+        const imageHandler = QuillImageUploader.getToolbarHandler({
+            endpoint: '/api/blog/images/upload',
+            onSuccess: (result) => {
+                console.log('Image uploaded successfully:', result);
+                
+                // Add image to post images if not already there
+                if (this.currentPost && this.currentPost.images) {
+                    const existingImage = this.currentPost.images.find(img => img.url === result.url);
+                    if (!existingImage) {
+                        this.currentPost.images.push({
+                            url: result.url,
+                            alt: '',
+                            caption: ''
+                        });
+                        
+                        // Show the blog images container if hidden
+                        if (this.blogImagesContainer) {
+                            this.blogImagesContainer.style.display = '';
+                        }
+                        
+                        // Render blog images
+                        this.renderBlogImages(this.currentPost.images);
+                    }
+                }
+            },
+            showLoading: () => this.showLoadingOverlay(),
+            hideLoading: () => this.hideLoadingOverlay(),
+            showError: (message) => this.showNotification(message, 'error')
+        });
+        
+        // Use our reusable component to create the editor
+        if (window.createQuillEditor) {
+            this.quill = window.createQuillEditor('post-content', {
+                defaultFont: "'Open Sans', sans-serif",
+                defaultSize: "16px",
+                height: 400,
+                simplified: false,
+                imageHandler: imageHandler
+            });
+            
+            if (this.quill) {
+                console.log('Blog post editor initialized successfully with resizable image support');
+                
+                // Listen for quill-image-resize-complete event to trigger update
+                this.quill.root.addEventListener('quill-image-resize-complete', () => {
+                    // Trigger text-change event to save content
+                    const event = new Event('text-change', { bubbles: true });
+                    this.quill.root.dispatchEvent(event);
+                });
+                
+                // Add special handling for paste events to convert pasted images to resizable images
+                this.quill.root.addEventListener('paste', (e) => {
+                    if (e.clipboardData && e.clipboardData.items) {
+                        const items = e.clipboardData.items;
+                        
+                        for (let i = 0; i < items.length; i++) {
+                            if (items[i].type.indexOf('image') !== -1) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                const file = items[i].getAsFile();
+                                if (file) {
+                                    this.showLoadingOverlay();
+                                    
+                                    this.imageUploader.uploadAndInsert(this.quill, file)
+                                        .then(() => this.hideLoadingOverlay())
+                                        .catch(error => {
+                                            console.error('Error handling pasted image:', error);
+                                            this.hideLoadingOverlay();
+                                        });
+                                }
+                                
+                                break;
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Failed to initialize blog post editor');
             }
-            
-            // Add default option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Font';
-            fontSelector.appendChild(defaultOption);
-            
-            // Add font options
-            const fonts = [
-                // Site theme fonts
-                { value: "'Playfair Display', serif", label: "Playfair Display (Site Headers)" },
-                { value: "'Open Sans', sans-serif", label: "Open Sans (Site Body)" },
-                
-                // Standard fonts
-                { value: "Arial, sans-serif", label: "Arial" },
-                { value: "'Times New Roman', serif", label: "Times New Roman" },
-                { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica Neue" },
-                { value: "Georgia, serif", label: "Georgia" },
-                { value: "'Courier New', monospace", label: "Courier New" },
-                { value: "'Roboto', sans-serif", label: "Roboto" },
-                
-                // Cursive and script fonts
-                { value: "'Dancing Script', cursive", label: "Dancing Script" },
-                { value: "'Great Vibes', cursive", label: "Great Vibes" },
-                { value: "'Pacifico', cursive", label: "Pacifico" },
-                { value: "'Sacramento', cursive", label: "Sacramento" },
-                { value: "'Allura', cursive", label: "Allura" },
-                { value: "'Satisfy', cursive", label: "Satisfy" },
-                { value: "'Pinyon Script', cursive", label: "Pinyon Script" },
-                { value: "'Tangerine', cursive", label: "Tangerine" },
-                { value: "'Alex Brush', cursive", label: "Alex Brush" },
-                
-                // Creative and organic fonts
-                { value: "'Amatic SC', cursive", label: "Amatic SC" },
-                { value: "'Caveat', cursive", label: "Caveat" },
-                { value: "'Indie Flower', cursive", label: "Indie Flower" },
-                { value: "'Kalam', cursive", label: "Kalam" },
-                { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" },
-                { value: "'Architects Daughter', cursive", label: "Architects Daughter" },
-                { value: "'Comic Neue', cursive", label: "Comic Neue" },
-                { value: "'Courgette', cursive", label: "Courgette" },
-                
-                // Custom fonts
-                { value: "'Julietta', serif", label: "Julietta" },
-                { value: "'Themunday', serif", label: "Themunday" }
-            ];
-            
-            fonts.forEach(font => {
-                const option = document.createElement('option');
-                option.value = font.value;
-                option.textContent = font.label;
-                option.style.fontFamily = font.value;
-                fontSelector.appendChild(option);
-            });
-            
-            // Add change event listener
-            fontSelector.addEventListener('change', () => {
-                const fontFamily = fontSelector.value;
-                if (!fontFamily) return;
-                
-                // Update the display of the font selector itself to show the selected font
-                fontSelector.style.fontFamily = fontFamily;
-                
-                // Apply font to selected text
-                this.insertFormatting(`<span style="font-family: ${fontFamily}">`, '</span>');
-            });
-        }
-    }
-    
-    /**
-     * Insert formatting tags around selected text in editor
-     */
-    insertFormatting(startTag, endTag) {
-        const textarea = this.postContent;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        
-        if (start === end && !endTag) {
-            // If no text is selected and it's a heading, insert at the start of the line
-            const text = textarea.value;
-            const lineStart = text.lastIndexOf('\n', start) + 1;
-            
-            const beforeSelection = text.substring(0, lineStart);
-            const lineContent = text.substring(lineStart, end);
-            const afterSelection = text.substring(end);
-            
-            textarea.value = beforeSelection + startTag + lineContent + afterSelection;
-            textarea.selectionStart = textarea.selectionEnd = lineStart + startTag.length + lineContent.length;
         } else {
-            // Insert around selection
-            const selectedText = textarea.value.substring(start, end);
-            const beforeSelection = textarea.value.substring(0, start);
-            const afterSelection = textarea.value.substring(end);
+            console.error('createQuillEditor function not found. Make sure admin-quill-editor.js is properly loaded.');
+        }
+    }
+    
+    /**
+     * Insert image at current cursor position (with resizable support)
+     */
+    async insertImage(imageUrl, altText = '') {
+        try {
+            // Use the image uploader to insert resizable image
+            await this.imageUploader.insertImage(this.quill, imageUrl, { alt: altText });
             
-            textarea.value = beforeSelection + startTag + selectedText + endTag + afterSelection;
-            textarea.selectionStart = start + startTag.length;
-            textarea.selectionEnd = start + startTag.length + selectedText.length;
+            // Add image to post images array if not already there
+            if (this.currentPost && this.currentPost.images) {
+                const existingImage = this.currentPost.images.find(img => img.url === imageUrl);
+                if (!existingImage) {
+                    this.currentPost.images.push({
+                        url: imageUrl,
+                        alt: altText,
+                        caption: ''
+                    });
+                    
+                    // Show the blog images container and update display
+                    if (this.blogImagesContainer) {
+                        this.blogImagesContainer.style.display = '';
+                    }
+                    
+                    // Render blog images
+                    this.renderBlogImages(this.currentPost.images);
+                }
+            }
+        } catch (error) {
+            console.error('Error inserting image:', error);
+            this.showNotification('Failed to insert image. Please try again.', 'error');
         }
-        
-        textarea.focus();
-    }
-    
-    /**
-     * Insert list items for each line in selection
-     */
-    insertList(listMarker) {
-        const textarea = this.postContent;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        
-        const selectedText = textarea.value.substring(start, end);
-        const beforeSelection = textarea.value.substring(0, start);
-        const afterSelection = textarea.value.substring(end);
-        
-        let newText;
-        
-        if (selectedText.includes('\n')) {
-            // Multi-line selection, add marker to each line
-            newText = selectedText
-                .split('\n')
-                .map(line => listMarker + line)
-                .join('\n');
-        } else {
-            // Single line
-            newText = listMarker + selectedText;
-        }
-        
-        textarea.value = beforeSelection + newText + afterSelection;
-        textarea.selectionStart = start + listMarker.length;
-        textarea.selectionEnd = start + newText.length;
-        textarea.focus();
-    }
-    
-    /**
-     * Insert a link in markdown format
-     */
-    insertLink() {
-        const textarea = this.postContent;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        
-        const selectedText = textarea.value.substring(start, end);
-        const beforeSelection = textarea.value.substring(0, start);
-        const afterSelection = textarea.value.substring(end);
-        
-        const linkText = selectedText || 'link text';
-        const linkUrl = 'https://example.com';
-        
-        textarea.value = beforeSelection + `[${linkText}](${linkUrl})` + afterSelection;
-        
-        if (selectedText) {
-            // If text was selected, place cursor after the link
-            textarea.selectionStart = textarea.selectionEnd = end + 4 + linkUrl.length + 1;
-        } else {
-            // If no text was selected, select the "link text" part
-            textarea.selectionStart = start + 1;
-            textarea.selectionEnd = start + 1 + linkText.length;
-        }
-        
-        textarea.focus();
-    }
-    
-    /**
-     * Insert image markdown at current cursor position
-     */
-    insertImage(imageUrl, altText = '') {
-        const textarea = this.postContent;
-        const start = textarea.selectionStart;
-        const beforeSelection = textarea.value.substring(0, start);
-        const afterSelection = textarea.value.substring(start);
-        
-        const imageMarkdown = `![${altText}](${imageUrl})`;
-        textarea.value = beforeSelection + imageMarkdown + afterSelection;
-        
-        textarea.selectionStart = textarea.selectionEnd = start + imageMarkdown.length;
-        textarea.focus();
     }
     
     /**
@@ -602,7 +520,7 @@ class BlogManager {
                     e.preventDefault();
                     e.stopPropagation();
                     const postId = deleteBtn.dataset.id;
-                    this.confirmDeletePost(postId);
+                    this.showDeleteConfirmation(postId);
                 });
             }
         });
@@ -759,7 +677,21 @@ class BlogManager {
             
             // Set featured image if exists
             if (post.coverImage && post.coverImage.url) {
-                this.setFeaturedImage(post.coverImage.url);
+                console.log('Post has cover image:', post.coverImage);
+                
+                // Check if we have a valid URL
+                let coverImageUrl = post.coverImage.url;
+                
+                // If URL is relative and doesn't start with a data URL indicator,
+                // make sure it's properly formed
+                if (!coverImageUrl.startsWith('data:') && !coverImageUrl.startsWith('http')) {
+                    // Make sure URL starts with a slash
+                    if (!coverImageUrl.startsWith('/')) {
+                        coverImageUrl = '/' + coverImageUrl;
+                    }
+                }
+                
+                this.setFeaturedImage(coverImageUrl);
                 if (this.featuredImageAlt) {
                     this.featuredImageAlt.value = post.coverImage.alt || '';
                 }
@@ -810,33 +742,65 @@ class BlogManager {
             const imgItem = document.createElement('div');
             imgItem.className = 'blog-image-item';
             
+            const imageAlt = image.alt || '';
+            const imageCaption = image.caption || '';
+            
             imgItem.innerHTML = `
-                <img src="${image.url}" alt="${image.alt || ''}">
+                <img src="${image.url}" alt="${imageAlt}">
+                ${imageAlt ? `<div class="blog-image-info">${imageAlt}</div>` : ''}
                 <div class="blog-image-actions">
-                    <button title="Insert into post" class="insert-image" data-url="${image.url}" data-alt="${image.alt || ''}">
+                    <button title="Insert into post" class="insert-image" data-url="${image.url}" data-alt="${imageAlt}">
                         <i class="fas fa-plus"></i>
                     </button>
+                    <button title="Edit image details" class="edit-image" data-url="${image.url}" data-alt="${imageAlt}" data-caption="${imageCaption}">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
                     <button title="Remove from post" class="delete-image" data-url="${image.url}">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
             `;
             
             this.blogImagesGallery.appendChild(imgItem);
             
-            // Add event listeners
+            // Image thumbnail click inserts the image directly
+            const imgElement = imgItem.querySelector('img');
+            if (imgElement) {
+                imgElement.addEventListener('click', () => {
+                    const url = image.url;
+                    const alt = imageAlt;
+                    this.insertImage(url, alt);
+                    this.showNotification('Image inserted into content at cursor position');
+                });
+            }
+            
+            // Add event listeners for action buttons
             const insertBtn = imgItem.querySelector('.insert-image');
             if (insertBtn) {
-                insertBtn.addEventListener('click', () => {
+                insertBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent bubbling to the image click
                     const url = insertBtn.dataset.url;
                     const alt = insertBtn.dataset.alt || '';
                     this.insertImage(url, alt);
+                    this.showNotification('Image inserted into content at cursor position');
+                });
+            }
+            
+            const editBtn = imgItem.querySelector('.edit-image');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent bubbling to the image click
+                    const url = editBtn.dataset.url;
+                    const alt = editBtn.dataset.alt || '';
+                    const caption = editBtn.dataset.caption || '';
+                    this.editImageDetails(url, alt, caption);
                 });
             }
             
             const deleteBtn = imgItem.querySelector('.delete-image');
             if (deleteBtn) {
-                deleteBtn.addEventListener('click', () => {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent bubbling to the image click
                     const url = deleteBtn.dataset.url;
                     this.removeImageFromPost(url);
                 });
@@ -864,6 +828,32 @@ class BlogManager {
         }
         
         this.showNotification('Image removed from post.');
+    }
+    
+    /**
+     * Edit image alt text and caption
+     */
+    editImageDetails(imageUrl, currentAlt, currentCaption) {
+        // Simple edit dialog using prompt (could be replaced with a modal later)
+        const newAlt = prompt('Enter alt text for accessibility:', currentAlt || '');
+        
+        if (newAlt === null) return; // User cancelled
+        
+        const newCaption = prompt('Enter caption (optional):', currentCaption || '');
+        
+        // Find image in array and update details
+        if (this.currentPost && this.currentPost.images) {
+            const imageIndex = this.currentPost.images.findIndex(img => img.url === imageUrl);
+            
+            if (imageIndex !== -1) {
+                this.currentPost.images[imageIndex].alt = newAlt;
+                this.currentPost.images[imageIndex].caption = newCaption !== null ? newCaption : '';
+                
+                // Update display
+                this.renderBlogImages(this.currentPost.images);
+                this.showNotification('Image details updated.');
+            }
+        }
     }
     
     /**
@@ -1037,7 +1027,7 @@ class BlogManager {
     }
     
     /**
-     * Show the editor panel and hide the blog panel
+     * Show the editor panel
      */
     showEditorPanel() {
         if (this.blogPanel) {
@@ -1050,7 +1040,7 @@ class BlogManager {
     }
     
     /**
-     * Show the blog panel and hide the editor panel
+     * Show the blog panel
      */
     showBlogPanel() {
         if (this.editorPanel) {
@@ -1069,16 +1059,25 @@ class BlogManager {
      * View a published post
      */
     viewPost(postId) {
+        console.log('View post clicked:', postId);
         const post = this.posts.find(p => p._id === postId);
-        if (!post) return;
+        if (!post) {
+            console.error('Post not found:', postId);
+            this.showNotification('Post not found.', 'error');
+            return;
+        }
+        
+        console.log('Post found:', post);
         
         if (!post.published) {
+            console.log('Post not published, showing preview instead');
             this.showNotification('This post is not published yet. Use Preview instead.', 'error');
             return;
         }
         
         // Open post in a new tab
         const url = `/blog.html?post=${post.slug}`;
+        console.log('Opening URL:', url);
         window.open(url, '_blank');
     }
     
@@ -1167,7 +1166,14 @@ class BlogManager {
             return;
         }
         
+        console.log('Setting featured image with URL:', imageUrl);
+        
+        // Remove previous error handler before setting new src to prevent recursion
+        this.featuredImagePreview.onerror = null;
+        
+        // Set up the onload handler
         this.featuredImagePreview.onload = () => {
+            console.log('Featured image loaded successfully');
             // Show the preview once image is loaded
             this.featuredImagePreview.style.display = '';
             this.featuredImagePlaceholder.style.display = 'none';
@@ -1177,13 +1183,70 @@ class BlogManager {
             }
         };
         
-        this.featuredImagePreview.onerror = () => {
-            console.error('Failed to load image in preview');
-            this.showNotification('Failed to load image preview. Please try again.', 'error');
-            this.removeFeaturedImage();
-        };
+        // Process different types of URLs appropriately
+        let processedUrl = imageUrl;
         
-        this.featuredImagePreview.src = imageUrl;
+        // Handle blog-specific URLs
+        if (imageUrl.startsWith('/uploads/blog/')) {
+            // For local development, convert relative paths to absolute paths if needed
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                const base = window.location.origin;
+                processedUrl = `${base}${imageUrl}`;
+            }
+        } else if (imageUrl.includes('/api/gallery/')) {
+            // For gallery images, fetch the actual image data
+            this.showLoadingOverlay();
+            
+            // Fetch the image data and create a blob URL
+            fetch(imageUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load image data');
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Clean up any previous object URL
+                    if (this._previousFeaturedImageObjectUrl) {
+                        URL.revokeObjectURL(this._previousFeaturedImageObjectUrl);
+                    }
+                    
+                    // Create new object URL
+                    const objectUrl = URL.createObjectURL(blob);
+                    
+                    // Store for later cleanup
+                    this._previousFeaturedImageObjectUrl = objectUrl;
+                    
+                    // Set the image source
+                    this.featuredImagePreview.src = objectUrl;
+                    
+                    this.hideLoadingOverlay();
+                })
+                .catch(error => {
+                    console.error('Error loading gallery image:', error);
+                    this.showNotification('Failed to load featured image. Please set it again.', 'error');
+                    this.removeFeaturedImage();
+                    this.hideLoadingOverlay();
+                });
+            
+            return; // Skip the default src setting below as we're handling it in the fetch
+        }
+        
+        // Set up error handler after a small delay to avoid potential race conditions
+        setTimeout(() => {
+            this.featuredImagePreview.onerror = (e) => {
+                console.error('Failed to load image in preview', e);
+                // Prevent recursive notifications by removing the handler immediately
+                this.featuredImagePreview.onerror = null;
+                
+                // Show notification only once
+                this.showNotification('Failed to load image preview. Please try again.', 'error');
+                
+                // Safely clean up the image
+                this.removeFeaturedImage();
+            };
+        }, 0);
+        
+        // Use the processed URL for the image source
+        this.featuredImagePreview.src = processedUrl;
     }
     
     /**
@@ -1504,70 +1567,53 @@ class BlogManager {
                 imageUrl = URL.createObjectURL(blob);
             }
             
+            // Different handling based on where the image is being inserted
             if (this.imageInsertCallback === 'featured') {
                 // Set as featured image
                 this.setFeaturedImage(imageUrl);
                 
-                if (this.featuredImageAlt) {
-                    this.featuredImageAlt.value = this.selectedImage.alt || '';
+                // Set alt text if available
+                if (this.featuredImageAlt && this.selectedImage.alt) {
+                    this.featuredImageAlt.value = this.selectedImage.alt;
                 }
+                
+                this.showNotification('Featured image set successfully!');
             } else if (this.imageInsertCallback === 'content') {
-                // Insert into post content
+                // Insert at cursor position in Quill editor
                 this.insertImage(imageUrl, this.selectedImage.alt || '');
-                
-                // Add to post images if not already present
-                if (this.currentPost && this.currentPost.images) {
-                    const existingImage = this.currentPost.images.find(img => img.url === this.selectedImage.url);
-                    if (!existingImage) {
-                        this.currentPost.images.push({
-                            url: this.selectedImage.url,
-                            alt: this.selectedImage.alt || ''
-                        });
-                    }
-                }
-                
-                // Show images container and update gallery
-                if (this.blogImagesContainer && this.currentPost.images.length > 0) {
-                    this.blogImagesContainer.style.display = '';
-                    this.renderBlogImages(this.currentPost.images);
-                }
+                this.showNotification('Image inserted into content!');
             }
             
+            // Close the modal
             this.closeImageModal();
             this.hideLoadingOverlay();
         } catch (error) {
-            console.error('Error selecting image:', error);
-            this.showNotification('Failed to select image. Please try again.', 'error');
+            console.error('Error selecting and inserting image:', error);
+            this.showNotification('Failed to insert image. Please try again.', 'error');
             this.hideLoadingOverlay();
         }
     }
     
     /**
-     * Process an image for use in the blog
+     * Process image for compression
      */
     async processImage(imageFile) {
-        // Define compression options based on file characteristics
-        const options = {
-            maxSizeMB: 5,
-            maxWidthOrHeight: 2560,
-            useWebWorker: true,
-            preserveExif: true,
-            initialQuality: 0.9,
-            alwaysKeepResolution: false
-        };
-
-        // Adjust compression based on file size
-        if (imageFile.size > 10 * 1024 * 1024) {
-            options.maxSizeMB = 3;
-            options.initialQuality = 0.85;
-        } else if (imageFile.size < 1 * 1024 * 1024) {
-            options.maxSizeMB = 1;
-            options.initialQuality = 0.95;
+        if (!imageFile) {
+            throw new Error('No image file provided');
         }
         
-        // Special handling for PNGs (which need different quality settings)
-        if (imageFile.type === 'image/png') {
-            options.initialQuality = 0.85;
+        // Make a copy of the options
+        const options = { ...this.imageOptions };
+        
+        // Use higher quality for featured images
+        try {
+            if (this.imageInsertCallback === 'featured') {
+                options.initialQuality = 0.85;
+            }
+        } catch (error) {
+            console.error('Error selecting and inserting image:', error);
+            // Fall back to reading the original file
+            return await this.readFileAsDataURL(imageFile);
         }
         
         // Don't compress GIFs (to preserve animation)
@@ -1658,16 +1704,14 @@ class BlogManager {
      * Show loading overlay
      */
     showLoadingOverlay() {
-        // Check if overlay already exists
+        // Create or show loading overlay
         let overlay = document.querySelector('.loading-overlay');
-        
         if (!overlay) {
             overlay = document.createElement('div');
             overlay.className = 'loading-overlay';
             overlay.innerHTML = '<div class="spinner"></div>';
             document.body.appendChild(overlay);
         }
-        
         overlay.style.display = 'flex';
     }
     
@@ -1681,47 +1725,6 @@ class BlogManager {
         }
     }
     
-    /**
-     * Set the featured image
-     */
-    setFeaturedImage(imageUrl, metadata = {}) {
-        if (!this.featuredImagePreview || !this.featuredImagePlaceholder) return;
-        
-        // Make sure we have a valid image URL or data URL
-        if (!imageUrl) {
-            console.error('Invalid image URL provided to setFeaturedImage');
-            this.showNotification('Failed to set image. Invalid image data.', 'error');
-            return;
-        }
-        
-        // Store metadata on the current post if available
-        if (this.currentPost) {
-            this.currentPost.featuredImageMetadata = metadata;
-        }
-        
-        this.featuredImagePreview.onload = () => {
-            // Show the preview once image is loaded
-            this.featuredImagePreview.style.display = '';
-            this.featuredImagePlaceholder.style.display = 'none';
-            
-            if (this.removeFeaturedImageBtn) {
-                this.removeFeaturedImageBtn.style.display = '';
-            }
-            
-            // Log successful load
-            if (metadata.dimensions) {
-                console.log(`Featured image loaded: ${metadata.dimensions.width}x${metadata.dimensions.height}`);
-            }
-        };
-        
-        this.featuredImagePreview.onerror = () => {
-            console.error('Failed to load image in preview');
-            this.showNotification('Failed to load image preview. Please try again.', 'error');
-            this.removeFeaturedImage();
-        };
-        
-        this.featuredImagePreview.src = imageUrl;
-    }
     
     /**
      * Show notification
@@ -1743,7 +1746,7 @@ class BlogManager {
         
         // Add notification to container
         notificationContainer.appendChild(notification);
-        
+            
         // Auto remove after 3 seconds
         setTimeout(() => {
             notification.classList.add('hide');
@@ -1756,5 +1759,116 @@ class BlogManager {
                 }
             }, 300);
         }, 3000);
+    }
+    
+    /**
+     * Show delete confirmation modal
+     */
+    showDeleteConfirmation(postId) {
+        const post = this.posts.find(p => p._id === postId);
+        if (!post || !this.deleteModal || !this.deletePostTitle) return;
+        
+        this.postToDelete = postId;
+        this.deletePostTitle.textContent = post.title || 'Untitled Post';
+        this.deleteModal.style.display = 'flex';
+        
+        // Add classes for animation
+        setTimeout(() => {
+            this.deleteModal.classList.add('show');
+            const modalContent = this.deleteModal.querySelector('.admin-modal-content');
+            if (modalContent) modalContent.classList.add('show');
+        }, 10);
+    }
+    
+    /**
+     * Edit an existing blog post
+     */
+    async editPost(postId) {
+        try {
+            this.showLoadingOverlay();
+            
+            // Find post from cached posts first
+            let post = this.posts.find(p => p._id === postId);
+            
+            // If not found in cache, fetch from API
+            if (!post) {
+                const response = await fetch(`/api/blog/posts/${postId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load blog post');
+                }
+                
+                const data = await response.json();
+                post = data.post;
+            }
+            
+            if (!post) {
+                throw new Error('Post not found');
+            }
+            
+            this.isEditMode = true;
+            this.currentPost = post;
+            
+            // Fill form fields
+            if (this.postTitle) this.postTitle.value = post.title || '';
+            if (this.postSlug) this.postSlug.value = post.slug || '';
+            if (this.postExcerpt) this.postExcerpt.value = post.excerpt || '';
+            if (this.postContent) this.postContent.value = post.content || '';
+            if (this.postAuthor) this.postAuthor.value = post.author || 'Gabi';
+            if (this.postTags) this.postTags.value = post.tags ? post.tags.join(', ') : '';
+            
+            // Set featured image if exists
+            if (post.coverImage && post.coverImage.url) {
+                console.log('Post has cover image:', post.coverImage);
+                
+                // Check if we have a valid URL
+                let coverImageUrl = post.coverImage.url;
+                
+                // If URL is relative and doesn't start with a data URL indicator,
+                // make sure it's properly formed
+                if (!coverImageUrl.startsWith('data:') && !coverImageUrl.startsWith('http')) {
+                    // Make sure URL starts with a slash
+                    if (!coverImageUrl.startsWith('/')) {
+                        coverImageUrl = '/' + coverImageUrl;
+                    }
+                }
+                
+                this.setFeaturedImage(coverImageUrl);
+                if (this.featuredImageAlt) {
+                    this.featuredImageAlt.value = post.coverImage.alt || '';
+                }
+            } else {
+                this.removeFeaturedImage();
+            }
+            
+            // Update UI
+            if (this.editorTitle) {
+                this.editorTitle.textContent = 'Edit Post';
+            }
+            
+            if (this.editorStatus) {
+                this.editorStatus.textContent = post.published ? 'Published' : 'Draft';
+                if (post.published) {
+                    this.editorStatus.classList.add('published');
+                } else {
+                    this.editorStatus.classList.remove('published');
+                }
+            }
+            
+            // Show blog images if any
+            if (post.images && post.images.length > 0 && this.blogImagesContainer) {
+                this.blogImagesContainer.style.display = '';
+                this.renderBlogImages(post.images);
+            } else if (this.blogImagesContainer) {
+                this.blogImagesContainer.style.display = 'none';
+            }
+            
+            this.showEditorPanel();
+            this.hideLoadingOverlay();
+        } catch (error) {
+            console.error('Error editing post:', error);
+            this.showNotification('Failed to load post for editing. Please try again.', 'error');
+            this.hideLoadingOverlay();
+        }
     }
 }

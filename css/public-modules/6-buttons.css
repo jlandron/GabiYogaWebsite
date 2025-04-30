@@ -1,0 +1,133 @@
+/*******************************
+ * 6. BUTTONS & INTERACTIVE ELEMENTS
+ *******************************/
+
+/* Primary Button */
+.btn {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: var(--border-radius);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    transition: var(--transition);
+    margin-top: 15px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+/* Small Button */
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    margin-top: 10px;
+    text-align: center;
+}
+
+.btn-small:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+/* Secondary Button Style */
+.btn-secondary {
+    background-color: #fff;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-3px);
+}
+
+/* Full Width Button */
+.btn-full-width {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Google Sign-in Button */
+.btn-google {
+    background-color: #fff;
+    color: #757575;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    padding-left: 50px;
+}
+
+.btn-google:hover {
+    background-color: #f8f8f8;
+    color: #4285f4;
+    transform: translateY(-3px);
+}
+
+.btn-google i {
+    font-size: 1.2rem;
+    color: #4285f4;
+    position: absolute;
+    left: 15px;
+}
+
+/* Read More Link */
+.read-more {
+    display: inline-block;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.read-more::after {
+    content: ' →';
+    transition: margin-left 0.3s;
+}
+
+.read-more:hover {
+    color: var(--accent-color);
+}
+
+.read-more:hover::after {
+    margin-left: 5px;
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-3px);
+}

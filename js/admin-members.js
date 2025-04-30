@@ -341,6 +341,14 @@ async function viewMemberDetail(memberId) {
       throw new Error('Member not found');
     }
 
+    // Check for biography updates in localStorage
+    const bioUpdatesKey = `member_bio_${memberId}`;
+    const bioUpdates = localStorage.getItem(bioUpdatesKey);
+    if (bioUpdates) {
+      // If there are updates, apply them to the member object
+      member.bio = bioUpdates;
+    }
+
     // Populate modal with member details
     populateMemberDetailModal(member, modal);
 
@@ -1489,9 +1497,20 @@ function saveMemberBio(modal, originalContent) {
   saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
   saveBtn.disabled = true;
   
+  // Get the member ID from the data attribute
+  const memberCard = document.querySelector(`.member-card[data-member-id="${memberIdForBioEdit}"]`);
+  if (!memberCard) {
+    console.error('Could not find member card for saving bio');
+  }
+  
   // In a real app, we would call an API to save the bio
-  // For now, we'll simulate success with a delay
+  // For now, we'll simulate success with a delay and save to localStorage
   setTimeout(() => {
+    // Save to localStorage so it persists between views
+    if (memberIdForBioEdit) {
+      localStorage.setItem(`member_bio_${memberIdForBioEdit}`, updatedBio);
+    }
+    
     // Update the bio div with new content
     const bioDiv = modal.querySelector('#modal-member-bio');
     if (bioDiv) {

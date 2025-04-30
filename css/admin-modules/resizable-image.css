@@ -1,0 +1,93 @@
+/**
+ * Resizable Image Styling for QuillJS
+ */
+
+/* Style for the image in the editor */
+.ql-editor .ql-resizable-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    cursor: default;
+}
+
+/* Container for resize handles */
+.quill-image-resize-container {
+    position: absolute;
+    box-sizing: content-box;
+    border: 1px solid transparent;
+    /* Ensure the container wraps around the image exactly */
+    pointer-events: none;
+}
+
+/* Base styles for the resize handles */
+.quill-image-resize-handle {
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    background-color: #0066cc;
+    border: 1px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 100;
+    pointer-events: auto;
+    opacity: 0; /* Hide handles by default */
+    transition: opacity 0.2s ease;
+}
+
+/* Show handles when container is active or when resizing */
+.quill-image-resize-container.active .quill-image-resize-handle,
+.quill-image-resizing .quill-image-resize-handle {
+    opacity: 1;
+}
+
+/* Positions for each handle */
+.quill-image-resize-handle-nw {
+    top: -7px;
+    left: -7px;
+    cursor: nw-resize;
+}
+
+.quill-image-resize-handle-ne {
+    top: -7px;
+    right: -7px;
+    cursor: ne-resize;
+}
+
+.quill-image-resize-handle-sw {
+    bottom: -7px;
+    left: -7px;
+    cursor: sw-resize;
+}
+
+.quill-image-resize-handle-se {
+    bottom: -7px;
+    right: -7px;
+    cursor: se-resize;
+}
+
+/* Add style when actively resizing */
+.quill-image-resizing {
+    cursor: move;
+    user-select: none;
+}
+
+.quill-image-resizing .ql-resizable-image {
+    outline: 2px solid #0066cc;
+}
+
+/* Style for selected image */
+.ql-editor .ql-resizable-image.selected {
+    outline: 2px solid #0066cc;
+    box-shadow: 0 0 5px rgba(0, 102, 204, 0.5);
+}
+
+/* Show the container border when active */
+.quill-image-resize-container.active {
+    border: 1px dashed #0066cc;
+}
+
+/* Styles for viewing the content (non-editor) */
+.blog-preview-content img {
+    max-width: 100%;
+    height: auto;
+}
