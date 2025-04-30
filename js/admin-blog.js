@@ -84,6 +84,7 @@ class BlogManager {
         this.selectedImage = null;
         this.imageInsertCallback = null;
         this.postToDelete = null;
+        this.postIdToDelete = null; // Add a separate property to store the post ID
         this.isEditMode = false;
         
         // Object URL tracking for proper cleanup
@@ -117,7 +118,7 @@ class BlogManager {
             // Load blog posts
             await this.loadPosts();
             
-            // We'll comment out loadImages for now as it's not implemented
+            // Load images from gallery
             await this.loadImages();
         } catch (error) {
             console.error('Error initializing blog manager:', error);
@@ -129,6 +130,16 @@ class BlogManager {
      * Bind event handlers
      */
     bindEvents() {
+        // Connect new post button
+        if (this.newPostBtn) {
+            this.newPostBtn.addEventListener('click', () => this.createNewPost());
+        }
+        
+        // Connect back button
+        if (this.backToPostsBtn) {
+            this.backToPostsBtn.addEventListener('click', () => this.showBlogPanel());
+        }
+        
         if (this.previewPostBtn) {
             this.previewPostBtn.addEventListener('click', () => this.previewPost());
         }
@@ -1103,17 +1114,41 @@ class BlogManager {
     closeDeleteModal() {
         if (!this.deleteModal) return;
         this.deleteModal.classList.remove('show');
-        this.postToDelete = null;
+        
+        // Wait for animation to complete before hiding modal
+        setTimeout(() => {
+            this.deleteModal.style.display = 'none';
+        }, 300);
+        
+        // Delay clearing references to avoid race conditions with deleteSelectedPost
+        setTimeout(() => {
+            this.postToDelete = null;
+            this.postIdToDelete = null;
+        }, 350);
     }
     
     /**
      * Delete the selected post
      */
     async deleteSelectedPost() {
-        if (!this.postToDelete) return;
-        
         try {
-            this.closeDeleteModal();
+            // Store post ID locally before closing modal
+            // Use either the postIdToDelete or extract from postToDelete object as fallback
+            const postId = this.postIdToDelete || (this.postToDelete && this.postToDelete._id);
+            
+            if (!postId) {
+                console.error('No post ID available for deletion');
+                this.showNotification('Cannot delete post: Post ID not found', 'error');
+                return;
+            }
+            
+            console.log(`Deleting post with ID: ${postId}`);
+            
+            // Close the modal first to avoid race conditions with async operations
+            if (this.deleteModal) {
+                this.closeDeleteModal();
+            }
+            
             this.showLoadingOverlay();
             
             // Get authentication token
@@ -1122,8 +1157,8 @@ class BlogManager {
                 throw new Error('Authentication required. Please log in again.');
             }
             
-            // Delete from API using the postToDelete._id (now postToDelete is the entire post object)
-            const response = await fetch(`/api/blog/posts/${this.postToDelete._id}`, {
+            // Delete from API using the stored post ID
+            const response = await fetch(`/api/blog/posts/${postId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -1135,14 +1170,11 @@ class BlogManager {
             }
             
             // Remove from local posts array
-            this.posts = this.posts.filter(post => post._id !== this.postToDelete._id);
+            this.posts = this.posts.filter(post => String(post._id) !== String(postId));
             
             // Update UI
             this.renderPosts();
             this.showNotification('Post deleted successfully.');
-            
-            // Clear post to delete
-            this.postToDelete = null;
         } catch (error) {
             console.error('Error deleting post:', error);
             this.showNotification(`Error deleting post: ${error.message}`, 'error');
@@ -1767,6 +1799,7 @@ class BlogManager {
         if (!post || !this.deleteModal || !this.deletePostTitle) return;
         
         this.postToDelete = post; // Store the entire post object instead of just the ID
+        this.postIdToDelete = String(postId); // Also store the ID separately for redundancy
         this.deletePostTitle.textContent = post.title || 'Untitled Post';
         this.deleteModal.style.display = 'flex';
         
