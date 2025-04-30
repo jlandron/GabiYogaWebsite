@@ -20,23 +20,23 @@ section {
     margin-top: 30px;
 }
 
-.about-image {
-    flex: 0 0 350px;
-    height: 450px;
+.about-content .about-image {
+    flex: 0 0 400px;
+    height: 400px;
     overflow: hidden;
-    border-radius: var(--border-radius);
+    border-radius: 50%;
     box-shadow: var(--box-shadow);
 }
 
-.about-image img {
+.about-content .about-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: center 30%;
     transition: transform 0.5s ease;
 }
 
-.about-image img:hover {
+.about-content .about-image img:hover {
     transform: scale(1.03);
 }
 
@@ -455,9 +455,10 @@ section {
     .about-image {
         flex: 0 0 auto;
         width: 100%;
-        max-width: 350px;
+        max-width: 400px;
         height: 400px;
         margin-bottom: 30px;
+        border-radius: 50%; /* Maintain circular shape on small screens */
     }
     .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
