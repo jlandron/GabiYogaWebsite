@@ -1060,7 +1060,8 @@ class BlogManager {
      */
     viewPost(postId) {
         console.log('View post clicked:', postId);
-        const post = this.posts.find(p => p._id === postId);
+        // Convert postId to ensure consistent type comparison
+        const post = this.posts.find(p => String(p._id) === String(postId));
         if (!post) {
             console.error('Post not found:', postId);
             this.showNotification('Post not found.', 'error');
@@ -1085,7 +1086,7 @@ class BlogManager {
      * Confirm deletion of a post
      */
     confirmDeletePost(postId) {
-        const post = this.posts.find(p => p._id === postId);
+        const post = this.posts.find(p => String(p._id) === String(postId));
         if (!post) return;
         
         this.postToDelete = post;
@@ -1765,10 +1766,10 @@ class BlogManager {
      * Show delete confirmation modal
      */
     showDeleteConfirmation(postId) {
-        const post = this.posts.find(p => p._id === postId);
+        const post = this.posts.find(p => String(p._id) === String(postId));
         if (!post || !this.deleteModal || !this.deletePostTitle) return;
         
-        this.postToDelete = postId;
+        this.postToDelete = post; // Store the entire post object instead of just the ID
         this.deletePostTitle.textContent = post.title || 'Untitled Post';
         this.deleteModal.style.display = 'flex';
         
