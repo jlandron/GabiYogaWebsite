@@ -210,6 +210,14 @@ class BlogManager {
             this.confirmDeleteBtn.addEventListener('click', () => this.deleteSelectedPost());
         }
         
+        // Add event handler for the X button in delete modal
+        if (this.deleteModal) {
+            const closeBtn = this.deleteModal.querySelector('.modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => this.closeDeleteModal());
+            }
+        }
+        
         // Close modals when clicking outside
         document.addEventListener('click', (e) => {
             if (this.previewModal && e.target === this.previewModal) {
@@ -1083,21 +1091,10 @@ class BlogManager {
     }
     
     /**
-     * Confirm deletion of a post
+     * Confirm deletion of a post - this is an unused method, as showDeleteConfirmation is used instead
      */
     confirmDeletePost(postId) {
-        const post = this.posts.find(p => String(p._id) === String(postId));
-        if (!post) return;
-        
-        this.postToDelete = post;
-        
-        if (this.deletePostTitle) {
-            this.deletePostTitle.textContent = `"${post.title || 'Untitled Post'}"`;
-        }
-        
-        if (this.deleteModal) {
-            this.deleteModal.classList.add('show');
-        }
+        // This method is not currently used - showDeleteConfirmation is used instead
     }
     
     /**
@@ -1125,7 +1122,7 @@ class BlogManager {
                 throw new Error('Authentication required. Please log in again.');
             }
             
-            // Delete from API
+            // Delete from API using the postToDelete._id (now postToDelete is the entire post object)
             const response = await fetch(`/api/blog/posts/${this.postToDelete._id}`, {
                 method: 'DELETE',
                 headers: {
