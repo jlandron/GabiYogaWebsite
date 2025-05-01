@@ -408,15 +408,8 @@ function initializeOfferingEditors() {
  * Save all settings
  */
 function saveAllSettings() {
-    console.log('[Settings Debug] Starting to save all settings');
+    console.log('Starting to save all settings');
     const settingsData = collectSettingsData();
-    console.log('[Settings Debug] Settings data collected and ready to save:', 
-                JSON.stringify({
-                    heroHeadingLength: settingsData.heroText?.heading?.text?.length,
-                    heroSubheadingLength: settingsData.heroText?.subheading?.text?.length,
-                    bioLength: settingsData.about?.bio?.length,
-                    certCount: settingsData.certifications?.length
-                }));
     
     fetch('/api/admin/settings', {
         method: 'PUT',
@@ -450,24 +443,19 @@ function saveAllSettings() {
  */
 function extractQuillFormat(quill) {
     if (!quill) {
-        console.log('[Format Debug] No quill instance provided');
         return {};
     }
     
     const length = quill.getLength();
     if (length <= 1) {
-        console.log('[Format Debug] Editor is empty or contains only a newline');
         return {};  // Empty editor
     }
-    
-    console.log(`[Format Debug] Extracting format from quill editor with content length: ${length}`);
     
     // Using a hardcoded size for headings to ensure consistency
     // Check if this is the hero heading editor by looking at the DOM
     let isHeroHeading = false;
     if (quill.root && quill.root.closest && quill.root.closest('#hero-heading-container')) {
         isHeroHeading = true;
-        console.log('[Format Debug] Detected this is the hero heading editor');
     }
     
     const formatData = {};
@@ -475,49 +463,39 @@ function extractQuillFormat(quill) {
     // For hero heading, always use 72px size
     if (isHeroHeading) {
         formatData.size = '64px';
-        console.log('[Format Debug] Setting default hero heading size: 64px');
     }
     
     // First try to get formats from Quill directly
     const format = quill.getFormat(0, Math.min(50, length - 1));
-    console.log('[Format Debug] Raw format from Quill:', JSON.stringify(format));
     
     // Add basic formatting properties from Quill formats
     if (format.font) {
         formatData.font = FONT_MAP[format.font] || format.font;
-        console.log(`[Format Debug] Mapped font: ${format.font} -> ${formatData.font}`);
     }
     
     if (format.size) {
         formatData.size = format.size;
-        console.log(`[Format Debug] Size: ${formatData.size}`);
     }
     
     if (format.bold) {
         formatData.fontWeight = 'bold';
-        console.log('[Format Debug] Font weight: bold');
     }
     
     if (format.italic) {
         formatData.fontStyle = 'italic';
-        console.log('[Format Debug] Font style: italic');
     }
     
     if (format.underline) {
         formatData.textDecoration = 'underline';
-        console.log('[Format Debug] Text decoration: underline');
     }
     
     if (format.align) {
         formatData.textAlign = format.align;
-        console.log(`[Format Debug] Text align: ${format.align}`);
     }
     
     // If no font was found in the format object, try to parse from HTML
     if (!formatData.font || !formatData.size) {
-        console.log('[Format Debug] Missing font information, parsing from HTML');
         const html = quill.root.innerHTML;
-        console.log('[Format Debug] HTML to parse:', html.substring(0, 150) + (html.length > 150 ? '...' : ''));
         
         // Check for Quill font classes
         const fontClassMatch = html.match(/ql-font-([a-zA-Z0-9]+)/);
@@ -525,9 +503,6 @@ function extractQuillFormat(quill) {
             const fontKey = fontClassMatch[1];
             if (FONT_MAP[fontKey]) {
                 formatData.font = FONT_MAP[fontKey];
-                console.log(`[Format Debug] Found font from HTML class: ${fontKey} -> ${formatData.font}`);
-            } else {
-                console.log(`[Format Debug] Found font class but no mapping: ${fontKey}`);
             }
         }
         
@@ -536,7 +511,6 @@ function extractQuillFormat(quill) {
         if (fontStyleMatch) {
             const fontValue = (fontStyleMatch[1] || fontStyleMatch[2] || fontStyleMatch[3]).trim();
             formatData.font = fontValue;
-            console.log(`[Format Debug] Found font from inline style: ${fontValue}`);
         }
         
         // Look for size information
@@ -544,30 +518,24 @@ function extractQuillFormat(quill) {
         if (sizeStyleMatch) {
             const sizeValue = sizeStyleMatch[1].trim();
             formatData.size = sizeValue;
-            console.log(`[Format Debug] Found size from inline style: ${sizeValue}`);
         }
         
         // Check for alignment classes
         const alignClassMatch = html.match(/ql-align-([a-zA-Z0-9]+)/);
         if (alignClassMatch && alignClassMatch[1] && !formatData.textAlign) {
             formatData.textAlign = alignClassMatch[1];
-            console.log(`[Format Debug] Found alignment from HTML class: ${formatData.textAlign}`);
         }
         
         // If still no font found and this is a heading/subheading, use defaults
         if (!formatData.font) {
             // Try to determine what kind of editor from the HTML
             if (html.includes('Find Your Inner Peace')) {
-                console.log('[Format Debug] Default font for heading: Julietta');
                 formatData.font = "'Julietta', serif";
             } else if (html.toLowerCase().includes('gabi yoga')) {
-                console.log('[Format Debug] Default font for bio: Themunday');
                 formatData.font = "'Themunday', serif";
             }
         }
     }
-    
-    console.log('[Format Debug] Final extracted format data:', JSON.stringify(formatData));
     return formatData;
 }
 
@@ -836,22 +804,20 @@ function applySettingsFromAPI(settings) {
  */
 function applyQuillFormats(quill, formats) {
     if (!quill) {
-        console.error('[Format Debug] Cannot apply formats - quill is null');
+        console.error('Cannot apply formats - quill is null');
         return;
     }
     
     if (!formats) {
-        console.error('[Format Debug] Cannot apply formats - formats object is null');
+        console.error('Cannot apply formats - formats object is null');
         return;
     }
     
     const length = quill.getLength();
     if (length <= 1) {
-        console.warn('[Format Debug] Cannot apply formats - quill editor has no content');
+        console.warn('Cannot apply formats - quill editor has no content');
         return;
     }
-    
-    console.log('[Format Debug] About to apply formats:', JSON.stringify(formats), 'to editor with length', length);
     
     try {
         // Apply in specific order for best results
@@ -859,9 +825,6 @@ function applyQuillFormats(quill, formats) {
         // Convert CSS font family format to Quill format
         let quillFont = null;
         if (formats.font) {
-            // Extract the font name from the CSS font-family string
-            console.log('[Format Debug] Processing font format from CSS:', formats.font);
-            
             // Handle different font formats - extract the font name from quotes if needed
             const fontMatch = formats.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
             if (fontMatch) {
@@ -872,13 +835,12 @@ function applyQuillFormats(quill, formats) {
                 for (const [key, value] of Object.entries(FONT_MAP)) {
                     if (value.includes(fontName)) {
                         quillFont = key;
-                        console.log(`[Format Debug] Mapped CSS font "${fontName}" to Quill font "${quillFont}"`);
                         break;
                     }
                 }
                 
                 if (!quillFont) {
-                    console.warn(`[Format Debug] Could not map font "${fontName}" to a Quill font, using as-is`);
+                    console.warn(`Could not map font "${fontName}" to a Quill font, using as-is`);
                     quillFont = fontName;
                 }
             }
@@ -886,51 +848,37 @@ function applyQuillFormats(quill, formats) {
 
         // 1. Apply basic formatting first
         if (quillFont) {
-            console.log('[Format Debug] Applying font format:', quillFont);
             quill.formatText(0, length, { font: quillFont });
-            console.log('[Format Debug] Font format applied');
         }
         
-        console.log('[Format Debug] Applying size format:', formats.size);
         if (formats.size) {
             quill.formatText(0, length, { size: formats.size });
-            console.log('[Format Debug] Size format applied');
         }
         
         // 2. Apply styling attributes separately
         if (formats.bold) {
-            console.log('[Format Debug] Applying bold format');
             quill.formatText(0, length, { bold: true });
         }
         
         if (formats.italic) {
-            console.log('[Format Debug] Applying italic format');
             quill.formatText(0, length, { italic: true });
         }
         
         if (formats.underline) {
-            console.log('[Format Debug] Applying underline format');
             quill.formatText(0, length, { underline: true });
         }
         
         // 3. Apply alignment last (global for the entire editor)
         if (formats.align) {
-            console.log('[Format Debug] Applying alignment:', formats.align);
             quill.formatText(0, length, { align: formats.align });
         }
         
         // 4. Force update to ensure UI reflects changes
-        console.log('[Format Debug] Scheduling quill update to ensure UI reflects changes');
         setTimeout(() => {
             quill.update();
-            console.log('[Format Debug] Quill update completed');
-            console.log('[Format Debug] Final content HTML:', quill.root.innerHTML.substring(0, 100) + 
-                        (quill.root.innerHTML.length > 100 ? '...' : ''));
         }, 100);
-        
-        console.log('[Format Debug] Applied all formats successfully:', JSON.stringify(formats));
     } catch (error) {
-        console.error('[Format Debug] Error applying formats:', error);
+        console.error('Error applying formats:', error);
     }
 }
 
@@ -954,7 +902,7 @@ function updateOfferingEditors(offeringsContent) {
         // First collect all formatting information
         const formats = {
             font: offeringsContent[`${offering.key}Font`] ? 
-                mapCSSFontToQuill(offeringsContent[`${offering.key}Font`]) : 'opensans',
+                cssToQuillFont(offeringsContent[`${offering.key}Font`]) : 'opensans',
             size: offeringsContent[`${offering.key}Size`] || '14px',
             bold: offeringsContent[`${offering.key}FontWeight`] === 'bold',
             italic: offeringsContent[`${offering.key}FontStyle`] === 'italic',
@@ -978,78 +926,10 @@ function updateOfferingEditors(offeringsContent) {
         const quill = Quill.find(editorContainer);
         if (!quill) return;
         
-        // Temporarily mark editor as initializing to prevent content loss
-        quill.initialContentSet = true;
-        
-        // Update the editor content using a consistent approach
+        // Use our helper function to update the editor
         try {
-            console.log(`[Format Debug] Updating ${offering.key} editor with format:`, JSON.stringify(formats));
-            
-            // Clear first to prevent formatting conflicts
-            quill.setContents([]);
-            
-            // Insert content
-            if (content.trim().startsWith('<')) {
-                // If it's HTML content
-                quill.root.innerHTML = content;
-            } else {
-                // If it's plain text
-                quill.setText(content);
-            }
-            
-            console.log(`Updated ${offering.key} QuillJS editor with content:`,
-                content.substring(0, 50) + (content.length > 50 ? '...' : ''));
-            
-            // IMPORTANT: Need to make sure content is set before applying formats
-            // Apply formatting to the entire content with explicit methods instead of using applyQuillFormats
-            // Force Quill to update before applying formats
-            quill.update();
-            
-            // Apply formats directly to the entire content
-            const length = quill.getLength();
-            if (length > 1) {
-                const formatData = {};
-                
-                // Apply each format property separately for better reliability
-                if (formats.font) {
-                    formatData.font = formats.font;
-                }
-                
-                if (formats.size) {
-                    formatData.size = formats.size;
-                }
-                
-                if (formats.bold) {
-                    formatData.bold = formats.bold;
-                }
-                
-                if (formats.italic) {
-                    formatData.italic = formats.italic;
-                }
-                
-                if (formats.underline) {
-                    formatData.underline = formats.underline;
-                }
-                
-                if (formats.align) {
-                    formatData.align = formats.align;
-                }
-                
-                // Apply all formats at once to the entire content
-                console.log(`[Format Debug] Applying formats to ${offering.key}:`, JSON.stringify(formatData));
-                quill.formatText(0, length, formatData);
-                
-                // Additional formatting for specific key formats to ensure they apply
-                if (formats.font) {
-                    quill.format('font', formats.font);
-                }
-            }
-            
-            // Delay clearing the initialization flag to ensure formats are applied
-            setTimeout(() => {
-                quill.initialContentSet = false;
-                console.log(`[Format Debug] ${offering.key} editor initialization complete`);
-            }, 500);
+            updateSingleQuillEditor(quill, content, formats, 'opensans');
+            console.log(`Updated ${offering.key} QuillJS editor with content`);
         }
         catch (error) {
             console.error(`Error updating ${offering.key} editor:`, error);
@@ -1062,278 +942,91 @@ function updateOfferingEditors(offeringsContent) {
  * @param {Object} settings - Settings from the API
  */
 function updateQuillContents(settings) {
-    console.log('[Format Debug] Updating Quill contents with settings:', 
-                JSON.stringify({
-                    headingText: settings.heroText?.heading?.text?.length || 0,
-                    headingFont: settings.heroText?.heading?.font,
-                    subheadingText: settings.heroText?.subheading?.text?.length || 0,
-                    subheadingFont: settings.heroText?.subheading?.font,
-                    bioText: settings.about?.bio?.length || 0,
-                    bioFont: settings.about?.bioFont
-                }));
-
-    // Update Hero Text editors
-    if (settings.heroText) {
-        // Heading
-        if (settings.heroText.heading && headingQuill) {
-            // Get the textarea
-            const textArea = document.getElementById('hero-heading');
-            if (textArea) {
-                textArea.value = settings.heroText.heading.text || '';
-            }
-            
-            // IMPORTANT: Set content FIRST
-            const headingText = settings.heroText.heading.text || 'Find Your Inner Peace';
-            
-            // Determine if content is HTML or plain text
-            if (headingText.trim().startsWith('<')) {
-                console.log('[Format Debug] Setting HTML content for heading:', 
-                            headingText.substring(0, 50) + (headingText.length > 50 ? '...' : ''));
-                
-                // First clear the editor
-                headingQuill.setContents([]);
-                // Then set HTML content
-                headingQuill.root.innerHTML = headingText;
-            } else {
-                console.log('[Format Debug] Setting plain text content for heading:', 
-                            headingText.substring(0, 50) + (headingText.length > 50 ? '...' : ''));
-                
-                // Set plain text content
-                headingQuill.setText(headingText);
-            }
-            
-            // Force update to ensure text is applied before formatting
-            headingQuill.update();
-            
-            try {
-                // Map format values
-                let fontValue = 'playfair'; // Default font
-                
-                // Convert CSS font string to Quill internal format
-                if (settings.heroText.heading.font) {
-                    console.log('[Format Debug] Hero heading font from API:', settings.heroText.heading.font);
-                    // Extract actual font name from CSS font-family value
-                    const fontMatch = settings.heroText.heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
-                    if (fontMatch) {
-                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
-                        console.log('[Format Debug] Extracted font name:', fontName);
-                        
-                        // Look up this font name in our FONT_MAP to find the Quill internal name
-                        for (const [key, value] of Object.entries(FONT_MAP)) {
-                            if (value.includes(fontName)) {
-                                fontValue = key;
-                                console.log(`[Format Debug] Mapped font name "${fontName}" to Quill font "${fontValue}"`);
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                const formats = {
-                    font: fontValue,
-                    size: settings.heroText.heading.size || '48px',
-                    bold: settings.heroText.heading.fontWeight === 'bold',
-                    italic: settings.heroText.heading.fontStyle === 'italic',
-                    underline: settings.heroText.heading.textDecoration && 
-                             settings.heroText.heading.textDecoration.includes('underline'),
-                    align: settings.heroText.heading.textAlign || 'center'
-                };
-                
-                console.log('[Format Debug] Hero heading formats to apply:', formats);
-                
-                // Simple approach: manually apply formats to the editor content
-                headingQuill.formatText(0, headingQuill.getLength(), {
-                    'font': formats.font,
-                    'size': formats.size,
-                    'bold': formats.bold,
-                    'italic': formats.italic,
-                    'underline': formats.underline,
-                    'align': formats.align
-                });
-                
-                console.log('Updated hero heading with content and formats:', formats);
-            } catch (error) {
-                console.error('Error updating hero heading:', error);
-            }
+    // Update Hero Text - Heading
+    if (settings.heroText && settings.heroText.heading && headingQuill) {
+        // Update textarea value
+        const textArea = document.getElementById('hero-heading');
+        if (textArea) {
+            textArea.value = settings.heroText.heading.text || '';
         }
         
-        // Subheading
-        if (settings.heroText.subheading && subheadingQuill) {
-            // Get the textarea
-            const textArea = document.getElementById('hero-subheading');
-            if (textArea) {
-                textArea.value = settings.heroText.subheading.text || '';
-            }
+        // Convert CSS font to Quill font format
+        const fontValue = settings.heroText.heading.font ? 
+            cssToQuillFont(settings.heroText.heading.font) : 'playfair';
             
-            // Temporarily mark editor as initializing to prevent content loss
-            subheadingQuill.initialContentSet = true;
-            
-            // Clear the editor and set new content
-            subheadingQuill.setContents([]);
-            if (settings.heroText.subheading.text) {
-                if (settings.heroText.subheading.text.trim().startsWith('<')) {
-                    // If it's HTML content
-                    subheadingQuill.root.innerHTML = settings.heroText.subheading.text;
-                } else {
-                    // If it's plain text
-                    subheadingQuill.setText(settings.heroText.subheading.text);
-                }
-                
-                // Apply formatting
-                const formats = {
-                    font: settings.heroText.subheading.font ? 
-                        mapCSSFontToQuill(settings.heroText.subheading.font) : 'opensans',
-                    size: settings.heroText.subheading.size || '20px',
-                    bold: settings.heroText.subheading.fontWeight === 'bold',
-                    italic: settings.heroText.subheading.fontStyle === 'italic',
-                    underline: settings.heroText.subheading.textDecoration && 
-                             settings.heroText.subheading.textDecoration.includes('underline'),
-                    align: settings.heroText.subheading.textAlign || 'center'
-                };
-                
-                console.log('[Format Debug] Updating hero subheading with format:', JSON.stringify(formats));
-                
-                // Force Quill to update before applying formats
-                subheadingQuill.update();
-                
-                // Apply formats directly to the entire content
-                const length = subheadingQuill.getLength();
-                if (length > 1) {
-                    const formatData = {};
-                    
-                    // Apply each format property separately for better reliability
-                    if (formats.font) {
-                        formatData.font = formats.font;
-                    }
-                    
-                    if (formats.size) {
-                        formatData.size = formats.size;
-                    }
-                    
-                    if (formats.bold) {
-                        formatData.bold = formats.bold;
-                    }
-                    
-                    if (formats.italic) {
-                        formatData.italic = formats.italic;
-                    }
-                    
-                    if (formats.underline) {
-                        formatData.underline = formats.underline;
-                    }
-                    
-                    if (formats.align) {
-                        formatData.align = formats.align;
-                    }
-                    
-                    // Apply all formats at once to the entire content
-                    subheadingQuill.formatText(0, length, formatData);
-                    
-                    // Additional formatting for specific key formats to ensure they apply
-                    if (formats.font) {
-                        subheadingQuill.format('font', formats.font);
-                    }
-                }
-                
-                console.log('Updated hero subheading with content and formats:', formats);
-                
-                // Delay clearing the initialization flag to ensure formats are applied
-                setTimeout(() => {
-                    subheadingQuill.initialContentSet = false;
-                }, 500);
-            } else {
-                subheadingQuill.initialContentSet = false;
-            }
+        // Apply to Quill editor
+        updateSingleQuillEditor(
+            headingQuill,
+            settings.heroText.heading.text || 'Find Your Inner Peace',
+            {
+                font: fontValue,
+                size: settings.heroText.heading.size || '48px',
+                bold: settings.heroText.heading.fontWeight === 'bold',
+                italic: settings.heroText.heading.fontStyle === 'italic',
+                underline: settings.heroText.heading.textDecoration && 
+                         settings.heroText.heading.textDecoration.includes('underline'),
+                align: settings.heroText.heading.textAlign || 'center'
+            },
+            'playfair'
+        );
+        
+        console.log('Updated hero heading with content and formats');
+    }
+    
+    // Update Hero Text - Subheading
+    if (settings.heroText && settings.heroText.subheading && subheadingQuill) {
+        // Update textarea value
+        const textArea = document.getElementById('hero-subheading');
+        if (textArea) {
+            textArea.value = settings.heroText.subheading.text || '';
         }
+        
+        // Apply to Quill editor
+        updateSingleQuillEditor(
+            subheadingQuill,
+            settings.heroText.subheading.text,
+            {
+                font: settings.heroText.subheading.font ? 
+                    cssToQuillFont(settings.heroText.subheading.font) : 'opensans',
+                size: settings.heroText.subheading.size || '20px',
+                bold: settings.heroText.subheading.fontWeight === 'bold',
+                italic: settings.heroText.subheading.fontStyle === 'italic',
+                underline: settings.heroText.subheading.textDecoration && 
+                         settings.heroText.subheading.textDecoration.includes('underline'),
+                align: settings.heroText.subheading.textAlign || 'center'
+            },
+            'opensans'
+        );
+        
+        console.log('Updated hero subheading with content and formats');
     }
     
     // Update Instructor Bio
     if (settings.about && instructorBioQuill) {
-        // Get the textarea
+        // Update textarea value
         const textArea = document.getElementById('instructor-bio');
         if (textArea) {
             textArea.value = settings.about.bio || '';
         }
         
-        // Temporarily mark editor as initializing to prevent content loss
-        instructorBioQuill.initialContentSet = true;
-        
-        // Clear the editor and set new content
-        instructorBioQuill.setContents([]);
-        if (settings.about.bio) {
-            if (settings.about.bio.trim().startsWith('<')) {
-                // If it's HTML content
-                instructorBioQuill.root.innerHTML = settings.about.bio;
-            } else {
-                // If it's plain text
-                instructorBioQuill.setText(settings.about.bio);
-            }
-            
-            // Apply formatting
-            const formats = {
+        // Apply to Quill editor
+        updateSingleQuillEditor(
+            instructorBioQuill,
+            settings.about.bio,
+            {
                 font: settings.about.bioFont ? 
-                    mapCSSFontToQuill(settings.about.bioFont) : 'opensans',
+                    cssToQuillFont(settings.about.bioFont) : 'opensans',
                 size: settings.about.bioSize || '16px',
                 bold: settings.about.bioFontWeight === 'bold',
                 italic: settings.about.bioFontStyle === 'italic',
                 underline: settings.about.bioTextDecoration && 
                          settings.about.bioTextDecoration.includes('underline'),
                 align: settings.about.bioTextAlign || 'left'
-            };
-            
-            console.log('[Format Debug] Updating instructor bio with format:', JSON.stringify(formats));
-            
-            // Force Quill to update before applying formats
-            instructorBioQuill.update();
-            
-            // Apply formats directly to the entire content
-            const length = instructorBioQuill.getLength();
-            if (length > 1) {
-                const formatData = {};
-                
-                // Apply each format property separately for better reliability
-                if (formats.font) {
-                    formatData.font = formats.font;
-                }
-                
-                if (formats.size) {
-                    formatData.size = formats.size;
-                }
-                
-                if (formats.bold) {
-                    formatData.bold = formats.bold;
-                }
-                
-                if (formats.italic) {
-                    formatData.italic = formats.italic;
-                }
-                
-                if (formats.underline) {
-                    formatData.underline = formats.underline;
-                }
-                
-                if (formats.align) {
-                    formatData.align = formats.align;
-                }
-                
-                // Apply all formats at once to the entire content
-                instructorBioQuill.formatText(0, length, formatData);
-                
-                // Additional formatting for specific key formats to ensure they apply
-                if (formats.font) {
-                    instructorBioQuill.format('font', formats.font);
-                }
-            }
-            
-            console.log('Updated instructor bio with content and formats:', formats);
-            
-            // Delay clearing the initialization flag to ensure formats are applied
-            setTimeout(() => {
-                instructorBioQuill.initialContentSet = false;
-            }, 500);
-        } else {
-            instructorBioQuill.initialContentSet = false;
-        }
+            },
+            'opensans'
+        );
+        
+        console.log('Updated instructor bio with content and formats');
     }
     
     // Update offerings content
