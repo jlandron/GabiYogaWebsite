@@ -93,15 +93,21 @@
 
 /* Retreat Cards */
 .retreat-card {
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: var(--box-shadow);
+    box-shadow: var(--shadow);
     background-color: #fff;
     transition: var(--transition);
+    flex: 1 1 300px;
+    min-width: 280px;
+    max-width: 400px;
+    margin: 0;
+    border: 2px solid transparent;
 }
 
 .retreat-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .retreat-image {
@@ -148,6 +154,12 @@
     overflow: hidden;
     transition: var(--transition);
     position: relative;
+    width: 100%;
+    flex: 1 1 280px;
+    min-width: 260px;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
 }
 
 .pricing-card.featured {
@@ -188,13 +200,15 @@
 }
 
 .price {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: bold;
     margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .pricing-features {
-    padding: 30px 20px;
+    padding: 20px 20px 15px;
+    flex: 1;
 }
 
 .pricing-features ul {
@@ -206,7 +220,9 @@
 .pricing-btn {
     display: block;
     text-align: center;
-    margin: 0 20px 20px;
+    margin: 0 20px 15px;
+    position: relative;
+    bottom: 0;
 }
 
 /* Private Session Options */
@@ -214,16 +230,18 @@
     background-color: #fff;
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow);
-    min-width: 275px;
     text-align: center;
     transition: all 0.3s;
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 300px;
+    height: 320px; /* Fixed height for better predictability */
     overflow: hidden;
-    margin: 0 10px;
     border: 2px solid transparent;
+    flex: 1 1 250px;
+    min-width: 240px;
+    max-width: 350px;
+    margin: 0;
 }
 
 /* Featured/Popular card styling */
@@ -244,10 +262,11 @@
 }
 
 .private-option .content {
-    padding: 20px 25px;
+    padding: 15px 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .private-option h4 {
@@ -257,15 +276,20 @@
 }
 
 .private-option .price {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     color: var(--accent-color);
-    margin: 15px 0;
+    margin: 10px 0;
     font-weight: bold;
+    line-height: 1.2;
 }
 
 .private-option .button-container {
     margin-top: auto;
-    padding-top: 15px;
+    padding-top: 10px;
+    height: 50px; /* Fixed height for button container */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Workshop Cards */

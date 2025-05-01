@@ -208,14 +208,17 @@ section {
     background-color: var(--secondary-color);
 }
 
-/* Scrollable container with indicators */
+/* Centered container with conditional scrolling */
 .scrollable-container {
     position: relative;
     margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
 }
 
-.scrollable-container::before,
-.scrollable-container::after {
+/* The pseudo-elements for scroll indicators will only show when scrolling is active */
+.scrollable-container.is-scrollable::before,
+.scrollable-container.is-scrollable::after {
     content: "";
     position: absolute;
     top: 0;
@@ -225,37 +228,53 @@ section {
     pointer-events: none;
 }
 
-.scrollable-container::before {
+.scrollable-container.is-scrollable::before {
     left: 0;
     background: linear-gradient(to right, rgba(237, 246, 249, 0.8), rgba(237, 246, 249, 0));
 }
 
-.scrollable-container::after {
+.scrollable-container.is-scrollable::after {
     right: 0;
     background: linear-gradient(to left, rgba(237, 246, 249, 0.8), rgba(237, 246, 249, 0));
 }
 
 .pricing-container {
     display: flex;
-    overflow-x: auto;
     padding: 20px 5px;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    /* Show a subtle scrollbar */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: thin;  /* Firefox */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px; /* Control max width for very wide screens */
 }
 
-/* Subtle scrollbar for WebKit browsers */
-.pricing-container::-webkit-scrollbar {
+/* Only apply scrolling styles when the container is scrollable */
+.scrollable-container.is-scrollable .pricing-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Only show scrollbar when container is scrollable */
+.scrollable-container.is-scrollable .pricing-container::-webkit-scrollbar {
     height: 6px;
     background-color: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-.pricing-container::-webkit-scrollbar-thumb {
+.scrollable-container.is-scrollable .pricing-container::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
+}
+
+/* Hide scrollbar when not scrollable */
+.pricing-container::-webkit-scrollbar {
+    height: 0;
+    background: transparent;
 }
 
 /* Private Sessions Section */
@@ -301,35 +320,54 @@ section {
 
 .private-pricing {
     display: flex;
-    overflow-x: auto;
     padding: 20px 5px;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    /* Show a subtle scrollbar */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: thin;  /* Firefox */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px; /* Control max width for very wide screens */
 }
 
-/* Subtle scrollbar for WebKit browsers */
-.private-pricing::-webkit-scrollbar {
+/* Only apply scrolling styles when the container is scrollable */
+.private-pricing-container.is-scrollable .private-pricing {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Only show scrollbar when container is scrollable */
+.private-pricing-container.is-scrollable .private-pricing::-webkit-scrollbar {
     height: 6px;
     background-color: rgba(255, 255, 255, 0.3);
     border-radius: 3px;
 }
 
-.private-pricing::-webkit-scrollbar-thumb {
+.private-pricing-container.is-scrollable .private-pricing::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
-/* Private session scrollable container */
+/* Hide scrollbar when not scrollable */
+.private-pricing::-webkit-scrollbar {
+    height: 0;
+    background: transparent;
+}
+
+/* Private session centered container with conditional scrolling */
 .private-pricing-container {
     position: relative;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
 }
 
-.private-pricing-container::before,
-.private-pricing-container::after {
+/* The pseudo-elements for scroll indicators will only show when scrolling is active */
+.private-pricing-container.is-scrollable::before,
+.private-pricing-container.is-scrollable::after {
     content: "";
     position: absolute;
     top: 0;
@@ -339,12 +377,12 @@ section {
     pointer-events: none;
 }
 
-.private-pricing-container::before {
+.private-pricing-container.is-scrollable::before {
     left: 0;
     background: linear-gradient(to right, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
 }
 
-.private-pricing-container::after {
+.private-pricing-container.is-scrollable::after {
     right: 0;
     background: linear-gradient(to left, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
 }
@@ -354,14 +392,17 @@ section {
     background-color: #fff;
 }
 
-/* Retreats grid container */
+/* Retreats centered container with conditional scrolling */
 .retreats-container {
     position: relative;
     margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
 }
 
-.retreats-container::before,
-.retreats-container::after {
+/* The pseudo-elements for scroll indicators will only show when scrolling is active */
+.retreats-container.is-scrollable::before,
+.retreats-container.is-scrollable::after {
     content: "";
     position: absolute;
     top: 0;
@@ -371,43 +412,58 @@ section {
     pointer-events: none;
 }
 
-.retreats-container::before {
+.retreats-container.is-scrollable::before {
     left: 0;
     background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
 }
 
-.retreats-container::after {
+.retreats-container.is-scrollable::after {
     right: 0;
     background: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
 }
 
 .retreats-grid {
     display: flex;
-    overflow-x: auto;
     padding: 20px 5px;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
-    /* Show a subtle scrollbar */
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: thin;  /* Firefox */
+    width: 100%;
+    max-width: 1200px; /* Control max width for very wide screens */
 }
 
-/* Subtle scrollbar for WebKit browsers */
-.retreats-grid::-webkit-scrollbar {
+/* Only apply scrolling styles when the container is scrollable */
+.retreats-container.is-scrollable .retreats-grid {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Only show scrollbar when container is scrollable */
+.retreats-container.is-scrollable .retreats-grid::-webkit-scrollbar {
     height: 6px;
     background-color: rgba(0, 0, 0, 0.05);
     border-radius: 3px;
 }
 
-.retreats-grid::-webkit-scrollbar-thumb {
+.retreats-container.is-scrollable .retreats-grid::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
+/* Hide scrollbar when not scrollable */
+.retreats-grid::-webkit-scrollbar {
+    height: 0;
+    background: transparent;
+}
+
 .retreat-card {
-    flex: 0 0 350px;
-    margin: 0 10px;
+    /* flex sizing is now handled in the cards.css */
+    margin: 0;
 }
 
 /* Workshops Section */
