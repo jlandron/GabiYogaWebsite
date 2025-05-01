@@ -181,9 +181,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size + ' !important');
                     console.log('[Hero Debug] Applied heading size via CSS variable with !important:', heading.size);
                     
-                    // Apply direct inline style as fallback
-                    heroHeading.style.fontSize = heading.size;
-                    console.log('[Hero Debug] Applied heading size with style property:', heading.size);
+                    // Apply direct inline style with important flag using setAttribute to guarantee highest priority
+                    heroHeading.setAttribute('style', `font-size: ${heading.size} !important; ${heroHeading.getAttribute('style') || ''}`);
+                    console.log('[Hero Debug] Applied heading size with highest priority inline style:', heading.size);
                     
                     // Add a custom style tag with high specificity as another fallback
                     const customStyleId = 'custom-hero-style';
@@ -195,13 +195,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                         document.head.appendChild(styleEl);
                     }
                     
-                    // Create a unique class name based on the size
-                    const uniqueClass = `font-size-${heading.size.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                    heroHeading.classList.add(uniqueClass);
+                    // Add a unique ID to the heading for maximum specificity
+                    const headingId = `hero-heading-${Date.now()}`;
+                    heroHeading.id = headingId;
                     
-                    // Add high specificity CSS rule
-                    styleEl.textContent = `.hero-content h1.${uniqueClass} { font-size: ${heading.size} !important; }`;
-                    console.log('[Hero Debug] Added custom CSS rule with high specificity:', styleEl.textContent);
+                    // Add high specificity CSS rule using ID selector (highest CSS specificity)
+                    styleEl.textContent = `
+                      #${headingId} { font-size: ${heading.size} !important; }
+                      .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
+                      body .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
+                      h1.isolated-hero-heading#${headingId} { font-size: ${heading.size} !important; }
+                    `;
+                    console.log('[Hero Debug] Added maximum specificity CSS rules using ID selector:', styleEl.textContent);
                 }
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
