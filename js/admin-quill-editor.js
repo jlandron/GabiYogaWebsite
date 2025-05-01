@@ -71,7 +71,7 @@
  * @returns {Object} The created QuillJS instance
  */
 function createQuillEditor(targetId, options = {}) {
-    console.log(`Creating Quill editor for ${targetId}`);
+    console.log(`[QuillJS Debug] Creating Quill editor for ${targetId} with options:`, JSON.stringify(options));
     
     // Default options
     const defaults = {
@@ -203,20 +203,33 @@ function createQuillEditor(targetId, options = {}) {
         // Set initial content from textarea
         if (targetElement.value) {
             try {
+                console.log(`[QuillJS Debug] Setting initial content for ${targetId}, length: ${targetElement.value.length}, starts with HTML: ${targetElement.value.trim().startsWith('<')}`);
+                console.log(`[QuillJS Debug] Content preview: ${targetElement.value.substring(0, 100)}${targetElement.value.length > 100 ? '...' : ''}`);
+                
                 // If content is HTML, use it directly
                 if (targetElement.value.trim().startsWith('<')) {
                     quill.root.innerHTML = targetElement.value;
+                    console.log(`[QuillJS Debug] Set HTML content for ${targetId}`);
                 } 
                 // If content might be markdown and marked library is available
                 else if (window.marked && !targetElement.value.includes('<')) {
                     quill.root.innerHTML = window.marked.parse(targetElement.value);
+                    console.log(`[QuillJS Debug] Parsed markdown content for ${targetId}`);
                 } else {
                     quill.setText(targetElement.value);
+                    console.log(`[QuillJS Debug] Set plain text content for ${targetId}`);
                 }
+                
+                // Log the resulting content in the quill editor
+                console.log(`[QuillJS Debug] Resulting Quill HTML for ${targetId}: ${quill.root.innerHTML.substring(0, 100)}${quill.root.innerHTML.length > 100 ? '...' : ''}`);
             } catch (e) {
                 console.error('Error parsing content:', e);
+                console.log(`[QuillJS Debug] Error details:`, e);
                 quill.setText(targetElement.value);
+                console.log(`[QuillJS Debug] Fallback to plain text for ${targetId} after error`);
             }
+        } else {
+            console.log(`[QuillJS Debug] No initial content for ${targetId}`);
         }
         
         /**
@@ -321,8 +334,12 @@ function createQuillEditor(targetId, options = {}) {
         
         // Update hidden textarea when editor content changes
         quill.on('text-change', function() {
+            console.log(`[QuillJS Debug] Text change in ${targetId}`);
+            console.log(`[QuillJS Debug] Raw editor HTML for ${targetId}: ${quill.root.innerHTML.substring(0, 100)}${quill.root.innerHTML.length > 100 ? '...' : ''}`);
+            
             // Clean HTML content before storing
             const cleanedHTML = cleanQuillHTML(quill.root.innerHTML);
+            console.log(`[QuillJS Debug] Cleaned HTML for ${targetId}: ${cleanedHTML.substring(0, 100)}${cleanedHTML.length > 100 ? '...' : ''}`);
             targetElement.value = cleanedHTML;
             
             // Dispatch input event for form validation

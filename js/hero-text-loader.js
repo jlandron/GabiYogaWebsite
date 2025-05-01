@@ -42,11 +42,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         const response = await fetch('/api/website-settings');
         
         if (!response.ok) {
-            console.warn('Failed to fetch website settings:', response.statusText);
+            console.warn('[Hero Debug] Failed to fetch website settings:', response.statusText);
             return;
         }
         
         const data = await response.json();
+        console.log('[Hero Debug] Website settings received from API:', 
+                    data.success ? 'Success' : 'Failed', 
+                    data.settings ? 'Settings data present' : 'No settings data');
         
         // If we got valid settings with hero text data, update the elements
         if (data && data.success && data.settings && data.settings.heroText) {
@@ -54,26 +57,66 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Update heading
             if (heading) {
+                console.log('[Hero Debug] Processing heading with:', {
+                    textLength: heading.text?.length || 0,
+                    isHTML: heading.text?.trim().startsWith('<') || false,
+                    font: heading.font,
+                    size: heading.size,
+                    weight: heading.fontWeight,
+                    style: heading.fontStyle,
+                    decoration: heading.textDecoration,
+                    align: heading.textAlign || 'center'
+                });
+                
                 // Check if text is HTML or plain text
                 if (heading.text) {
                     if (heading.text.trim().startsWith('<')) {
                         // If it's HTML, use innerHTML
                         heroHeading.innerHTML = heading.text;
+                        console.log('[Hero Debug] Applied heading HTML content, length:', heading.text.length);
                     } else {
                         // If it's plain text, use textContent
                         heroHeading.textContent = heading.text;
+                        console.log('[Hero Debug] Applied heading plain text content:', heading.text.substring(0, 50));
                     }
                 } else {
                     heroHeading.textContent = 'Find Your Inner Peace';
+                    console.log('[Hero Debug] Applied default heading text: "Find Your Inner Peace"');
                 }
                 
-                // Apply styles
-                if (heading.font) heroHeading.style.fontFamily = heading.font;
-                if (heading.size) heroHeading.style.fontSize = heading.size;
-                if (heading.fontWeight) heroHeading.style.fontWeight = heading.fontWeight;
-                if (heading.fontStyle) heroHeading.style.fontStyle = heading.fontStyle;
-                if (heading.textDecoration) heroHeading.style.textDecoration = heading.textDecoration;
+                // Apply styles with improved font handling
+                if (heading.font) {
+                    console.log('[Hero Debug] Processing heading font value:', heading.font);
+                    
+                    // Extract actual font name from CSS font-family value if quoted
+                    const fontMatch = heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
+                    if (fontMatch) {
+                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
+                        console.log('[Hero Debug] Extracted heading font name:', fontName);
+                    }
+                    
+                    // Apply the font directly to the element
+                    heroHeading.style.fontFamily = heading.font;
+                    console.log('[Hero Debug] Applied heading font:', heading.font);
+                }
+                if (heading.size) {
+                    heroHeading.style.fontSize = heading.size;
+                    console.log('[Hero Debug] Applied heading size:', heading.size);
+                }
+                if (heading.fontWeight) {
+                    heroHeading.style.fontWeight = heading.fontWeight;
+                    console.log('[Hero Debug] Applied heading weight:', heading.fontWeight);
+                }
+                if (heading.fontStyle) {
+                    heroHeading.style.fontStyle = heading.fontStyle;
+                    console.log('[Hero Debug] Applied heading style:', heading.fontStyle);
+                }
+                if (heading.textDecoration) {
+                    heroHeading.style.textDecoration = heading.textDecoration;
+                    console.log('[Hero Debug] Applied heading decoration:', heading.textDecoration);
+                }
                 heroHeading.style.textAlign = heading.textAlign || 'center';
+                console.log('[Hero Debug] Applied heading alignment:', heading.textAlign || 'center');
             } else {
                 // Default text and styles if no settings are available
                 heroHeading.textContent = 'Find Your Inner Peace';
@@ -85,26 +128,66 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Update subheading
             if (subheading) {
+                console.log('[Hero Debug] Processing subheading with:', {
+                    textLength: subheading.text?.length || 0,
+                    isHTML: subheading.text?.trim().startsWith('<') || false,
+                    font: subheading.font,
+                    size: subheading.size,
+                    weight: subheading.fontWeight,
+                    style: subheading.fontStyle,
+                    decoration: subheading.textDecoration,
+                    align: subheading.textAlign || 'center'
+                });
+                
                 // Check if text is HTML or plain text
                 if (subheading.text) {
                     if (subheading.text.trim().startsWith('<')) {
                         // If it's HTML, use innerHTML
                         heroSubheading.innerHTML = subheading.text;
+                        console.log('[Hero Debug] Applied subheading HTML content, length:', subheading.text.length);
                     } else {
                         // If it's plain text, use textContent
                         heroSubheading.textContent = subheading.text;
+                        console.log('[Hero Debug] Applied subheading plain text content:', subheading.text.substring(0, 50));
                     }
                 } else {
                     heroSubheading.textContent = 'Join our community and transform your mind, body, and spirit';
+                    console.log('[Hero Debug] Applied default subheading text');
                 }
                 
-                // Apply styles
-                if (subheading.font) heroSubheading.style.fontFamily = subheading.font;
-                if (subheading.size) heroSubheading.style.fontSize = subheading.size;
-                if (subheading.fontWeight) heroSubheading.style.fontWeight = subheading.fontWeight;
-                if (subheading.fontStyle) heroSubheading.style.fontStyle = subheading.fontStyle;
-                if (subheading.textDecoration) heroSubheading.style.textDecoration = subheading.textDecoration;
+                // Apply styles with improved font handling
+                if (subheading.font) {
+                    console.log('[Hero Debug] Processing subheading font value:', subheading.font);
+                    
+                    // Extract actual font name from CSS font-family value if quoted
+                    const fontMatch = subheading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
+                    if (fontMatch) {
+                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
+                        console.log('[Hero Debug] Extracted subheading font name:', fontName);
+                    }
+                    
+                    // Apply the font directly to the element
+                    heroSubheading.style.fontFamily = subheading.font;
+                    console.log('[Hero Debug] Applied subheading font:', subheading.font);
+                }
+                if (subheading.size) {
+                    heroSubheading.style.fontSize = subheading.size;
+                    console.log('[Hero Debug] Applied subheading size:', subheading.size);
+                }
+                if (subheading.fontWeight) {
+                    heroSubheading.style.fontWeight = subheading.fontWeight;
+                    console.log('[Hero Debug] Applied subheading weight:', subheading.fontWeight);
+                }
+                if (subheading.fontStyle) {
+                    heroSubheading.style.fontStyle = subheading.fontStyle;
+                    console.log('[Hero Debug] Applied subheading style:', subheading.fontStyle);
+                }
+                if (subheading.textDecoration) {
+                    heroSubheading.style.textDecoration = subheading.textDecoration;
+                    console.log('[Hero Debug] Applied subheading decoration:', subheading.textDecoration);
+                }
                 heroSubheading.style.textAlign = subheading.textAlign || 'center';
+                console.log('[Hero Debug] Applied subheading alignment:', subheading.textAlign || 'center');
             } else {
                 // Default text and styles if no settings are available
                 heroSubheading.textContent = 'Join our community and transform your mind, body, and spirit';
@@ -117,9 +200,35 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Update the button text if it exists
             if (heroButton && heroButton.textContent === '') {
                 heroButton.textContent = 'Explore Classes';
+                console.log('[Hero Debug] Applied default button text');
             }
             
-            console.log('Hero text updated successfully');
+            console.log('[Hero Debug] Hero text updated successfully');
+            
+            // Log the final DOM state for debugging
+            if (heroHeading) {
+                console.log('[Hero Debug] Final heading DOM:', {
+                    text: heroHeading.textContent || heroHeading.innerHTML,
+                    fontFamily: heroHeading.style.fontFamily,
+                    fontSize: heroHeading.style.fontSize,
+                    fontWeight: heroHeading.style.fontWeight,
+                    fontStyle: heroHeading.style.fontStyle,
+                    textDecoration: heroHeading.style.textDecoration,
+                    textAlign: heroHeading.style.textAlign
+                });
+            }
+            
+            if (heroSubheading) {
+                console.log('[Hero Debug] Final subheading DOM:', {
+                    text: heroSubheading.textContent || heroSubheading.innerHTML,
+                    fontFamily: heroSubheading.style.fontFamily,
+                    fontSize: heroSubheading.style.fontSize,
+                    fontWeight: heroSubheading.style.fontWeight,
+                    fontStyle: heroSubheading.style.fontStyle,
+                    textDecoration: heroSubheading.style.textDecoration,
+                    textAlign: heroSubheading.style.textAlign
+                });
+            }
         }
         
         // Trigger fade-in animation after content is loaded and processed

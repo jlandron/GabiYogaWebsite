@@ -408,7 +408,15 @@ function initializeOfferingEditors() {
  * Save all settings
  */
 function saveAllSettings() {
+    console.log('[Settings Debug] Starting to save all settings');
     const settingsData = collectSettingsData();
+    console.log('[Settings Debug] Settings data collected and ready to save:', 
+                JSON.stringify({
+                    heroHeadingLength: settingsData.heroText?.heading?.text?.length,
+                    heroSubheadingLength: settingsData.heroText?.subheading?.text?.length,
+                    bioLength: settingsData.about?.bio?.length,
+                    certCount: settingsData.certifications?.length
+                }));
     
     fetch('/api/admin/settings', {
         method: 'PUT',
@@ -441,40 +449,57 @@ function saveAllSettings() {
  * @returns {Object} - Extracted formatting data
  */
 function extractQuillFormat(quill) {
-    if (!quill) return {};
+    if (!quill) {
+        console.log('[Format Debug] No quill instance provided');
+        return {};
+    }
     
     const length = quill.getLength();
-    if (length <= 1) return {};  // Empty editor
+    if (length <= 1) {
+        console.log('[Format Debug] Editor is empty or contains only a newline');
+        return {};  // Empty editor
+    }
+    
+    console.log(`[Format Debug] Extracting format from quill editor with content length: ${length}`);
     
     // Get format from a larger range for more consistent results
     const format = quill.getFormat(0, Math.min(50, length - 1));
+    console.log('[Format Debug] Raw format from Quill:', JSON.stringify(format));
+    
     const formatData = {};
     
     // Add basic formatting properties
     if (format.font) {
         formatData.font = FONT_MAP[format.font] || format.font;
+        console.log(`[Format Debug] Mapped font: ${format.font} -> ${formatData.font}`);
     }
     
     if (format.size) {
         formatData.size = format.size;
+        console.log(`[Format Debug] Size: ${formatData.size}`);
     }
     
     if (format.bold) {
         formatData.fontWeight = 'bold';
+        console.log('[Format Debug] Font weight: bold');
     }
     
     if (format.italic) {
         formatData.fontStyle = 'italic';
+        console.log('[Format Debug] Font style: italic');
     }
     
     if (format.underline) {
         formatData.textDecoration = 'underline';
+        console.log('[Format Debug] Text decoration: underline');
     }
     
     if (format.align) {
         formatData.textAlign = format.align;
+        console.log(`[Format Debug] Text align: ${format.align}`);
     }
     
+    console.log('[Format Debug] Final extracted format data:', JSON.stringify(formatData));
     return formatData;
 }
 
@@ -742,44 +767,102 @@ function applySettingsFromAPI(settings) {
  * @param {Object} formats - Formatting to apply
  */
 function applyQuillFormats(quill, formats) {
-    if (!quill || !formats || quill.getLength() <= 1) return;
+    if (!quill) {
+        console.error('[Format Debug] Cannot apply formats - quill is null');
+        return;
+    }
+    
+    if (!formats) {
+        console.error('[Format Debug] Cannot apply formats - formats object is null');
+        return;
+    }
+    
+    const length = quill.getLength();
+    if (length <= 1) {
+        console.warn('[Format Debug] Cannot apply formats - quill editor has no content');
+        return;
+    }
+    
+    console.log('[Format Debug] About to apply formats:', JSON.stringify(formats), 'to editor with length', length);
     
     try {
         // Apply in specific order for best results
         
+        // Convert CSS font family format to Quill format
+        let quillFont = null;
+        if (formats.font) {
+            // Extract the font name from the CSS font-family string
+            console.log('[Format Debug] Processing font format from CSS:', formats.font);
+            
+            // Handle different font formats - extract the font name from quotes if needed
+            const fontMatch = formats.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
+            if (fontMatch) {
+                // Get the first matched group (whichever one isn't undefined)
+                const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
+                
+                // Map CSS font name back to Quill's internal font name format
+                for (const [key, value] of Object.entries(FONT_MAP)) {
+                    if (value.includes(fontName)) {
+                        quillFont = key;
+                        console.log(`[Format Debug] Mapped CSS font "${fontName}" to Quill font "${quillFont}"`);
+                        break;
+                    }
+                }
+                
+                if (!quillFont) {
+                    console.warn(`[Format Debug] Could not map font "${fontName}" to a Quill font, using as-is`);
+                    quillFont = fontName;
+                }
+            }
+        }
+
         // 1. Apply basic formatting first
-        const baseFormats = {};
-        if (formats.font) baseFormats.font = formats.font;
-        if (formats.size) baseFormats.size = formats.size;
+        if (quillFont) {
+            console.log('[Format Debug] Applying font format:', quillFont);
+            quill.formatText(0, length, { font: quillFont });
+            console.log('[Format Debug] Font format applied');
+        }
         
-        if (Object.keys(baseFormats).length > 0) {
-            quill.formatText(0, quill.getLength(), baseFormats);
+        console.log('[Format Debug] Applying size format:', formats.size);
+        if (formats.size) {
+            quill.formatText(0, length, { size: formats.size });
+            console.log('[Format Debug] Size format applied');
         }
         
         // 2. Apply styling attributes separately
         if (formats.bold) {
-            quill.formatText(0, quill.getLength(), { bold: true });
+            console.log('[Format Debug] Applying bold format');
+            quill.formatText(0, length, { bold: true });
         }
         
         if (formats.italic) {
-            quill.formatText(0, quill.getLength(), { italic: true });
+            console.log('[Format Debug] Applying italic format');
+            quill.formatText(0, length, { italic: true });
         }
         
         if (formats.underline) {
-            quill.formatText(0, quill.getLength(), { underline: true });
+            console.log('[Format Debug] Applying underline format');
+            quill.formatText(0, length, { underline: true });
         }
         
         // 3. Apply alignment last (global for the entire editor)
         if (formats.align) {
-            quill.formatText(0, quill.getLength(), { align: formats.align });
+            console.log('[Format Debug] Applying alignment:', formats.align);
+            quill.formatText(0, length, { align: formats.align });
         }
         
         // 4. Force update to ensure UI reflects changes
-        setTimeout(() => quill.update(), 100);
+        console.log('[Format Debug] Scheduling quill update to ensure UI reflects changes');
+        setTimeout(() => {
+            quill.update();
+            console.log('[Format Debug] Quill update completed');
+            console.log('[Format Debug] Final content HTML:', quill.root.innerHTML.substring(0, 100) + 
+                        (quill.root.innerHTML.length > 100 ? '...' : ''));
+        }, 100);
         
-        console.log('Applied formats successfully:', formats);
+        console.log('[Format Debug] Applied all formats successfully:', JSON.stringify(formats));
     } catch (error) {
-        console.error('Error applying formats:', error);
+        console.error('[Format Debug] Error applying formats:', error);
     }
 }
 
@@ -882,9 +965,30 @@ function updateQuillContents(settings) {
                 }
                 
                 // Apply formatting
+                let fontValue = 'playfair'; // Default font
+                
+                // Convert CSS font string to Quill internal format
+                if (settings.heroText.heading.font) {
+                    console.log('[Format Debug] Hero heading font from API:', settings.heroText.heading.font);
+                    // Extract actual font name from CSS font-family value
+                    const fontMatch = settings.heroText.heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
+                    if (fontMatch) {
+                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
+                        console.log('[Format Debug] Extracted font name:', fontName);
+                        
+                        // Look up this font name in our FONT_MAP to find the Quill internal name
+                        for (const [key, value] of Object.entries(FONT_MAP)) {
+                            if (value.includes(fontName)) {
+                                fontValue = key;
+                                console.log(`[Format Debug] Mapped font name "${fontName}" to Quill font "${fontValue}"`);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
                 const formats = {
-                    font: settings.heroText.heading.font ? 
-                        mapCSSFontToQuill(settings.heroText.heading.font) : 'playfair',
+                    font: fontValue,
                     size: settings.heroText.heading.size || '48px',
                     bold: settings.heroText.heading.fontWeight === 'bold',
                     italic: settings.heroText.heading.fontStyle === 'italic',
@@ -892,6 +996,8 @@ function updateQuillContents(settings) {
                              settings.heroText.heading.textDecoration.includes('underline'),
                     align: settings.heroText.heading.textAlign || 'center'
                 };
+                
+                console.log('[Format Debug] Hero heading formats to apply:', formats);
                 
                 applyQuillFormats(headingQuill, formats);
                 console.log('Updated hero heading with content and formats:', formats);
