@@ -261,102 +261,63 @@ function updateHomepageMemberships(memberships) {
         return;
     }
     
-    // Create pricing cards for each membership
-    activeMemberships.forEach((membership, index) => {
-        let priceDisplay = `$${membership.price.toFixed(2)}`;
-        let periodDisplay = '';
-        
-        if (membership.duration_days) {
-            if (membership.duration_days >= 365) {
-                // Annual
-                priceDisplay += '/year';
-                periodDisplay = 'per year';
-            } else if (membership.duration_days >= 30) {
-                // Monthly
-                priceDisplay += '/month';
-                periodDisplay = 'per month';
-            } else {
-                // Days
-                periodDisplay = `for ${membership.duration_days} days`;
-            }
-        } else if (membership.classes) {
-            // Class pack
-            periodDisplay = `for ${membership.classes} classes`;
-        } else {
-            // Single class or other
-            periodDisplay = 'per class';
-        }
-        
-        // Generate features list based on membership properties
-        let featuresHtml = '<ul>';
-        
-        // Add classes info
-        if (membership.classes) {
-            featuresHtml += `<li>${membership.classes} class visits</li>`;
+        // Create private-option style cards for each membership
+        activeMemberships.forEach((membership, index) => {
+            let priceDisplay = `$${membership.price.toFixed(2)}`;
+            let periodDisplay = '';
             
             if (membership.duration_days) {
-                featuresHtml += `<li>Valid for ${membership.duration_days > 30 ? Math.floor(membership.duration_days/30) + ' months' : membership.duration_days + ' days'}</li>`;
-            }
-        } else if (membership.duration_days) {
-            featuresHtml += '<li>Unlimited classes</li>';
-        }
-        
-        // Add additional features based on membership type
-        if (membership.type.toLowerCase().includes('monthly') || membership.type.toLowerCase().includes('annual')) {
-            featuresHtml += `
-                <li>${membership.type.toLowerCase().includes('annual') ? '15%' : '10%'} off workshops</li>
-                <li>Free mat rental</li>
-            `;
-            
-            if (membership.type.toLowerCase().includes('annual')) {
-                featuresHtml += `
-                    <li>1 free private session</li>
-                    <li>5% off retreats</li>
-                `;
+                if (membership.duration_days >= 365) {
+                    // Annual
+                    priceDisplay += '/year';
+                    periodDisplay = 'per year';
+                } else if (membership.duration_days >= 30) {
+                    // Monthly
+                    priceDisplay += '/month';
+                    periodDisplay = 'per month';
+                } else {
+                    // Days
+                    periodDisplay = `for ${membership.duration_days} days`;
+                }
+            } else if (membership.classes) {
+                // Class pack
+                periodDisplay = `for ${membership.classes} classes`;
             } else {
-                featuresHtml += '<li>Member-only events</li>';
+                // Single class or other
+                periodDisplay = 'per class';
             }
-        } else {
-            featuresHtml += `
-                <li>All class types</li>
-                <li>Mat rental available</li>
-                <li>No commitment</li>
+            
+            // Create card element
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'private-option';
+            
+            // Set featured class if this is the most popular membership
+            if (membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true) {
+                cardDiv.classList.add('featured');
+            }
+            
+            cardDiv.innerHTML = `
+                <div class="header">
+                    <h4>${escapeHTML(membership.type)}</h4>
+                    ${(membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true) ? 
+                      '<span class="featured-tag">Most Popular</span>' : ''}
+                </div>
+                <div class="content">
+                    <p class="price">${priceDisplay}</p>
+                    <p>${periodDisplay}</p>
+                    <div class="button-container">
+                        <a href="#" class="btn-small" data-membership-type="${escapeHTML(membership.type)}" data-membership-price="${membership.price.toFixed(2)}">
+                            ${membership.duration_days >= 30 ? 'Subscribe' : 'Purchase'}
+                        </a>
+                    </div>
+                </div>
             `;
-        }
-        
-        featuresHtml += '</ul>';
-        
-        // Create card element
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'pricing-card';
-        
-        // Add featured tag to membership marked as most popular
-        // SQLite stores booleans as 0/1, so we need to explicitly check for 1
-        if (membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true) {
-            cardDiv.classList.add('featured');
-        }
-        
-        cardDiv.innerHTML = `
-            <div class="pricing-header">
-                ${membership.most_popular === 1 || membership.most_popular === '1' || membership.most_popular === true ? 
-                  '<span class="featured-tag">Most Popular</span>' : ''}
-                <h3>${escapeHTML(membership.type)}</h3>
-                <p class="price">${priceDisplay}</p>
-                <p>${periodDisplay}</p>
-            </div>
-            <div class="pricing-features">
-                ${featuresHtml}
-            </div>
-            <a href="#" class="btn pricing-btn" data-membership-type="${escapeHTML(membership.type)}" data-membership-price="${membership.price.toFixed(2)}">
-                ${membership.duration_days >= 30 ? 'Subscribe' : 'Purchase'}
-            </a>
-        `;
         
         pricingContainer.appendChild(cardDiv);
     });
     
     // Add event listeners to buttons
-    document.querySelectorAll('.pricing-btn').forEach(btn => {
+    document.querySelectorAll('[data-membership-type]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const membershipType = this.getAttribute('data-membership-type');
@@ -410,10 +371,16 @@ function updateHomepagePrivateSessions(sessionPackages) {
         const pricePerSession = pkg.sessions > 1 ? `$${(pkg.price / pkg.sessions).toFixed(2)} per session` : durationText;
         
         optionDiv.innerHTML = `
-            <h4>${escapeHTML(pkg.name)}</h4>
-            <p class="price">$${pkg.price.toFixed(2)}</p>
-            <p>${pricePerSession}</p>
-            <a href="#" class="btn-small private-booking-btn" data-package="${escapeHTML(pkg.name)}">Book Now</a>
+            <div class="header">
+                <h4>${escapeHTML(pkg.name)}</h4>
+            </div>
+            <div class="content">
+                <p class="price">$${pkg.price.toFixed(2)}</p>
+                <p>${pricePerSession}</p>
+                <div class="button-container">
+                    <a href="#" class="btn-small private-booking-btn" data-package="${escapeHTML(pkg.name)}">Book Now</a>
+                </div>
+            </div>
         `;
         
         privatePricingContainer.appendChild(optionDiv);

@@ -208,11 +208,54 @@ section {
     background-color: var(--secondary-color);
 }
 
+/* Scrollable container with indicators */
+.scrollable-container {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.scrollable-container::before,
+.scrollable-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.scrollable-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(237, 246, 249, 0.8), rgba(237, 246, 249, 0));
+}
+
+.scrollable-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(237, 246, 249, 0.8), rgba(237, 246, 249, 0));
+}
+
 .pricing-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    grid-gap: 30px;
-    margin-bottom: 50px;
+    display: flex;
+    overflow-x: auto;
+    padding: 20px 5px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    /* Show a subtle scrollbar */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: thin;  /* Firefox */
+}
+
+/* Subtle scrollbar for WebKit browsers */
+.pricing-container::-webkit-scrollbar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.pricing-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
 }
 
 /* Private Sessions Section */
@@ -258,9 +301,52 @@ section {
 
 .private-pricing {
     display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    padding: 20px 5px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    /* Show a subtle scrollbar */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: thin;  /* Firefox */
+}
+
+/* Subtle scrollbar for WebKit browsers */
+.private-pricing::-webkit-scrollbar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.private-pricing::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+/* Private session scrollable container */
+.private-pricing-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.private-pricing-container::before,
+.private-pricing-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.private-pricing-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+}
+
+.private-pricing-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
 }
 
 /* Retreats Section */
@@ -268,10 +354,60 @@ section {
     background-color: #fff;
 }
 
+/* Retreats grid container */
+.retreats-container {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.retreats-container::before,
+.retreats-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.retreats-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+}
+
+.retreats-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+}
+
 .retreats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-gap: 40px;
+    display: flex;
+    overflow-x: auto;
+    padding: 20px 5px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+    /* Show a subtle scrollbar */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: thin;  /* Firefox */
+}
+
+/* Subtle scrollbar for WebKit browsers */
+.retreats-grid::-webkit-scrollbar {
+    height: 6px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.retreats-grid::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.retreat-card {
+    flex: 0 0 350px;
+    margin: 0 10px;
 }
 
 /* Workshops Section */
@@ -452,11 +588,12 @@ section {
         align-items: center;
     }
     
-    .about-image {
+    .about-content .about-image {
         flex: 0 0 auto;
         width: 100%;
         max-width: 400px;
-        height: 400px;
+        height: auto;
+        aspect-ratio: 1/1;
         margin-bottom: 30px;
         border-radius: 16px; /* Maintain rounded rectangle on small screens */
     }

@@ -44,15 +44,20 @@
 /* Offering Cards */
 .offering-card {
     background-color: #fff;
-    border-radius: var(--border-radius);
-    padding: 30px;
-    box-shadow: var(--box-shadow);
-    transition: var(--transition);
+    border-radius: var(--border-radius-lg);
+    padding: 30px 25px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
     text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .offering-card:hover {
     transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
 }
 
 .offering-icon {
@@ -80,6 +85,10 @@
     text-align: left;
     padding-left: 20px;
     list-style-type: disc;
+}
+
+.offering-card .btn-small {
+    margin-top: auto;
 }
 
 /* Retreat Cards */
@@ -149,14 +158,20 @@
 
 .featured-tag {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: -10px;
+    right: -10px;
     background-color: var(--accent-color);
     color: #fff;
     padding: 5px 10px;
     font-size: 0.8rem;
     border-radius: 20px;
     font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.private-option .header {
+    position: relative;
 }
 
 .pricing-header {
@@ -197,20 +212,60 @@
 /* Private Session Options */
 .private-option {
     background-color: #fff;
-    border-radius: var(--border-radius);
-    padding: 25px;
-    box-shadow: var(--box-shadow);
-    min-width: 200px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    min-width: 275px;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    overflow: hidden;
+    margin: 0 10px;
+    border: 2px solid transparent;
+}
+
+/* Featured/Popular card styling */
+.private-option.featured {
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.private-option:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.private-option .header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 20px 15px;
+}
+
+.private-option .content {
+    padding: 20px 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .private-option h4 {
-    color: var(--primary-color);
-    margin-bottom: 10px;
+    color: #fff;
+    margin: 0;
+    font-size: 1.3rem;
 }
 
 .private-option .price {
     font-size: 1.8rem;
     color: var(--accent-color);
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.private-option .button-container {
+    margin-top: auto;
+    padding-top: 15px;
 }
 
 /* Workshop Cards */
