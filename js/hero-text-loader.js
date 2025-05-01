@@ -177,9 +177,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
                 if (heading.size) {
-                    // Set the CSS custom property for the size
-                    document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size);
-                    console.log('[Hero Debug] Applied heading size via CSS variable:', heading.size);
+                    // Set the CSS custom property for the size with !important to increase priority
+                    document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size + ' !important');
+                    console.log('[Hero Debug] Applied heading size via CSS variable with !important:', heading.size);
                     
                     // Apply direct inline style as fallback
                     heroHeading.style.fontSize = heading.size;

@@ -16,7 +16,7 @@
     }
     
     .hero-content h1 {
-        font-size: 3rem;
+        font-size: var(--custom-hero-heading-size, 3rem);
     }
 }
 
@@ -129,7 +129,7 @@
     
     /* Hero adjustments */
     .hero-content h1 {
-        font-size: 2.5rem;
+        font-size: var(--custom-hero-heading-size, 2.5rem);
     }
     
     .hero-content p,
@@ -254,7 +254,7 @@
     }
     
     .hero-content h1 {
-        font-size: 2rem;
+        font-size: var(--custom-hero-heading-size, 2rem);
     }
     
     .hero-content p {
