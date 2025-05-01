@@ -100,6 +100,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     align: heading.textAlign || 'center'
                 });
                 
+                // Add an isolated class to the heading to avoid style conflicts
+                heroHeading.className = 'isolated-hero-heading';
+                console.log('[Hero Debug] Applied isolated class to heading');
+                
                 // Check if text is HTML or plain text
                 if (heading.text) {
                     if (heading.text.trim().startsWith('<')) {
@@ -115,6 +119,43 @@ document.addEventListener('DOMContentLoaded', async function() {
                     heroHeading.textContent = 'Find Your Inner Peace';
                     console.log('[Hero Debug] Applied default heading text: "Find Your Inner Peace"');
                 }
+                
+                // Create a style tag specifically for the isolated hero heading
+                const styleId = 'isolated-hero-heading-style';
+                let styleEl = document.getElementById(styleId);
+                
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = styleId;
+                    document.head.appendChild(styleEl);
+                    console.log('[Hero Debug] Created style element for isolated heading');
+                }
+                
+                // Define all styling for the isolated heading in this CSS rule
+                let cssRules = [];
+                cssRules.push(`font-size: ${heading.size || '64px'}`);
+                cssRules.push(`font-family: ${heading.font || "'Julietta', serif"}`);
+                
+                if (heading.fontWeight) {
+                    cssRules.push(`font-weight: ${heading.fontWeight}`);
+                }
+                
+                if (heading.fontStyle) {
+                    cssRules.push(`font-style: ${heading.fontStyle}`);
+                }
+                
+                if (heading.textDecoration) {
+                    cssRules.push(`text-decoration: ${heading.textDecoration}`);
+                }
+                
+                cssRules.push(`text-align: ${heading.textAlign || 'center'}`);
+                cssRules.push('margin-bottom: 20px');
+                cssRules.push('text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7)');
+                cssRules.push('color: #fff');
+                
+                // Create the complete rule
+                styleEl.textContent = `.isolated-hero-heading { ${cssRules.join('; ')}; }`;
+                console.log('[Hero Debug] Applied custom CSS rule:', styleEl.textContent);
                 
                 // Apply styles with improved font handling
                 if (heading.font) {

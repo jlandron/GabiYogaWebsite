@@ -1079,7 +1079,7 @@ function updateQuillContents(settings) {
                 
                 applyQuillFormats(headingQuill, formats);
                 console.log('Updated hero heading with content and formats:', formats);
-            }
+            }, 3000)
         }
         
         // Subheading
