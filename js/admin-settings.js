@@ -1054,46 +1054,60 @@ function updateQuillContents(settings) {
             // Force update to ensure text is applied before formatting
             headingQuill.update();
             
-            // Wait a brief moment to ensure content is set before applying formats
-            setTimeout(() => {
-                // Apply formatting
-                let fontValue = 'playfair'; // Default font
-                
-                // Convert CSS font string to Quill internal format
-                if (settings.heroText.heading.font) {
-                    console.log('[Format Debug] Hero heading font from API:', settings.heroText.heading.font);
-                    // Extract actual font name from CSS font-family value
-                    const fontMatch = settings.heroText.heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
-                    if (fontMatch) {
-                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
-                        console.log('[Format Debug] Extracted font name:', fontName);
-                        
-                        // Look up this font name in our FONT_MAP to find the Quill internal name
-                        for (const [key, value] of Object.entries(FONT_MAP)) {
-                            if (value.includes(fontName)) {
-                                fontValue = key;
-                                console.log(`[Format Debug] Mapped font name "${fontName}" to Quill font "${fontValue}"`);
-                                break;
-                            }
+            // Apply content and formatting in one step to avoid flashing/content loss
+            
+            // Map format values
+            let fontValue = 'playfair'; // Default font
+            
+            // Convert CSS font string to Quill internal format
+            if (settings.heroText.heading.font) {
+                console.log('[Format Debug] Hero heading font from API:', settings.heroText.heading.font);
+                // Extract actual font name from CSS font-family value
+                const fontMatch = settings.heroText.heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
+                if (fontMatch) {
+                    const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
+                    console.log('[Format Debug] Extracted font name:', fontName);
+                    
+                    // Look up this font name in our FONT_MAP to find the Quill internal name
+                    for (const [key, value] of Object.entries(FONT_MAP)) {
+                        if (value.includes(fontName)) {
+                            fontValue = key;
+                            console.log(`[Format Debug] Mapped font name "${fontName}" to Quill font "${fontValue}"`);
+                            break;
                         }
                     }
                 }
+            }
+            
+            const formats = {
+                font: fontValue,
+                size: settings.heroText.heading.size || '48px',
+                bold: settings.heroText.heading.fontWeight === 'bold',
+                italic: settings.heroText.heading.fontStyle === 'italic',
+                underline: settings.heroText.heading.textDecoration && 
+                         settings.heroText.heading.textDecoration.includes('underline'),
+                align: settings.heroText.heading.textAlign || 'center'
+            };
+            
+            console.log('[Format Debug] Hero heading formats to apply:', formats);
+            
+            // Temporarily disable text-change events to prevent content loss during formatting
+            const originalHandler = headingQuill.emitter.listeners.get('text-change')[0];
+            headingQuill.emitter.listeners.delete('text-change');
+            
+            // Create a Delta to apply both text and formatting at once
+            const delta = new Quill.import('delta')();
+            
+            // First, insert the text
+            delta.insert(headingText.replace(/<[^>]*>/g, ''), formats); // Use plain text without HTML tags
+            
+            // Set the content with formatting in one operation
+            headingQuill.setContents(delta);
+            
+            // Re-attach the text-change handler
+            headingQuill.on('text-change', originalHandler);
                 
-                const formats = {
-                    font: fontValue,
-                    size: settings.heroText.heading.size || '48px',
-                    bold: settings.heroText.heading.fontWeight === 'bold',
-                    italic: settings.heroText.heading.fontStyle === 'italic',
-                    underline: settings.heroText.heading.textDecoration && 
-                             settings.heroText.heading.textDecoration.includes('underline'),
-                    align: settings.heroText.heading.textAlign || 'center'
-                };
-                
-                console.log('[Format Debug] Hero heading formats to apply:', formats);
-                
-                applyQuillFormats(headingQuill, formats);
-                console.log('Updated hero heading with content and formats:', formats);
-            }, 3000)
+            console.log('Updated hero heading with content and formats in one step:', formats);
         }
         
         // Subheading

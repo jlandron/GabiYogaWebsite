@@ -200,6 +200,11 @@ function createQuillEditor(targetId, options = {}) {
             editorElement.style.maxHeight = `${config.height * 2}px`;
         }
         
+        // Temporarily disable the text-change event handler when setting initial content
+        // to prevent formatting loss during initialization
+        const originalHandlers = quill.emitter.listeners.get('text-change') || [];
+        quill.emitter.listeners.delete('text-change');
+        
         // Set initial content from textarea
         if (targetElement.value) {
             try {
@@ -230,6 +235,14 @@ function createQuillEditor(targetId, options = {}) {
             }
         } else {
             console.log(`[QuillJS Debug] No initial content for ${targetId}`);
+        }
+        
+        // Restore the text-change event handlers
+        if (originalHandlers.length > 0) {
+            originalHandlers.forEach(handler => {
+                quill.on('text-change', handler);
+            });
+            console.log(`[QuillJS Debug] Restored ${originalHandlers.length} text-change handlers for ${targetId}`);
         }
         
         /**
