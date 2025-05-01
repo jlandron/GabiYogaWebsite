@@ -30,7 +30,8 @@
 }
 
 .hero-content h1 {
-    font-size: 3.5rem;
+    /* Allow for custom font size from admin settings */
+    font-size: var(--custom-hero-heading-size, 3.5rem);
     margin-bottom: 20px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
     opacity: 0;
