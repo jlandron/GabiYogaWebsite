@@ -329,14 +329,15 @@ function initializeTextEditors() {
         return;
     }
     
-    // Initialize hero heading with QuillJS
+    // Initialize hero heading with QuillJS - hardcoded size of 64px
     headingQuill = window.createQuillEditor('hero-heading', {
         defaultFont: "'Playfair Display', serif",
-        defaultSize: "48px",
-        height: 120, // Taller height to accommodate 72px text
-        simplified: true
+        defaultSize: "64px", // Hardcoded size that cannot be changed
+        height: 120, 
+        simplified: true,
+        disableSizeControl: true // Disable size control for heading
     });
-    console.log('Hero heading editor initialized');
+    console.log('Hero heading editor initialized with fixed size of 64px');
     
     // Initialize hero subheading with QuillJS
     subheadingQuill = window.createQuillEditor('hero-subheading', {

@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     data.success ? 'Success' : 'Failed', 
                     data.settings ? 'Settings data present' : 'No settings data');
         
-                // If we got valid settings with hero text data, update the elements
+        // If we got valid settings with hero text data, update the elements
         if (data && data.success && data.settings && data.settings.heroText) {
             // Log the raw hero text data before processing
             console.log('[Hero Debug] Raw hero text data from API:', 
@@ -126,18 +126,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Create a style tag specifically for the isolated hero heading
                 const styleId = 'isolated-hero-heading-style';
-                let styleEl = document.getElementById(styleId);
+                let styleEl1 = document.getElementById(styleId);
                 
-                if (!styleEl) {
-                    styleEl = document.createElement('style');
-                    styleEl.id = styleId;
-                    document.head.appendChild(styleEl);
+                if (!styleEl1) {
+                    styleEl1 = document.createElement('style');
+                    styleEl1.id = styleId;
+                    document.head.appendChild(styleEl1);
                     console.log('[Hero Debug] Created style element for isolated heading');
                 }
                 
                 // Define all styling for the isolated heading in this CSS rule
+                const hardcodedSize = '64px';
+                
                 let cssRules = [];
-                cssRules.push(`font-size: ${heading.size || '64px'}`);
+                cssRules.push(`font-size: ${hardcodedSize}`);
                 cssRules.push(`font-family: ${heading.font || "'Julietta', serif"}`);
                 
                 if (heading.fontWeight) {
@@ -158,8 +160,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 cssRules.push('color: #fff');
                 
                 // Create the complete rule
-                styleEl.textContent = `.isolated-hero-heading { ${cssRules.join('; ')}; }`;
-                console.log('[Hero Debug] Applied custom CSS rule:', styleEl.textContent);
+                styleEl1.textContent = `.isolated-hero-heading { ${cssRules.join('; ')}; }`;
+                console.log('[Hero Debug] Applied custom CSS rule:', styleEl1.textContent);
                 
                 // Apply styles with improved font handling
                 if (heading.font) {
@@ -176,50 +178,54 @@ document.addEventListener('DOMContentLoaded', async function() {
                     heroHeading.style.fontFamily = heading.font;
                     console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
-                if (heading.size) {
-                    // Set the CSS custom property for the size with !important to increase priority
-                    document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size + ' !important');
-                    console.log('[Hero Debug] Applied heading size via CSS variable with !important:', heading.size);
-                    
-                    // Apply direct inline style with important flag using setAttribute to guarantee highest priority
-                    heroHeading.setAttribute('style', `font-size: ${heading.size} !important; ${heroHeading.getAttribute('style') || ''}`);
-                    console.log('[Hero Debug] Applied heading size with highest priority inline style:', heading.size);
-                    
-                    // Add a custom style tag with high specificity as another fallback
-                    const customStyleId = 'custom-hero-style';
-                    let styleEl = document.getElementById(customStyleId);
-                    
-                    if (!styleEl) {
-                        styleEl = document.createElement('style');
-                        styleEl.id = customStyleId;
-                        document.head.appendChild(styleEl);
-                    }
-                    
-                    // Add a unique ID to the heading for maximum specificity
-                    const headingId = `hero-heading-${Date.now()}`;
-                    heroHeading.id = headingId;
-                    
-                    // Add high specificity CSS rule using ID selector (highest CSS specificity)
-                    styleEl.textContent = `
-                      #${headingId} { font-size: ${heading.size} !important; }
-                      .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
-                      body .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
-                      h1.isolated-hero-heading#${headingId} { font-size: ${heading.size} !important; }
-                    `;
-                    console.log('[Hero Debug] Added maximum specificity CSS rules using ID selector:', styleEl.textContent);
+                
+                // Always use 64px for the hero heading regardless of settings
+                // Set the CSS custom property for the size with !important to increase priority
+                document.documentElement.style.setProperty('--custom-hero-heading-size', hardcodedSize + ' !important');
+                console.log('[Hero Debug] Applied hardcoded heading size via CSS variable:', hardcodedSize);
+                
+                // Apply direct inline style with important flag using setAttribute to guarantee highest priority
+                heroHeading.setAttribute('style', `font-size: ${hardcodedSize} !important; ${heroHeading.getAttribute('style') || ''}`);
+                console.log('[Hero Debug] Applied hardcoded heading size with inline style:', hardcodedSize);
+                
+                // Add a custom style tag with high specificity as another fallback
+                const customStyleId = 'custom-hero-style';
+                let styleEl2 = document.getElementById(customStyleId);
+                
+                if (!styleEl2) {
+                    styleEl2 = document.createElement('style');
+                    styleEl2.id = customStyleId;
+                    document.head.appendChild(styleEl2);
                 }
+                
+                // Add a unique ID to the heading for maximum specificity
+                const headingId = `hero-heading-${Date.now()}`;
+                heroHeading.id = headingId;
+                
+                // Add high specificity CSS rule using ID selector (highest CSS specificity)
+                styleEl2.textContent = `
+                  #${headingId} { font-size: ${hardcodedSize} !important; }
+                  .hero-content h1#${headingId} { font-size: ${hardcodedSize} !important; }
+                  body .hero-content h1#${headingId} { font-size: ${hardcodedSize} !important; }
+                  h1.isolated-hero-heading#${headingId} { font-size: ${hardcodedSize} !important; }
+                `;
+                console.log('[Hero Debug] Added maximum specificity CSS rules using ID selector:', styleEl2.textContent);
+                
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
                     console.log('[Hero Debug] Applied heading weight:', heading.fontWeight);
                 }
+                
                 if (heading.fontStyle) {
                     heroHeading.style.fontStyle = heading.fontStyle;
                     console.log('[Hero Debug] Applied heading style:', heading.fontStyle);
                 }
+                
                 if (heading.textDecoration) {
                     heroHeading.style.textDecoration = heading.textDecoration;
                     console.log('[Hero Debug] Applied heading decoration:', heading.textDecoration);
                 }
+                
                 heroHeading.style.textAlign = heading.textAlign || 'center';
                 console.log('[Hero Debug] Applied heading alignment:', heading.textAlign || 'center');
             } else {
@@ -275,22 +281,27 @@ document.addEventListener('DOMContentLoaded', async function() {
                     heroSubheading.style.fontFamily = subheading.font;
                     console.log('[Hero Debug] Applied subheading font:', subheading.font);
                 }
+                
                 if (subheading.size) {
                     heroSubheading.style.fontSize = subheading.size;
                     console.log('[Hero Debug] Applied subheading size:', subheading.size);
                 }
+                
                 if (subheading.fontWeight) {
                     heroSubheading.style.fontWeight = subheading.fontWeight;
                     console.log('[Hero Debug] Applied subheading weight:', subheading.fontWeight);
                 }
+                
                 if (subheading.fontStyle) {
                     heroSubheading.style.fontStyle = subheading.fontStyle;
                     console.log('[Hero Debug] Applied subheading style:', subheading.fontStyle);
                 }
+                
                 if (subheading.textDecoration) {
                     heroSubheading.style.textDecoration = subheading.textDecoration;
                     console.log('[Hero Debug] Applied subheading decoration:', subheading.textDecoration);
                 }
+                
                 heroSubheading.style.textAlign = subheading.textAlign || 'center';
                 console.log('[Hero Debug] Applied subheading alignment:', subheading.textAlign || 'center');
             } else {

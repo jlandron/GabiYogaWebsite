@@ -30,8 +30,8 @@
 }
 
 .hero-content h1 {
-    /* Allow for custom font size from admin settings */
-    font-size: var(--custom-hero-heading-size, 3.5rem);
+    /* Hardcoded font size - no longer using admin settings */
+    font-size: 64px;
     margin-bottom: 20px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
     opacity: 0;
@@ -145,9 +145,13 @@
 
 /* Responsive Hero Sections */
 @media screen and (max-width: 768px) {
-    .hero-content h1, 
+    .hero-content h1 {
+        /* Maintain hardcoded font size even on smaller screens */
+        font-size: 64px;
+    }
+    
     .page-hero-content h1 {
-        font-size: var(--custom-hero-heading-size, 2.5rem);
+        font-size: 2.5rem;
     }
     
     .blog-hero-content h1 {
@@ -163,7 +167,8 @@
 
 @media screen and (max-width: 576px) {
     .hero-content h1 {
-        font-size: var(--custom-hero-heading-size, 2rem);
+        /* Maintain hardcoded font size even on mobile */
+        font-size: 64px;
     }
     
     .blog-hero {
