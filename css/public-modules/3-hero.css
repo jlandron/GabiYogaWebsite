@@ -30,16 +30,16 @@
 }
 
 .hero-content h1 {
-    /* Hardcoded font size - no longer using admin settings */
-    font-size: 64px;
+    /* Allow for custom font size from admin settings */
+    font-size: var(--custom-hero-heading-size, 3.5rem);
     margin-bottom: 20px;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
     opacity: 0;
     animation: fadeIn 1s forwards 1s;
 }
 
+/* This was the issue - removing font-size from .hero-content p */
 .hero-content p {
-    font-size: 1.2rem;
     margin-bottom: 30px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
     opacity: 0;

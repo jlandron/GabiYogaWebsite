@@ -136,10 +136,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
                 
                 // Define all styling for the isolated heading in this CSS rule
-                const hardcodedSize = '64px';
-                
                 let cssRules = [];
-                cssRules.push(`font-size: ${hardcodedSize}`);
+                cssRules.push(`font-size: ${heading.size || '3.5rem'}`);
                 cssRules.push(`font-family: ${heading.font || "'Julietta', serif"}`);
                 
                 if (heading.fontWeight) {
@@ -179,14 +177,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
                 
-                // Always use 64px for the hero heading regardless of settings
                 // Set the CSS custom property for the size with !important to increase priority
-                document.documentElement.style.setProperty('--custom-hero-heading-size', hardcodedSize + ' !important');
-                console.log('[Hero Debug] Applied hardcoded heading size via CSS variable:', hardcodedSize);
+                document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size + ' !important');
+                console.log('[Hero Debug] Applied heading size via CSS variable with !important:', heading.size);
                 
                 // Apply direct inline style with important flag using setAttribute to guarantee highest priority
-                heroHeading.setAttribute('style', `font-size: ${hardcodedSize} !important; ${heroHeading.getAttribute('style') || ''}`);
-                console.log('[Hero Debug] Applied hardcoded heading size with inline style:', hardcodedSize);
+                heroHeading.setAttribute('style', `font-size: ${heading.size} !important; ${heroHeading.getAttribute('style') || ''}`);
+                console.log('[Hero Debug] Applied heading size with inline style:', heading.size);
                 
                 // Add a custom style tag with high specificity as another fallback
                 const customStyleId = 'custom-hero-style';
@@ -204,10 +201,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Add high specificity CSS rule using ID selector (highest CSS specificity)
                 styleEl2.textContent = `
-                  #${headingId} { font-size: ${hardcodedSize} !important; }
-                  .hero-content h1#${headingId} { font-size: ${hardcodedSize} !important; }
-                  body .hero-content h1#${headingId} { font-size: ${hardcodedSize} !important; }
-                  h1.isolated-hero-heading#${headingId} { font-size: ${hardcodedSize} !important; }
+                  #${headingId} { font-size: ${heading.size} !important; }
+                  .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
+                  body .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
+                  h1.isolated-hero-heading#${headingId} { font-size: ${heading.size} !important; }
                 `;
                 console.log('[Hero Debug] Added maximum specificity CSS rules using ID selector:', styleEl2.textContent);
                 
