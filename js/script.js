@@ -537,21 +537,49 @@ async function fetchWorkshops() {
 // Function to fetch retreat data
 async function fetchRetreats() {
     try {
+        // Show loading indicator
+        toggleRetreatsLoading(true);
+        
+        console.log('Fetching retreats data from API...');
         const response = await fetch('/api/retreats/featured');
         
         if (!response.ok) {
-            throw new Error('Failed to fetch retreats');
+            throw new Error(`Failed to fetch retreats: ${response.status} ${response.statusText}`);
         }
         
+        // Parse as JSON
         const data = await response.json();
+        console.log('Raw API response data:', data);
         
-        if (data.success) {
+        if (data.success && Array.isArray(data.retreats)) {
+            console.log('Successfully fetched retreats data:', data.retreats);
             renderRetreats(data.retreats);
         } else {
-            console.error('Error fetching retreats:', data.message);
+            console.error('API returned error or invalid data:', data.message || 'Unknown error');
+            showEmptyRetreats(true);
         }
     } catch (error) {
         console.error('Error fetching retreats:', error);
+        showEmptyRetreats(true);
+    } finally {
+        // Hide loading indicator regardless of result
+        toggleRetreatsLoading(false);
+    }
+}
+
+// Helper function to toggle loading indicator
+function toggleRetreatsLoading(isLoading) {
+    const loadingElement = document.getElementById('retreats-loading');
+    if (loadingElement) {
+        loadingElement.style.display = isLoading ? 'block' : 'none';
+    }
+}
+
+// Helper function to show/hide empty state message
+function showEmptyRetreats(isEmpty) {
+    const emptyElement = document.getElementById('retreats-empty');
+    if (emptyElement) {
+        emptyElement.style.display = isEmpty ? 'block' : 'none';
     }
 }
 
@@ -668,35 +696,68 @@ function renderWorkshops(workshopsData) {
 
 // Function to render retreats data
 function renderRetreats(retreatsData) {
-    // This function would populate the retreats section
-    // For now, we'll just log the data
+    // Log the retreat data for debugging
     console.log('Retreats data loaded:', retreatsData);
     
     const retreatsGrid = document.querySelector('.retreats-grid');
     
-    if (!retreatsGrid || !retreatsData || !retreatsData.length) {
+    if (!retreatsGrid) {
+        console.error('Retreats grid not found in the DOM');
         return;
     }
+    
+    // Handle empty retreats data
+    if (!retreatsData || !Array.isArray(retreatsData) || retreatsData.length === 0) {
+        console.warn('No retreats data available from API');
+        showEmptyRetreats(true);
+        return;
+    }
+    
+    // We have data, hide the empty message
+    showEmptyRetreats(false);
     
     // Clear any existing retreat cards
     retreatsGrid.innerHTML = '';
     
     // Add each retreat
     retreatsData.forEach(retreat => {
+        // Create slug from retreat name if no ID is provided
+        const retreatSlug = retreat.slug || retreat.id || retreat.name.toLowerCase().replace(/\s+/g, '-');
+        
+        // Select a default image if none is provided
+        const defaultImages = ['images/DSC02638.JPG', 'images/DSC02646.JPG', 'images/DSC02661~3.JPG'];
+        const defaultImage = defaultImages[Math.floor(Math.random() * defaultImages.length)];
+        
         const retreatCard = document.createElement('div');
         retreatCard.className = 'retreat-card';
         
+        // Format the date range properly
+        let dateRange = retreat.dateRange || '';
+        if (retreat.start_date && retreat.end_date) {
+            const startDate = new Date(retreat.start_date);
+            const endDate = new Date(retreat.end_date);
+            const options = { month: 'long', day: 'numeric' };
+            
+            if (startDate.getFullYear() === endDate.getFullYear()) {
+                // Same year, format as "June 10-15, 2025"
+                dateRange = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.getDate()}, ${endDate.getFullYear()}`;
+            } else {
+                // Different years, include both years
+                dateRange = `${startDate.toLocaleDateString('en-US', options)}, ${startDate.getFullYear()} - ${endDate.toLocaleDateString('en-US', options)}, ${endDate.getFullYear()}`;
+            }
+        }
+        
         retreatCard.innerHTML = `
             <div class="retreat-image">
-                <img src="${retreat.imageUrl || 'images/DSC02638.JPG'}" alt="${retreat.name}">
+                <img src="${retreat.imageUrl || defaultImage}" alt="${retreat.name || 'Yoga Retreat'}">
             </div>
             <div class="retreat-content">
-                <h3>${retreat.name}</h3>
-                <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> ${retreat.location}</p>
-                <p class="retreat-date"><i class="far fa-calendar-alt"></i> ${retreat.dateRange}</p>
-                <p class="retreat-price"><i class="fas fa-tag"></i> From $${retreat.price}</p>
-                <p class="retreat-description">${retreat.description}</p>
-                <a href="#" class="btn" data-retreat-id="${retreat.id}">Learn More</a>
+                <h3>${retreat.name || 'Upcoming Retreat'}</h3>
+                <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> ${retreat.location || 'Location TBA'}</p>
+                <p class="retreat-date"><i class="far fa-calendar-alt"></i> ${dateRange}</p>
+                <p class="retreat-price"><i class="fas fa-tag"></i> From $${retreat.price || '0'}</p>
+                <p class="retreat-description">${retreat.description || 'Join us for this transformative retreat experience.'}</p>
+                <a href="retreats/${retreatSlug}" class="btn" data-retreat-id="${retreat.id || ''}">Learn More</a>
             </div>
         `;
         
@@ -706,9 +767,11 @@ function renderRetreats(retreatsData) {
     // Add event listeners to the new Learn More buttons
     document.querySelectorAll('.retreat-card .btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            if (loginPrompt(e, 'dashboard.html#retreats')) {
-                // If logged in, redirect to the dashboard retreats panel
-                window.location.href = 'dashboard.html#retreats';
+            e.preventDefault();
+            // Get the href attribute from the button
+            const href = btn.getAttribute('href');
+            if (href) {
+                window.location.href = href;
             }
         });
     });
@@ -738,12 +801,36 @@ const addLoginRequirements = () => {
         });
     }
     
-    // Retreat "Learn More" buttons
+    // For all retreat "Learn More" buttons, both static and dynamic
     document.querySelectorAll('.retreat-card .btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (loginPrompt(e, 'dashboard.html#retreats')) {
-                // If logged in, redirect to the dashboard retreats panel
-                window.location.href = 'dashboard.html#retreats';
+        // Remove any existing event listeners
+        const newBtn = btn.cloneNode(true);
+        if (btn.parentNode) {
+            btn.parentNode.replaceChild(newBtn, btn);
+        }
+        
+        newBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Check for data-retreat-id attribute (from dynamic cards)
+            const retreatId = newBtn.getAttribute('data-retreat-id');
+            if (retreatId) {
+                window.location.href = `retreats/${retreatId}`;
+                return;
+            }
+            
+            // Check for href attribute (from static cards in HTML)
+            const href = newBtn.getAttribute('href');
+            if (href && href !== '#') {
+                window.location.href = href;
+                return;
+            }
+            
+            // Fallback: try to create a slug from retreat name
+            const retreatName = newBtn.closest('.retreat-content')?.querySelector('h3')?.textContent;
+            if (retreatName) {
+                const slug = retreatName.toLowerCase().replace(/\s+/g, '-');
+                window.location.href = `retreats/${slug}`;
             }
         });
     });

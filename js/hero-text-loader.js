@@ -29,17 +29,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Set initial state for fade-in animation
     heroContent.style.opacity = '0';
     heroContent.style.transform = 'translateY(25px)';
-    heroContent.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
+    heroContent.style.transition = 'opacity 0.8s ease, transform 0.8s ease'; // Faster animation
     
     heroHeading.style.opacity = '0';
-    heroHeading.style.transition = 'opacity 1.2s ease';
+    heroHeading.style.transition = 'opacity 0.8s ease'; // Faster animation
     
     heroSubheading.style.opacity = '0';
-    heroSubheading.style.transition = 'opacity 1.2s ease 0.3s'; // Delay subheading animation
+    heroSubheading.style.transition = 'opacity 0.8s ease 0.2s'; // Faster animation with reduced delay
     
     heroButton.style.opacity = '0';
     heroButton.style.transform = 'translateY(20px)';
-    heroButton.style.transition = 'opacity 1.2s ease 0.8s, transform 1.2s ease 0.8s'; // Further delay button animation
+    heroButton.style.transition = 'opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s'; // Faster animation with reduced delay
     
     try {
         // Fetch the website settings from the API

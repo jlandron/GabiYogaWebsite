@@ -172,49 +172,13 @@
             <h2>Upcoming Retreats</h2>
             <div class="retreats-container">
                 <div class="retreats-grid">
-                <!-- Retreat 1 -->
-                <div class="retreat-card">
-                    <div class="retreat-image">
-                        <img src="images/DSC02638.JPG" alt="Mountain Retreat">
-                    </div>
-                    <div class="retreat-content">
-                        <h3>Mountain Serenity Retreat</h3>
-                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Blue Ridge Mountains</p>
-                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> June 10-15, 2025</p>
-                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,200</p>
-                        <p class="retreat-description">Escape to the majestic Blue Ridge Mountains for 5 days of yoga, meditation, hiking, and self-discovery.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
+                    <!-- Retreats will be dynamically loaded here -->
                 </div>
-
-                <!-- Retreat 2 -->
-                <div class="retreat-card">
-                    <div class="retreat-image">
-                        <img src="images/DSC02646.JPG" alt="Beach Retreat">
-                    </div>
-                    <div class="retreat-content">
-                        <h3>Coastal Bliss Retreat</h3>
-                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Tulum, Mexico</p>
-                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> September 5-12, 2025</p>
-                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,800</p>
-                        <p class="retreat-description">Immerse yourself in a week of beachside yoga, Caribbean sunshine, and Mayan cultural experiences.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
+                <div id="retreats-loading" class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i> Loading upcoming retreats...
                 </div>
-
-                <!-- Retreat 3 -->
-                <div class="retreat-card">
-                    <div class="retreat-image">
-                        <img src="images/DSC02661~3.JPG" alt="Desert Retreat">
-                    </div>
-                    <div class="retreat-content">
-                        <h3>Desert Renewal Retreat</h3>
-                        <p class="retreat-location"><i class="fas fa-map-marker-alt"></i> Sedona, Arizona</p>
-                        <p class="retreat-date"><i class="far fa-calendar-alt"></i> November 15-20, 2025</p>
-                        <p class="retreat-price"><i class="fas fa-tag"></i> From $1,400</p>
-                        <p class="retreat-description">Experience the magical healing energy of Sedona's red rocks with daily yoga, meditation, and vortex hikes.</p>
-                        <a href="#" class="btn">Learn More</a>
-                    </div>
+                <div id="retreats-empty" class="empty-message" style="display: none;">
+                    <p>No upcoming retreats at this time. Please check back soon for new adventures!</p>
                 </div>
             </div>
         </div>

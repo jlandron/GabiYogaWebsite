@@ -17,19 +17,19 @@
 /* Content Animation */
 .fade-in {
     opacity: 0;
-    animation: fadeIn 1s forwards;
+    animation: fadeIn 0.8s forwards; /* Faster animation (reduced from 1s) */
 }
 
 .fade-in.delay-1 {
-    animation-delay: 0.3s;
+    animation-delay: 0.2s; /* Reduced delays to match faster animation */
 }
 
 .fade-in.delay-2 {
-    animation-delay: 0.6s;
+    animation-delay: 0.4s;
 }
 
 .fade-in.delay-3 {
-    animation-delay: 0.9s;
+    animation-delay: 0.6s;
 }
 
 /* Hover Animations */

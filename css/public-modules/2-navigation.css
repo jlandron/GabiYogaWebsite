@@ -9,6 +9,8 @@ header {
     position: fixed;
     width: 100%;
     z-index: 1000;
+    opacity: 0; /* Start with header hidden */
+    animation: fadeIn 0.8s forwards; /* Faster animation than hero (was 1s) */
 }
 
 /* Navbar */
