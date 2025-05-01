@@ -45,12 +45,12 @@
                     <form class="admin-form" id="hero-text-form">
                         <div class="admin-form-group">
                             <label for="hero-heading">Main Heading</label>
-                            <input type="text" id="hero-heading" class="admin-form-control" value="Find Your Inner Peace" required>
+                            <input type="text" id="hero-heading" class="admin-form-control" required>
                         </div>
                         
                         <div class="admin-form-group">
                             <label for="hero-subheading">Subheading</label>
-                            <input type="text" id="hero-subheading" class="admin-form-control" value="Join our community and transform your mind, body, and spirit" required>
+                            <input type="text" id="hero-subheading" class="admin-form-control" required>
                         </div>
                     </form>
                 </div>
@@ -64,21 +64,17 @@
                     <form class="admin-form" id="about-form">
                         <div class="admin-form-group">
                             <label for="instructor-name">Instructor Name</label>
-                            <input type="text" id="instructor-name" class="admin-form-control" value="Gabi" required>
+                            <input type="text" id="instructor-name" class="admin-form-control" required>
                         </div>
                         
                         <div class="admin-form-group">
                             <label for="instructor-subtitle">Subtitle</label>
-                            <input type="text" id="instructor-subtitle" class="admin-form-control" value="RYT 500 Certified Yoga Instructor" required>
+                            <input type="text" id="instructor-subtitle" class="admin-form-control" required>
                         </div>
                         
                         <div class="admin-form-group">
                             <label for="instructor-bio">Biography</label>
-                            <textarea id="instructor-bio" class="admin-form-control" rows="6" required>Welcome to Gabi Yoga! I've been practicing yoga for over 10 years and teaching for 5. My journey began when I was seeking balance in my hectic life, and yoga provided the perfect sanctuary.
-
-I specialize in Vinyasa, Hatha, and Restorative yoga practices. My teaching philosophy centers around making yoga accessible to practitioners of all levels while honoring its traditional roots.
-
-Through my classes, I aim to create a supportive environment where you can explore the transformative power of yoga, connecting breath with movement and finding peace within.</textarea>
+                            <textarea id="instructor-bio" class="admin-form-control" rows="6" required></textarea>
                         </div>
                         
                         <div class="admin-form-group">
@@ -114,30 +110,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <input type="text" class="admin-form-control" value="RYT 500 - Yoga Alliance">
-                                    </td>
-                                    <td class="admin-table-actions">
-                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input type="text" class="admin-form-control" value="Meditation Instructor Certification">
-                                    </td>
-                                    <td class="admin-table-actions">
-                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input type="text" class="admin-form-control" value="Pre-natal Yoga Certification">
-                                    </td>
-                                    <td class="admin-table-actions">
-                                        <button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>
-                                    </td>
-                                </tr>
+                                <!-- Certification rows will be dynamically loaded -->
                             </tbody>
                         </table>
                     </div>
@@ -158,7 +131,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <div class="toggle-label">
                                 <h4>Group Classes</h4>
                                 <div class="editor-container">
-                                    <textarea id="group-classes-text" class="admin-form-control offering-text">Join our community for energizing and rejuvenating yoga sessions in a supportive group setting.</textarea>
+                                    <textarea id="group-classes-text" class="admin-form-control offering-text"></textarea>
                                     <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
                                 </div>
                             </div>
@@ -172,7 +145,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <div class="toggle-label">
                                 <h4>Private Lessons</h4>
                                 <div class="editor-container">
-                                    <textarea id="private-lessons-text" class="admin-form-control offering-text">Personalized one-on-one sessions tailored to your specific needs and goals.</textarea>
+                                    <textarea id="private-lessons-text" class="admin-form-control offering-text"></textarea>
                                     <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
                                 </div>
                             </div>
@@ -186,7 +159,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <div class="toggle-label">
                                 <h4>Workshops</h4>
                                 <div class="editor-container">
-                                    <textarea id="workshops-text" class="admin-form-control offering-text">Immersive experiences focusing on specific aspects of yoga practice.</textarea>
+                                    <textarea id="workshops-text" class="admin-form-control offering-text"></textarea>
                                     <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
                                 </div>
                             </div>
@@ -200,7 +173,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <div class="toggle-label">
                                 <h4>Retreats</h4>
                                 <div class="editor-container">
-                                    <textarea id="retreats-text" class="admin-form-control offering-text">Transformative multi-day experiences in beautiful locations to deepen your practice.</textarea>
+                                    <textarea id="retreats-text" class="admin-form-control offering-text"></textarea>
                                     <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
                                 </div>
                             </div>
@@ -284,17 +257,17 @@ Through my classes, I aim to create a supportive environment where you can explo
                     <form class="admin-form" id="contact-form">
                         <div class="admin-form-group">
                             <label for="contact-address">Studio Address</label>
-                            <input type="text" id="contact-address" class="admin-form-control" value="123 Yoga Street, Mindful City, CA 94000">
+                            <input type="text" id="contact-address" class="admin-form-control">
                         </div>
                         
                         <div class="admin-form-group">
                             <label for="contact-phone">Phone Number</label>
-                            <input type="tel" id="contact-phone" class="admin-form-control" value="(555) 123-4567">
+                            <input type="tel" id="contact-phone" class="admin-form-control">
                         </div>
                         
                         <div class="admin-form-group">
                             <label for="contact-email">Email Address</label>
-                            <input type="email" id="contact-email" class="admin-form-control" value="info@gabijyoti.yoga">
+                            <input type="email" id="contact-email" class="admin-form-control">
                         </div>
                         
                         <h3>Social Media Links</h3>
@@ -303,7 +276,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <label for="social-facebook">Facebook</label>
                             <div class="input-with-icon">
                                 <i class="fab fa-facebook-f"></i>
-                                <input type="url" id="social-facebook" class="admin-form-control" value="https://facebook.com/gabijyotiyoga">
+                                <input type="url" id="social-facebook" class="admin-form-control">
                             </div>
                         </div>
                         
@@ -311,7 +284,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <label for="social-instagram">Instagram</label>
                             <div class="input-with-icon">
                                 <i class="fab fa-instagram"></i>
-                                <input type="url" id="social-instagram" class="admin-form-control" value="https://instagram.com/gabijyotiyoga">
+                                <input type="url" id="social-instagram" class="admin-form-control">
                             </div>
                         </div>
                         
@@ -319,7 +292,7 @@ Through my classes, I aim to create a supportive environment where you can explo
                             <label for="social-youtube">YouTube</label>
                             <div class="input-with-icon">
                                 <i class="fab fa-youtube"></i>
-                                <input type="url" id="social-youtube" class="admin-form-control" value="https://youtube.com/gabijyotiyoga">
+                                <input type="url" id="social-youtube" class="admin-form-control">
                             </div>
                         </div>
                     </form>
