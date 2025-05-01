@@ -96,11 +96,28 @@
     bottom: var(--spacing-lg);
     right: var(--spacing-lg);
     z-index: 999;
-    box-shadow: var(--shadow-lg);
     transition: all 0.3s ease-in-out;
     opacity: 0;
     transform: translateY(var(--spacing-lg));
     pointer-events: none;
+    /* Making the container simple */
+    padding: 20px;
+    margin: -20px;
+    cursor: pointer;
+}
+
+/* Style the button itself */
+#save-all-settings-fixed {
+    box-shadow: var(--shadow-lg);
+    padding: 20px 30px;
+    font-size: 1.1em;
+    min-width: 200px;
+    cursor: pointer;
+    display: block;
+    /* Reset any potential overflow settings */
+    overflow: visible;
+    /* Ensure the button is fully clickable */
+    pointer-events: auto;
 }
 
 .fixed-save-button.visible {

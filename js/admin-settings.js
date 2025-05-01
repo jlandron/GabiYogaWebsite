@@ -19,6 +19,60 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
+ * Font mapping between Quill format values and CSS font-family values
+ */
+const FONT_MAP = {
+    'playfair': "'Playfair Display', serif",
+    'opensans': "'Open Sans', sans-serif",
+    'julietta': "'Julietta', serif",
+    'themunday': "'Themunday', serif",
+    'arial': "Arial, sans-serif",
+    'times': "'Times New Roman', serif",
+    'helvetica': "'Helvetica Neue', Helvetica, sans-serif",
+    'georgia': "Georgia, serif",
+    'courier': "'Courier New', monospace",
+    'roboto': "'Roboto', sans-serif",
+    'dancing': "'Dancing Script', cursive",
+    'greatvibes': "'Great Vibes', cursive",
+    'pacifico': "'Pacifico', cursive",
+    'sacramento': "'Sacramento', cursive",
+    'allura': "'Allura', cursive",
+    'satisfy': "'Satisfy', cursive",
+    'amatic': "'Amatic SC', cursive",
+    'caveat': "'Caveat', cursive",
+    'shadows': "'Shadows Into Light', cursive"
+};
+
+/**
+ * Helper function to map CSS font-family values to Quill format values
+ */
+function mapCSSFontToQuill(fontFamily) {
+    // Handle common font mappings
+    if (fontFamily.includes("Playfair")) return "playfair";
+    if (fontFamily.includes("Open Sans")) return "opensans";
+    if (fontFamily.includes("Julietta")) return "julietta";
+    if (fontFamily.includes("Themunday")) return "themunday";
+    if (fontFamily.includes("Arial")) return "arial";
+    if (fontFamily.includes("Times")) return "times";
+    if (fontFamily.includes("Helvetica")) return "helvetica";
+    if (fontFamily.includes("Georgia")) return "georgia";
+    if (fontFamily.includes("Courier")) return "courier";
+    if (fontFamily.includes("Roboto")) return "roboto";
+    if (fontFamily.includes("Dancing Script")) return "dancing";
+    if (fontFamily.includes("Great Vibes")) return "greatvibes";
+    if (fontFamily.includes("Pacifico")) return "pacifico";
+    if (fontFamily.includes("Sacramento")) return "sacramento";
+    if (fontFamily.includes("Allura")) return "allura";
+    if (fontFamily.includes("Satisfy")) return "satisfy";
+    if (fontFamily.includes("Amatic")) return "amatic";
+    if (fontFamily.includes("Caveat")) return "caveat";
+    if (fontFamily.includes("Shadows Into Light")) return "shadows";
+    
+    // Default to Open Sans if no match
+    return "opensans";
+}
+
+/**
  * Initialize certifications table
  */
 function initializeCertifications() {
@@ -90,55 +144,50 @@ function initializePhotoPreview() {
 function initializeFloatingSaveButton() {
     const fixedButton = document.getElementById('fixed-save-button');
     const originalButton = document.getElementById('save-all-settings');
+    const fixedSaveBtn = document.getElementById('save-all-settings-fixed');
     let lastScrollTop = 0;
+    
+    // Remove any existing listeners to avoid duplicates
+    const newFixedButton = fixedButton.cloneNode(true);
+    fixedButton.parentNode.replaceChild(newFixedButton, fixedButton);
+    
+    // Get the fresh elements
+    const updatedFixedButton = document.getElementById('fixed-save-button');
+    const updatedFixedSaveBtn = document.getElementById('save-all-settings-fixed');
+    
+    // Set up the save functionality for the fixed button
+    if (updatedFixedSaveBtn) {
+        updatedFixedSaveBtn.addEventListener('click', function(e) {
+            saveAllSettings();
+            e.stopPropagation();
+        });
+    }
+    
+    // Make the entire container trigger a save when clicked
+    if (updatedFixedButton) {
+        updatedFixedButton.addEventListener('click', function(e) {
+            // Call saveAllSettings directly when the container is clicked
+            if (this.classList.contains('visible')) {
+                saveAllSettings();
+                e.preventDefault();
+            }
+        });
+    }
     
     window.addEventListener('scroll', function() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         // Show button when scrolling down past original button
         if (scrollTop > originalButton.getBoundingClientRect().bottom + window.scrollY) {
-            fixedButton.classList.add('visible');
+            updatedFixedButton.classList.add('visible');
         } else {
-            fixedButton.classList.remove('visible');
+            updatedFixedButton.classList.remove('visible');
         }
         
         lastScrollTop = scrollTop;
     });
 }
 
-
-    // Add font options, keeping this list until we fix thequill editor.
-    // const fonts = [
-    //     // Site theme fonts
-    //     { value: "'Playfair Display', serif", label: "Playfair Display (Site Headers)" },
-    //     { value: "'Open Sans', sans-serif", label: "Open Sans (Site Body)" },
-        
-    //     // Custom fonts
-    //     { value: "'Julietta', serif", label: "Julietta" },
-    //     { value: "'Themunday', serif", label: "Themunday" },
-        
-    //     // Standard fonts
-    //     { value: "Arial, sans-serif", label: "Arial" },
-    //     { value: "'Times New Roman', serif", label: "Times New Roman" },
-    //     { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica Neue" },
-    //     { value: "Georgia, serif", label: "Georgia" },
-    //     { value: "'Courier New', monospace", label: "Courier New" },
-    //     { value: "'Roboto', sans-serif", label: "Roboto" },
-        
-    //     // Script fonts 
-    //     { value: "'Dancing Script', cursive", label: "Dancing Script" },
-    //     { value: "'Great Vibes', cursive", label: "Great Vibes" },
-    //     { value: "'Pacifico', cursive", label: "Pacifico" },
-    //     { value: "'Sacramento', cursive", label: "Sacramento" },
-    //     { value: "'Allura', cursive", label: "Allura" },
-    //     { value: "'Satisfy', cursive", label: "Satisfy" },
-        
-    //     // Creative fonts
-    //     { value: "'Amatic SC', cursive", label: "Amatic SC" },
-    //     { value: "'Caveat', cursive", label: "Caveat" },
-    //     { value: "'Shadows Into Light', cursive", label: "Shadows Into Light" }
-    // ];
-    
 /**
  * Update homepage preview with current settings
  */
@@ -200,7 +249,6 @@ function updateHomepageText() {
         }
     }
 }
-
 
 /**
  * Fallback to public settings endpoint
@@ -388,6 +436,49 @@ function saveAllSettings() {
 }
 
 /**
+ * Extract formatting information from a QuillJS editor
+ * @param {Object} quill - The Quill editor instance
+ * @returns {Object} - Extracted formatting data
+ */
+function extractQuillFormat(quill) {
+    if (!quill) return {};
+    
+    const length = quill.getLength();
+    if (length <= 1) return {};  // Empty editor
+    
+    // Get format from a larger range for more consistent results
+    const format = quill.getFormat(0, Math.min(50, length - 1));
+    const formatData = {};
+    
+    // Add basic formatting properties
+    if (format.font) {
+        formatData.font = FONT_MAP[format.font] || format.font;
+    }
+    
+    if (format.size) {
+        formatData.size = format.size;
+    }
+    
+    if (format.bold) {
+        formatData.fontWeight = 'bold';
+    }
+    
+    if (format.italic) {
+        formatData.fontStyle = 'italic';
+    }
+    
+    if (format.underline) {
+        formatData.textDecoration = 'underline';
+    }
+    
+    if (format.align) {
+        formatData.textAlign = format.align;
+    }
+    
+    return formatData;
+}
+
+/**
  * Collect form data
  */
 function collectSettingsData() {
@@ -396,74 +487,57 @@ function collectSettingsData() {
     const heroSubheading = document.getElementById('hero-subheading');
     const instructorBio = document.getElementById('instructor-bio');
     
-    // Hero text data - just store the cleaned HTML content
+    // Hero text data - store both content and formatting
     const heroTextData = {
         heading: {
             text: heroHeading ? heroHeading.value : '',
+            ...extractQuillFormat(headingQuill)
         },
         subheading: {
             text: heroSubheading ? heroSubheading.value : '',
+            ...extractQuillFormat(subheadingQuill)
         }
     };
 
-// About section with null checks - storing the content AND formatting
-const aboutData = {
-    name: document.getElementById('instructor-name')?.value || '',
-    subtitle: document.getElementById('instructor-subtitle')?.value || '',
-    bio: instructorBio?.value || '',
-};
-
-// Extract formatting information from the Quill editor for the instructor bio
-if (instructorBioQuill) {
-    // Get the format from the first character which usually contains the formatting
-    const format = instructorBioQuill.getFormat(0, 1);
+    // About section with null checks
+    const aboutData = {
+        name: document.getElementById('instructor-name')?.value || '',
+        subtitle: document.getElementById('instructor-subtitle')?.value || '',
+        bio: instructorBio?.value || '',
+        ...extractQuillFormat(instructorBioQuill)
+    };
     
-    // Add formatting properties to aboutData
-    if (format.font) {
-        const fontMap = {
-            'playfair': "'Playfair Display', serif",
-            'opensans': "'Open Sans', sans-serif",
-            'julietta': "'Julietta', serif",
-            'themunday': "'Themunday', serif",
-            'arial': "Arial, sans-serif",
-            'times': "'Times New Roman', serif",
-            'helvetica': "'Helvetica Neue', Helvetica, sans-serif",
-            'georgia': "Georgia, serif",
-            'courier': "'Courier New', monospace",
-            'roboto': "'Roboto', sans-serif",
-            'dancing': "'Dancing Script', cursive",
-            'greatvibes': "'Great Vibes', cursive",
-            'pacifico': "'Pacifico', cursive",
-            'sacramento': "'Sacramento', cursive",
-            'allura': "'Allura', cursive",
-            'satisfy': "'Satisfy', cursive",
-            'amatic': "'Amatic SC', cursive",
-            'caveat': "'Caveat', cursive",
-            'shadows': "'Shadows Into Light', cursive"
-        };
-        aboutData.bioFont = fontMap[format.font] || format.font;
+    // Rename format properties to match expected aboutData structure
+    if (aboutData.font) {
+        aboutData.bioFont = aboutData.font;
+        delete aboutData.font;
+    }
+    if (aboutData.size) {
+        aboutData.bioSize = aboutData.size;
+        delete aboutData.size;
+    }
+    if (aboutData.fontWeight) {
+        aboutData.bioFontWeight = aboutData.fontWeight;
+        delete aboutData.fontWeight;
+    }
+    if (aboutData.fontStyle) {
+        aboutData.bioFontStyle = aboutData.fontStyle;
+        delete aboutData.fontStyle;
+    }
+    if (aboutData.textDecoration) {
+        aboutData.bioTextDecoration = aboutData.textDecoration;
+        delete aboutData.textDecoration;
+    }
+    if (aboutData.textAlign) {
+        aboutData.bioTextAlign = aboutData.textAlign;
+        delete aboutData.textAlign;
     }
     
-    if (format.size) {
-        aboutData.bioSize = format.size;
+    // Log extracted bio formatting
+    if (aboutData.bioFont || aboutData.bioSize) {
+        console.log('Bio font saved as:', aboutData.bioFont);
+        console.log('Bio size saved as:', aboutData.bioSize);
     }
-    
-    if (format.bold) {
-        aboutData.bioFontWeight = 'bold';
-    }
-    
-    if (format.italic) {
-        aboutData.bioFontStyle = 'italic';
-    }
-    
-    if (format.underline) {
-        aboutData.bioTextDecoration = 'underline';
-    }
-    
-    if (format.align) {
-        aboutData.bioTextAlign = format.align;
-    }
-}
     
     // Certifications
     const certificationRows = document.querySelectorAll('#certifications-table tbody tr');
@@ -492,53 +566,33 @@ if (instructorBioQuill) {
         if (editorContainer) {
             const quill = Quill.find(editorContainer);
             if (quill) {
-                // Get the format from the first character which usually contains the formatting
-                const format = quill.getFormat(0, 1);
+                // Get formatting for each offering
+                const format = extractQuillFormat(quill);
                 
-                // Add formatting properties to the offering
+                // Add formatting properties to the offering with proper naming
                 if (format.font) {
-                    const fontMap = {
-                        'playfair': "'Playfair Display', serif",
-                        'opensans': "'Open Sans', sans-serif",
-                        'julietta': "'Julietta', serif",
-                        'themunday': "'Themunday', serif",
-                        'arial': "Arial, sans-serif",
-                        'times': "'Times New Roman', serif",
-                        'helvetica': "'Helvetica Neue', Helvetica, sans-serif",
-                        'georgia': "Georgia, serif",
-                        'courier': "'Courier New', monospace",
-                        'roboto': "'Roboto', sans-serif",
-                        'dancing': "'Dancing Script', cursive",
-                        'greatvibes': "'Great Vibes', cursive",
-                        'pacifico': "'Pacifico', cursive",
-                        'sacramento': "'Sacramento', cursive",
-                        'allura': "'Allura', cursive",
-                        'satisfy': "'Satisfy', cursive",
-                        'amatic': "'Amatic SC', cursive",
-                        'caveat': "'Caveat', cursive",
-                        'shadows': "'Shadows Into Light', cursive"
-                    };
-                    offeringsContent[`${offering.key}Font`] = fontMap[format.font] || format.font;
+                    offeringsContent[`${offering.key}Font`] = format.font;
+                    console.log(`${offering.key} font saved as:`, format.font);
                 }
                 
                 if (format.size) {
                     offeringsContent[`${offering.key}Size`] = format.size;
                 }
                 
-                if (format.bold) {
-                    offeringsContent[`${offering.key}FontWeight`] = 'bold';
+                if (format.fontWeight) {
+                    offeringsContent[`${offering.key}FontWeight`] = format.fontWeight;
                 }
                 
-                if (format.italic) {
-                    offeringsContent[`${offering.key}FontStyle`] = 'italic';
+                if (format.fontStyle) {
+                    offeringsContent[`${offering.key}FontStyle`] = format.fontStyle;
                 }
                 
-                if (format.underline) {
-                    offeringsContent[`${offering.key}TextDecoration`] = 'underline';
+                if (format.textDecoration) {
+                    offeringsContent[`${offering.key}TextDecoration`] = format.textDecoration;
                 }
                 
-                if (format.align) {
-                    offeringsContent[`${offering.key}TextAlign`] = format.align;
+                if (format.textAlign) {
+                    offeringsContent[`${offering.key}TextAlign`] = format.textAlign;
                 }
             }
         }
@@ -597,6 +651,76 @@ function showNotification() {
 }
 
 /**
+ * Update form fields from settings data (non-Quill items)
+ * @param {Object} settings - Settings from the API
+ */
+function updateFormFields(settings) {
+    // About section
+    if (settings.about) {
+        const nameField = document.getElementById('instructor-name');
+        if (nameField) nameField.value = settings.about.name || '';
+        
+        const subtitleField = document.getElementById('instructor-subtitle');
+        if (subtitleField) subtitleField.value = settings.about.subtitle || '';
+    }
+    
+    // Certifications
+    if (settings.certifications && settings.certifications.length > 0) {
+        const certTable = document.getElementById('certifications-table')?.getElementsByTagName('tbody')[0];
+        if (certTable) {
+            // Clear existing rows
+            certTable.innerHTML = '';
+            
+            // Add new rows for each certification
+            settings.certifications.forEach(cert => {
+                const newRow = certTable.insertRow();
+                
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                
+                cell1.innerHTML = `<input type="text" class="admin-form-control" value="${cert}">`;
+                cell2.classList.add('admin-table-actions');
+                cell2.innerHTML = '<button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>';
+                
+                addDeleteCertificationListener(cell2.querySelector('.delete-certification'));
+            });
+        }
+    }
+    
+    // Toggle switches
+    if (settings.sectionToggles) {
+        Object.keys(settings.sectionToggles).forEach(key => {
+            const toggle = document.getElementById(`toggle-${key}`);
+            if (toggle) toggle.checked = !!settings.sectionToggles[key];
+        });
+    }
+    
+    // Contact info
+    if (settings.contactInfo) {
+        const addressField = document.getElementById('contact-address');
+        if (addressField) addressField.value = settings.contactInfo.address || '';
+        
+        const phoneField = document.getElementById('contact-phone');
+        if (phoneField) phoneField.value = settings.contactInfo.phone || '';
+        
+        const emailField = document.getElementById('contact-email');
+        if (emailField) emailField.value = settings.contactInfo.email || '';
+        
+        // Social media
+        if (settings.contactInfo.socialMedia) {
+            const fbField = document.getElementById('social-facebook');
+            if (fbField) fbField.value = settings.contactInfo.socialMedia.facebook || '';
+            
+            const igField = document.getElementById('social-instagram');
+            if (igField) igField.value = settings.contactInfo.socialMedia.instagram || '';
+            
+            const ytField = document.getElementById('social-youtube');
+            if (ytField) ytField.value = settings.contactInfo.socialMedia.youtube || '';
+        }
+    }
+}
+
+/**
  * Apply settings from API response
  */
 function applySettingsFromAPI(settings) {
@@ -613,233 +737,55 @@ function applySettingsFromAPI(settings) {
 }
 
 /**
- * Update QuillJS editor contents from settings
+ * Apply formatting to a Quill editor
+ * @param {Object} quill - The Quill editor instance 
+ * @param {Object} formats - Formatting to apply
  */
-function updateQuillContents(settings) {
-    // Hero Text - update the QuillJS editors directly
-    if (settings.heroText) {
-        // Set heading text and formatting if it exists
-        if (settings.heroText.heading && headingQuill) {
-            // First set the value in the hidden textarea
-            const heroHeading = document.getElementById('hero-heading');
-            if (heroHeading) {
-                heroHeading.value = settings.heroText.heading.text || '';
-            }
-            
-            // Clear editor first
-            headingQuill.setText('');
-            
-            // Insert content
-            if (settings.heroText.heading.text) {
-                if (settings.heroText.heading.text.trim().startsWith('<')) {
-                    // If it's HTML content
-                    headingQuill.root.innerHTML = settings.heroText.heading.text;
-                } else {
-                    // If it's plain text
-                    headingQuill.setText(settings.heroText.heading.text);
-                }
-            }
-            
-            // Apply formatting from settings if available, or use defaults
-            const format = {
-                // Use default values from our QuillJS editor initialization if not provided
-                font: settings.heroText.heading.font ? 
-                    mapCSSFontToQuill(settings.heroText.heading.font) : 'playfair',
-                size: settings.heroText.heading.size || '48px'
-            };
-            
-            // Select all text and apply format
-            headingQuill.formatText(0, headingQuill.getLength(), format);
-            
-            // Apply additional formatting if available
-            if (settings.heroText.heading.fontWeight === 'bold' || 
-                (settings.heroText.heading.fontWeight && parseInt(settings.heroText.heading.fontWeight) >= 700)) {
-                headingQuill.formatText(0, headingQuill.getLength(), { bold: true });
-            }
-            
-            if (settings.heroText.heading.fontStyle === 'italic') {
-                headingQuill.formatText(0, headingQuill.getLength(), { italic: true });
-            }
-            
-            if (settings.heroText.heading.textDecoration && 
-                settings.heroText.heading.textDecoration.includes('underline')) {
-                headingQuill.formatText(0, headingQuill.getLength(), { underline: true });
-            }
-            
-            // Set alignment
-            const alignment = settings.heroText.heading.textAlign || 'center';
-            headingQuill.formatText(0, headingQuill.getLength(), { align: alignment });
-            
-            console.log('Updated heading QuillJS editor with content and formatting:', {
-                text: (settings.heroText.heading.text || '').substring(0, 30) + '...',
-                font: format.font,
-                size: format.size
-            });
-        }
-        
-        // Set subheading text and formatting
-        if (settings.heroText.subheading && subheadingQuill) {
-            // First set the value in the hidden textarea
-            const heroSubheading = document.getElementById('hero-subheading');
-            if (heroSubheading) {
-                heroSubheading.value = settings.heroText.subheading.text || '';
-            }
-            
-            // Clear editor first
-            subheadingQuill.setText('');
-            
-            // Insert content
-            if (settings.heroText.subheading.text) {
-                if (settings.heroText.subheading.text.trim().startsWith('<')) {
-                    // If it's HTML content
-                    subheadingQuill.root.innerHTML = settings.heroText.subheading.text;
-                } else {
-                    // If it's plain text
-                    subheadingQuill.setText(settings.heroText.subheading.text);
-                }
-            }
-            
-            // Apply formatting from settings if available, or use defaults
-            const format = {
-                // Use default values from our QuillJS editor initialization if not provided
-                font: settings.heroText.subheading.font ? 
-                    mapCSSFontToQuill(settings.heroText.subheading.font) : 'opensans',
-                size: settings.heroText.subheading.size || '20px'
-            };
-            
-            // Select all text and apply format
-            subheadingQuill.formatText(0, subheadingQuill.getLength(), format);
-            
-            // Apply additional formatting if available
-            if (settings.heroText.subheading.fontWeight === 'bold' || 
-                (settings.heroText.subheading.fontWeight && parseInt(settings.heroText.subheading.fontWeight) >= 700)) {
-                subheadingQuill.formatText(0, subheadingQuill.getLength(), { bold: true });
-            }
-            
-            if (settings.heroText.subheading.fontStyle === 'italic') {
-                subheadingQuill.formatText(0, subheadingQuill.getLength(), { italic: true });
-            }
-            
-            if (settings.heroText.subheading.textDecoration && 
-                settings.heroText.subheading.textDecoration.includes('underline')) {
-                subheadingQuill.formatText(0, subheadingQuill.getLength(), { underline: true });
-            }
-            
-            // Set alignment
-            const alignment = settings.heroText.subheading.textAlign || 'center';
-            subheadingQuill.formatText(0, subheadingQuill.getLength(), { align: alignment });
-            
-            console.log('Updated subheading QuillJS editor with content and formatting:', {
-                text: (settings.heroText.subheading.text || '').substring(0, 30) + '...',
-                font: format.font,
-                size: format.size
-            });
-        }
-    }
+function applyQuillFormats(quill, formats) {
+    if (!quill || !formats || quill.getLength() <= 1) return;
     
-    // Instructor bio
-    if (settings.about && settings.about.bio && instructorBioQuill) {
-        // First set the value in the hidden textarea
-        const instructorBio = document.getElementById('instructor-bio');
-        if (instructorBio) {
-            instructorBio.value = settings.about.bio || '';
+    try {
+        // Apply in specific order for best results
+        
+        // 1. Apply basic formatting first
+        const baseFormats = {};
+        if (formats.font) baseFormats.font = formats.font;
+        if (formats.size) baseFormats.size = formats.size;
+        
+        if (Object.keys(baseFormats).length > 0) {
+            quill.formatText(0, quill.getLength(), baseFormats);
         }
         
-        // Clear editor first
-        instructorBioQuill.setText('');
-        
-        // Insert content
-        if (settings.about.bio) {
-            if (settings.about.bio.trim().startsWith('<')) {
-                // If it's HTML content
-                instructorBioQuill.root.innerHTML = settings.about.bio;
-            } else {
-                // If it's plain text
-                instructorBioQuill.setText(settings.about.bio);
-            }
-            
-            // Apply formatting from settings if available
-            if (settings.about.bioFont || settings.about.bioSize) {
-                const format = {};
-                
-                if (settings.about.bioFont) {
-                    format.font = mapCSSFontToQuill(settings.about.bioFont);
-                }
-                
-                if (settings.about.bioSize) {
-                    format.size = settings.about.bioSize;
-                }
-                
-                // Apply formatting to all text
-                instructorBioQuill.formatText(0, instructorBioQuill.getLength(), format);
-            }
-            
-            // Apply additional formatting
-            if (settings.about.bioFontWeight === 'bold' || 
-                (settings.about.bioFontWeight && parseInt(settings.about.bioFontWeight) >= 700)) {
-                instructorBioQuill.formatText(0, instructorBioQuill.getLength(), { bold: true });
-            }
-            
-            if (settings.about.bioFontStyle === 'italic') {
-                instructorBioQuill.formatText(0, instructorBioQuill.getLength(), { italic: true });
-            }
-            
-            if (settings.about.bioTextDecoration && 
-                settings.about.bioTextDecoration.includes('underline')) {
-                instructorBioQuill.formatText(0, instructorBioQuill.getLength(), { underline: true });
-            }
-            
-            // Set alignment
-            if (settings.about.bioTextAlign) {
-                instructorBioQuill.formatText(0, instructorBioQuill.getLength(), { 
-                    align: settings.about.bioTextAlign 
-                });
-            }
+        // 2. Apply styling attributes separately
+        if (formats.bold) {
+            quill.formatText(0, quill.getLength(), { bold: true });
         }
         
-        console.log('Updated bio QuillJS editor with content:', 
-            (settings.about.bio || '').substring(0, 50) + 
-            (settings.about.bio && settings.about.bio.length > 50 ? '...' : ''));
+        if (formats.italic) {
+            quill.formatText(0, quill.getLength(), { italic: true });
+        }
+        
+        if (formats.underline) {
+            quill.formatText(0, quill.getLength(), { underline: true });
+        }
+        
+        // 3. Apply alignment last (global for the entire editor)
+        if (formats.align) {
+            quill.formatText(0, quill.getLength(), { align: formats.align });
+        }
+        
+        // 4. Force update to ensure UI reflects changes
+        setTimeout(() => quill.update(), 100);
+        
+        console.log('Applied formats successfully:', formats);
+    } catch (error) {
+        console.error('Error applying formats:', error);
     }
-    
-    // Offerings content
-    if (settings.offeringsContent) {
-        // Apply content to QuillJS editors
-        updateOfferingEditors(settings.offeringsContent);
-    }
-}
-
-/**
- * Helper function to map CSS font-family values to Quill format values
- */
-function mapCSSFontToQuill(fontFamily) {
-    // Handle common font mappings
-    if (fontFamily.includes("Playfair")) return "playfair";
-    if (fontFamily.includes("Open Sans")) return "opensans";
-    if (fontFamily.includes("Julietta")) return "julietta";
-    if (fontFamily.includes("Themunday")) return "themunday";
-    if (fontFamily.includes("Arial")) return "arial";
-    if (fontFamily.includes("Times")) return "times";
-    if (fontFamily.includes("Helvetica")) return "helvetica";
-    if (fontFamily.includes("Georgia")) return "georgia";
-    if (fontFamily.includes("Courier")) return "courier";
-    if (fontFamily.includes("Roboto")) return "roboto";
-    if (fontFamily.includes("Dancing Script")) return "dancing";
-    if (fontFamily.includes("Great Vibes")) return "greatvibes";
-    if (fontFamily.includes("Pacifico")) return "pacifico";
-    if (fontFamily.includes("Sacramento")) return "sacramento";
-    if (fontFamily.includes("Allura")) return "allura";
-    if (fontFamily.includes("Satisfy")) return "satisfy";
-    if (fontFamily.includes("Amatic")) return "amatic";
-    if (fontFamily.includes("Caveat")) return "caveat";
-    if (fontFamily.includes("Shadows Into Light")) return "shadows";
-    
-    // Default to Open Sans if no match
-    return "opensans";
 }
 
 /**
  * Update offering editors with content from settings
+ * @param {Object} offeringsContent - Content for each offering
  */
 function updateOfferingEditors(offeringsContent) {
     // Define our offerings and their corresponding QuillJS editor IDs
@@ -854,121 +800,179 @@ function updateOfferingEditors(offeringsContent) {
         const content = offeringsContent[offering.key];
         if (!content) return;
         
-        // First set the value in the hidden textarea
+        // First collect all formatting information
+        const formats = {
+            font: offeringsContent[`${offering.key}Font`] ? 
+                mapCSSFontToQuill(offeringsContent[`${offering.key}Font`]) : 'opensans',
+            size: offeringsContent[`${offering.key}Size`] || '14px',
+            bold: offeringsContent[`${offering.key}FontWeight`] === 'bold',
+            italic: offeringsContent[`${offering.key}FontStyle`] === 'italic',
+            underline: offeringsContent[`${offering.key}TextDecoration`] && 
+                     offeringsContent[`${offering.key}TextDecoration`].includes('underline'),
+            align: offeringsContent[`${offering.key}TextAlign`] || 'left'
+        };
+        
+        console.log(`Collected formats for ${offering.key}:`, formats);
+        
+        // Set the value in the hidden textarea
         const textArea = document.getElementById(offering.id);
         if (textArea) {
             textArea.value = content;
         }
         
-        // Get the QuillJS editor - use the querySelector to find the editor container
+        // Get the QuillJS editor
         const editorContainer = document.getElementById(`${offering.id}-container`);
         if (!editorContainer) return;
         
         const quill = Quill.find(editorContainer);
         if (!quill) return;
         
-        // Update the editor content
-        if (content.trim().startsWith('<')) {
-            // If it's HTML content
-            quill.root.innerHTML = content;
-        } else {
-            // If it's plain text
-            quill.setText(content);
+        // Update the editor content using a consistent approach
+        try {
+            // Clear first to prevent formatting conflicts
+            quill.setContents([]);
+            
+            // Insert content
+            if (content.trim().startsWith('<')) {
+                // If it's HTML content
+                quill.root.innerHTML = content;
+            } else {
+                // If it's plain text
+                quill.setText(content);
+            }
+            
+            console.log(`Updated ${offering.key} QuillJS editor with content:`,
+                content.substring(0, 50) + (content.length > 50 ? '...' : ''));
+            
+            // Apply formats only if there's content to format
+            if (quill.getLength() > 1) {
+                applyQuillFormats(quill, formats);
+            }
         }
-        
-        console.log(`Updated ${offering.key} QuillJS editor with content:`, 
-            content.substring(0, 50) + (content.length > 50 ? '...' : ''));
+        catch (error) {
+            console.error(`Error updating ${offering.key} editor:`, error);
+        }
     });
 }
 
 /**
- * Update other form fields from settings
+ * Update all Quill editors with content from settings 
+ * @param {Object} settings - Settings from the API
  */
-function updateFormFields(settings) {
-    // About section fields
-    const instructorName = document.getElementById('instructor-name');
-    const instructorSubtitle = document.getElementById('instructor-subtitle');
-    
-    if (instructorName && settings.about && settings.about.name) {
-        instructorName.value = settings.about.name;
-    }
-    
-    if (instructorSubtitle && settings.about && settings.about.subtitle) {
-        instructorSubtitle.value = settings.about.subtitle;
-    }
-    
-    // Certifications with null checks
-    const certTable = document.getElementById('certifications-table')?.getElementsByTagName('tbody')[0];
-    
-    if (certTable) {
-        // Clear existing rows
-        while (certTable.firstChild) {
-            certTable.removeChild(certTable.firstChild);
+function updateQuillContents(settings) {
+    // Update Hero Text editors
+    if (settings.heroText) {
+        // Heading
+        if (settings.heroText.heading && headingQuill) {
+            // Get the textarea
+            const textArea = document.getElementById('hero-heading');
+            if (textArea) {
+                textArea.value = settings.heroText.heading.text || '';
+            }
+            
+            // Clear the editor and set new content
+            headingQuill.setContents([]);
+            if (settings.heroText.heading.text) {
+                if (settings.heroText.heading.text.trim().startsWith('<')) {
+                    // If it's HTML content
+                    headingQuill.root.innerHTML = settings.heroText.heading.text;
+                } else {
+                    // If it's plain text
+                    headingQuill.setText(settings.heroText.heading.text);
+                }
+                
+                // Apply formatting
+                const formats = {
+                    font: settings.heroText.heading.font ? 
+                        mapCSSFontToQuill(settings.heroText.heading.font) : 'playfair',
+                    size: settings.heroText.heading.size || '48px',
+                    bold: settings.heroText.heading.fontWeight === 'bold',
+                    italic: settings.heroText.heading.fontStyle === 'italic',
+                    underline: settings.heroText.heading.textDecoration && 
+                             settings.heroText.heading.textDecoration.includes('underline'),
+                    align: settings.heroText.heading.textAlign || 'center'
+                };
+                
+                applyQuillFormats(headingQuill, formats);
+                console.log('Updated hero heading with content and formats:', formats);
+            }
         }
         
-        // Add certifications if available
-        if (settings.certifications && Array.isArray(settings.certifications)) {
-            settings.certifications.forEach(cert => {
-                const newRow = certTable.insertRow();
-                const cell1 = newRow.insertCell(0);
-                const cell2 = newRow.insertCell(1);
+        // Subheading
+        if (settings.heroText.subheading && subheadingQuill) {
+            // Get the textarea
+            const textArea = document.getElementById('hero-subheading');
+            if (textArea) {
+                textArea.value = settings.heroText.subheading.text || '';
+            }
+            
+            // Clear the editor and set new content
+            subheadingQuill.setContents([]);
+            if (settings.heroText.subheading.text) {
+                if (settings.heroText.subheading.text.trim().startsWith('<')) {
+                    // If it's HTML content
+                    subheadingQuill.root.innerHTML = settings.heroText.subheading.text;
+                } else {
+                    // If it's plain text
+                    subheadingQuill.setText(settings.heroText.subheading.text);
+                }
                 
-                cell1.innerHTML = `<input type="text" class="admin-form-control" value="${cert}">`;
-                cell2.classList.add('admin-table-actions');
-                cell2.innerHTML = '<button class="delete-certification" title="Remove certification"><i class="fas fa-trash-alt"></i></button>';
+                // Apply formatting
+                const formats = {
+                    font: settings.heroText.subheading.font ? 
+                        mapCSSFontToQuill(settings.heroText.subheading.font) : 'opensans',
+                    size: settings.heroText.subheading.size || '20px',
+                    bold: settings.heroText.subheading.fontWeight === 'bold',
+                    italic: settings.heroText.subheading.fontStyle === 'italic',
+                    underline: settings.heroText.subheading.textDecoration && 
+                             settings.heroText.subheading.textDecoration.includes('underline'),
+                    align: settings.heroText.subheading.textAlign || 'center'
+                };
                 
-                addDeleteCertificationListener(cell2.querySelector('.delete-certification'));
-            });
+                applyQuillFormats(subheadingQuill, formats);
+                console.log('Updated hero subheading with content and formats:', formats);
+            }
         }
     }
     
-    // Classes & Offerings Content
+    // Update Instructor Bio
+    if (settings.about && instructorBioQuill) {
+        // Get the textarea
+        const textArea = document.getElementById('instructor-bio');
+        if (textArea) {
+            textArea.value = settings.about.bio || '';
+        }
+        
+        // Clear the editor and set new content
+        instructorBioQuill.setContents([]);
+        if (settings.about.bio) {
+            if (settings.about.bio.trim().startsWith('<')) {
+                // If it's HTML content
+                instructorBioQuill.root.innerHTML = settings.about.bio;
+            } else {
+                // If it's plain text
+                instructorBioQuill.setText(settings.about.bio);
+            }
+            
+            // Apply formatting
+            const formats = {
+                font: settings.about.bioFont ? 
+                    mapCSSFontToQuill(settings.about.bioFont) : 'opensans',
+                size: settings.about.bioSize || '16px',
+                bold: settings.about.bioFontWeight === 'bold',
+                italic: settings.about.bioFontStyle === 'italic',
+                underline: settings.about.bioTextDecoration && 
+                         settings.about.bioTextDecoration.includes('underline'),
+                align: settings.about.bioTextAlign || 'left'
+            };
+            
+            applyQuillFormats(instructorBioQuill, formats);
+            console.log('Updated instructor bio with content and formats:', formats);
+        }
+    }
+    
+    // Update offerings content
     if (settings.offeringsContent) {
-        // Apply content to offering text areas - these will be picked up by QuillJS
-        const groupClassesText = document.getElementById('group-classes-text');
-        const privateLessonsText = document.getElementById('private-lessons-text');
-        const workshopsText = document.getElementById('workshops-text');
-        const retreatsText = document.getElementById('retreats-text');
-        
-        if (groupClassesText && settings.offeringsContent.groupClasses) {
-            groupClassesText.value = settings.offeringsContent.groupClasses;
-        }
-        
-        if (privateLessonsText && settings.offeringsContent.privateLessons) {
-            privateLessonsText.value = settings.offeringsContent.privateLessons;
-        }
-        
-        if (workshopsText && settings.offeringsContent.workshops) {
-            workshopsText.value = settings.offeringsContent.workshops;
-        }
-        
-        if (retreatsText && settings.offeringsContent.retreats) {
-            retreatsText.value = settings.offeringsContent.retreats;
-        }
+        updateOfferingEditors(settings.offeringsContent);
     }
-    
-    // Toggles
-    document.getElementById('toggle-group-classes').checked = settings.sectionToggles.groupClasses;
-    document.getElementById('toggle-private-lessons').checked = settings.sectionToggles.privateLessons;
-    document.getElementById('toggle-workshops').checked = settings.sectionToggles.workshops;
-    document.getElementById('toggle-retreats').checked = settings.sectionToggles.retreats;
-    document.getElementById('toggle-retreats-section').checked = settings.sectionToggles.retreatsSection;
-    document.getElementById('toggle-schedule-section').checked = settings.sectionToggles.scheduleSection;
-    document.getElementById('toggle-membership-section').checked = settings.sectionToggles.membershipSection;
-    
-    // Handle the private sessions section toggle (might be missing in older settings)
-    const privateSessionsToggle = document.getElementById('toggle-private-sessions-section');
-    if (privateSessionsToggle) {
-        privateSessionsToggle.checked = settings.sectionToggles.privateSessionsSection !== false;
-    }
-    
-    document.getElementById('toggle-gallery-section').checked = settings.sectionToggles.gallerySection;
-    
-    // Contact info
-    document.getElementById('contact-address').value = settings.contactInfo.address;
-    document.getElementById('contact-phone').value = settings.contactInfo.phone;
-    document.getElementById('contact-email').value = settings.contactInfo.email;
-    document.getElementById('social-facebook').value = settings.contactInfo.socialMedia.facebook;
-    document.getElementById('social-instagram').value = settings.contactInfo.socialMedia.instagram;
-    document.getElementById('social-youtube').value = settings.contactInfo.socialMedia.youtube;
 }
