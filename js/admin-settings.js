@@ -462,7 +462,21 @@ function extractQuillFormat(quill) {
     
     console.log(`[Format Debug] Extracting format from quill editor with content length: ${length}`);
     
+    // Using a hardcoded size for headings to ensure consistency
+    // Check if this is the hero heading editor by looking at the DOM
+    let isHeroHeading = false;
+    if (quill.root && quill.root.closest && quill.root.closest('#hero-heading-container')) {
+        isHeroHeading = true;
+        console.log('[Format Debug] Detected this is the hero heading editor');
+    }
+    
     const formatData = {};
+    
+    // For hero heading, always use 72px size
+    if (isHeroHeading) {
+        formatData.size = '64px';
+        console.log('[Format Debug] Setting default hero heading size: 64px');
+    }
     
     // First try to get formats from Quill directly
     const format = quill.getFormat(0, Math.min(50, length - 1));
