@@ -24,7 +24,7 @@ section {
     flex: 0 0 400px;
     height: 400px;
     overflow: hidden;
-    border-radius: 50%;
+    border-radius: 16px;
     box-shadow: var(--box-shadow);
 }
 
@@ -458,7 +458,7 @@ section {
         max-width: 400px;
         height: 400px;
         margin-bottom: 30px;
-        border-radius: 50%; /* Maintain circular shape on small screens */
+        border-radius: 16px; /* Maintain rounded rectangle on small screens */
     }
     .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
