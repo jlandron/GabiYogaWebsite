@@ -29,9 +29,28 @@ document.addEventListener('DOMContentLoaded', async function() {
                    data.success ? 'Success' : 'Failed', 
                    data.settings ? 'Settings data present' : 'No settings data');
                    
-        // If we got valid settings with instructor bio data, update the elements
+            // If we got valid settings with instructor bio data, update the elements
         if (data && data.success && data.settings && data.settings.about) {
-            const about = data.settings.about;
+            // Clone data to avoid accidental modifications
+            const about = {...(data.settings.about || {})};
+            
+            // Log raw data before processing
+            console.log('[Bio Debug] Raw bio data from API:', JSON.stringify({
+                bioFont: data.settings.about?.bioFont,
+                bioSize: data.settings.about?.bioSize,
+                bioTextAlign: data.settings.about?.bioTextAlign
+            }));
+            
+            // Set defaults if values are missing
+            if (!about.bioFont) {
+                about.bioFont = "'Themunday', serif";
+                console.log('[Bio Debug] Added default bio font: Themunday');
+            }
+            
+            if (!about.bioSize) {
+                about.bioSize = "16px";
+                console.log('[Bio Debug] Added default bio size: 16px');
+            }
             console.log('[Bio Debug] About section data:', {
                 name: about.name,
                 subtitle: about.subtitle,

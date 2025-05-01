@@ -462,13 +462,13 @@ function extractQuillFormat(quill) {
     
     console.log(`[Format Debug] Extracting format from quill editor with content length: ${length}`);
     
-    // Get format from a larger range for more consistent results
+    const formatData = {};
+    
+    // First try to get formats from Quill directly
     const format = quill.getFormat(0, Math.min(50, length - 1));
     console.log('[Format Debug] Raw format from Quill:', JSON.stringify(format));
     
-    const formatData = {};
-    
-    // Add basic formatting properties
+    // Add basic formatting properties from Quill formats
     if (format.font) {
         formatData.font = FONT_MAP[format.font] || format.font;
         console.log(`[Format Debug] Mapped font: ${format.font} -> ${formatData.font}`);
@@ -497,6 +497,60 @@ function extractQuillFormat(quill) {
     if (format.align) {
         formatData.textAlign = format.align;
         console.log(`[Format Debug] Text align: ${format.align}`);
+    }
+    
+    // If no font was found in the format object, try to parse from HTML
+    if (!formatData.font || !formatData.size) {
+        console.log('[Format Debug] Missing font information, parsing from HTML');
+        const html = quill.root.innerHTML;
+        console.log('[Format Debug] HTML to parse:', html.substring(0, 150) + (html.length > 150 ? '...' : ''));
+        
+        // Check for Quill font classes
+        const fontClassMatch = html.match(/ql-font-([a-zA-Z0-9]+)/);
+        if (fontClassMatch && fontClassMatch[1]) {
+            const fontKey = fontClassMatch[1];
+            if (FONT_MAP[fontKey]) {
+                formatData.font = FONT_MAP[fontKey];
+                console.log(`[Format Debug] Found font from HTML class: ${fontKey} -> ${formatData.font}`);
+            } else {
+                console.log(`[Format Debug] Found font class but no mapping: ${fontKey}`);
+            }
+        }
+        
+        // Check for style attributes with font information
+        const fontStyleMatch = html.match(/font-family:\s*([^;\"\']+)[;\"\']|font-family:\s*(\'[^\']+\')|font-family:\s*(\"[^\"]+\")/);
+        if (fontStyleMatch) {
+            const fontValue = (fontStyleMatch[1] || fontStyleMatch[2] || fontStyleMatch[3]).trim();
+            formatData.font = fontValue;
+            console.log(`[Format Debug] Found font from inline style: ${fontValue}`);
+        }
+        
+        // Look for size information
+        const sizeStyleMatch = html.match(/font-size:\s*([^;\"\']+)[;\"\']/);
+        if (sizeStyleMatch) {
+            const sizeValue = sizeStyleMatch[1].trim();
+            formatData.size = sizeValue;
+            console.log(`[Format Debug] Found size from inline style: ${sizeValue}`);
+        }
+        
+        // Check for alignment classes
+        const alignClassMatch = html.match(/ql-align-([a-zA-Z0-9]+)/);
+        if (alignClassMatch && alignClassMatch[1] && !formatData.textAlign) {
+            formatData.textAlign = alignClassMatch[1];
+            console.log(`[Format Debug] Found alignment from HTML class: ${formatData.textAlign}`);
+        }
+        
+        // If still no font found and this is a heading/subheading, use defaults
+        if (!formatData.font) {
+            // Try to determine what kind of editor from the HTML
+            if (html.includes('Find Your Inner Peace')) {
+                console.log('[Format Debug] Default font for heading: Julietta');
+                formatData.font = "'Julietta', serif";
+            } else if (html.toLowerCase().includes('gabi yoga')) {
+                console.log('[Format Debug] Default font for bio: Themunday');
+                formatData.font = "'Themunday', serif";
+            }
+        }
     }
     
     console.log('[Format Debug] Final extracted format data:', JSON.stringify(formatData));
@@ -943,6 +997,16 @@ function updateOfferingEditors(offeringsContent) {
  * @param {Object} settings - Settings from the API
  */
 function updateQuillContents(settings) {
+    console.log('[Format Debug] Updating Quill contents with settings:', 
+                JSON.stringify({
+                    headingText: settings.heroText?.heading?.text?.length || 0,
+                    headingFont: settings.heroText?.heading?.font,
+                    subheadingText: settings.heroText?.subheading?.text?.length || 0,
+                    subheadingFont: settings.heroText?.subheading?.font,
+                    bioText: settings.about?.bio?.length || 0,
+                    bioFont: settings.about?.bioFont
+                }));
+
     // Update Hero Text editors
     if (settings.heroText) {
         // Heading
@@ -953,17 +1017,31 @@ function updateQuillContents(settings) {
                 textArea.value = settings.heroText.heading.text || '';
             }
             
-            // Clear the editor and set new content
-            headingQuill.setContents([]);
-            if (settings.heroText.heading.text) {
-                if (settings.heroText.heading.text.trim().startsWith('<')) {
-                    // If it's HTML content
-                    headingQuill.root.innerHTML = settings.heroText.heading.text;
-                } else {
-                    // If it's plain text
-                    headingQuill.setText(settings.heroText.heading.text);
-                }
+            // IMPORTANT: Set content FIRST
+            const headingText = settings.heroText.heading.text || 'Find Your Inner Peace';
+            
+            // Determine if content is HTML or plain text
+            if (headingText.trim().startsWith('<')) {
+                console.log('[Format Debug] Setting HTML content for heading:', 
+                            headingText.substring(0, 50) + (headingText.length > 50 ? '...' : ''));
                 
+                // First clear the editor
+                headingQuill.setContents([]);
+                // Then set HTML content
+                headingQuill.root.innerHTML = headingText;
+            } else {
+                console.log('[Format Debug] Setting plain text content for heading:', 
+                            headingText.substring(0, 50) + (headingText.length > 50 ? '...' : ''));
+                
+                // Set plain text content
+                headingQuill.setText(headingText);
+            }
+            
+            // Force update to ensure text is applied before formatting
+            headingQuill.update();
+            
+            // Wait a brief moment to ensure content is set before applying formats
+            setTimeout(() => {
                 // Apply formatting
                 let fontValue = 'playfair'; // Default font
                 

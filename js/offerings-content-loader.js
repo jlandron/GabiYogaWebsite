@@ -109,15 +109,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                         element.textContent = content;
                     }
                     
-                    // Apply formatting from settings if available
+                    // Apply formatting from settings if available, with defaults
                     const formatProperties = {
-                        font: offeringsContent[`${key}Font`],
-                        size: offeringsContent[`${key}Size`],
+                        font: offeringsContent[`${key}Font`] || (key === 'groupClasses' ? "'Themunday', serif" : "'Open Sans', sans-serif"),
+                        size: offeringsContent[`${key}Size`] || "16px",
                         weight: offeringsContent[`${key}FontWeight`],
                         style: offeringsContent[`${key}FontStyle`],
                         decoration: offeringsContent[`${key}TextDecoration`],
                         align: offeringsContent[`${key}TextAlign`]
                     };
+                    
+                    console.log(`[Offerings Debug] Offering ${key} format (with defaults):`, formatProperties);
                     
                     if (formatProperties.font || formatProperties.size || 
                         formatProperties.weight || formatProperties.style || 

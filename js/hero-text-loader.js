@@ -51,9 +51,41 @@ document.addEventListener('DOMContentLoaded', async function() {
                     data.success ? 'Success' : 'Failed', 
                     data.settings ? 'Settings data present' : 'No settings data');
         
-        // If we got valid settings with hero text data, update the elements
+                // If we got valid settings with hero text data, update the elements
         if (data && data.success && data.settings && data.settings.heroText) {
-            const { heading, subheading } = data.settings.heroText;
+            // Log the raw hero text data before processing
+            console.log('[Hero Debug] Raw hero text data from API:', 
+                        JSON.stringify({
+                            headingFont: data.settings.heroText?.heading?.font,
+                            headingSize: data.settings.heroText?.heading?.size,
+                            subheadingFont: data.settings.heroText?.subheading?.font,
+                            subheadingSize: data.settings.heroText?.subheading?.size
+                        }));
+            
+            // Clone the data to ensure we don't lose any properties
+            const heading = {...(data.settings.heroText.heading || {})};
+            const subheading = {...(data.settings.heroText.subheading || {})};
+            
+            // Set default fonts if missing
+            if (!heading.font) {
+                heading.font = "'Julietta', serif";
+                console.log('[Hero Debug] Added default heading font: Julietta');
+            }
+            
+            if (!heading.size) {
+                heading.size = "64px";
+                console.log('[Hero Debug] Added default heading size: 64px');
+            }
+            
+            if (!subheading.font) {
+                subheading.font = "'Satisfy', cursive";
+                console.log('[Hero Debug] Added default subheading font: Satisfy');
+            }
+            
+            if (!subheading.size) {
+                subheading.size = "16px";
+                console.log('[Hero Debug] Added default subheading size: 16px');
+            }
             
             // Update heading
             if (heading) {
@@ -100,8 +132,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
                 if (heading.size) {
+                    // Force proper font size application
                     heroHeading.style.fontSize = heading.size;
                     console.log('[Hero Debug] Applied heading size:', heading.size);
+                    
+                    // Try !important to override any potential CSS conflicts
+                    const existingStyle = heroHeading.getAttribute('style') || '';
+                    heroHeading.setAttribute('style', `${existingStyle}; font-size: ${heading.size} !important;`);
+                    console.log('[Hero Debug] Applied !important font size:', heading.size);
                 }
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
