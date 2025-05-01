@@ -6,13 +6,34 @@
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Get the instructor bio elements
-    const instructorName = document.querySelector('#about .about-text h3');
-    const instructorSubtitle = document.querySelector('#about .about-text .subtitle');
+    // Get the instructor bio container
     const instructorBioContainer = document.querySelector('#about .about-text');
-    const certificationsList = document.querySelector('#about .certifications ul');
     
-    if (!instructorName && !instructorSubtitle && !instructorBioContainer) return;
+    if (!instructorBioContainer) return;
+    
+    // Create bio elements
+    const instructorName = document.createElement('h3');
+    const instructorSubtitle = document.createElement('p');
+    instructorSubtitle.className = 'subtitle';
+    
+    // Create certifications section
+    const certificationsDiv = document.createElement('div');
+    certificationsDiv.className = 'certifications';
+    
+    const certificationsHeading = document.createElement('h4');
+    certificationsHeading.textContent = 'Certifications:';
+    
+    const certificationsList = document.createElement('ul');
+    
+    // Append the elements to the DOM
+    instructorBioContainer.appendChild(instructorName);
+    instructorBioContainer.appendChild(instructorSubtitle);
+    
+    certificationsDiv.appendChild(certificationsHeading);
+    certificationsDiv.appendChild(certificationsList);
+    
+    // Add the certifications div to the container
+    instructorBioContainer.appendChild(certificationsDiv);
     
     try {
         // Fetch the website settings from the API

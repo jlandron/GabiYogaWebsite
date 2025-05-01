@@ -6,36 +6,40 @@
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Get the hero text elements
-    const heroHeading = document.querySelector('.hero-content h1');
-    const heroSubheading = document.querySelector('.hero-content p');
-    const heroButton = document.querySelector('.hero-content .btn');
+    // Get the hero content container
     const heroContent = document.querySelector('.hero-content');
     
+    if (!heroContent) return;
+    
+    // Create hero elements
+    const heroHeading = document.createElement('h1');
+    const heroSubheading = document.createElement('p');
+    const heroButton = document.createElement('a');
+    
+    // Set initial attributes for button
+    heroButton.href = '#offerings';
+    heroButton.className = 'btn';
+    heroButton.textContent = 'Explore Classes';
+    
+    // Append elements to hero content
+    heroContent.appendChild(heroHeading);
+    heroContent.appendChild(heroSubheading);
+    heroContent.appendChild(heroButton);
+    
     // Set initial state for fade-in animation
-    if (heroContent) {
-        heroContent.style.opacity = '0';
-        heroContent.style.transform = 'translateY(25px)';
-        heroContent.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
-    }
+    heroContent.style.opacity = '0';
+    heroContent.style.transform = 'translateY(25px)';
+    heroContent.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
     
-    if (heroHeading) {
-        heroHeading.style.opacity = '0';
-        heroHeading.style.transition = 'opacity 1.2s ease';
-    }
+    heroHeading.style.opacity = '0';
+    heroHeading.style.transition = 'opacity 1.2s ease';
     
-    if (heroSubheading) {
-        heroSubheading.style.opacity = '0';
-        heroSubheading.style.transition = 'opacity 1.2s ease 0.3s'; // Delay subheading animation
-    }
+    heroSubheading.style.opacity = '0';
+    heroSubheading.style.transition = 'opacity 1.2s ease 0.3s'; // Delay subheading animation
     
-    if (heroButton) {
-        heroButton.style.opacity = '0';
-        heroButton.style.transform = 'translateY(20px)';
-        heroButton.style.transition = 'opacity 1.2s ease 0.8s, transform 1.2s ease 0.8s'; // Further delay button animation
-    }
-    
-    if (!heroHeading || !heroSubheading) return;
+    heroButton.style.opacity = '0';
+    heroButton.style.transform = 'translateY(20px)';
+    heroButton.style.transition = 'opacity 1.2s ease 0.8s, transform 1.2s ease 0.8s'; // Further delay button animation
     
     try {
         // Fetch the website settings from the API

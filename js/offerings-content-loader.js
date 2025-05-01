@@ -6,8 +6,51 @@
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Get the offering cards first
-    const offeringCards = document.querySelectorAll('.offering-card');
+    // Get the offerings grid container
+    const offeringsGrid = document.querySelector('.offerings-grid');
+    
+    if (!offeringsGrid) return;
+    
+    // Define the structure for each card type
+    const offeringTypes = [
+        {
+            key: 'groupClasses',
+            title: 'Group Classes',
+            icon: 'fa-om',
+            defaultContent: 'Join our community for energizing and rejuvenating yoga sessions in a supportive group setting.',
+            defaultList: ['Vinyasa Flow', 'Gentle Hatha', 'Power Yoga', 'Restorative', 'Yoga for Beginners'],
+            buttonText: 'View Schedule',
+            buttonLink: '#schedule'
+        },
+        {
+            key: 'privateLessons',
+            title: 'Private Lessons',
+            icon: 'fa-yin-yang',
+            defaultContent: 'Personalized one-on-one sessions tailored to your specific needs and goals.',
+            defaultList: ['Customized practice', 'Focused attention', 'Flexible scheduling', 'In-studio or virtual'],
+            buttonText: 'Book a Session',
+            buttonLink: '#',
+            buttonId: 'private-session-btn'
+        },
+        {
+            key: 'workshops',
+            title: 'Workshops',
+            icon: 'fa-book-open',
+            defaultContent: 'Immersive experiences focusing on specific aspects of yoga practice.',
+            defaultList: ['Inversions & Arm Balances', 'Yoga Philosophy', 'Meditation Techniques', 'Breathwork (Pranayama)'],
+            buttonText: 'Upcoming Workshops',
+            buttonLink: '#events'
+        },
+        {
+            key: 'retreats',
+            title: 'Retreats',
+            icon: 'fa-mountain',
+            defaultContent: 'Transformative multi-day experiences in beautiful locations to deepen your practice.',
+            defaultList: ['Weekend local retreats', 'International destinations', 'All-inclusive packages', 'Life-changing experiences'],
+            buttonText: 'View Retreats',
+            buttonLink: '#retreats'
+        }
+    ];
     
     // Map to store offering sections
     const offeringSections = {
@@ -17,49 +60,59 @@ document.addEventListener('DOMContentLoaded', async function() {
         retreats: null
     };
     
-    // Find or create content areas in each card
-    if (offeringCards.length >= 4) {
-        // Match the cards to the offerings in order they appear
-        const offeringTypes = ['groupClasses', 'privateLessons', 'workshops', 'retreats'];
+    // Create offering cards
+    offeringTypes.forEach(type => {
+        // Create card and its elements
+        const card = document.createElement('div');
+        card.className = 'offering-card';
         
-        // Process each card
-        offeringCards.forEach((card, index) => {
-            if (index < offeringTypes.length) {
-                // First look for an existing content area
-                let contentElement = card.querySelector('.content-area');
-                
-                // If no dedicated content area exists, use the paragraph or create a content area
-                if (!contentElement) {
-                    contentElement = card.querySelector('p');
-                    
-                    // If no paragraph exists either, create a content area
-                    if (!contentElement) {
-                        contentElement = document.createElement('div');
-                        contentElement.className = 'content-area';
-                        
-                        // Insert after the heading (if it exists)
-                        const heading = card.querySelector('h3, h4');
-                        if (heading) {
-                            heading.parentNode.insertBefore(contentElement, heading.nextSibling);
-                        } else {
-                            card.appendChild(contentElement);
-                        }
-                    }
-                }
-                
-                // Store the content element
-                offeringSections[offeringTypes[index]] = contentElement;
-            }
+        // Create icon
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'offering-icon';
+        const icon = document.createElement('i');
+        icon.className = `fas ${type.icon}`;
+        iconDiv.appendChild(icon);
+        
+        // Create heading
+        const heading = document.createElement('h3');
+        heading.textContent = type.title;
+        
+        // Create content area for description
+        const contentElement = document.createElement('p');
+        contentElement.textContent = type.defaultContent;
+        
+        // Create features list
+        const featuresList = document.createElement('ul');
+        type.defaultList.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.textContent = item;
+            featuresList.appendChild(listItem);
         });
-    }
-    
-    // If no offerings found, exit early
-    if (!offeringSections.groupClasses && 
-        !offeringSections.privateLessons && 
-        !offeringSections.workshops && 
-        !offeringSections.retreats) {
-        return;
-    }
+        
+        // Create button
+        const button = document.createElement('a');
+        button.href = type.buttonLink;
+        button.className = 'btn-small';
+        button.textContent = type.buttonText;
+        
+        // Set button ID if provided
+        if (type.buttonId) {
+            button.id = type.buttonId;
+        }
+        
+        // Append all elements to the card
+        card.appendChild(iconDiv);
+        card.appendChild(heading);
+        card.appendChild(contentElement);
+        card.appendChild(featuresList);
+        card.appendChild(button);
+        
+        // Add the card to the grid
+        offeringsGrid.appendChild(card);
+        
+        // Store content element for later updating
+        offeringSections[type.key] = contentElement;
+    });
     
     try {
         // Fetch the website settings from the API
