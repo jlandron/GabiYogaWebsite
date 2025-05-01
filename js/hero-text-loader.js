@@ -132,14 +132,54 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
                 if (heading.size) {
-                    // Force proper font size application
-                    heroHeading.style.fontSize = heading.size;
-                    console.log('[Hero Debug] Applied heading size:', heading.size);
+                    // Multiple approaches to override the CSS styles:
                     
-                    // Try !important to override any potential CSS conflicts
+                    // 1. Apply to style attribute with !important flag
+                    heroHeading.style.fontSize = heading.size + ' !important';
+                    console.log('[Hero Debug] Applied heading size with style property:', heading.size);
+                    
+                    // 2. Apply using setAttribute for stronger override
                     const existingStyle = heroHeading.getAttribute('style') || '';
                     heroHeading.setAttribute('style', `${existingStyle}; font-size: ${heading.size} !important;`);
-                    console.log('[Hero Debug] Applied !important font size:', heading.size);
+                    console.log('[Hero Debug] Applied !important font size with setAttribute:', heading.size);
+                    
+                    // 3. Add a custom style tag with high specificity
+                    const customStyleId = 'custom-hero-style';
+                    let styleEl = document.getElementById(customStyleId);
+                    
+                    if (!styleEl) {
+                        styleEl = document.createElement('style');
+                        styleEl.id = customStyleId;
+                        document.head.appendChild(styleEl);
+                    }
+                    
+                    // Create a unique class name based on the size
+                    const uniqueClass = `font-size-${heading.size.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                    heroHeading.classList.add(uniqueClass);
+                    
+                    // Add high specificity CSS rule
+                    styleEl.textContent = `.hero-content h1.${uniqueClass} { font-size: ${heading.size} !important; }`;
+                    console.log('[Hero Debug] Added custom CSS rule with high specificity:', styleEl.textContent);
+                    
+                    // 4. Directly override CSS Rule if possible
+                    try {
+                        for (let i = 0; i < document.styleSheets.length; i++) {
+                            const sheet = document.styleSheets[i];
+                            try {
+                                const rules = sheet.cssRules || sheet.rules;
+                                for (let j = 0; j < rules.length; j++) {
+                                    if (rules[j].selectorText && rules[j].selectorText.includes('.hero-content h1')) {
+                                        console.log('[Hero Debug] Found hero heading CSS rule to override');
+                                        rules[j].style.fontSize = heading.size;
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('[Hero Debug] Could not access stylesheet rules:', e.message);
+                            }
+                        }
+                    } catch (e) {
+                        console.log('[Hero Debug] Error modifying CSS rules:', e.message);
+                    }
                 }
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
