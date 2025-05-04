@@ -3,13 +3,18 @@
  * 
  * Updates the homepage hero section with the text, fonts, and sizes from admin settings
  * Adds fade-in animation for hero text and button on page load
+ * Implements progressive image loading for hero background
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Get the hero content container
     const heroContent = document.querySelector('.hero-content');
+    const heroSection = document.querySelector('.hero');
     
-    if (!heroContent) return;
+    if (!heroContent || !heroSection) return;
+    
+    // Preload the hero image
+    preloadHeroImage();
     
     // Create hero elements
     const heroHeading = document.createElement('h1');
@@ -369,3 +374,47 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Error loading hero text:', error);
     }
 });
+
+/**
+ * Preloads the hero image and applies it directly to the hero background
+ * when the image is fully loaded for a smooth transition experience.
+ */
+function preloadHeroImage() {
+    const heroSection = document.querySelector('.hero');
+    if (!heroSection) return;
+    
+    // First set up a transition on the background for smooth appearance
+    heroSection.style.transition = "background 1s ease-in";
+    
+    // Create a new image object to preload the hero image
+    const img = new Image();
+    
+    // When the image is loaded, apply it directly as a background
+    img.onload = function() {
+        console.log('[Hero Debug] Hero image preloaded successfully');
+        
+        // Add a small delay before showing the image for a smoother experience
+        // This allows the page to render and stabilize first
+        setTimeout(() => {
+            // Apply the background directly to the hero element
+            heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/images/photo-1615729947596-a598e5de0ab3.jpeg')`;
+            heroSection.style.backgroundSize = 'cover';
+            heroSection.style.backgroundPosition = 'center';
+            console.log('[Hero Debug] Applied background image directly to hero section');
+            
+            // Also add the class for any additional CSS styling
+            heroSection.classList.add('image-loaded');
+            console.log('[Hero Debug] Added image-loaded class to hero section');
+        }, 100);
+    };
+    
+    // In case of error, use a fallback or keep the color background
+    img.onerror = function() {
+        console.warn('[Hero Debug] Error loading hero image, using fallback');
+        // Optionally, you could set a fallback image here
+    };
+    
+    // Start loading the image with absolute path from domain root
+    img.src = '/images/photo-1615729947596-a598e5de0ab3.jpeg';
+    console.log('[Hero Debug] Started preloading hero image: ' + img.src);
+}

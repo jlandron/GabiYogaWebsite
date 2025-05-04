@@ -4,13 +4,7 @@
 
 /* Main Hero Section */
 .hero {
-    background: 
-        /* Semi-transparent overlay for text readability */
-        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-        /* Hero image background */
-        url('../../images/photo-1615729947596-a598e5de0ab3.jpeg');
-    background-size: cover;
-    background-position: center;
+    position: relative;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -19,6 +13,11 @@
     color: #fff;
     padding-top: 80px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    background-color: #7a9899; /* Initial placeholder color */
+    /* Background image is set via JavaScript for smooth loading */
+    background-size: cover;
+    background-position: center;
+    transition: background 1s ease-in; /* Smooth background transition */
 }
 
 .hero-content {
