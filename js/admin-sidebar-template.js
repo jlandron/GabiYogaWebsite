@@ -65,6 +65,11 @@ const ADMIN_SIDEBAR_HTML = `
         </a>
     </li>
     <li class="admin-nav-item">
+        <a href="https://gabi-yoga-mail-org.awsapps.com/mail" class="admin-nav-link" data-page="mail" target="_blank">
+            <i class="fas fa-envelope"></i> Mail
+        </a>
+    </li>
+    <li class="admin-nav-item">
         <a href="admin-settings.html" class="admin-nav-link" data-page="settings">
             <i class="fas fa-cog"></i> Settings
         </a>
