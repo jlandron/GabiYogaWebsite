@@ -956,6 +956,321 @@ const WorkshopOperations = {
 };
 
 /**
+ * Retreat operations for managing retreats
+ */
+const RetreatOperations = {
+  /**
+   * Get all retreats
+   */
+  getAllRetreats: async () => {
+    try {
+      const retreats = await db.query(`
+        SELECT 
+          retreat_id,
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active
+        FROM retreats
+        ORDER BY start_date DESC
+      `);
+      
+      return retreats;
+    } catch (error) {
+      console.error('Error getting all retreats:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get upcoming retreats
+   */
+  getUpcomingRetreats: async () => {
+    try {
+      const retreats = await db.query(`
+        SELECT 
+          retreat_id,
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active,
+          (SELECT COUNT(*) FROM retreat_registrations WHERE retreat_id = r.retreat_id) as registration_count
+        FROM retreats r
+        WHERE start_date >= date('now')
+        AND active = 1
+        ORDER BY start_date
+        LIMIT 10
+      `);
+      
+      return retreats;
+    } catch (error) {
+      console.error('Error getting upcoming retreats:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get featured retreats for homepage
+   */
+  getFeaturedRetreats: async () => {
+    try {
+      // Get upcoming retreats that are active and limit to 3 for featured display
+      const retreats = await db.query(`
+        SELECT 
+          retreat_id,
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active
+        FROM retreats
+        WHERE start_date >= date('now')
+        AND active = 1
+        ORDER BY start_date
+        LIMIT 3
+      `);
+      
+      return retreats;
+    } catch (error) {
+      console.error('Error getting featured retreats:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get published retreats (all active retreats)
+   */
+  getPublishedRetreats: async () => {
+    try {
+      const retreats = await db.query(`
+        SELECT 
+          retreat_id,
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active
+        FROM retreats
+        WHERE active = 1
+        ORDER BY start_date DESC
+      `);
+      
+      return retreats;
+    } catch (error) {
+      console.error('Error getting published retreats:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get retreat by ID
+   */
+  getRetreatById: async (retreatId) => {
+    try {
+      const retreats = await db.query(`
+        SELECT 
+          retreat_id,
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active
+        FROM retreats
+        WHERE retreat_id = ?
+      `, [retreatId]);
+      
+      return retreats.length > 0 ? retreats[0] : null;
+    } catch (error) {
+      console.error('Error getting retreat by ID:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Create a new retreat
+   */
+  createRetreat: async (retreatData) => {
+    try {
+      const {
+        title,
+        description,
+        location,
+        start_date,
+        end_date,
+        price,
+        capacity,
+        image_url,
+        active = false
+      } = retreatData;
+      
+      const datetimeFunc = getDatetimeFunction();
+      
+      const result = await db.query(`
+        INSERT INTO retreats (
+          title,
+          description,
+          location,
+          start_date,
+          end_date,
+          price,
+          capacity,
+          image_url,
+          active,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
+      `, [
+        title,
+        description,
+        location,
+        start_date,
+        end_date,
+        price,
+        capacity,
+        image_url,
+        active ? 1 : 0
+      ]);
+      
+      return await RetreatOperations.getRetreatById(result.lastID);
+    } catch (error) {
+      console.error('Error creating retreat:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Update an existing retreat
+   */
+  updateRetreat: async (retreatId, retreatData) => {
+    try {
+      // Check if retreat exists
+      const retreat = await RetreatOperations.getRetreatById(retreatId);
+      if (!retreat) {
+        return null;
+      }
+      
+      const {
+        title,
+        description,
+        location,
+        start_date,
+        end_date,
+        price,
+        capacity,
+        image_url,
+        active
+      } = retreatData;
+      
+      const datetimeFunc = getDatetimeFunction();
+      
+      await db.query(`
+        UPDATE retreats
+        SET 
+          title = ?,
+          description = ?,
+          location = ?,
+          start_date = ?,
+          end_date = ?,
+          price = ?,
+          capacity = ?,
+          image_url = ?,
+          active = ?,
+          updated_at = ${datetimeFunc}
+        WHERE retreat_id = ?
+      `, [
+        title,
+        description,
+        location,
+        start_date,
+        end_date,
+        price,
+        capacity,
+        image_url,
+        active ? 1 : 0,
+        retreatId
+      ]);
+      
+      return await RetreatOperations.getRetreatById(retreatId);
+    } catch (error) {
+      console.error('Error updating retreat:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Delete a retreat
+   */
+  deleteRetreat: async (retreatId) => {
+    try {
+      // Check if retreat exists
+      const retreat = await RetreatOperations.getRetreatById(retreatId);
+      if (!retreat) {
+        return false;
+      }
+      
+      // Delete the retreat
+      await db.query(`DELETE FROM retreats WHERE retreat_id = ?`, [retreatId]);
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting retreat:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get retreat registrations
+   */
+  getRetreatRegistrations: async (retreatId) => {
+    try {
+      const registrations = await db.query(`
+        SELECT 
+          rr.registration_id,
+          u.user_id,
+          u.first_name || ' ' || u.last_name as user_name,
+          u.email,
+          rr.registration_date,
+          rr.payment_status,
+          rr.deposit_amount,
+          rr.total_amount,
+          rr.notes
+        FROM retreat_registrations rr
+        JOIN users u ON rr.user_id = u.user_id
+        WHERE rr.retreat_id = ?
+        ORDER BY rr.registration_date DESC
+      `, [retreatId]);
+      
+      return registrations;
+    } catch (error) {
+      console.error('Error getting retreat registrations:', error);
+      throw error;
+    }
+  }
+};
+
+/**
  * Private Session operations for managing private sessions
  */
 const PrivateSessionOperations = {

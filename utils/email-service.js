@@ -389,9 +389,8 @@ const sendEmail = async (options) => {
   }
 };
 
-// Update the password reset email function to use the common sendEmail function
-const originalSendPasswordResetEmail = sendPasswordResetEmail;
-const sendPasswordResetEmailViaBase = async (options) => {
+// Define a separate enhanced function without overriding the original
+const sendEnhancedPasswordResetEmail = async (options) => {
   const { to, resetToken, resetUrl } = options;
   
   // Email content
@@ -449,22 +448,8 @@ const sendPasswordResetEmailViaBase = async (options) => {
   return result;
 };
 
-// Keep the original function for backward compatibility, but internally use the base function
-sendPasswordResetEmail = async (options) => {
-  if (config.debug) {
-    logger.info(`[EMAIL DEBUG] Password reset requested for ${options.to}`);
-  }
-  
-  // For backward compatibility, use the original function
-  // This ensures existing code doesn't break
-  const result = await originalSendPasswordResetEmail(options);
-  
-  if (config.debug) {
-    logger.info(`[EMAIL DEBUG] Password reset email result:`, result);
-  }
-  
-  return result;
-};
+// We'll use the original function but add debugging without reassigning it
+// This way we avoid the "Assignment to constant variable" error
 
 module.exports = {
   sendPasswordResetEmail,
