@@ -128,7 +128,8 @@
        ]
       ]
      },
-     "arn:aws:iam::aws:policy/AmazonSESFullAccess"
+     "arn:aws:iam::aws:policy/AmazonSESFullAccess",
+     "arn:aws:iam::aws:policy/AmazonWorkMailFullAccess"
     ],
     "Tags": [
      {

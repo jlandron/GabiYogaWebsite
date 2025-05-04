@@ -402,7 +402,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3a80e806231a36e4734f9c4e4734647b0113d1f58db6ae1c659c5af9b7bfb422.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3aad42848eb810c3531c941eba22e51833371bc0ac124d3f5932f750953a5536.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -572,7 +572,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/17418cc04079a9f5f8ea2d111510cbfe1243fb0fc3b176dc5f33b68ab8acf08c.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3073d9f84013350e079d406fac0a8d7140f6f96a6f88deeb4e5c93d12b6f02c3.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -917,7 +917,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3b6164280c2a9ae71ef27b9c714f393aa7e7315e6b0614e96e3e412e0487c6fc.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/7f8f0c3db2622155e4ca69bde30a46d9a9064ac79ad365e18bda3a1ef2badd97.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -954,16 +954,58 @@
             "data": "DomainIdentity034B48F5"
           }
         ],
-        "/GabiYogaEmail/SesIamRole/Resource": [
+        "/GabiYogaEmail/EmailServicesRole/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SesIamRole92ABE59E"
+            "data": "EmailServicesRoleB191F97C"
           }
         ],
-        "/GabiYogaEmail/SpfRecord/Resource": [
+        "/GabiYogaEmail/WorkMailOrgFunction/ServiceRole/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SpfRecord65BABC0A"
+            "data": "WorkMailOrgFunctionServiceRole684D894F"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrgFunction/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrgFunctionServiceRoleDefaultPolicyE06D1392"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrgFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrgFunctionCA7380EE"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrgProvider/framework-onEvent/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrgProviderframeworkonEventServiceRole516A7148"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrgProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrgProviderframeworkonEventServiceRoleDefaultPolicy5F5BC5FD"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrgProvider/framework-onEvent/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrgProviderframeworkonEvent638B397C"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrganization/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrganization"
+          }
+        ],
+        "/GabiYogaEmail/AutodiscoverCnameRecord/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AutodiscoverCnameRecordA0525C4A"
           }
         ],
         "/GabiYogaEmail/MailFromMxRecord/Resource": [
@@ -978,16 +1020,40 @@
             "data": "MailFromSpfRecordA9EAF20E"
           }
         ],
+        "/GabiYogaEmail/WorkMailMxRecord/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailMxRecordC7A0CDD3"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailOrganizationID": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailOrganizationID"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailConsoleURL": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailConsoleURL"
+          }
+        ],
+        "/GabiYogaEmail/WorkMailSetupInstructions": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailSetupInstructions"
+          }
+        ],
         "/GabiYogaEmail/SesIdentityArn": [
           {
             "type": "aws:cdk:logicalId",
             "data": "SesIdentityArn"
           }
         ],
-        "/GabiYogaEmail/SesIamRoleArn": [
+        "/GabiYogaEmail/EmailServicesRoleArn": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SesIamRoleArn"
+            "data": "EmailServicesRoleArn"
           }
         ],
         "/GabiYogaEmail/CDKMetadata/Default": [

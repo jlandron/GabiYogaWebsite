@@ -65,16 +65,19 @@ webAppStack.addDependency(dnsStack);
 // Now pass the certificate to the WebAppStack to enable HTTPS
 webAppStack.addHttpsListener(dnsStack.certificate);
 
-// Create SES Email stack for sending password reset emails
+// Create Email stack with WorkMail for complete email management
 const emailStack = new EmailStack(app, 'GabiYogaEmail', {
   env,
   domainName: domainName,
   hostedZoneId: dnsStack.hostedZone.hostedZoneId,
 });
 
-// Add access to SES from webapp
+// Add access to email services from webapp
 webAppStack.asg.role.addManagedPolicy(
   { managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonSESFullAccess' }
+);
+webAppStack.asg.role.addManagedPolicy(
+  { managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonWorkMailFullAccess' }
 );
 
 // Add tags to all resources
