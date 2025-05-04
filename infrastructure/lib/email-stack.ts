@@ -52,11 +52,47 @@ export class EmailStack extends Stack {
       });
     }
 
-    // Create SES domain identity
+    // Create SES domain identity with DKIM signing
     this.sesIdentity = new EmailIdentity(this, 'DomainIdentity', {
       identity: Identity.domain(domainName),
       mailFromDomain: `mail.${domainName}`, // Use a subdomain for MAIL FROM
       dkimSigning: true, // Enable DKIM
+    });
+    
+    // Create explicit instructions for manually adding DKIM CNAME records
+    new CfnOutput(this, 'DkimSetupInstructions', {
+      value: `
+========== IMPORTANT: DKIM SETUP REQUIRED ==========
+
+To verify your domain ownership for sending emails, you need to add 3 DKIM CNAME records to your DNS settings.
+
+Follow these steps:
+1. Go to the AWS SES console for your domain: 
+   https://${this.region}.console.aws.amazon.com/ses/home?region=${this.region}#/verified-identities/${domainName}
+   
+2. In the "DKIM" section, click "View DKIM settings"
+
+3. Copy each of the 3 CNAME records and add them to your domain's DNS settings
+
+   For each record:
+   - Record type: CNAME
+   - Name: [token1]._domainkey.${domainName} (from SES console)
+   - Value: [token1].dkim.amazonses.com (from SES console)
+
+   Repeat for all 3 CNAME records with their respective tokens.
+
+4. Wait up to 72 hours for the verification process to complete
+
+Note: If using Route53 as your DNS provider and it's managed in this stack, 
+the records should be created automatically, but verify they appear in the Route53 console.
+`,
+      description: 'Instructions for setting up DKIM records'
+    });
+    
+    // Output the SES console URL for easy access
+    new CfnOutput(this, 'SesConsoleUrl', {
+      value: `https://${this.region}.console.aws.amazon.com/ses/home?region=${this.region}#/verified-identities/${domainName}`,
+      description: 'SES Console URL for this domain'
     });
 
     // Create IAM role for SES access
