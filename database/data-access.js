@@ -1144,11 +1144,30 @@ const AuthOperations = {
     try {
       const { firstName, lastName, email, password } = userData;
       
+      // Verify input data
+      if (!firstName || !lastName || !email || !password) {
+        throw new Error('All fields are required');
+      }
+      
+      // Check email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+      }
+      
+      // Check password strength
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters');
+      }
+      
       // Hash password
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
       
-      // Create user
+      // MySQL-compatible timestamp format
+      const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      
+      // Create user with SQL that works for both SQLite and MySQL
       const result = await db.query(`
         INSERT INTO users (
           first_name,
@@ -1158,13 +1177,34 @@ const AuthOperations = {
           role,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, 'member', datetime('now'), datetime('now'))
-      `, [firstName, lastName, email, passwordHash]);
+        ) VALUES (?, ?, ?, ?, 'member', ?, ?)
+      `, [firstName, lastName, email, passwordHash, timestamp, timestamp]);
+      
+      // Wait before trying to fetch the user to ensure database consistency
+      const userId = result.lastID;
+      if (!userId) {
+        throw new Error('User creation failed: No user ID returned');
+      }
       
       // Get created user
-      return await AuthOperations.findUserById(result.lastID);
+      const user = await AuthOperations.findUserById(userId);
+      if (!user) {
+        throw new Error('User creation succeeded but user could not be retrieved');
+      }
+      
+      return user;
     } catch (error) {
       console.error('Error creating user:', error);
+      
+      // Enhance error with more useful information
+      if (error.code === 'ER_DUP_ENTRY' || error.message.includes('UNIQUE constraint failed')) {
+        error.message = 'Email is already registered';
+      } else if (error.code === 'ER_DATA_TOO_LONG') {
+        error.message = 'One or more fields exceed maximum length';
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+        error.message = 'Database connection failed';
+      }
+      
       throw error;
     }
   },

@@ -86,10 +86,30 @@ router.post('/login', async (req, res) => {
     
   } catch (error) {
     console.error('Login error:', error);
+    console.error('Login error stack:', error.stack);
+    
+    // Check for MySQL specific errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already registered'
+      });
+    }
+    
+    // Handle connection errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+      console.error('Database connection error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to connect to database'
+      });
+    }
+    
     return res.status(500).json({
       success: false,
       message: 'An error occurred during login',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      // Include error message in production to help debug the initial deployment
+      error: error.message
     });
   }
 });
@@ -154,10 +174,32 @@ router.post('/register', async (req, res) => {
     
   } catch (error) {
     console.error('Registration error:', error);
+    // Log the full error stack in production to help with debugging
+    console.error('Registration error stack:', error.stack);
+    
+    // Check for MySQL specific errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already registered'
+      });
+    }
+    
+    // Handle connection errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+      console.error('Database connection error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to connect to database'
+      });
+    }
+    
     return res.status(500).json({
       success: false,
       message: 'An error occurred during registration',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      // Include error message in production to help debug the initial deployment
+      // This should be removed or limited once the system is stable
+      error: error.message
     });
   }
 });
@@ -217,10 +259,22 @@ router.get('/me', verifyToken, async (req, res) => {
     
   } catch (error) {
     console.error('Get current user error:', error);
+    console.error('Get current user error stack:', error.stack);
+    
+    // Handle connection errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+      console.error('Database connection error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Unable to connect to database'
+      });
+    }
+    
     return res.status(500).json({
       success: false,
-      message: 'An error occurred',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'An error occurred while getting user data',
+      // Include error message in production to help debug the initial deployment
+      error: error.message
     });
   }
 });

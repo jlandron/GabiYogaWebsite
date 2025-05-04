@@ -206,7 +206,10 @@ const ApiService = {
       const json = await response.json();
 
       if (!response.ok) {
-        throw new Error(json.message || 'Registration failed');
+        // Include any additional error details from server
+        const errorMsg = json.message || 'Registration failed';
+        const detailMsg = json.error ? `: ${json.error}` : '';
+        throw new Error(`${errorMsg}${detailMsg}`);
       }
 
       if (json.token && json.user) {
