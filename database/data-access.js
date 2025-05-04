@@ -1076,6 +1076,164 @@ const PrivateSessionOperations = {
  */
 const AuthOperations = {
   /**
+   * Create a password reset token
+   * @param {string} email - The user's email
+   * @returns {Object} - Reset token info with token, expiry and user details
+   */
+  createPasswordResetToken: async (email) => {
+    try {
+      // Find user by email
+      const user = await AuthOperations.findUserByEmail(email);
+      if (!user) {
+        return null;
+      }
+      
+      // Generate a random token - 32 characters of hex
+      const crypto = require('crypto');
+      const resetToken = crypto.randomBytes(16).toString('hex');
+      
+      // Set expiry to 1 hour from now
+      const now = new Date();
+      const expiry = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour
+      const expiryString = expiry.toISOString().slice(0, 19).replace('T', ' ');
+      
+      // Hash the token for storage
+      const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+      
+      // Store token in the database
+      // First check if user already has a token
+      const existingToken = await db.query(`
+        SELECT id FROM password_reset_tokens
+        WHERE user_id = ?
+      `, [user.user_id]);
+      
+      if (existingToken.length > 0) {
+        // Update existing token
+        await db.query(`
+          UPDATE password_reset_tokens
+          SET token_hash = ?, expires_at = ?, updated_at = datetime('now')
+          WHERE user_id = ?
+        `, [tokenHash, expiryString, user.user_id]);
+      } else {
+        // Create new token entry
+        await db.query(`
+          INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, created_at, updated_at)
+          VALUES (?, ?, ?, datetime('now'), datetime('now'))
+        `, [user.user_id, tokenHash, expiryString]);
+      }
+      
+      // Return token info
+      return {
+        token: resetToken,
+        expiry: expiry,
+        userId: user.user_id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name
+      };
+    } catch (error) {
+      console.error('Error creating password reset token:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Verify a password reset token
+   * @param {string} token - The reset token to verify
+   * @param {string} email - The user's email
+   * @returns {Object|null} - User info if token is valid, null otherwise
+   */
+  verifyPasswordResetToken: async (token, email) => {
+    try {
+      // Find user by email
+      const user = await AuthOperations.findUserByEmail(email);
+      if (!user) {
+        return null;
+      }
+      
+      // Hash the token for comparison
+      const crypto = require('crypto');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      
+      // Get token from database
+      const tokens = await db.query(`
+        SELECT * FROM password_reset_tokens
+        WHERE user_id = ? AND token_hash = ?
+      `, [user.user_id, tokenHash]);
+      
+      if (tokens.length === 0) {
+        return null;
+      }
+      
+      const storedToken = tokens[0];
+      
+      // Check if token has expired
+      const expiryDate = new Date(storedToken.expires_at);
+      const now = new Date();
+      
+      if (now > expiryDate) {
+        // Token has expired
+        return null;
+      }
+      
+      // Token is valid - return user info
+      return {
+        userId: user.user_id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name
+      };
+    } catch (error) {
+      console.error('Error verifying password reset token:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Reset user password using a valid token
+   * @param {string} token - The reset token
+   * @param {string} email - The user's email
+   * @param {string} newPassword - The new password
+   * @returns {boolean} - True if password was reset successfully
+   */
+  resetPassword: async (token, email, newPassword) => {
+    try {
+      // Verify token first
+      const user = await AuthOperations.verifyPasswordResetToken(token, email);
+      if (!user) {
+        return false;
+      }
+      
+      // Validate password
+      if (!newPassword || newPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters');
+      }
+      
+      // Hash the new password
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(newPassword, salt);
+      
+      // Update password
+      await db.query(`
+        UPDATE users
+        SET password_hash = ?, updated_at = datetime('now')
+        WHERE user_id = ?
+      `, [passwordHash, user.userId]);
+      
+      // Delete the used token
+      await db.query(`
+        DELETE FROM password_reset_tokens
+        WHERE user_id = ?
+      `, [user.userId]);
+      
+      return true;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Find user by email
    */
   findUserByEmail: async (email) => {

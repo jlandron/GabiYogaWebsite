@@ -45,6 +45,7 @@ export interface WebAppStackProps extends StackProps {
   bucket: IBucket;
   distribution: Distribution;
   databaseEndpoint?: string; // We'll use this to configure the EC2 instances
+  domainName?: string; // Domain name for email configuration
 }
 
 export class WebAppStack extends Stack {
@@ -218,22 +219,25 @@ export class WebAppStack extends Stack {
     // Generate environment file with fetched credentials
     'echo "Creating .env file with secure credentials"',
     'cat > /var/www/gabiyoga/.env << EOF',
-    'NODE_ENV=production',
-    'PORT=5001',
-    'JWT_SECRET=$(openssl rand -hex 64)',
-    'JWT_EXPIRY=24h',
-    `DB_TYPE=mysql`,
-    `DB_HOST=${dbHost}`,
-    'DB_PORT=3306',
-    'DB_NAME=yoga',
-    'DB_USER=${DB_USERNAME}',
-    'DB_PASSWORD=${DB_PASSWORD}',
-    `AWS_REGION=${awsRegion}`,
-    `S3_BUCKET_NAME=${bucketName}`,
-    `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
-    `STRIPE_PUBLISHABLE_KEY=pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9`,
-    `STRIPE_SECRET_KEY=sk_test_your_secret_key`,
-    `STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret`,
+      'NODE_ENV=production',
+      'PORT=5001',
+      'JWT_SECRET=$(openssl rand -hex 64)',
+      'JWT_EXPIRY=24h',
+      `DB_TYPE=mysql`,
+      `DB_HOST=${dbHost}`,
+      'DB_PORT=3306',
+      'DB_NAME=yoga',
+      'DB_USER=${DB_USERNAME}',
+      'DB_PASSWORD=${DB_PASSWORD}',
+      `AWS_REGION=${awsRegion}`,
+      `S3_BUCKET_NAME=${bucketName}`,
+      `CLOUDFRONT_DISTRIBUTION_ID=${cfDistId}`,
+      `STRIPE_PUBLISHABLE_KEY=pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9`,
+      `STRIPE_SECRET_KEY=sk_test_your_secret_key`,
+      `STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret`,
+      `# Email configuration for password reset`,
+      `EMAIL_FROM=noreply@${props.domainName || 'gabi.yoga'}`,
+      `BASE_URL=https://${props.domainName || 'gabi.yoga'}`,
     'EOF',
     
     // Create MySQL user with wildcard host for EC2 connectivity

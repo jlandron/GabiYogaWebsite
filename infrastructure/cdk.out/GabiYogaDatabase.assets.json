@@ -16,7 +16,7 @@
         }
       }
     },
-    "3a02ed2ad2a4ea06bc47c6895274e5a16b576aaf4fd1bf38fdb6f79ff5ef1a33": {
+    "ca05d1a35587c57c7ff318bfd905337cb7a603aa78d62431954f82f6223dc640": {
       "displayName": "GabiYogaDatabase Template",
       "source": {
         "path": "GabiYogaDatabase.template.json",
@@ -25,7 +25,7 @@
       "destinations": {
         "891709159344-us-west-2": {
           "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
-          "objectKey": "3a02ed2ad2a4ea06bc47c6895274e5a16b576aaf4fd1bf38fdb6f79ff5ef1a33.json",
+          "objectKey": "ca05d1a35587c57c7ff318bfd905337cb7a603aa78d62431954f82f6223dc640.json",
           "region": "us-west-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
         }

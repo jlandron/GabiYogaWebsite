@@ -7,6 +7,7 @@ import { StorageStack } from '../lib/storage-stack';
 import { WebAppStack } from '../lib/webapp-stack';
 import { NetworkStack } from '../lib/network-stack';
 import { DnsStack } from '../lib/dns-stack';
+import { EmailStack } from '../lib/email-stack';
 
 // Load environment variables from .env file in root directory
 config({ path: '../.env' });
@@ -39,6 +40,8 @@ const webAppStack = new WebAppStack(app, 'GabiYogaWebApp', {
   distribution: storageStack.distribution,
   // Pass database endpoints and secrets but NOT security groups
   databaseEndpoint: databaseStack.database.dbInstanceEndpointAddress,
+  // Pass domain name for email configuration
+  domainName: domainName,
 });
 
 // Grant read access to the database secret to the webapp's IAM role
@@ -61,6 +64,18 @@ webAppStack.addDependency(dnsStack);
 
 // Now pass the certificate to the WebAppStack to enable HTTPS
 webAppStack.addHttpsListener(dnsStack.certificate);
+
+// Create SES Email stack for sending password reset emails
+const emailStack = new EmailStack(app, 'GabiYogaEmail', {
+  env,
+  domainName: domainName,
+  hostedZoneId: dnsStack.hostedZone.hostedZoneId,
+});
+
+// Add access to SES from webapp
+webAppStack.asg.role.addManagedPolicy(
+  { managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonSESFullAccess' }
+);
 
 // Add tags to all resources
 Tags.of(app).add('Project', 'GabiYoga');

@@ -1,16 +1,16 @@
 {
   "version": "41.0.0",
   "files": {
-    "17418cc04079a9f5f8ea2d111510cbfe1243fb0fc3b176dc5f33b68ab8acf08c": {
-      "displayName": "GabiYogaWebApp Template",
+    "3b6164280c2a9ae71ef27b9c714f393aa7e7315e6b0614e96e3e412e0487c6fc": {
+      "displayName": "GabiYogaEmail Template",
       "source": {
-        "path": "GabiYogaWebApp.template.json",
+        "path": "GabiYogaEmail.template.json",
         "packaging": "file"
       },
       "destinations": {
         "891709159344-us-west-2": {
           "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
-          "objectKey": "17418cc04079a9f5f8ea2d111510cbfe1243fb0fc3b176dc5f33b68ab8acf08c.json",
+          "objectKey": "3b6164280c2a9ae71ef27b9c714f393aa7e7315e6b0614e96e3e412e0487c6fc.json",
           "region": "us-west-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
         }

@@ -127,7 +127,8 @@
         ":iam::aws:policy/CloudWatchAgentServerPolicy"
        ]
       ]
-     }
+     },
+     "arn:aws:iam::aws:policy/AmazonSESFullAccess"
     ],
     "Tags": [
      {
@@ -464,7 +465,7 @@
          {
           "Fn::ImportValue": "GabiYogaStorage:ExportsOutputRefDistribution830FAC524DF81588"
          },
-         "\nSTRIPE_PUBLISHABLE_KEY=pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9\nSTRIPE_SECRET_KEY=sk_test_your_secret_key\nSTRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret\nEOF\necho \"Creating MySQL user with wildcard host...\"\nmysql -h $DB_HOST -u $DB_USERNAME -p$DB_PASSWORD << EOF\nCREATE USER IF NOT EXISTS '$DB_USERNAME'@'%' IDENTIFIED BY '$DB_PASSWORD';\nGRANT ALL PRIVILEGES ON yoga.* TO '$DB_USERNAME'@'%';\nFLUSH PRIVILEGES;\nEOF\nmkdir -p /var/www/gabiyoga/data\ntouch /var/www/gabiyoga/data/yoga.sqlite\nchmod 644 /var/www/gabiyoga/.env\ncd /var/www/gabiyoga\nnpm install --production\ncat > /etc/systemd/system/gabiyoga.service << EOF\n[Unit]\nDescription=Gabi Yoga Web Application\nAfter=network.target\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=/var/www/gabiyoga\nExecStart=$NODE_PATH /var/www/gabiyoga/server.js\nRestart=on-failure\nRestartSec=10\nStandardOutput=journal\nStandardError=journal\nSyslogIdentifier=gabiyoga\nEnvironment=NODE_ENV=production\nEnvironmentFile=/var/www/gabiyoga/.env\n\n[Install]\nWantedBy=multi-user.target\nEOF\necho \"Created systemd service with Node.js path: $NODE_PATH\"\nsystemctl daemon-reload\nsystemctl enable gabiyoga\nsystemctl start gabiyoga\necho \"Gabi Yoga web application startup completed\"\necho \"User data script completed at $(date)\""
+         "\nSTRIPE_PUBLISHABLE_KEY=pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9\nSTRIPE_SECRET_KEY=sk_test_your_secret_key\nSTRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret\n# Email configuration for password reset\nEMAIL_FROM=noreply@gabi.yoga\nBASE_URL=https://gabi.yoga\nEOF\necho \"Creating MySQL user with wildcard host...\"\nmysql -h $DB_HOST -u $DB_USERNAME -p$DB_PASSWORD << EOF\nCREATE USER IF NOT EXISTS '$DB_USERNAME'@'%' IDENTIFIED BY '$DB_PASSWORD';\nGRANT ALL PRIVILEGES ON yoga.* TO '$DB_USERNAME'@'%';\nFLUSH PRIVILEGES;\nEOF\nmkdir -p /var/www/gabiyoga/data\ntouch /var/www/gabiyoga/data/yoga.sqlite\nchmod 644 /var/www/gabiyoga/.env\ncd /var/www/gabiyoga\nnpm install --production\ncat > /etc/systemd/system/gabiyoga.service << EOF\n[Unit]\nDescription=Gabi Yoga Web Application\nAfter=network.target\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=/var/www/gabiyoga\nExecStart=$NODE_PATH /var/www/gabiyoga/server.js\nRestart=on-failure\nRestartSec=10\nStandardOutput=journal\nStandardError=journal\nSyslogIdentifier=gabiyoga\nEnvironment=NODE_ENV=production\nEnvironmentFile=/var/www/gabiyoga/.env\n\n[Install]\nWantedBy=multi-user.target\nEOF\necho \"Created systemd service with Node.js path: $NODE_PATH\"\nsystemctl daemon-reload\nsystemctl enable gabiyoga\nsystemctl start gabiyoga\necho \"Gabi Yoga web application startup completed\"\necho \"User data script completed at $(date)\""
         ]
        ]
       }

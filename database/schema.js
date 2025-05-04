@@ -6,6 +6,7 @@
  */
 
 const db = require('./db-config');
+const { createPasswordResetTokensTable } = require('./password-reset-schema');
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
 const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
@@ -514,6 +515,9 @@ const initializeDatabase = async () => {
     
     // Create schema
     await createSchema();
+    
+    // Create password reset tokens table
+    await createPasswordResetTokensTable(db);
     
     console.log('Database initialization complete');
   } catch (error) {

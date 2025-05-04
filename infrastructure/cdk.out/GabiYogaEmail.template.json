@@ -1,0 +1,201 @@
+{
+ "Resources": {
+  "DomainIdentity034B48F5": {
+   "Type": "AWS::SES::EmailIdentity",
+   "Properties": {
+    "DkimAttributes": {
+     "SigningEnabled": true
+    },
+    "EmailIdentity": "gabi.yoga",
+    "MailFromAttributes": {
+     "MailFromDomain": "mail.gabi.yoga"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/DomainIdentity/Resource"
+   }
+  },
+  "SesIamRole92ABE59E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ec2.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "IAM role for accessing SES",
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonSESFullAccess"
+       ]
+      ]
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+          "ses:SendTemplatedEmail"
+         ],
+         "Effect": "Allow",
+         "Resource": "*",
+         "Sid": "AllowSendEmail"
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "SesPolicy"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/SesIamRole/Resource"
+   }
+  },
+  "SpfRecord65BABC0A": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "HostedZoneId": "Z0858162FM97J2FO2QJU",
+    "Name": "gabi.yoga.",
+    "ResourceRecords": [
+     "\"v=spf1 include:amazonses.com ~all\""
+    ],
+    "TTL": "1800",
+    "Type": "TXT"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/SpfRecord/Resource"
+   }
+  },
+  "MailFromMxRecord8EEC6CE6": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "HostedZoneId": "Z0858162FM97J2FO2QJU",
+    "Name": "mail.gabi.yoga.",
+    "ResourceRecords": [
+     "10 feedback-smtp.us-west-2.amazonses.com"
+    ],
+    "TTL": "1800",
+    "Type": "MX"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/MailFromMxRecord/Resource"
+   }
+  },
+  "MailFromSpfRecordA9EAF20E": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "HostedZoneId": "Z0858162FM97J2FO2QJU",
+    "Name": "mail.gabi.yoga.",
+    "ResourceRecords": [
+     "\"v=spf1 include:amazonses.com ~all\""
+    ],
+    "TTL": "1800",
+    "Type": "TXT"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/MailFromSpfRecord/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WNywrCMBBFv6X76Wgrgq7FhYsipO4lJiOkr0gy0UrIv9vHSrhwL+csbonFscRtJj8+V7rNO/PAWLNULQjyNjhFMLl79OQxnntpuoumgQ1/4fQc/kACI3uMwnY0u7kTOBuY9juMt5EFKev04pZVE0M1rjulmV8DvwInGKwmbPzmXRxwSpk13pjchemnJxRr/wDc/thwvAAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaEmail/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "SesIdentityArn": {
+   "Description": "SES domain identity ARN",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "arn:",
+      {
+       "Ref": "AWS::Partition"
+      },
+      ":ses:us-west-2:891709159344:identity/",
+      {
+       "Ref": "DomainIdentity034B48F5"
+      }
+     ]
+    ]
+   }
+  },
+  "SesIamRoleArn": {
+   "Description": "IAM role ARN for SES access",
+   "Value": {
+    "Fn::GetAtt": [
+     "SesIamRole92ABE59E",
+     "Arn"
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
