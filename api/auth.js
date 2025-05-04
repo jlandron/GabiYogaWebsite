@@ -291,21 +291,28 @@ router.get('/me', verifyToken, async (req, res) => {
  * the email exists to prevent user enumeration attacks.
  */
 router.post('/forgot-password', async (req, res) => {
+  const logger = require('../utils/logger');
+  let tokenResult = null;
+  
   try {
+    logger.info(`Received forgot password request`);
+    
     const { email } = req.body;
-    const logger = require('../utils/logger');
-    const emailService = require('../utils/email-service');
     
     if (!email) {
+      logger.warn(`Forgot password request missing email`);
       return res.status(400).json({ 
         success: false, 
         message: 'Email is required' 
       });
     }
     
+    logger.info(`Processing forgot password for email: ${email.substring(0, 3)}...`);
+    
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      logger.warn(`Invalid email format in forgot password request`);
       return res.status(400).json({ 
         success: false, 
         message: 'Invalid email format' 
@@ -315,43 +322,67 @@ router.post('/forgot-password', async (req, res) => {
     // Get base URL from environment or default
     const baseUrl = process.env.BASE_URL || 
       (process.env.NODE_ENV === 'production' ? 'https://www.gabi.yoga' : 'http://localhost:5001');
+    logger.info(`Using base URL for reset link: ${baseUrl}`);
     
     // Check if user exists and create token if so - but don't tell the client either way
-    const tokenData = await AuthOperations.createPasswordResetToken(email);
-    
-    if (tokenData) {
-      // User exists, send reset email
+    try {
+      tokenResult = await AuthOperations.createPasswordResetToken(email);
+      if (tokenResult) {
+        logger.info(`Successfully created reset token for email: ${email.substring(0, 3)}...`);
+      } else {
+        logger.info(`No user found with email: ${email.substring(0, 3)}...`);
+      }
+    } catch (dbError) {
+      // Log the DB error but don't expose it to the client
+      logger.error(`Database error creating password reset token:`, dbError);
       
+      // Return generic success response for security (prevent user enumeration)
+      return res.status(200).json({
+        success: true,
+        message: 'If your email exists in our system, you will receive password reset instructions shortly.'
+      });
+    }
+    
+    // Only attempt to send email if we found a user and created a token
+    if (tokenResult) {
       // Create reset URL
-      const resetUrl = `${baseUrl}/reset-password.html?token=${tokenData.token}&email=${encodeURIComponent(email)}`;
+      const resetUrl = `${baseUrl}/reset-password.html?token=${tokenResult.token}&email=${encodeURIComponent(email)}`;
+      logger.debug(`Reset URL created: ${resetUrl.substring(0, 30)}...`);
       
       try {
-        // Send email
-        await emailService.sendPasswordResetEmail({
+        // Load email service dynamically to prevent issues if it fails to initialize
+        const emailService = require('../utils/email-service');
+        
+        // Send email - our improved email service will handle failures gracefully
+        const emailResult = await emailService.sendPasswordResetEmail({
           to: email,
-          resetToken: tokenData.token,
+          resetToken: tokenResult.token,
           resetUrl: resetUrl
         });
         
-        logger.info(`Password reset email sent to: ${email}`);
+        logger.info(`Password reset email handling result:`, emailResult);
+        
+        if (emailResult.method === 'fallback_log') {
+          logger.warn(`Email delivery used fallback method for ${email.substring(0, 3)}... - user will not receive an actual email`);
+        }
       } catch (emailError) {
-        logger.error('Error sending password reset email:', emailError);
-        // We don't expose this error to the client for security
+        // Log the error but don't expose to client and don't break the flow
+        logger.error('Error from email service:', emailError);
+        logger.warn(`User ${email.substring(0, 3)}... will not receive password reset email due to service error`);
       }
-    } else {
-      // No user with this email, log but don't expose to client
-      logger.info(`Password reset requested for non-existent user: ${email}`);
     }
     
-    // Always return success regardless of whether the email exists
+    // Always return success regardless of whether the email exists or if the email was sent
+    // This is important for security to prevent user enumeration attacks
     return res.status(200).json({
       success: true,
       message: 'If your email exists in our system, you will receive password reset instructions shortly.'
     });
     
   } catch (error) {
-    console.error('Forgot password error:', error);
-    console.error('Forgot password error stack:', error.stack);
+    // Log the full error for debugging
+    logger.error('Unexpected error in forgot-password endpoint:', error);
+    logger.error('Error stack:', error.stack);
     
     // Generic error response - don't reveal specific details
     return res.status(500).json({
