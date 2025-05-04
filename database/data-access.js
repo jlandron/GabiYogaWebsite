@@ -7,6 +7,7 @@
 
 const db = require('./db-config');
 const bcrypt = require('bcryptjs');
+const { getDatetimeFunction } = require('../utils/db-helper');
 
 /**
  * Member operations for user management
@@ -137,6 +138,7 @@ const MemberOperations = {
   updateMember: async (userId, memberData) => {
     try {
       const { first_name, last_name, email, phone } = memberData;
+      const datetimeFunc = getDatetimeFunction();
       
       // Update user info
       await db.query(`
@@ -146,7 +148,7 @@ const MemberOperations = {
           last_name = ?,
           email = ?,
           phone = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE user_id = ? AND role = 'member'
       `, [first_name, last_name, email, phone, userId]);
       
@@ -336,6 +338,7 @@ const ClassOperations = {
   createClassTemplate: async (templateData) => {
     try {
       const { name, duration, level, default_instructor, description } = templateData;
+      const datetimeFunc = getDatetimeFunction();
       
       const result = await db.query(`
         INSERT INTO class_templates (
@@ -346,7 +349,7 @@ const ClassOperations = {
           description,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
       `, [name, duration, level, default_instructor, description]);
       
       return await ClassOperations.getClassTemplateById(result.lastID);
@@ -362,6 +365,7 @@ const ClassOperations = {
   updateClassTemplate: async (templateId, templateData) => {
     try {
       const { name, duration, level, default_instructor, description } = templateData;
+      const datetimeFunc = getDatetimeFunction();
       
       await db.query(`
         UPDATE class_templates
@@ -371,7 +375,7 @@ const ClassOperations = {
           level = ?,
           default_instructor = ?,
           description = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE template_id = ?
       `, [name, duration, level, default_instructor, description, templateId]);
       
@@ -479,6 +483,8 @@ const ClassOperations = {
         active = true 
       } = classData;
       
+      const datetimeFunc = getDatetimeFunction();
+      
       const result = await db.query(`
         INSERT INTO classes (
           template_id,
@@ -493,7 +499,7 @@ const ClassOperations = {
           active,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
       `, [template_id, name, day_of_week, start_time, duration, instructor, level, capacity, description, active ? 1 : 0]);
       
       return await ClassOperations.getClassById(result.lastID);
@@ -521,6 +527,8 @@ const ClassOperations = {
         active 
       } = classData;
       
+      const datetimeFunc = getDatetimeFunction();
+      
       await db.query(`
         UPDATE classes
         SET 
@@ -534,7 +542,7 @@ const ClassOperations = {
           capacity = ?,
           description = ?,
           active = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE class_id = ?
       `, [
         template_id, 
@@ -704,6 +712,8 @@ const WorkshopOperations = {
         active = false
       } = workshopData;
       
+      const datetimeFunc = getDatetimeFunction();
+      
       const result = await db.query(`
         INSERT INTO workshops (
           title,
@@ -721,7 +731,7 @@ const WorkshopOperations = {
           active,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
       `, [
         title,
         description,
@@ -772,6 +782,8 @@ const WorkshopOperations = {
         active
       } = workshopData;
       
+      const datetimeFunc = getDatetimeFunction();
+      
       await db.query(`
         UPDATE workshops
         SET 
@@ -788,7 +800,7 @@ const WorkshopOperations = {
           image_url = ?,
           workshop_slug = ?,
           active = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE workshop_id = ?
       `, [
         title,
@@ -869,11 +881,13 @@ const WorkshopOperations = {
    */
   updateRegistrationAttendance: async (registrationId, attended) => {
     try {
+      const datetimeFunc = getDatetimeFunction();
+      
       await db.query(`
         UPDATE workshop_registrations
         SET 
           attended = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE registration_id = ?
       `, [attended ? 1 : 0, registrationId]);
       
@@ -906,11 +920,13 @@ const WorkshopOperations = {
    */
   updateRegistrationPaymentStatus: async (registrationId, status) => {
     try {
+      const datetimeFunc = getDatetimeFunction();
+      
       await db.query(`
         UPDATE workshop_registrations
         SET 
           payment_status = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE registration_id = ?
       `, [status, registrationId]);
       
@@ -978,6 +994,8 @@ const PrivateSessionOperations = {
         SELECT id FROM instructor_availability WHERE id = 1
       `);
       
+      const datetimeFunc = getDatetimeFunction();
+      
       if (existingSettings.length > 0) {
         // Update existing settings
         await db.query(`
@@ -985,14 +1003,14 @@ const PrivateSessionOperations = {
           SET 
             available_days = ?, 
             blocked_dates = ?,
-            updated_at = datetime('now')
+            updated_at = ${datetimeFunc}
           WHERE id = 1
         `, [availableDaysJson, blockedDatesJson]);
       } else {
         // Insert new settings
         await db.query(`
           INSERT INTO instructor_availability (id, available_days, blocked_dates, created_at, updated_at)
-          VALUES (1, ?, ?, datetime('now'), datetime('now'))
+          VALUES (1, ?, ?, ${datetimeFunc}, ${datetimeFunc})
         `, [availableDaysJson, blockedDatesJson]);
       }
       
@@ -1039,11 +1057,13 @@ const PrivateSessionOperations = {
    */
   updateSessionStatus: async (sessionId, status) => {
     try {
+      const datetimeFunc = getDatetimeFunction();
+      
       await db.query(`
         UPDATE private_sessions
         SET 
           status = ?,
-          updated_at = datetime('now')
+          updated_at = ${datetimeFunc}
         WHERE session_id = ?
       `, [status, sessionId]);
       
@@ -1107,18 +1127,21 @@ const AuthOperations = {
         WHERE user_id = ?
       `, [user.user_id]);
       
+      // Get the appropriate datetime function based on database type
+      const datetimeFunc = getDatetimeFunction();
+      
       if (existingToken.length > 0) {
         // Update existing token
         await db.query(`
           UPDATE password_reset_tokens
-          SET token_hash = ?, expires_at = ?, updated_at = datetime('now')
+          SET token_hash = ?, expires_at = ?, updated_at = ${datetimeFunc}
           WHERE user_id = ?
         `, [tokenHash, expiryString, user.user_id]);
       } else {
         // Create new token entry
         await db.query(`
           INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, created_at, updated_at)
-          VALUES (?, ?, ?, datetime('now'), datetime('now'))
+          VALUES (?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
         `, [user.user_id, tokenHash, expiryString]);
       }
       
@@ -1216,7 +1239,7 @@ const AuthOperations = {
       // Update password
       await db.query(`
         UPDATE users
-        SET password_hash = ?, updated_at = datetime('now')
+        SET password_hash = ?, updated_at = ${getDatetimeFunction()}
         WHERE user_id = ?
       `, [passwordHash, user.userId]);
       
@@ -1232,7 +1255,7 @@ const AuthOperations = {
       throw error;
     }
   },
-
+  
   /**
    * Find user by email
    */
@@ -1368,7 +1391,7 @@ const AuthOperations = {
   },
   
   /**
-   * Login a user and return their details (kept for backwards compatibility)
+   * Login a user and return their details
    */
   loginUser: async (email, password) => {
     try {
@@ -1396,7 +1419,7 @@ const AuthOperations = {
   },
   
   /**
-   * Register a new user (kept for backwards compatibility)
+   * Register a new user
    */
   registerUser: async (userData) => {
     try {
@@ -1416,523 +1439,10 @@ const AuthOperations = {
   },
   
   /**
-   * Get user by ID (kept for backwards compatibility)
+   * Get user by ID
    */
   getUserById: async (userId) => {
     return await AuthOperations.findUserById(userId);
-  }
-};
-
-/**
- * Retreat operations for retreat management
- */
-const RetreatOperations = {
-  /**
-   * Get all retreats
-   */
-  getAllRetreats: async () => {
-    try {
-      const retreats = await db.query(`
-        SELECT 
-          r.retreat_id,
-          r.title,
-          r.subtitle,
-          r.description,
-          r.detailed_itinerary,
-          r.accommodations,
-          r.included_items,
-          r.start_date,
-          r.end_date,
-          r.location,
-          r.venue_name,
-          r.price,
-          r.member_price,
-          r.early_bird_price,
-          r.early_bird_deadline,
-          r.deposit_amount,
-          r.capacity,
-          r.instructors,
-          r.image_url,
-          r.gallery_images,
-          r.retreat_slug,
-          r.active,
-          r.featured,
-          (SELECT COUNT(*) FROM retreat_registrations rr WHERE rr.retreat_id = r.retreat_id) as registration_count
-        FROM retreats r
-        ORDER BY r.start_date DESC
-      `);
-      
-      return retreats;
-    } catch (error) {
-      console.error('Error getting all retreats:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get upcoming retreats
-   */
-  getUpcomingRetreats: async () => {
-    try {
-      const retreats = await db.query(`
-        SELECT 
-          r.retreat_id,
-          r.title,
-          r.subtitle,
-          r.description,
-          r.detailed_itinerary,
-          r.accommodations,
-          r.included_items,
-          r.start_date,
-          r.end_date,
-          r.location,
-          r.venue_name,
-          r.price,
-          r.member_price,
-          r.early_bird_price,
-          r.early_bird_deadline,
-          r.deposit_amount,
-          r.capacity,
-          r.instructors,
-          r.image_url,
-          r.gallery_images,
-          r.retreat_slug,
-          r.active,
-          r.featured,
-          (SELECT COUNT(*) FROM retreat_registrations rr WHERE rr.retreat_id = r.retreat_id) as registration_count
-        FROM retreats r
-        WHERE r.start_date >= date('now')
-        ORDER BY r.start_date
-      `);
-      
-      return retreats;
-    } catch (error) {
-      console.error('Error getting upcoming retreats:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get published retreats for the public site
-   */
-  getPublishedRetreats: async () => {
-    try {
-      const retreats = await db.query(`
-        SELECT 
-          r.retreat_id,
-          r.title,
-          r.subtitle,
-          r.description,
-          r.detailed_itinerary,
-          r.accommodations,
-          r.included_items,
-          r.start_date,
-          r.end_date,
-          r.location,
-          r.venue_name,
-          r.price,
-          r.member_price,
-          r.early_bird_price,
-          r.early_bird_deadline,
-          r.deposit_amount,
-          r.capacity,
-          r.instructors,
-          r.image_url,
-          r.gallery_images,
-          r.retreat_slug,
-          r.featured,
-          (SELECT COUNT(*) FROM retreat_registrations rr WHERE rr.retreat_id = r.retreat_id) as registration_count
-        FROM retreats r
-        WHERE r.active = 1 AND r.start_date >= date('now')
-        ORDER BY r.start_date
-      `);
-      
-      return retreats;
-    } catch (error) {
-      console.error('Error getting published retreats:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get featured retreats for homepage
-   */
-  getFeaturedRetreats: async () => {
-    try {
-      const retreats = await db.query(`
-        SELECT 
-          r.retreat_id,
-          r.title,
-          r.subtitle,
-          r.description,
-          r.start_date,
-          r.end_date,
-          r.location,
-          r.price,
-          r.member_price,
-          r.early_bird_price,
-          r.early_bird_deadline,
-          r.image_url,
-          r.retreat_slug
-        FROM retreats r
-        WHERE r.featured = 1 AND r.active = 1 AND r.start_date >= date('now')
-        ORDER BY r.start_date
-        LIMIT 3
-      `);
-      
-      return retreats;
-    } catch (error) {
-      console.error('Error getting featured retreats:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get retreat by ID
-   */
-  getRetreatById: async (retreatId) => {
-    try {
-      const retreats = await db.query(`
-        SELECT 
-          r.retreat_id,
-          r.title,
-          r.subtitle,
-          r.description,
-          r.detailed_itinerary,
-          r.accommodations,
-          r.included_items,
-          r.start_date,
-          r.end_date,
-          r.location,
-          r.venue_name,
-          r.price,
-          r.member_price,
-          r.early_bird_price,
-          r.early_bird_deadline,
-          r.deposit_amount,
-          r.capacity,
-          r.instructors,
-          r.image_url,
-          r.gallery_images,
-          r.retreat_slug,
-          r.active,
-          r.featured
-        FROM retreats r
-        WHERE r.retreat_id = ?
-      `, [retreatId]);
-      
-      return retreats.length > 0 ? retreats[0] : null;
-    } catch (error) {
-      console.error('Error getting retreat by ID:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Create a new retreat
-   */
-  createRetreat: async (retreatData) => {
-    try {
-      const {
-        title,
-        subtitle,
-        description,
-        detailed_itinerary,
-        accommodations,
-        included_items,
-        start_date,
-        end_date,
-        location,
-        venue_name,
-        price,
-        member_price,
-        early_bird_price,
-        early_bird_deadline,
-        deposit_amount,
-        capacity,
-        instructors,
-        image_url,
-        gallery_images,
-        retreat_slug,
-        active = false,
-        featured = false
-      } = retreatData;
-      
-      const result = await db.query(`
-        INSERT INTO retreats (
-          title,
-          subtitle,
-          description,
-          detailed_itinerary,
-          accommodations,
-          included_items,
-          start_date,
-          end_date,
-          location,
-          venue_name,
-          price,
-          member_price,
-          early_bird_price,
-          early_bird_deadline,
-          deposit_amount,
-          capacity,
-          instructors,
-          image_url,
-          gallery_images,
-          retreat_slug,
-          active,
-          featured,
-          created_at,
-          updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-      `, [
-        title,
-        subtitle,
-        description,
-        detailed_itinerary,
-        accommodations,
-        included_items,
-        start_date,
-        end_date,
-        location,
-        venue_name,
-        price,
-        member_price,
-        early_bird_price,
-        early_bird_deadline,
-        deposit_amount,
-        capacity,
-        instructors,
-        image_url,
-        gallery_images,
-        retreat_slug,
-        active ? 1 : 0,
-        featured ? 1 : 0
-      ]);
-      
-      return await RetreatOperations.getRetreatById(result.lastID);
-    } catch (error) {
-      console.error('Error creating retreat:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Update an existing retreat
-   */
-  updateRetreat: async (retreatId, retreatData) => {
-    try {
-      // Check if retreat exists
-      const retreat = await RetreatOperations.getRetreatById(retreatId);
-      if (!retreat) {
-        return null;
-      }
-      
-      const {
-        title,
-        subtitle,
-        description,
-        detailed_itinerary,
-        accommodations,
-        included_items,
-        start_date,
-        end_date,
-        location,
-        venue_name,
-        price,
-        member_price,
-        early_bird_price,
-        early_bird_deadline,
-        deposit_amount,
-        capacity,
-        instructors,
-        image_url,
-        gallery_images,
-        retreat_slug,
-        active,
-        featured
-      } = retreatData;
-      
-      await db.query(`
-        UPDATE retreats
-        SET 
-          title = ?,
-          subtitle = ?,
-          description = ?,
-          detailed_itinerary = ?,
-          accommodations = ?,
-          included_items = ?,
-          start_date = ?,
-          end_date = ?,
-          location = ?,
-          venue_name = ?,
-          price = ?,
-          member_price = ?,
-          early_bird_price = ?,
-          early_bird_deadline = ?,
-          deposit_amount = ?,
-          capacity = ?,
-          instructors = ?,
-          image_url = ?,
-          gallery_images = ?,
-          retreat_slug = ?,
-          active = ?,
-          featured = ?,
-          updated_at = datetime('now')
-        WHERE retreat_id = ?
-      `, [
-        title,
-        subtitle,
-        description,
-        detailed_itinerary,
-        accommodations,
-        included_items,
-        start_date,
-        end_date,
-        location,
-        venue_name,
-        price,
-        member_price,
-        early_bird_price,
-        early_bird_deadline,
-        deposit_amount,
-        capacity,
-        instructors,
-        image_url,
-        gallery_images,
-        retreat_slug,
-        active ? 1 : 0,
-        featured ? 1 : 0,
-        retreatId
-      ]);
-      
-      return await RetreatOperations.getRetreatById(retreatId);
-    } catch (error) {
-      console.error('Error updating retreat:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Delete a retreat
-   */
-  deleteRetreat: async (retreatId) => {
-    try {
-      // Check if retreat exists
-      const retreat = await RetreatOperations.getRetreatById(retreatId);
-      if (!retreat) {
-        return false;
-      }
-      
-      // Delete the retreat
-      await db.query(`DELETE FROM retreats WHERE retreat_id = ?`, [retreatId]);
-      
-      return true;
-    } catch (error) {
-      console.error('Error deleting retreat:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get retreat registrations
-   */
-  getRetreatRegistrations: async (retreatId) => {
-    try {
-      const registrations = await db.query(`
-        SELECT 
-          rr.registration_id,
-          u.first_name || ' ' || u.last_name as user_name,
-          u.email,
-          rr.registration_date,
-          rr.payment_status,
-          rr.payment_method,
-          rr.amount_paid,
-          rr.balance_due,
-          rr.special_requests,
-          rr.dietary_restrictions,
-          rr.emergency_contact,
-          rr.notes
-        FROM retreat_registrations rr
-        JOIN users u ON rr.user_id = u.user_id
-        WHERE rr.retreat_id = ?
-        ORDER BY rr.registration_date DESC
-      `, [retreatId]);
-      
-      return registrations;
-    } catch (error) {
-      console.error('Error getting retreat registrations:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Update retreat registration payment status
-   */
-  updateRegistrationPaymentStatus: async (registrationId, status, amountPaid, balanceDue) => {
-    try {
-      await db.query(`
-        UPDATE retreat_registrations
-        SET 
-          payment_status = ?,
-          amount_paid = ?,
-          balance_due = ?,
-          updated_at = datetime('now')
-        WHERE registration_id = ?
-      `, [status, amountPaid, balanceDue, registrationId]);
-      
-      // Get the updated registration
-      const registrations = await db.query(`
-        SELECT 
-          rr.registration_id,
-          u.first_name || ' ' || u.last_name as user_name,
-          u.email,
-          rr.registration_date,
-          rr.payment_status,
-          rr.payment_method,
-          rr.amount_paid,
-          rr.balance_due,
-          rr.special_requests,
-          rr.dietary_restrictions,
-          rr.emergency_contact,
-          rr.notes
-        FROM retreat_registrations rr
-        JOIN users u ON rr.user_id = u.user_id
-        WHERE rr.registration_id = ?
-      `, [registrationId]);
-      
-      return registrations.length > 0 ? registrations[0] : null;
-    } catch (error) {
-      console.error('Error updating registration payment status:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Toggle retreat featured status
-   */
-  toggleRetreatFeatured: async (retreatId) => {
-    try {
-      const retreat = await RetreatOperations.getRetreatById(retreatId);
-      if (!retreat) {
-        return null;
-      }
-      
-      const newFeaturedStatus = retreat.featured ? 0 : 1;
-      
-      await db.query(`
-        UPDATE retreats
-        SET 
-          featured = ?,
-          updated_at = datetime('now')
-        WHERE retreat_id = ?
-      `, [newFeaturedStatus, retreatId]);
-      
-      return await RetreatOperations.getRetreatById(retreatId);
-    } catch (error) {
-      console.error('Error toggling retreat featured status:', error);
-      throw error;
-    }
   }
 };
 
