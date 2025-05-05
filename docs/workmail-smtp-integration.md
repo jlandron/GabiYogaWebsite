@@ -91,7 +91,7 @@ The following environment variables can be set to configure the email service:
 | EMAIL_DEBUG | Enable debug logging for emails | false |
 | SMTP_SECRET_NAME | Name of the secret in Secrets Manager | gabi-yoga-workmail-smtp-credentials |
 | USE_ENV_CREDENTIALS | Force using environment variables instead of Secrets Manager | false |
-| SMTP_HOST | SMTP server hostname (fallback) | smtp.{region}.awsapps.com |
+| SMTP_HOST | SMTP server hostname (fallback) | smtp.mail.{region}.awsapps.com |
 | SMTP_PORT | SMTP server port (fallback) | 465 |
 | SMTP_SECURE | Use secure connection (fallback) | true |
 | SMTP_USER | SMTP username (fallback) | noreply@gabi.yoga |

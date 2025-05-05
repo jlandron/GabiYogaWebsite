@@ -76,7 +76,7 @@ async function getSmtpCredentials() {
     // Provide fallback with empty password to avoid crashes
     // The email-service.js will handle this gracefully
     return {
-      host: process.env.SMTP_HOST || `smtp.${process.env.AWS_REGION || 'us-west-2'}.awsapps.com`,
+      host: process.env.SMTP_HOST || `smtp.mail.${process.env.AWS_REGION || 'us-west-2'}.awsapps.com`,
       port: parseInt(process.env.SMTP_PORT || '465', 10),
       secure: process.env.SMTP_SECURE !== 'false',
       username: process.env.SMTP_USER || process.env.EMAIL_FROM || 'noreply@gabi.yoga',
