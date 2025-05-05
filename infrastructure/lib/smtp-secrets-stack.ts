@@ -32,7 +32,7 @@ export class SmtpSecretsStack extends Stack {
       generateSecretString: {
         secretStringTemplate: JSON.stringify({
           username: emailFrom, // Default: the from email address
-          host: `smtp.${region}.awsapps.com`,
+          host: `smtp.mail.${region}.awsapps.com`,
           port: 465,
           secure: true
         }),
@@ -167,7 +167,7 @@ aws secretsmanager get-secret-value --secret-id ${this.smtpCredentials.secretNam
 
 # Then update with your actual WorkMail password:
 aws secretsmanager update-secret --secret-id ${this.smtpCredentials.secretName} \\
-  --secret-string '{"username":"${emailFrom}","host":"smtp.${region}.awsapps.com","port":465,"secure":true,"password":"YOUR_ACTUAL_WORKMAIL_PASSWORD"}'
+  --secret-string '{"username":"${emailFrom}","host":"smtp.mail.${region}.awsapps.com","port":465,"secure":true,"password":"YOUR_ACTUAL_WORKMAIL_PASSWORD"}'
 
 2. The application will automatically retrieve these credentials when sending emails.
       `,

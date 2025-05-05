@@ -8,7 +8,7 @@ import { WebAppStack } from '../lib/webapp-stack';
 import { NetworkStack } from '../lib/network-stack';
 import { DnsStack } from '../lib/dns-stack';
 import { EmailStack } from '../lib/email-stack';
-import { SmtpSecretsStack } from '../lib/smtp-secrets-stack';
+import { WorkMailUserStack } from '../lib/workmail-user-stack';
 
 // Load environment variables from .env file in root directory
 config({ path: '../.env' });
@@ -73,14 +73,16 @@ const emailStack = new EmailStack(app, 'GabiYogaEmail', {
   hostedZoneId: dnsStack.hostedZone.hostedZoneId,
 });
 
-// Create SMTP Secrets stack for storing WorkMail SMTP credentials
-const smtpSecretsStack = new SmtpSecretsStack(app, 'GabiYogaSmtpSecrets', {
+// Create WorkMail User stack for automatic user creation and SMTP credentials
+const workMailUserStack = new WorkMailUserStack(app, 'GabiYogaWorkMailUser', {
   env,
-  emailFrom: process.env.EMAIL_FROM || 'noreply@gabi.yoga'
+  organizationId: emailStack.organizationId, // Get organization ID from email stack
+  emailFrom: process.env.EMAIL_FROM || 'noreply@gabi.yoga',
+  region: region
 });
 
-// Add dependency to ensure email stack is created before the SMTP secrets
-smtpSecretsStack.addDependency(emailStack);
+// Add dependency to ensure email stack is created before the WorkMail user
+workMailUserStack.addDependency(emailStack);
 
 // Add access to email services and secrets from webapp
 webAppStack.asg.role.addManagedPolicy(
@@ -91,7 +93,7 @@ webAppStack.asg.role.addManagedPolicy(
 );
 
 // Grant the webapp instance access to the SMTP secret
-smtpSecretsStack.smtpCredentials.grantRead(webAppStack.asg.role);
+workMailUserStack.smtpCredentials.grantRead(webAppStack.asg.role);
 
 // Add tags to all resources
 Tags.of(app).add('Project', 'GabiYoga');

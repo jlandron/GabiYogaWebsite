@@ -38,6 +38,7 @@ export class EmailStack extends Stack {
   public readonly sesIdentity: EmailIdentity;
   public readonly sesIamRole: Role;
   public readonly emailBucket?: cdk.aws_s3.Bucket;
+  public readonly organizationId: string;
 
   constructor(scope: Construct, id: string, props: EmailStackProps) {
     super(scope, id, props);
@@ -215,7 +216,8 @@ export class EmailStack extends Stack {
       },
     });
 
-    const workMailOrgId = workMailOrg.getAttString('OrganizationId');
+    // Store the WorkMail organization ID as a property of this stack
+    this.organizationId = workMailOrg.getAttString('OrganizationId');
     
     // Create DNS records for WorkMail - autodiscover for email clients
     new CnameRecord(this, 'AutodiscoverCnameRecord', {
@@ -256,12 +258,12 @@ export class EmailStack extends Stack {
 
     // Output important information about the WorkMail implementation
     new CfnOutput(this, 'WorkMailOrganizationID', {
-      value: workMailOrgId,
+      value: this.organizationId,
       description: 'WorkMail Organization ID'
     });
 
     new CfnOutput(this, 'WorkMailConsoleURL', {
-      value: `https://${this.region}.console.aws.amazon.com/workmail/v2/home?region=${this.region}#/organizations/${workMailOrgId}`,
+      value: `https://${this.region}.console.aws.amazon.com/workmail/v2/home?region=${this.region}#/organizations/${this.organizationId}`,
       description: 'WorkMail Console URL'
     });
     
@@ -272,7 +274,7 @@ export class EmailStack extends Stack {
 To complete the WorkMail setup for ${domainName}:
 
 1. Go to the WorkMail Console:
-   https://${this.region}.console.aws.amazon.com/workmail/v2/home?region=${this.region}#/organizations/${workMailOrgId}
+   https://${this.region}.console.aws.amazon.com/workmail/v2/home?region=${this.region}#/organizations/${this.organizationId}
 
 2. Complete domain verification if required:
    - In the navigation pane, choose "Domains"
