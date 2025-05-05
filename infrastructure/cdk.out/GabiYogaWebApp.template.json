@@ -201,6 +201,16 @@
        "Resource": {
         "Fn::ImportValue": "GabiYogaDatabase:ExportsOutputRefDatabaseCredentials8547B3E729671DA7"
        }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "GabiYogaSmtpSecrets:ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239"
+       }
       }
      ],
      "Version": "2012-10-17"

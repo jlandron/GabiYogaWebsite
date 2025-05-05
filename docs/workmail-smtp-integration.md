@@ -77,3 +77,65 @@ node test-workmail-secrets.js
 
 The script will:
 1. Attempt to retrieve credentials from Secrets Manager
+2. Verify the SMTP connection
+3. Send a test email to an address you provide
+4. Report success or display troubleshooting information
+
+## Environment Variables
+
+The following environment variables can be set to configure the email service:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| EMAIL_FROM | Email address to send from | noreply@gabi.yoga |
+| EMAIL_DEBUG | Enable debug logging for emails | false |
+| SMTP_SECRET_NAME | Name of the secret in Secrets Manager | gabi-yoga-workmail-smtp-credentials |
+| USE_ENV_CREDENTIALS | Force using environment variables instead of Secrets Manager | false |
+| SMTP_HOST | SMTP server hostname (fallback) | smtp.{region}.awsapps.com |
+| SMTP_PORT | SMTP server port (fallback) | 465 |
+| SMTP_SECURE | Use secure connection (fallback) | true |
+| SMTP_USER | SMTP username (fallback) | noreply@gabi.yoga |
+| SMTP_PASS | SMTP password (fallback) | (empty) |
+
+## Advantages Over SES
+
+1. **No recipient verification required**: Send to any email address without pre-verification
+2. **Simpler setup**: No need to request production access or manage verified identities
+3. **Better credentials management**: Secrets are stored securely in AWS Secrets Manager
+4. **Full email solution**: WorkMail provides both sending (SMTP) and receiving (IMAP/POP3)
+5. **Improved deliverability**: WorkMail has built-in deliverability management
+
+## Troubleshooting
+
+### Common Issues
+
+#### Cannot retrieve secret from Secrets Manager
+
+- Check that the secret exists with the correct name
+- Ensure the application has the necessary IAM permissions
+- Verify AWS region settings match where the secret is stored
+- Try setting `USE_ENV_CREDENTIALS=true` as a temporary workaround
+
+#### Authentication Failed
+
+- Verify the username is the full email address (e.g., noreply@gabi.yoga)
+- Check that the password in the secret matches the WorkMail user's password
+- Ensure the WorkMail user is set up properly and enabled
+
+#### Connection Issues
+
+- Confirm that the SMTP host is correct for your region
+- Check that port 465 (or 587) is not blocked by firewalls
+- Verify that the AWS region matches your WorkMail organization
+
+#### Email Not Received
+
+- Check spam/junk folders
+- Verify DNS records (MX, SPF) are properly set up
+- Ensure the WorkMail organization is properly configured
+
+### Logs to Check
+
+- Server logs for email sending attempts
+- CloudWatch Logs for Lambda functions in the infrastructure
+- AWS WorkMail console for organization status and message tracking

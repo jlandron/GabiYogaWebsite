@@ -402,7 +402,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/e5c56df90af10a2d4729523db9ebac5101ced740231c1c84d1f7f5d13cfc37bc.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3a91ff31ac60fee1c1de751165911a810fd9a42c36ef7edf91b76bd42ebc420e.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -572,7 +572,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/3073d9f84013350e079d406fac0a8d7140f6f96a6f88deeb4e5c93d12b6f02c3.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/92c862627a937e666aa4c8e2fcb49360c5342590eb780b92a32d31ea999f5468.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -588,6 +588,7 @@
         "GabiYogaDns",
         "GabiYogaNetwork",
         "GabiYogaDatabase",
+        "GabiYogaSmtpSecrets",
         "GabiYogaStorage",
         "GabiYogaWebApp.assets"
       ],
@@ -649,7 +650,7 @@
               "ApplicationListener.addAction (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener.js:1:7527)",
               "ApplicationListener.descriptor.value (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/metadata-resource.js:1:2296)",
               "WebAppStack.addHttpsListener (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:391:23)",
-              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:66:13)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:67:13)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
               "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
@@ -721,7 +722,7 @@
               "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
               "new AutoScalingGroup (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/aws-autoscaling/lib/auto-scaling-group.js:1:17942)",
               "new WebAppStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/webapp-stack.ts:319:16)",
-              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:36:21)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:37:21)",
               "Module._compile (node:internal/modules/cjs/loader:1256:14)",
               "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
               "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
@@ -1076,6 +1077,222 @@
         ]
       },
       "displayName": "GabiYogaEmail"
+    },
+    "GabiYogaSmtpSecrets.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "GabiYogaSmtpSecrets.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "GabiYogaSmtpSecrets": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://891709159344/us-west-2",
+      "properties": {
+        "templateFile": "GabiYogaSmtpSecrets.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "Environment": "Production",
+          "Project": "GabiYoga"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-west-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-west-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-west-2/994357583a0d799e2f46693d88f5ae0bacba6ee8a08568170abfdc727bd1f13b.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "GabiYogaSmtpSecrets.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-lookup-role-891709159344-us-west-2",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "GabiYogaEmail",
+        "GabiYogaSmtpSecrets.assets"
+      ],
+      "metadata": {
+        "/GabiYogaSmtpSecrets": [
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "Environment",
+                "Value": "Production"
+              },
+              {
+                "Key": "Project",
+                "Value": "GabiYoga"
+              }
+            ]
+          }
+        ],
+        "/GabiYogaSmtpSecrets/WorkMailSmtpCredentials/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailSmtpCredentials04C6BE96"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/WebAppSmtpSecretAccessRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WebAppSmtpSecretAccessRoleFC1397DE"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/WebAppSmtpSecretAccessRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WebAppSmtpSecretAccessRoleDefaultPolicyCBD8A09B"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretFunction/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretFunctionServiceRole67572329"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretFunction/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretFunctionServiceRoleDefaultPolicy58F8FA02"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretFunction239BE1C8"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretProvider/framework-onEvent/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretProviderframeworkonEventServiceRoleF4884CDD"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretProviderframeworkonEventServiceRoleDefaultPolicy86FB7E24"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpSecretProvider/framework-onEvent/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpSecretProviderframeworkonEvent76CB74F5"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/SmtpSecretConfig": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "installLatestAwsSdk was not specified, and defaults to true. You probably do not want this. Set the global context flag '@aws-cdk/customresources:installLatestAwsSdkDefault' to false to switch this behavior off project-wide, or set the property explicitly to true if you know you need to call APIs that are not in Lambda's built-in SDK version. [ack: @aws-cdk/custom-resources:installLatestAwsSdkNotSpecified]",
+            "trace": [
+              "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
+              "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
+              "new AwsCustomResource (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/aws-custom-resource.js:1:5212)",
+              "new SmtpSecretsStack (/local/home/jlandron/Desktop/yoga-website/infrastructure/lib/smtp-secrets-stack.ts:131:26)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/bin/app.ts:77:26)",
+              "Module._compile (node:internal/modules/cjs/loader:1256:14)",
+              "Module.m._compile (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1618:23)",
+              "Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
+              "Object.require.extensions.<computed> [as .ts] (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/index.ts:1621:12)",
+              "Module.load (node:internal/modules/cjs/loader:1119:32)",
+              "Function.Module._load (node:internal/modules/cjs/loader:960:12)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:86:12)",
+              "phase4 (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:649:14)",
+              "bootstrap (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:95:10)",
+              "main (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:55:10)",
+              "Object.<anonymous> (/local/home/jlandron/Desktop/yoga-website/infrastructure/node_modules/ts-node/src/bin.ts:800:3)",
+              "Module._compile (node:internal/modules/cjs/loader:1256:14)",
+              "Object.Module._extensions..js (node:internal/modules/cjs/loader:1310:10)",
+              "Module.load (node:internal/modules/cjs/loader:1119:32)",
+              "Function.Module._load (node:internal/modules/cjs/loader:960:12)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:86:12)",
+              "node:internal/main/run_main_module:23:47"
+            ]
+          }
+        ],
+        "/GabiYogaSmtpSecrets/SmtpSecretConfig/Resource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SmtpSecretConfig529D5BFB"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/SmtpSecretConfig/CustomResourcePolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SmtpSecretConfigCustomResourcePolicyD83795C4"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/AWS679f53fac002430cb0da5b7982bd2287": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-singleton",
+            "data": true
+          },
+          {
+            "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+            "data": 0
+          }
+        ],
+        "/GabiYogaSmtpSecrets/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/AWS679f53fac002430cb0da5b7982bd2287/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AWS679f53fac002430cb0da5b7982bd22872D164C4C"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/SmtpSecretArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SmtpSecretArn"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/WebAppRoleArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WebAppRoleArn"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/UpdateSmtpCredentialsCommands": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateSmtpCredentialsCommands"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/Exports/Output{\"Ref\":\"WorkMailSmtpCredentials04C6BE96\"}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/GabiYogaSmtpSecrets/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "GabiYogaSmtpSecrets"
     },
     "Tree": {
       "type": "cdk:tree",
