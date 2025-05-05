@@ -448,11 +448,11 @@ const sendEnhancedPasswordResetEmail = async (options) => {
   return result;
 };
 
-// We'll use the original function but add debugging without reassigning it
+// Add the enhanced version to exports instead of trying to reassign the original function
 // This way we avoid the "Assignment to constant variable" error
 
 module.exports = {
-  sendPasswordResetEmail,
+  sendPasswordResetEmail: sendEnhancedPasswordResetEmail, // Use enhanced version
   sendWelcomeEmail,
   sendBookingConfirmationEmail,
   sendEmail
