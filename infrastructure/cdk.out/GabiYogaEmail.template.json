@@ -534,6 +534,17 @@
      "Arn"
     ]
    }
+  },
+  "ExportsOutputFnGetAttWorkMailOrganizationOrganizationIdC3A111A2": {
+   "Value": {
+    "Fn::GetAtt": [
+     "WorkMailOrganization",
+     "OrganizationId"
+    ]
+   },
+   "Export": {
+    "Name": "GabiYogaEmail:ExportsOutputFnGetAttWorkMailOrganizationOrganizationIdC3A111A2"
+   }
   }
  },
  "Parameters": {

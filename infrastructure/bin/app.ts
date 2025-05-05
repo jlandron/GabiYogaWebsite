@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import { App, Tags } from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { config } from 'dotenv';
 import { DatabaseStack } from '../lib/database-stack';
 import { StorageStack } from '../lib/storage-stack';
@@ -93,7 +94,21 @@ webAppStack.asg.role.addManagedPolicy(
 );
 
 // Grant the webapp instance access to the SMTP secret
+// The secret needs to explicitly grant permission to the web app role
 workMailUserStack.smtpCredentials.grantRead(webAppStack.asg.role);
+
+// Also make sure the secret's resource policy allows access
+// Add resource policy for 'gabi-yoga-workmail-smtp-credentials' if it exists in the account
+const legacySecretName = 'gabi-yoga-workmail-smtp-credentials';
+new iam.Policy(webAppStack, 'LegacySecretAccessPolicy', {
+  statements: [
+    new iam.PolicyStatement({
+      actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+      resources: [`arn:aws:secretsmanager:${region}:${accountId}:secret:${legacySecretName}-*`]
+    })
+  ],
+  roles: [webAppStack.asg.role]
+});
 
 // Add tags to all resources
 Tags.of(app).add('Project', 'GabiYoga');

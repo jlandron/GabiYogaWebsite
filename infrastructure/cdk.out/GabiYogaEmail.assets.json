@@ -16,7 +16,7 @@
         }
       }
     },
-    "7f8f0c3db2622155e4ca69bde30a46d9a9064ac79ad365e18bda3a1ef2badd97": {
+    "cfcd4c8e1ebf7f99e09a4701592e2093ff382b8e1049e14e066f6b2496031abd": {
       "displayName": "GabiYogaEmail Template",
       "source": {
         "path": "GabiYogaEmail.template.json",
@@ -25,7 +25,7 @@
       "destinations": {
         "891709159344-us-west-2": {
           "bucketName": "cdk-hnb659fds-assets-891709159344-us-west-2",
-          "objectKey": "7f8f0c3db2622155e4ca69bde30a46d9a9064ac79ad365e18bda3a1ef2badd97.json",
+          "objectKey": "cfcd4c8e1ebf7f99e09a4701592e2093ff382b8e1049e14e066f6b2496031abd.json",
           "region": "us-west-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-west-2"
         }

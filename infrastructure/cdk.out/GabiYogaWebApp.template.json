@@ -209,7 +209,7 @@
        ],
        "Effect": "Allow",
        "Resource": {
-        "Fn::ImportValue": "GabiYogaSmtpSecrets:ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239"
+        "Fn::ImportValue": "GabiYogaWorkMailUser:ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239"
        }
       }
      ],
@@ -603,6 +603,33 @@
    "DeletionPolicy": "Delete",
    "Metadata": {
     "aws:cdk:path": "GabiYogaWebApp/WebAppLogs/Resource"
+   }
+  },
+  "LegacySecretAccessPolicyF73087CC": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:secretsmanager:us-west-2:891709159344:secret:gabi-yoga-workmail-smtp-credentials-*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "LegacySecretAccessPolicyF73087CC",
+    "Roles": [
+     {
+      "Ref": "WebServerRole42ABA571"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWebApp/LegacySecretAccessPolicy/Resource"
    }
   },
   "CDKMetadata": {

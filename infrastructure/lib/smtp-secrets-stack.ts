@@ -27,7 +27,7 @@ export class SmtpSecretsStack extends Stack {
     
     // Create a Secrets Manager secret for WorkMail SMTP credentials
     this.smtpCredentials = new secretsmanager.Secret(this, 'WorkMailSmtpCredentials', {
-      secretName: 'gabi-yoga-workmail-smtp-credentials',
+      secretName: 'gabi-yoga-work-mail-smtp-credentials',
       description: 'WorkMail SMTP credentials for sending emails',
       generateSecretString: {
         secretStringTemplate: JSON.stringify({

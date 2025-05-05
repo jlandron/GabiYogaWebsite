@@ -65,24 +65,33 @@ async function getSecret(secretName, cacheTimeSeconds = 3600) {
  * @returns {Promise<object>} - SMTP credentials with host, port, secure, username and password
  */
 async function getSmtpCredentials() {
-  try {
-    // The secret name should match what's defined in the infrastructure/lib/smtp-secrets-stack.ts
-    const secretName = process.env.SMTP_SECRET_NAME || 'gabi-yoga-workmail-smtp-credentials';
-    
-    return await getSecret(secretName);
-  } catch (error) {
-    logger.error('Could not retrieve SMTP credentials:', error);
-    
-    // Provide fallback with empty password to avoid crashes
-    // The email-service.js will handle this gracefully
-    return {
-      host: process.env.SMTP_HOST || `smtp.mail.${process.env.AWS_REGION || 'us-west-2'}.awsapps.com`,
-      port: parseInt(process.env.SMTP_PORT || '465', 10),
-      secure: process.env.SMTP_SECURE !== 'false',
-      username: process.env.SMTP_USER || process.env.EMAIL_FROM || 'noreply@gabi.yoga',
-      password: process.env.SMTP_PASS || ''
-    };
+  // Define the possible secret names, starting with the most preferred one
+  const secretNames = [
+    process.env.SMTP_SECRET_NAME,                 // First try env var
+    'gabi-yoga-work-mail-smtp-credentials',       // New format with hyphen
+    'gabi-yoga-workmail-smtp-credentials'         // Legacy format without hyphen
+  ].filter(Boolean); // Filter out undefined values
+  
+  // Try each secret name in order
+  for (const secretName of secretNames) {
+    try {
+      logger.info(`Trying to retrieve SMTP credentials from secret: ${secretName}`);
+      return await getSecret(secretName);
+    } catch (error) {
+      logger.warn(`Could not retrieve SMTP credentials from ${secretName}:`, error.message);
+      // Continue to next secret name
+    }
   }
+  
+  // If all attempts fail, use environment variables
+  logger.warn('All attempts to retrieve SMTP credentials from Secrets Manager failed. Using environment variables.');
+  return {
+    host: process.env.SMTP_HOST || `smtp.mail.${process.env.AWS_REGION || 'us-west-2'}.awsapps.com`,
+    port: parseInt(process.env.SMTP_PORT || '465', 10),
+    secure: process.env.SMTP_SECURE !== 'false',
+    username: process.env.SMTP_USER || process.env.EMAIL_FROM || 'noreply@gabi.yoga',
+    password: process.env.SMTP_PASS || ''
+  };
 }
 
 /**

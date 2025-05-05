@@ -1,0 +1,477 @@
+{
+ "Resources": {
+  "WorkMailSmtpCredentials04C6BE96": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "WorkMail SMTP credentials for sending emails",
+    "GenerateSecretString": {
+     "ExcludePunctuation": false,
+     "GenerateStringKey": "password",
+     "IncludeSpace": false,
+     "PasswordLength": 32,
+     "SecretStringTemplate": "{\"username\":\"noreply@gabi.yoga\",\"host\":\"smtp.mail.us-west-2.awsapps.com\",\"port\":465,\"secure\":true}"
+    },
+    "Name": "gabi-yoga-work-mail-smtp-credentials",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailSmtpCredentials/Resource"
+   }
+  },
+  "WorkMailUserFunctionServiceRole56DA7838": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailUserFunction/ServiceRole/Resource"
+   }
+  },
+  "WorkMailUserFunctionServiceRoleDefaultPolicy0FA07475": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "workmail:CreateUser",
+        "workmail:ListUsers",
+        "workmail:RegisterToWorkMail",
+        "workmail:DescribeUser",
+        "workmail:UpdateUser",
+        "workmail:ResetPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "WorkMailSmtpCredentials04C6BE96"
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:UpdateSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "WorkMailSmtpCredentials04C6BE96"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WorkMailUserFunctionServiceRoleDefaultPolicy0FA07475",
+    "Roles": [
+     {
+      "Ref": "WorkMailUserFunctionServiceRole56DA7838"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailUserFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "WorkMailUserFunction22CC19B1": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "\nconst AWS = require('aws-sdk');\nconst https = require('https');\nconst url = require('url');\n\n// Helper function to respond to CloudFormation\nfunction sendResponse(event, context, responseStatus, responseData, physicalResourceId) {\n  return new Promise((resolve, reject) => {\n    const responseBody = JSON.stringify({\n      Status: responseStatus,\n      Reason: responseStatus === 'FAILED' ? 'See the details in CloudWatch Log Stream: ' + context.logStreamName : 'See the details in CloudWatch Log Stream: ' + context.logStreamName,\n      PhysicalResourceId: physicalResourceId || context.logStreamName,\n      StackId: event.StackId,\n      RequestId: event.RequestId,\n      LogicalResourceId: event.LogicalResourceId,\n      NoEcho: false,\n      Data: responseData\n    });\n\n    console.log('Response Body:', responseBody);\n\n    const parsedUrl = url.parse(event.ResponseURL);\n    const options = {\n      hostname: parsedUrl.hostname,\n      port: 443,\n      path: parsedUrl.path,\n      method: 'PUT',\n      headers: {\n        'Content-Type': '',\n        'Content-Length': responseBody.length\n      }\n    };\n\n    const request = https.request(options, (response) => {\n      console.log('Response status code:', response.statusCode);\n      resolve();\n    });\n\n    request.on('error', (error) => {\n      console.log('Error sending response:', error);\n      reject(error);\n    });\n\n    request.write(responseBody);\n    request.end();\n  });\n}\n\nexports.handler = async (event, context) => {\n  console.log('Event:', JSON.stringify(event, null, 2));\n  \n  // Extract properties from the event\n  const { \n    OrganizationId,\n    Username,\n    Email,\n    Region,\n    SecretArn\n  } = event.ResourceProperties;\n  \n  // Initialize the WorkMail client and Secrets Manager\n  const workmail = new AWS.WorkMail({ region: Region });\n  const secretsManager = new AWS.SecretsManager({ region: Region });\n  let responseData = {};\n  let userId = null;\n  \n  try {\n    if (event.RequestType === 'Create' || event.RequestType === 'Update') {\n      // Get the password from Secrets Manager\n      const secretValue = await secretsManager.getSecretValue({ SecretId: SecretArn }).promise();\n      const secretData = JSON.parse(secretValue.SecretString);\n      const password = secretData.password;\n      \n      // Check if user already exists\n      try {\n        const users = await workmail.listUsers({\n          OrganizationId,\n          MaxResults: 100\n        }).promise();\n        \n        // Find the user by email or username\n        const existingUser = users.Users && users.Users.find(u => \n          u.Email === Email || u.Name === Username);\n        \n        if (existingUser) {\n          userId = existingUser.Id;\n          console.log(`User ${Email} already exists with ID: ${userId}`);\n          \n          // Update user password\n          await workmail.resetPassword({\n            OrganizationId,\n            UserId: userId,\n            Password: password\n          }).promise();\n          console.log(`Updated password for user ${Email}`);\n        }\n      } catch (err) {\n        console.log('Error checking existing users:', err);\n      }\n      \n      if (!userId) {\n        // Create a new user\n        console.log(`Creating new WorkMail user: ${Email}`);\n        const createUserResponse = await workmail.createUser({\n          OrganizationId,\n          Name: Username,\n          DisplayName: Email,\n          Password: password\n        }).promise();\n        \n        userId = createUserResponse.UserId;\n        console.log(`Created new user with ID: ${userId}`);\n        \n        // Register the user for mail\n        await workmail.registerToWorkMail({\n          OrganizationId,\n          EntityId: userId,\n          Email\n        }).promise();\n        \n        console.log(`Registered user ${Email} for mail`);\n      }\n      \n      // Update the secret with the email as username\n      const updatedSecret = {\n        ...secretData,\n        username: Email\n      };\n      \n      await secretsManager.putSecretValue({\n        SecretId: SecretArn,\n        SecretString: JSON.stringify(updatedSecret)\n      }).promise();\n      \n      console.log('Updated secret with WorkMail credentials');\n      \n      responseData = {\n        UserId: userId,\n        Email: Email\n      };\n      \n      // Send success response to CloudFormation\n      await sendResponse(event, context, 'SUCCESS', responseData, userId);\n      \n    } else if (event.RequestType === 'Delete') {\n      // We don't delete users for safety, just report success\n      console.log('Skip deletion of WorkMail user for safety reasons');\n      await sendResponse(event, context, 'SUCCESS', {}, event.PhysicalResourceId);\n    }\n    \n    return responseData;\n  } catch (error) {\n    console.error('Error:', error);\n    await sendResponse(event, context, 'FAILED', { Error: error.message }, event.PhysicalResourceId || 'error');\n    throw error;\n  }\n};\n      "
+    },
+    "Environment": {
+     "Variables": {
+      "REGION": "us-west-2"
+     }
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "WorkMailUserFunctionServiceRole56DA7838",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs16.x",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "WorkMailUserFunctionServiceRoleDefaultPolicy0FA07475",
+    "WorkMailUserFunctionServiceRole56DA7838"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailUserFunction/Resource"
+   }
+  },
+  "WorkMailProviderframeworkonEventServiceRole22BFB5C1": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailProvider/framework-onEvent/ServiceRole/Resource"
+   }
+  },
+  "WorkMailProviderframeworkonEventServiceRoleDefaultPolicy7ED71794": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "WorkMailUserFunction22CC19B1",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "WorkMailUserFunction22CC19B1",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "lambda:GetFunction",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "WorkMailUserFunction22CC19B1",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WorkMailProviderframeworkonEventServiceRoleDefaultPolicy7ED71794",
+    "Roles": [
+     {
+      "Ref": "WorkMailProviderframeworkonEventServiceRole22BFB5C1"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "WorkMailProviderframeworkonEventC38E5BBA": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-891709159344-us-west-2",
+     "S3Key": "bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca.zip"
+    },
+    "Description": "AWS CDK resource provider framework - onEvent (GabiYogaWorkMailUser/WorkMailProvider)",
+    "Environment": {
+     "Variables": {
+      "USER_ON_EVENT_FUNCTION_ARN": {
+       "Fn::GetAtt": [
+        "WorkMailUserFunction22CC19B1",
+        "Arn"
+       ]
+      }
+     }
+    },
+    "Handler": "framework.onEvent",
+    "Role": {
+     "Fn::GetAtt": [
+      "WorkMailProviderframeworkonEventServiceRole22BFB5C1",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ],
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "WorkMailProviderframeworkonEventServiceRoleDefaultPolicy7ED71794",
+    "WorkMailProviderframeworkonEventServiceRole22BFB5C1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailProvider/framework-onEvent/Resource",
+    "aws:asset:path": "asset.bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "WorkMailUser": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "WorkMailProviderframeworkonEventC38E5BBA",
+      "Arn"
+     ]
+    },
+    "OrganizationId": {
+     "Fn::ImportValue": "GabiYogaEmail:ExportsOutputFnGetAttWorkMailOrganizationOrganizationIdC3A111A2"
+    },
+    "Username": "noreply",
+    "Email": "noreply@gabi.yoga",
+    "Region": "us-west-2",
+    "SecretArn": {
+     "Ref": "WorkMailSmtpCredentials04C6BE96"
+    },
+    "UpdateTimestamp": "2025-05-05T04:27:02.465Z"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WorkMailUser/Default"
+   }
+  },
+  "WebAppSmtpSecretAccessRoleFC1397DE": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ec2.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "Role for accessing WorkMail SMTP credentials",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Project",
+      "Value": "GabiYoga"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WebAppSmtpSecretAccessRole/Resource"
+   }
+  },
+  "WebAppSmtpSecretAccessRoleDefaultPolicyCBD8A09B": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "WorkMailSmtpCredentials04C6BE96"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WebAppSmtpSecretAccessRoleDefaultPolicyCBD8A09B",
+    "Roles": [
+     {
+      "Ref": "WebAppSmtpSecretAccessRoleFC1397DE"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/WebAppSmtpSecretAccessRole/DefaultPolicy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/01OzWrDMAx+lt4Vbc0u3XEt7LqSPUBQHS2oie1h2S0l5N1rJ+0YCL4/fUg1bt9rfN3QVSvTDdUoJ5y+I5kBstVOyiZwVEuOeg45WjQcftzKZhjJnjrC6TM5E8W7kj35DEIWp8aPXOwFj34UcytyZTPoW0uq+Qp+FMga98kMHPekPEPD6lMwDCZp9LYND614DP4iHQdYevnrXlwPh2Xtr1Xu/uNfKf6m/LbzHeNZXy7bHeapN2cVqUJyUSxjs+Idwnutoh4BAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaWorkMailUser/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "WorkMailUserEmail": {
+   "Description": "Email address of the WorkMail user",
+   "Value": "noreply@gabi.yoga"
+  },
+  "SmtpSecretArn": {
+   "Description": "ARN of the WorkMail SMTP credentials secret",
+   "Value": {
+    "Ref": "WorkMailSmtpCredentials04C6BE96"
+   }
+  },
+  "WebAppRoleArn": {
+   "Description": "ARN of the IAM role that can access the SMTP secret",
+   "Value": {
+    "Fn::GetAtt": [
+     "WebAppSmtpSecretAccessRoleFC1397DE",
+     "Arn"
+    ]
+   }
+  },
+  "SmtpHost": {
+   "Description": "SMTP host to use for sending emails",
+   "Value": "smtp.mail.us-west-2.awsapps.com"
+  },
+  "ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239": {
+   "Value": {
+    "Ref": "WorkMailSmtpCredentials04C6BE96"
+   },
+   "Export": {
+    "Name": "GabiYogaWorkMailUser:ExportsOutputRefWorkMailSmtpCredentials04C6BE9682036239"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
