@@ -400,18 +400,30 @@ router.post('/forgot-password', async (req, res) => {
  */
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, email, password } = req.body;
     const logger = require('../utils/logger');
+    let { token, email, password } = req.body;
     
+    // Log parameters for debugging
+    logger.info(`Reset password request - token=${token?.substring(0, 5)}..., email=${email}`);
+
     if (!token || !email || !password) {
+      logger.warn('Missing required parameters in reset-password request');
       return res.status(400).json({
         success: false,
         message: 'Token, email, and password are required'
       });
     }
     
+    // Fix encoding issue: If email contains spaces that should be plus signs
+    if (email.includes(' ')) {
+      const originalEmail = email;
+      email = email.replace(/ /g, '+');
+      logger.info(`Fixed email encoding in reset-password: "${originalEmail}" -> "${email}"`);
+    }
+    
     // Validate password
     if (password.length < 8) {
+      logger.warn('Password too short in reset-password request');
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 8 characters'
@@ -422,21 +434,22 @@ router.post('/reset-password', async (req, res) => {
     const success = await AuthOperations.resetPassword(token, email, password);
     
     if (success) {
-      logger.info(`Password reset successful for: ${email}`);
+      logger.info(`Password reset successful for: ${email.substring(0, 3)}...`);
       return res.status(200).json({
         success: true,
         message: 'Your password has been reset successfully. You can now log in with your new password.'
       });
     } else {
-      logger.warn(`Invalid or expired reset token for: ${email}`);
+      logger.warn(`Invalid or expired reset token for: ${email.substring(0, 3)}...`);
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token. Please request a new password reset.'
       });
     }
   } catch (error) {
-    console.error('Reset password error:', error);
-    console.error('Reset password error stack:', error.stack);
+    const logger = require('../utils/logger');
+    logger.error('Reset password error:', error);
+    logger.error('Reset password error stack:', error.stack);
     
     // Generate user-friendly error message
     let errorMessage = 'An error occurred while resetting your password.';
@@ -459,20 +472,37 @@ router.post('/reset-password', async (req, res) => {
  */
 router.get('/verify-reset-token', async (req, res) => {
   try {
-    const { token, email } = req.query;
+    const logger = require('../utils/logger');
+    let { token, email } = req.query;
     
+    // Log parameters for debugging
+    logger.info(`Verifying reset token - Raw Query: token=${token}, email=${email}`);
+
     if (!token || !email) {
+      logger.warn(`Missing token or email in reset token verification`);
       return res.status(400).json({
         success: false,
         message: 'Token and email are required'
       });
     }
     
+    // Fix encoding issue: If email contains spaces that should be plus signs
+    // This happens because '+' in URLs can get decoded as spaces
+    if (email.includes(' ')) {
+      const originalEmail = email;
+      email = email.replace(/ /g, '+');
+      logger.info(`Fixed email encoding: "${originalEmail}" -> "${email}"`);
+    }
+    
+    // Log the parameters we're using for verification
+    logger.info(`Verifying token for email: ${email.substring(0, 3)}...`);
+    
     // Verify the token
     const userData = await AuthOperations.verifyPasswordResetToken(token, email);
     
     if (userData) {
       // Token is valid
+      logger.info(`Token verification successful for ${email.substring(0, 3)}...`);
       return res.status(200).json({
         success: true,
         message: 'Token is valid',
@@ -484,14 +514,16 @@ router.get('/verify-reset-token', async (req, res) => {
       });
     } else {
       // Invalid token
+      logger.warn(`Invalid or expired token for ${email.substring(0, 3)}...`);
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token'
       });
     }
   } catch (error) {
-    console.error('Verify reset token error:', error);
-    console.error('Verify reset token error stack:', error.stack);
+    const logger = require('../utils/logger');
+    logger.error('Verify reset token error:', error);
+    logger.error('Verify reset token error stack:', error.stack);
     
     return res.status(500).json({
       success: false,
