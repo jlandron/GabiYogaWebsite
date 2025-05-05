@@ -3,48 +3,61 @@
  * 
  * This service handles sending emails through different methods based on the environment:
  * - In development: Logs the email content to the console
- * - In production: Sends emails through AWS SES
+ * - In production: Sends emails through Nodemailer with AWS WorkMail SMTP
+ * 
+ * SMTP credentials are retrieved from AWS Secrets Manager.
  */
 
-const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
 const logger = require('./logger');
+const secretsManager = require('./aws-secrets');
 
 // Email service configuration
 const config = {
   from: process.env.EMAIL_FROM || process.env.DEFAULT_SENDER || 'noreply@gabi.yoga',
-  region: process.env.AWS_REGION || 'us-west-2',
-  domain: process.env.DOMAIN_NAME || 'gabi.yoga',
   debug: process.env.EMAIL_DEBUG === 'true'
 };
 
-// Initialize SES if in production environment
-let ses;
-let sesInitFailed = false;
-try {
-  if (process.env.NODE_ENV === 'production') {
-    const awsConfig = {
-      region: config.region,
-      apiVersion: '2010-12-01'
-    };
-    
-    // Check if AWS credentials are provided in environment variables
-    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-      logger.info('Using AWS credentials from environment variables');
-      awsConfig.credentials = {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-      };
-    } else {
-      logger.info('No explicit AWS credentials found, relying on IAM role or AWS configuration');
-    }
-    
-    ses = new AWS.SES(awsConfig);
-    logger.info(`Initialized AWS SES in ${config.region} region`);
+// Nodemailer transporter will be lazily initialized when needed
+let transporter = null;
+let transporterInitialized = false;
+let transporterInitFailed = false;
+
+/**
+ * Initialize the Nodemailer transporter with WorkMail SMTP credentials
+ * Credentials are retrieved from AWS Secrets Manager
+ */
+async function initializeTransporter() {
+  if (transporterInitialized || transporterInitFailed) {
+    return;
   }
-} catch (error) {
-  sesInitFailed = true;
-  logger.error('Failed to initialize AWS SES:', error);
-  logger.warn('Email sending will fall back to console logging.');
+  
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      logger.info('Initializing Nodemailer transporter with AWS WorkMail SMTP');
+      
+      // Get credentials from Secrets Manager
+      const smtpCredentials = await secretsManager.getSmtpCredentials();
+      
+      // Create transporter with retrieved credentials
+      transporter = nodemailer.createTransport({
+        host: smtpCredentials.host,
+        port: smtpCredentials.port,
+        secure: smtpCredentials.secure,
+        auth: {
+          user: smtpCredentials.username,
+          pass: smtpCredentials.password
+        }
+      });
+      
+      logger.info(`Initialized Nodemailer with WorkMail SMTP settings (${smtpCredentials.host}:${smtpCredentials.port})`);
+      transporterInitialized = true;
+    }
+  } catch (error) {
+    transporterInitFailed = true;
+    logger.error('Failed to initialize Nodemailer:', error);
+    logger.warn('Email sending will fall back to console logging.');
+  }
 }
 
 /**
@@ -103,71 +116,15 @@ const sendPasswordResetEmail = async (options) => {
     This is an automated message, please do not reply to this email.
   `;
   
-  // In development, log the email instead of sending it
-  if (process.env.NODE_ENV !== 'production') {
-    logger.info(`[DEV EMAIL] Password reset email for: ${to}`);
-    logger.info(`[DEV EMAIL] Reset token: ${resetToken}`);
-    logger.info(`[DEV EMAIL] Reset URL: ${resetUrl}`);
-    logger.debug(`[DEV EMAIL] Email content: ${textBody}`);
-    return Promise.resolve({ success: true, environment: 'development' });
+  // Use the base email sending function
+  const result = await sendEmail({ to, subject, htmlBody, textBody });
+  
+  // If there's a token, add it to the result for backward compatibility
+  if (resetToken) {
+    result.resetToken = resetToken;
   }
   
-  // In production, attempt to send email through AWS SES, but fall back to logging if there's an issue
-  if (process.env.NODE_ENV === 'production' && ses && !sesInitFailed) {
-    try {
-      // Set up SES parameters
-      const params = {
-        Destination: {
-          ToAddresses: [to]
-        },
-        Message: {
-          Body: {
-            Html: {
-              Data: htmlBody,
-              Charset: 'UTF-8'
-            },
-            Text: {
-              Data: textBody,
-              Charset: 'UTF-8'
-            }
-          },
-          Subject: {
-            Data: subject,
-            Charset: 'UTF-8'
-          }
-        },
-        Source: config.from
-      };
-      
-      // Send email
-      const result = await ses.sendEmail(params).promise();
-      logger.info(`Password reset email sent to ${to} via AWS SES`, { messageId: result.MessageId });
-      return { success: true, messageId: result.MessageId, environment: 'production', method: 'ses' };
-    } catch (error) {
-      // Log the error but don't throw - instead fall back to logging the email content
-      logger.error('Error sending password reset email via AWS SES:', error);
-      logger.warn('Falling back to logging the email content instead of sending via SES');
-      
-      // Fall back to logging the email (similar to development mode)
-      logger.info(`[PROD FALLBACK EMAIL] Password reset email for: ${to}`);
-      logger.info(`[PROD FALLBACK EMAIL] Reset URL: ${resetUrl}`);
-      
-      // Return success to prevent API error, but include fallback info
-      return { 
-        success: true, 
-        environment: 'production', 
-        method: 'fallback_log',
-        error: error.message || 'SES error' 
-      };
-    }
-  } else {
-    // This handles both development environment and production with failed SES init
-    const environment = process.env.NODE_ENV === 'production' ? 'production-fallback' : 'development';
-    logger.info(`[${environment.toUpperCase()}] Password reset email for: ${to}`);
-    logger.info(`[${environment.toUpperCase()}] Reset URL: ${resetUrl}`);
-    
-    return { success: true, environment, method: 'log' };
-  }
+  return result;
 };
 
 /**
@@ -222,7 +179,7 @@ const sendWelcomeEmail = async (options) => {
     This is an automated message, please do not reply to this email.
   `;
   
-  // Use the same sending mechanism as the password reset
+  // Use the base email sending function
   return await sendEmail({ to, subject, htmlBody, textBody });
 };
 
@@ -303,7 +260,7 @@ const sendBookingConfirmationEmail = async (options) => {
     This is an automated message, please do not reply to this email.
   `;
   
-  // Use the same sending mechanism as the password reset
+  // Use the base email sending function
   return await sendEmail({ to, subject, htmlBody, textBody });
 };
 
@@ -336,35 +293,28 @@ const sendEmail = async (options) => {
     return Promise.resolve({ success: true, environment: 'development' });
   }
   
-  // In production, attempt to send email through AWS SES, but fall back to logging if there's an issue
-  if (process.env.NODE_ENV === 'production' && ses && !sesInitFailed) {
+  // In production, attempt to send email through AWS WorkMail SMTP
+  if (process.env.NODE_ENV === 'production') {
     try {
-      // Set up SES parameters
-      const params = {
-        Destination: {
-          ToAddresses: [to]
-        },
-        Message: {
-          Body: {
-            Html: {
-              Data: htmlBody,
-              Charset: 'UTF-8'
-            },
-            Text: {
-              Data: textBody,
-              Charset: 'UTF-8'
-            }
-          },
-          Subject: {
-            Data: subject,
-            Charset: 'UTF-8'
-          }
-        },
-        Source: config.from
+      // Initialize transporter if not already done
+      await initializeTransporter();
+      
+      // If transporter initialization failed, we'll fallback to logging
+      if (transporterInitFailed || !transporter) {
+        throw new Error('Transporter not available');
+      }
+      
+      // Set up email message
+      const message = {
+        from: config.from,
+        to: to,
+        subject: subject,
+        text: textBody,
+        html: htmlBody
       };
       
       if (config.debug) {
-        logger.info(`[EMAIL DEBUG] Sending via SES with params:`, JSON.stringify({
+        logger.info(`[EMAIL DEBUG] Sending via AWS WorkMail SMTP with params:`, JSON.stringify({
           to,
           from: config.from,
           subject
@@ -372,13 +322,31 @@ const sendEmail = async (options) => {
       }
       
       // Send email
-      const result = await ses.sendEmail(params).promise();
-      logger.info(`Email sent to ${to} via AWS SES`, { messageId: result.MessageId });
-      return { success: true, messageId: result.MessageId, environment: 'production', method: 'ses' };
+      const result = await transporter.sendMail(message);
+      logger.info(`Email sent to ${to} via AWS WorkMail SMTP`, { 
+        messageId: result.messageId,
+        response: result.response 
+      });
+      
+      return { 
+        success: true, 
+        messageId: result.messageId, 
+        environment: 'production', 
+        method: 'workmail-smtp' 
+      };
     } catch (error) {
       // Log the error but don't throw - instead fall back to logging the email content
-      logger.error('Error sending email via AWS SES:', error);
-      logger.warn('Falling back to logging the email content instead of sending via SES');
+      logger.error('Error sending email via WorkMail SMTP:', error);
+      
+      // Check for common WorkMail-specific errors
+      if (error.message && error.message.includes('Invalid login')) {
+        logger.warn('AWS WorkMail authentication failed. Check your SMTP_USER and SMTP_PASS credentials.');
+        logger.info('SMTP_USER should be your full email address (e.g., noreply@gabi.yoga)');
+      } else if (error.message && error.message.includes('connect')) {
+        logger.warn('Connection to AWS WorkMail SMTP server failed. Check your AWS_REGION setting.');
+      }
+      
+      logger.warn('Falling back to logging the email content instead of sending via WorkMail');
       
       // Fall back to logging the email (similar to development mode)
       logger.info(`[PROD FALLBACK EMAIL] Email for: ${to}`);
@@ -389,11 +357,11 @@ const sendEmail = async (options) => {
         success: true, 
         environment: 'production', 
         method: 'fallback_log',
-        error: error.message || 'SES error' 
+        error: error.message || 'WorkMail SMTP error'
       };
     }
   } else {
-    // This handles both development environment and production with failed SES init
+    // This handles both development environment and production with failed transporter init
     const environment = process.env.NODE_ENV === 'production' ? 'production-fallback' : 'development';
     logger.info(`[${environment.toUpperCase()}] Email for: ${to}`);
     logger.info(`[${environment.toUpperCase()}] Subject: ${subject}`);
@@ -402,69 +370,9 @@ const sendEmail = async (options) => {
   }
 };
 
-// Define a separate enhanced function without overriding the original
-const sendEnhancedPasswordResetEmail = async (options) => {
-  const { to, resetToken, resetUrl } = options;
-  
-  // Email content
-  const subject = 'Password Reset Request - Gabi Yoga';
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #557a95;">Reset Your Password</h2>
-      <p>Hello,</p>
-      <p>We received a request to reset your password for your Gabi Yoga account. Please click the button below to reset your password:</p>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #7fa99b; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
-      </div>
-      
-      <p>This link will expire in 1 hour for security reasons.</p>
-      
-      <p>If you didn't request a password reset, you can safely ignore this email. Your account is secure.</p>
-      
-      <p>Best regards,<br>Gabi Yoga Team</p>
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
-        <p>This is an automated message, please do not reply to this email.</p>
-      </div>
-    </div>
-  `;
-  
-  const textBody = `
-    Reset Your Password - Gabi Yoga
-    
-    Hello,
-    
-    We received a request to reset your password for your Gabi Yoga account. 
-    Please visit the following link to reset your password:
-    
-    ${resetUrl}
-    
-    This link will expire in 1 hour for security reasons.
-    
-    If you didn't request a password reset, you can safely ignore this email. Your account is secure.
-    
-    Best regards,
-    Gabi Yoga Team
-    
-    This is an automated message, please do not reply to this email.
-  `;
-  
-  // Use the common email sending function
-  const result = await sendEmail({ to, subject, htmlBody, textBody });
-  
-  // If there's a token, add it to the result for backward compatibility
-  if (resetToken) {
-    result.resetToken = resetToken;
-  }
-  
-  return result;
-};
-
 // Export all email functions
-// Using the enhanced password reset email function instead of the original
 module.exports = {
-  sendPasswordResetEmail: sendEnhancedPasswordResetEmail,
+  sendPasswordResetEmail,
   sendWelcomeEmail,
   sendBookingConfirmationEmail,
   sendEmail
