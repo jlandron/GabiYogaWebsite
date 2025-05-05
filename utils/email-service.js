@@ -22,10 +22,23 @@ let ses;
 let sesInitFailed = false;
 try {
   if (process.env.NODE_ENV === 'production') {
-    ses = new AWS.SES({
+    const awsConfig = {
       region: config.region,
       apiVersion: '2010-12-01'
-    });
+    };
+    
+    // Check if AWS credentials are provided in environment variables
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      logger.info('Using AWS credentials from environment variables');
+      awsConfig.credentials = {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+      };
+    } else {
+      logger.info('No explicit AWS credentials found, relying on IAM role or AWS configuration');
+    }
+    
+    ses = new AWS.SES(awsConfig);
     logger.info(`Initialized AWS SES in ${config.region} region`);
   }
 } catch (error) {
@@ -448,11 +461,10 @@ const sendEnhancedPasswordResetEmail = async (options) => {
   return result;
 };
 
-// Add the enhanced version to exports instead of trying to reassign the original function
-// This way we avoid the "Assignment to constant variable" error
-
+// Export all email functions
+// Using the enhanced password reset email function instead of the original
 module.exports = {
-  sendPasswordResetEmail: sendEnhancedPasswordResetEmail, // Use enhanced version
+  sendPasswordResetEmail: sendEnhancedPasswordResetEmail,
   sendWelcomeEmail,
   sendBookingConfirmationEmail,
   sendEmail
