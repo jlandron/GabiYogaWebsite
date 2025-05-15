@@ -36,6 +36,7 @@ if (!JWT_SECRET) {
   console.error('ERROR: JWT_SECRET environment variable is not set!');
   console.error('Please set JWT_SECRET in your .env file');
   process.exit(1);
+  return; // Early return to prevent further execution in test environment
 }
 
 // Override JWT secret if provided (not recommended for production)
@@ -58,6 +59,7 @@ if (!params.id || !params.email || !params.role) {
   console.log('\nExample:');
   console.log('  node generate-token.js --id 123 --email admin@example.com --role admin --expiry 7d');
   process.exit(1);
+  return; // Early return to prevent further execution in test environment
 }
 
 // Prepare the payload

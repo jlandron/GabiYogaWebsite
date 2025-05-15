@@ -157,3 +157,14 @@ window.addEventListener('sectionsVisibilityChanged', function() {
     // Reapply alternating backgrounds when section visibility changes
     alternateSectionBackgrounds();
 });
+
+// Export functions for testing if in Node.js environment
+if (typeof module !== 'undefined') {
+    module.exports = {
+        __test__: {
+            alternateSectionBackgrounds,
+            applyImageBackgroundStyling,
+            applySolidBackgroundStyling
+        }
+    };
+}
