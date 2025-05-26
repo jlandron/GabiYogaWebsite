@@ -34,11 +34,12 @@ const blogRoutes = require('./api/blog'); // Import blog routes
 const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
 const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
 const privateSessionsRoutes = require('./api/private-sessions'); // Import private sessions routes
+const dashboardRoutes = require('./api/dashboard'); // Import dashboard routes
 // Removed mock routes to use real database data
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 5001; // Use port 5001 instead of 5000
+const PORT = process.env.PORT || 5000;
 
 // Set JWT secret from environment variable with validation
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -180,6 +181,7 @@ app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and ad
 app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 app.use('/api/stripe', stripeRoutes); // Stripe payment routes
 app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
+app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers

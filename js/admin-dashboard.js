@@ -5,9 +5,9 @@
  * real-time data from the database.
  */
 
-// API endpoints
-const API_BASE_URL = '/api';
-const API_ENDPOINTS = {
+// API endpoints - Using API_BASE_URL from admin.js
+// Additional dashboard-specific endpoints
+const DASHBOARD_ENDPOINTS = {
     dashboardStats: `${API_BASE_URL}/admin/stats`,
     bookings: `${API_BASE_URL}/admin/bookings`,
     workshops: `${API_BASE_URL}/admin/workshops`,
@@ -18,10 +18,7 @@ const API_ENDPOINTS = {
 // Using real database API endpoints for admin dashboard
 console.log('Using real database API endpoints for admin dashboard');
 
-// Token service for authentication
-const TokenService = {
-    getToken: () => localStorage.getItem('auth_token')
-};
+// Using TokenService from admin.js which is loaded before this script
 
 document.addEventListener('DOMContentLoaded', async () => {
     // For development testing, we'll continue even without login
@@ -82,7 +79,7 @@ async function loadDashboardData() {
         });
         
         // Fetch dashboard stats from the database
-        const statsResponse = await fetch(API_ENDPOINTS.dashboardStats, {
+        const statsResponse = await fetch(DASHBOARD_ENDPOINTS.dashboardStats, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`
@@ -153,7 +150,7 @@ async function loadRecentBookings() {
         if (!tbody) return;
         
         // Fetch recent bookings from the database
-        const response = await fetch(`${API_ENDPOINTS.bookings}?recent=true`, {
+        const response = await fetch(`${DASHBOARD_ENDPOINTS.bookings}?recent=true`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`
@@ -259,7 +256,7 @@ async function loadUpcomingWorkshops() {
         if (!tbody) return;
         
         // Fetch upcoming workshops from the database
-        const response = await fetch(`${API_ENDPOINTS.workshops}?upcoming=true`, {
+        const response = await fetch(`${DASHBOARD_ENDPOINTS.workshops}?upcoming=true`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`

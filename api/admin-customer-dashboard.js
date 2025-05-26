@@ -36,7 +36,10 @@ router.get('/profile', requireAdmin, async (req, res) => {
       });
     }
     
-    return res.json(adminData);
+    return res.json({
+      success: true,
+      user: adminData
+    });
   } catch (error) {
     console.error('Error fetching admin profile:', error);
     return res.status(500).json({
@@ -68,7 +71,10 @@ router.get('/customer-dashboard/bookings', requireAdmin, async (req, res) => {
       ORDER BY b.date ASC, c.start_time ASC
     `, [req.user.user_id]);
     
-    return res.json(bookings);
+    return res.json({
+      success: true,
+      bookings
+    });
   } catch (error) {
     console.error('Error fetching admin bookings:', error);
     return res.status(500).json({
@@ -100,7 +106,10 @@ router.get('/customer-dashboard/memberships', requireAdmin, async (req, res) => 
       ORDER BY start_date DESC
     `, [req.user.user_id]);
     
-    return res.json(memberships);
+    return res.json({
+      success: true,
+      memberships
+    });
   } catch (error) {
     console.error('Error fetching admin memberships:', error);
     return res.status(500).json({
@@ -132,7 +141,10 @@ router.get('/customer-dashboard/payments', requireAdmin, async (req, res) => {
       LIMIT 10
     `, [req.user.user_id]);
     
-    return res.json(payments);
+    return res.json({
+      success: true,
+      payments
+    });
   } catch (error) {
     console.error('Error fetching admin payments:', error);
     return res.status(500).json({
@@ -192,7 +204,10 @@ router.get('/customer-dashboard/workshops', requireAdmin, async (req, res) => {
     // Combine registered and upcoming workshops
     const workshops = [...registeredWorkshops, ...upcomingWorkshops];
     
-    return res.json(workshops);
+    return res.json({
+      success: true,
+      workshops
+    });
   } catch (error) {
     console.error('Error fetching admin workshops:', error);
     return res.status(500).json({
@@ -229,7 +244,10 @@ router.get('/customer-dashboard/retreats', requireAdmin, async (req, res) => {
       LIMIT 3
     `);
     
-    return res.json(retreats);
+    return res.json({
+      success: true,
+      retreats
+    });
   } catch (error) {
     console.error('Error fetching admin retreats:', error);
     return res.status(500).json({
@@ -262,7 +280,10 @@ router.get('/customer-dashboard/sessions', requireAdmin, async (req, res) => {
       ORDER BY date ASC, start_time ASC
     `, [req.user.user_id]);
     
-    return res.json(sessions);
+    return res.json({
+      success: true,
+      sessions
+    });
   } catch (error) {
     console.error('Error fetching admin private sessions:', error);
     return res.status(500).json({

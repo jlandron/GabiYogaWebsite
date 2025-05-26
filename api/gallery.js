@@ -112,10 +112,16 @@ router.get('/images', async (req, res) => {
       }
     }));
     
-    res.json({ images: imagesWithUrls });
+    res.json({ 
+      success: true,
+      images: imagesWithUrls 
+    });
   } catch (error) {
     logger.error('Error fetching gallery images:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to fetch gallery images' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch gallery images' 
+    });
   }
 });
 
@@ -144,10 +150,16 @@ router.get('/images/homepage', async (req, res) => {
       }
     }));
     
-    res.json({ images: imagesWithUrls });
+    res.json({ 
+      success: true,
+      images: imagesWithUrls 
+    });
   } catch (error) {
     logger.error('Error fetching homepage images:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to fetch homepage images' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch homepage images' 
+    });
   }
 });
 
@@ -162,7 +174,10 @@ router.get('/images/:id', async (req, res) => {
     `, [req.params.id]);
     
     if (!image) {
-      return res.status(404).json({ error: 'Image not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Image not found' 
+      });
     }
     
     // Add URL if file path exists
@@ -175,10 +190,16 @@ router.get('/images/:id', async (req, res) => {
       }
     }
     
-    res.json({ image });
+    res.json({ 
+      success: true,
+      image 
+    });
   } catch (error) {
     logger.error('Error fetching image:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to fetch image' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch image' 
+    });
   }
 });
 
@@ -192,12 +213,18 @@ router.get('/images/:id/data', async (req, res) => {
     `, [req.params.id]);
     
     if (!image) {
-      return res.status(404).json({ error: 'Image not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Image not found' 
+      });
     }
     
     if (!image.file_path) {
       logger.error(`Image ${req.params.id} exists but has no file path`);
-      return res.status(404).json({ error: 'Image has no file path' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Image has no file path' 
+      });
     }
     
     try {
@@ -215,11 +242,17 @@ router.get('/images/:id/data', async (req, res) => {
       logger.debug(`Successfully sent image ${req.params.id} (${imageBuffer.length} bytes)`);
     } catch (retrieveError) {
       logger.error(`Error retrieving image file for ID ${req.params.id}:`, { error: retrieveError.message, stack: retrieveError.stack });
-      return res.status(500).json({ error: 'Failed to retrieve image file' });
+      return res.status(500).json({ 
+        success: false,
+        message: 'Failed to retrieve image file' 
+      });
     }
   } catch (error) {
     logger.error(`Error fetching image data for ID ${req.params.id}:`, { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to fetch image data' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch image data' 
+    });
   }
 });
 
@@ -236,12 +269,18 @@ router.get('/profile-photo', async (req, res) => {
     `);
     
     if (!profilePhoto) {
-      return res.status(404).json({ error: 'Profile photo not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Profile photo not found' 
+      });
     }
     
     if (!profilePhoto.file_path) {
       logger.error('Profile photo exists but has no file path');
-      return res.status(404).json({ error: 'Profile photo has no file path' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Profile photo has no file path' 
+      });
     }
     
     try {
@@ -259,11 +298,17 @@ router.get('/profile-photo', async (req, res) => {
       logger.debug(`Successfully sent profile photo (ID: ${profilePhoto.image_id}, ${imageBuffer.length} bytes)`);
     } catch (retrieveError) {
       logger.error('Error retrieving profile photo file:', { error: retrieveError.message, stack: retrieveError.stack });
-      return res.status(500).json({ error: 'Failed to retrieve profile photo file' });
+      return res.status(500).json({ 
+        success: false,
+        message: 'Failed to retrieve profile photo file' 
+      });
     }
   } catch (error) {
     logger.error('Error fetching profile photo:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to fetch profile photo' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch profile photo' 
+    });
   }
 });
 
@@ -288,7 +333,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     
     // Validate required fields
     if (!image_data || !mime_type) {
-      return res.status(400).json({ error: 'Image data and mime type are required' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Image data and mime type are required' 
+      });
     }
     
     // If this is a profile photo, unset any existing profile photo
@@ -308,7 +356,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       
       // Validate base64 data exists
       if (!base64Data) {
-        return res.status(400).json({ error: 'Invalid image data format' });
+        return res.status(400).json({ 
+          success: false,
+          message: 'Invalid image data format' 
+        });
       }
       
       // Convert to buffer with validation
@@ -328,7 +379,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       // Enforce maximum size
       const maxSize = 8 * 1024 * 1024; // 8MB max
       if (imageBuffer.length > maxSize) {
-        return res.status(400).json({ error: 'Image size exceeds the maximum allowed size of 8MB' });
+        return res.status(400).json({ 
+          success: false,
+          message: 'Image size exceeds the maximum allowed size of 8MB' 
+        });
       }
       
       // Create a filename from title if available
@@ -337,7 +391,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       }
     } catch (error) {
       logger.error('Error processing image data:', { error: error.message, stack: error.stack });
-      return res.status(400).json({ error: 'Failed to process image data' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Failed to process image data' 
+      });
     }
     
     // Store the image file
@@ -352,7 +409,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
       logger.debug('Image stored successfully:', { filePath: imageInfo.filePath, url: imageInfo.url });
     } catch (storageError) {
       logger.error('Error storing image:', { error: storageError.message, stack: storageError.stack });
-      return res.status(500).json({ error: 'Failed to store image file' });
+      return res.status(500).json({ 
+        success: false,
+        message: 'Failed to store image file' 
+      });
     }
     
     // Insert new image record in database
@@ -381,6 +441,7 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     ]);
     
     res.status(201).json({ 
+      success: true,
       message: 'Image uploaded successfully', 
       image_id: result.lastID,
       file_path: imageInfo.filePath,
@@ -388,7 +449,10 @@ router.post('/images', authenticateToken, requireAdmin, async (req, res) => {
     });
   } catch (error) {
     logger.error('Error uploading image:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to upload image' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to upload image' 
+    });
   }
 });
 
@@ -412,7 +476,10 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
     `, [req.params.id]);
     
     if (!existingImage) {
-      return res.status(404).json({ error: 'Image not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Image not found' 
+      });
     }
     
     // If setting as profile photo, unset any existing profile photo
@@ -451,10 +518,16 @@ router.put('/images/:id', authenticateToken, requireAdmin, async (req, res) => {
       req.params.id
     ]);
     
-    res.json({ message: 'Image updated successfully' });
+    res.json({ 
+      success: true,
+      message: 'Image updated successfully' 
+    });
   } catch (error) {
     logger.error('Error updating image:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to update image' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to update image' 
+    });
   }
 });
 
@@ -473,7 +546,7 @@ router.get('/profile-photo-url', async (req, res) => {
     if (!profilePhoto) {
       return res.status(404).json({ 
         success: false,
-        error: 'Profile photo not found' 
+        message: 'Profile photo not found' 
       });
     }
     
@@ -481,7 +554,7 @@ router.get('/profile-photo-url', async (req, res) => {
       logger.error('Profile photo exists but has no file path');
       return res.status(404).json({ 
         success: false,
-        error: 'Profile photo has no file path' 
+        message: 'Profile photo has no file path' 
       });
     }
     
@@ -500,14 +573,14 @@ router.get('/profile-photo-url', async (req, res) => {
       logger.error('Error generating URL for profile photo:', { error: error.message, stack: error.stack });
       return res.status(500).json({ 
         success: false,
-        error: 'Failed to generate URL for profile photo' 
+        message: 'Failed to generate URL for profile photo' 
       });
     }
   } catch (error) {
     logger.error('Error fetching profile photo URL:', { error: error.message, stack: error.stack });
     res.status(500).json({ 
       success: false,
-      error: 'Failed to fetch profile photo URL' 
+      message: 'Failed to fetch profile photo URL' 
     });
   }
 });
@@ -520,7 +593,10 @@ router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) =
     `, [req.params.id]);
     
     if (!image) {
-      return res.status(404).json({ error: 'Image not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Image not found' 
+      });
     }
     
     // Delete the image file if it exists
@@ -541,12 +617,16 @@ router.delete('/images/:id', authenticateToken, requireAdmin, async (req, res) =
     await query(`DELETE FROM gallery_images WHERE image_id = ?`, [req.params.id]);
     
     res.json({ 
+      success: true,
       message: 'Image deleted successfully',
       was_profile_photo: image.is_profile_photo === 1
     });
   } catch (error) {
     logger.error('Error deleting image:', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Failed to delete image' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete image' 
+    });
   }
 });
 

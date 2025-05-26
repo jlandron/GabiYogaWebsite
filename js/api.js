@@ -7,7 +7,7 @@
 
 const API = {
   // Base URL for API requests (adjust based on environment)
-  baseUrl: window.location.hostname === 'localhost' ? 'http://localhost:5001/api' : '/api',
+  baseUrl: window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api',
   
   /**
    * Generic function to make API requests

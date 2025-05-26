@@ -26,7 +26,7 @@ router.get('/bookings/upcoming', authenticateToken, async (req, res) => {
         b.date,
         c.start_time,
         c.duration,
-        c.location,
+        c.instructor,
         b.status
       FROM bookings b
       JOIN classes c ON b.class_id = c.class_id

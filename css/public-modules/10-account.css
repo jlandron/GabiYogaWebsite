@@ -418,6 +418,43 @@
     margin-bottom: 20px;
 }
 
+/* Classes Sections */
+.classes-section {
+    margin-bottom: 30px;
+}
+
+.classes-section h4 {
+    font-size: var(--font-size-lg);
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.past-classes h4 {
+    color: var(--text-light);
+    border-bottom-color: #ddd;
+}
+
+/* Past Booking Styles */
+.past-booking {
+    opacity: 0.7;
+    background-color: #f9f9f9;
+}
+
+.past-booking .booking-title {
+    color: var(--text-light);
+}
+
+.attendance-status {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.attendance-status i {
+    margin-right: 5px;
+}
+
 /* Profile section */
 .profile-image {
     width: 120px;

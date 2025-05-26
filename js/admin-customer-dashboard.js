@@ -127,7 +127,14 @@ async function loadAdminBookings() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/bookings', createFetchOptions());
-        const bookings = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            bookingsList.innerHTML = `<p class="error-message">${data.message || 'Error loading bookings.'}</p>`;
+            return;
+        }
+        
+        const bookings = data.bookings || [];
         
         if (bookings.length === 0) {
             bookingsList.innerHTML = '<p class="no-data-message">No upcoming classes.</p>';
@@ -170,7 +177,14 @@ async function loadAdminMemberships() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/memberships', createFetchOptions());
-        const memberships = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            membershipsList.innerHTML = `<p class="error-message">${data.message || 'Error loading memberships.'}</p>`;
+            return;
+        }
+        
+        const memberships = data.memberships || [];
         
         if (memberships.length === 0) {
             membershipsList.innerHTML = '<p class="no-data-message">No active memberships.</p>';
@@ -214,7 +228,14 @@ async function loadAdminPurchaseHistory() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/payments', createFetchOptions());
-        const payments = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            purchaseHistoryList.innerHTML = `<p class="error-message">${data.message || 'Error loading purchase history.'}</p>`;
+            return;
+        }
+        
+        const payments = data.payments || [];
         
         if (payments.length === 0) {
             purchaseHistoryList.innerHTML = '<p class="no-data-message">No purchase history.</p>';
@@ -271,7 +292,14 @@ async function loadAdminWorkshops() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/workshops', createFetchOptions());
-        const workshops = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            workshopsList.innerHTML = `<p class="error-message">${data.message || 'Error loading workshops.'}</p>`;
+            return;
+        }
+        
+        const workshops = data.workshops || [];
         
         if (workshops.length === 0) {
             workshopsList.innerHTML = '<p class="no-data-message">No upcoming workshops.</p>';
@@ -315,7 +343,14 @@ async function loadAdminRetreats() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/retreats', createFetchOptions());
-        const retreats = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            retreatsList.innerHTML = `<p class="error-message">${data.message || 'Error loading retreats.'}</p>`;
+            return;
+        }
+        
+        const retreats = data.retreats || [];
         
         if (retreats.length === 0) {
             retreatsList.innerHTML = '<p class="no-data-message">No upcoming retreats.</p>';
@@ -362,7 +397,14 @@ async function loadAdminSessions() {
     
     try {
         const response = await fetch('/api/admin/customer-dashboard/sessions', createFetchOptions());
-        const sessions = await response.json();
+        const data = await response.json();
+        
+        if (!data.success) {
+            sessionsList.innerHTML = `<p class="error-message">${data.message || 'Error loading private sessions.'}</p>`;
+            return;
+        }
+        
+        const sessions = data.sessions || [];
         
         if (sessions.length === 0) {
             sessionsList.innerHTML = '<p class="no-data-message">No upcoming private sessions.</p>';

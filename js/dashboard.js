@@ -38,12 +38,12 @@ async function initializeDashboard() {
         
         // Fetch and display bookings, memberships, etc.
         await Promise.all([
-            loadUpcomingClasses(userData.user_id),
-            loadMemberships(userData.user_id),
-            loadPurchaseHistory(userData.user_id),
+            loadUpcomingClasses(userData.id),
+            loadMemberships(userData.id),
+            loadPurchaseHistory(userData.id),
             loadWorkshops(),
             loadRetreats(),
-            loadPrivateSessions(userData.user_id)
+            loadPrivateSessions(userData.id)
         ]);
         
         // Setup event listeners after content is loaded
@@ -120,7 +120,7 @@ async function fetchUserData() {
 function updateWelcomeMessage(userData) {
     const welcomeMessage = document.querySelector('.welcome-message h2');
     if (welcomeMessage && userData) {
-        welcomeMessage.textContent = `Welcome, ${userData.first_name}!`;
+        welcomeMessage.textContent = `Welcome, ${userData.firstName}!`;
     }
 }
 
@@ -136,8 +136,8 @@ function loadProfileData(userData) {
     
     // Update form fields
     const fields = [
-        { id: 'profile-first-name', value: userData.first_name || '' },
-        { id: 'profile-last-name', value: userData.last_name || '' },
+        { id: 'profile-first-name', value: userData.firstName || '' },
+        { id: 'profile-last-name', value: userData.lastName || '' },
         { id: 'profile-email', value: userData.email || '' },
         { id: 'profile-phone', value: userData.phone || '' }
     ];
@@ -203,11 +203,15 @@ function loadProfileData(userData) {
 }
 
 /**
- * Load upcoming classes for user
+ * Load upcoming and past classes for user
  */
 async function loadUpcomingClasses(userId) {
     try {
-        const response = await ApiService.authRequest(`${API_BASE_URL}/bookings/upcoming`);
+        // Load both upcoming and past classes
+        const [upcomingResponse, pastResponse] = await Promise.all([
+            ApiService.authRequest(`${API_BASE_URL}/bookings/upcoming`),
+            ApiService.authRequest(`${API_BASE_URL}/bookings/past`).catch(() => ({ bookings: [] })) // Fallback if endpoint doesn't exist yet
+        ]);
         
         const bookingsList = document.querySelector('.booking-list');
         if (!bookingsList) return;
@@ -215,66 +219,129 @@ async function loadUpcomingClasses(userId) {
         // Clear existing content
         bookingsList.innerHTML = '';
         
-        if (!response.bookings || response.bookings.length === 0) {
-            bookingsList.innerHTML = `
+        // Create sections for upcoming and past classes
+        const upcomingSection = document.createElement('div');
+        upcomingSection.className = 'classes-section upcoming-classes';
+        upcomingSection.innerHTML = '<h4>Upcoming Classes</h4>';
+        
+        const pastSection = document.createElement('div');
+        pastSection.className = 'classes-section past-classes';
+        pastSection.innerHTML = '<h4>Past Classes</h4>';
+        
+        // Add upcoming classes
+        if (!upcomingResponse.bookings || upcomingResponse.bookings.length === 0) {
+            upcomingSection.innerHTML += `
                 <div class="empty-state">
                     <i class="far fa-calendar"></i>
                     <p>You don't have any upcoming classes.</p>
                     <a href="#" id="book-class-btn" class="btn btn-small">Book a Class</a>
                 </div>
             `;
-            return;
+        } else {
+            // Render each upcoming booking
+            upcomingResponse.bookings.forEach(booking => {
+                const bookingElement = createBookingElement(booking, true);
+                upcomingSection.appendChild(bookingElement);
+            });
         }
         
-        // Render each booking
-        response.bookings.forEach(booking => {
-            // Format date
-            const bookingDate = new Date(booking.date + 'T' + booking.start_time);
-            const formattedDate = bookingDate.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            // Format time
-            const startTime = formatTime(booking.start_time);
-            const endTime = formatTime(calculateEndTime(booking.start_time, booking.duration));
-            
-            const bookingItem = document.createElement('div');
-            bookingItem.className = 'booking-item';
-            bookingItem.innerHTML = `
-                <div class="booking-details">
-                    <div class="booking-title">${booking.class_name}</div>
-                    <div class="booking-info">
-                        <span><i class="far fa-calendar"></i> ${formattedDate}</span>
-                        <span><i class="far fa-clock"></i> ${startTime} - ${endTime}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${booking.location || 'Main Studio'}</span>
-                    </div>
-                </div>
-                <div class="booking-actions">
-                    <button title="Add to Calendar" class="add-to-calendar-btn" data-booking-id="${booking.booking_id}"><i class="far fa-calendar-plus"></i></button>
-                    <button title="Cancel Booking" class="cancel-booking-btn" data-booking-id="${booking.booking_id}"><i class="fas fa-times"></i></button>
+        // Add past classes
+        if (!pastResponse.bookings || pastResponse.bookings.length === 0) {
+            pastSection.innerHTML += `
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <p>You haven't attended any classes yet.</p>
                 </div>
             `;
-            
-            bookingsList.appendChild(bookingItem);
-        });
+        } else {
+            // Render each past booking
+            pastResponse.bookings.forEach(booking => {
+                const bookingElement = createBookingElement(booking, false);
+                pastSection.appendChild(bookingElement);
+            });
+        }
+        
+        // Append both sections to the bookings list
+        bookingsList.appendChild(upcomingSection);
+        bookingsList.appendChild(pastSection);
         
         // Add event listeners to the new buttons
         addBookingButtonListeners();
         
+        // Add event listener for "Book a Class" button if it exists
+        const bookClassBtn = document.getElementById('book-class-btn');
+        if (bookClassBtn) {
+            bookClassBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'index.html#schedule';
+            });
+        }
+        
     } catch (error) {
-        console.error('Error loading upcoming classes:', error);
+        console.error('Error loading classes:', error);
         const bookingsList = document.querySelector('.booking-list');
         if (bookingsList) {
             bookingsList.innerHTML = `
                 <div class="error-message">
-                    <p>There was a problem loading your upcoming classes. Please try again later.</p>
+                    <p>There was a problem loading your classes. Please try again later.</p>
                 </div>
             `;
         }
     }
+}
+
+/**
+ * Create a booking element
+ */
+function createBookingElement(booking, isUpcoming) {
+    // Format date
+    const bookingDate = new Date(booking.date + 'T' + booking.start_time);
+    const formattedDate = bookingDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Format time
+    const startTime = formatTime(booking.start_time);
+    const endTime = formatTime(calculateEndTime(booking.start_time, booking.duration));
+    
+    const bookingItem = document.createElement('div');
+    bookingItem.className = 'booking-item';
+    
+    if (isUpcoming) {
+        bookingItem.innerHTML = `
+            <div class="booking-details">
+                <div class="booking-title">${booking.class_name}</div>
+                <div class="booking-info">
+                    <span><i class="far fa-calendar"></i> ${formattedDate}</span>
+                    <span><i class="far fa-clock"></i> ${startTime} - ${endTime}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${booking.instructor || 'Main Studio'}</span>
+                </div>
+            </div>
+            <div class="booking-actions">
+                <button title="Add to Calendar" class="add-to-calendar-btn" data-booking-id="${booking.booking_id}"><i class="far fa-calendar-plus"></i></button>
+                <button title="Cancel Booking" class="cancel-booking-btn" data-booking-id="${booking.booking_id}"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+    } else {
+        // Past classes have different styling and no action buttons
+        bookingItem.className += ' past-booking';
+        bookingItem.innerHTML = `
+            <div class="booking-details">
+                <div class="booking-title">${booking.class_name}</div>
+                <div class="booking-info">
+                    <span><i class="far fa-calendar"></i> ${formattedDate}</span>
+                    <span><i class="far fa-clock"></i> ${startTime} - ${endTime}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${booking.instructor || 'Main Studio'}</span>
+                    <span class="attendance-status"><i class="fas fa-check-circle"></i> Attended</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    return bookingItem;
 }
 
 /**
@@ -302,9 +369,74 @@ function addBookingButtonListeners() {
  * Add a booking to calendar
  */
 function addToCalendar(bookingId) {
-    console.log(`Adding booking ${bookingId} to calendar`);
-    alert('Calendar event created successfully!');
-    // In a real implementation, this would generate a .ics file or integrate with Google Calendar API
+    // Find the booking details from the DOM
+    const bookingButton = document.querySelector(`.add-to-calendar-btn[data-booking-id="${bookingId}"]`);
+    if (!bookingButton) return;
+    
+    const bookingItem = bookingButton.closest('.booking-item');
+    const title = bookingItem.querySelector('.booking-title').textContent;
+    const dateInfo = bookingItem.querySelector('.booking-info span:nth-child(1)').textContent;
+    const timeInfo = bookingItem.querySelector('.booking-info span:nth-child(2)').textContent;
+    const location = bookingItem.querySelector('.booking-info span:nth-child(3)').textContent;
+    
+    // Extract date and time
+    const dateMatch = dateInfo.match(/(\w+, \w+ \d+, \d+)/);
+    const timeMatch = timeInfo.match(/(\d+:\d+ \w+) - (\d+:\d+ \w+)/);
+    
+    if (!dateMatch || !timeMatch) {
+        alert('Unable to create calendar event. Please try again.');
+        return;
+    }
+    
+    // Create iCal event
+    const eventDate = new Date(dateMatch[1]);
+    const startTime = timeMatch[1];
+    const endTime = timeMatch[2];
+    
+    // Format dates for iCal
+    const formatDate = (date, time) => {
+        const [timeStr, period] = time.split(' ');
+        const [hours, minutes] = timeStr.split(':');
+        let hour = parseInt(hours);
+        
+        if (period === 'PM' && hour !== 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        
+        date.setHours(hour, parseInt(minutes), 0, 0);
+        
+        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    };
+    
+    const dtstart = formatDate(new Date(eventDate), startTime);
+    const dtend = formatDate(new Date(eventDate), endTime);
+    
+    // Create iCal content
+    const icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Gabi Yoga//EN
+BEGIN:VEVENT
+UID:${bookingId}@gabiyoga.com
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}Z
+DTSTART:${dtstart}
+DTEND:${dtend}
+SUMMARY:${title} - Gabi Yoga
+LOCATION:${location.replace(/.*?(?=\w)/, '')}
+DESCRIPTION:Your yoga class at Gabi Yoga
+END:VEVENT
+END:VCALENDAR`;
+    
+    // Create blob and download
+    const blob = new Blob([icalContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `yoga-class-${bookingId}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert('Calendar event downloaded! Open the file to add it to your calendar.');
 }
 
 /**
@@ -324,7 +456,10 @@ async function cancelBooking(bookingId) {
         if (response.success) {
             alert('Booking cancelled successfully!');
             // Refresh the bookings list
-            loadUpcomingClasses(UserService.getUser().user_id);
+            const user = UserService.getUser();
+            if (user) {
+                loadUpcomingClasses(user.id);
+            }
         } else {
             alert(response.message || 'Failed to cancel booking');
         }
@@ -506,7 +641,10 @@ async function cancelSubscription(membershipId) {
         if (response.success) {
             alert('Subscription cancelled successfully. You will still have access until the end of your current billing period.');
             // Refresh the memberships list
-            loadMemberships(UserService.getUser().user_id);
+            const user = UserService.getUser();
+            if (user) {
+                loadMemberships(user.id);
+            }
         } else {
             alert(response.message || 'Failed to cancel subscription');
         }
@@ -1021,7 +1159,10 @@ async function cancelSession(sessionId) {
         if (response.success) {
             alert('Session cancelled successfully!');
             // Refresh the private sessions list
-            loadPrivateSessions(UserService.getUser().user_id);
+            const user = UserService.getUser();
+            if (user) {
+                loadPrivateSessions(user.id);
+            }
         } else {
             alert(response.message || 'Failed to cancel session');
         }
@@ -1109,6 +1250,8 @@ function setupEventListeners() {
             alert('Photo upload feature coming soon!');
         });
     }
+    
+    // Removed View Past Classes button functionality as we now show both by default
 }
 
 /**
@@ -1149,4 +1292,45 @@ function calculateEndTime(startTime, durationMinutes) {
     const paddedMinutes = endMinutes.toString().padStart(2, '0');
     
     return `${endHours}:${paddedMinutes}`;
+}
+
+/**
+ * Show past classes
+ */
+function showPastClasses() {
+    // Toggle button text
+    const viewPastClassesBtn = document.querySelector('.panel-header .btn-small');
+    const panelHeader = document.querySelector('.panel-header h3');
+    const bookingsList = document.querySelector('.booking-list');
+    
+    if (viewPastClassesBtn.textContent === 'View Past Classes') {
+        // Switch to past classes view
+        viewPastClassesBtn.textContent = 'View Upcoming Classes';
+        panelHeader.textContent = 'Past Classes';
+        
+        // Clear current content
+        bookingsList.innerHTML = '<div class="loading-spinner"></div><p>Loading past classes...</p>';
+        
+        // Fetch past classes (this would be a new endpoint)
+        alert('Viewing past classes is coming soon! This will show your class history.');
+        
+        // For now, show a placeholder
+        bookingsList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <p>Your past class history will be displayed here.</p>
+                <p>This feature is coming soon!</p>
+            </div>
+        `;
+    } else {
+        // Switch back to upcoming classes
+        viewPastClassesBtn.textContent = 'View Past Classes';
+        panelHeader.textContent = 'Upcoming Classes';
+        
+        // Reload upcoming classes
+        const user = UserService.getUser();
+        if (user) {
+            loadUpcomingClasses(user.id);
+        }
+    }
 }
