@@ -42,6 +42,9 @@ function fetchPricingData() {
                 // Update private sessions display
                 updateSessionPackagesDisplay(data.pricing.sessionPackages);
                 
+                // Update the session booking dropdown
+                populateSessionPackageDropdown(data.pricing.sessionPackages);
+                
                 console.log('Pricing data loaded successfully');
             } else {
                 throw new Error(data.message || 'Failed to fetch pricing data');
@@ -215,6 +218,9 @@ function fetchPricingDataForHomepage() {
                 
                 // Update homepage private sessions section if it exists
                 updateHomepagePrivateSessions(data.pricing.sessionPackages);
+                
+                // Update the session booking dropdown on homepage
+                populateSessionPackageDropdown(data.pricing.sessionPackages);
                 
                 console.log('Homepage pricing data loaded successfully');
             } else {
@@ -419,6 +425,29 @@ function updateHomepagePrivateSessions(sessionPackages) {
 function updateHomepageSessionPackages(sessionPackages) {
     console.warn('updateHomepageSessionPackages is deprecated. Use updateHomepagePrivateSessions instead.');
     updateHomepagePrivateSessions(sessionPackages);
+}
+
+/**
+ * Populate session package dropdown in the booking modal
+ */
+function populateSessionPackageDropdown(sessionPackages) {
+    const sessionTypeSelect = document.getElementById('session-type');
+    if (!sessionTypeSelect) return;
+    
+    // Clear existing options except the first placeholder option
+    while (sessionTypeSelect.options.length > 1) {
+        sessionTypeSelect.remove(1);
+    }
+    
+    // Add each session package as an option
+    sessionPackages.forEach(pkg => {
+        const option = document.createElement('option');
+        option.value = pkg.id || pkg.name.toLowerCase().replace(/\s+/g, '-');
+        option.text = pkg.name;
+        sessionTypeSelect.appendChild(option);
+    });
+    
+    console.log('Session package dropdown populated with', sessionPackages.length, 'options');
 }
 
 /**

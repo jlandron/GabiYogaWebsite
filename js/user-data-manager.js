@@ -17,8 +17,7 @@ class UserDataManager {
    * @returns {boolean} True if user is logged in
    */
   isLoggedIn() {
-    return localStorage.getItem('userLoggedIn') === 'true' || 
-           !!localStorage.getItem('authToken');
+    return !!localStorage.getItem('auth_token') && !!localStorage.getItem('user_info');
   }
 
   /**
@@ -26,7 +25,7 @@ class UserDataManager {
    * @returns {string|null} The auth token or null
    */
   getAuthToken() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('auth_token');
   }
 
   /**
@@ -55,7 +54,27 @@ class UserDataManager {
     // Create a new loading promise
     this.loadingPromise = new Promise(async (resolve, reject) => {
       try {
-        // Try loading from API first
+        // Try loading from localStorage first
+        try {
+          const userInfo = localStorage.getItem('user_info');
+          if (userInfo) {
+            const user = JSON.parse(userInfo);
+            this.currentUser = {
+              id: user.user_id || user.id,
+              email: user.email,
+              firstName: user.first_name || user.firstName || '',
+              lastName: user.last_name || user.lastName || '',
+              role: user.role || 'member'
+            };
+            this.isLoaded = true;
+            resolve(this.currentUser);
+            return;
+          }
+        } catch (localError) {
+          console.warn('Failed to parse user info from localStorage:', localError);
+        }
+        
+        // Try loading from API as fallback
         try {
           const response = await window.API.user.getProfile();
           if (response.success && response.user) {

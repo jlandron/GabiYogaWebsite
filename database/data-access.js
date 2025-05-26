@@ -1348,6 +1348,8 @@ const PrivateSessionOperations = {
         SELECT 
           ps.session_id,
           u.first_name || ' ' || u.last_name as user_name,
+          u.email as user_email,
+          u.phone as user_phone,
           ps.date,
           ps.start_time,
           ps.duration,

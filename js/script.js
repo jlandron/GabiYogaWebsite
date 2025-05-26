@@ -95,6 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const packageData = window.sessionPackageData ? window.sessionPackageData[sessionType] : null;
                 const packageName = packageData ? packageData.name : sessionTypeText;
                 
+                // Prepare request body
+                const requestBody = {
+                    userId,
+                    sessionType,
+                    sessionFocus,
+                    packageName,
+                    date1,
+                    time1,
+                    date2: document.getElementById('date2').value || null,
+                    time2: document.getElementById('time2').value || null,
+                    date3: document.getElementById('date3').value || null,
+                    time3: document.getElementById('time3').value || null,
+                    notes,
+                    name,
+                    email
+                };
+                
                 // Save booking to the API
                 try {
                     const response = await fetch('/api/private-sessions', {
@@ -102,28 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            userId,
-                            sessionType,
-                            sessionFocus,
-                            packageName,
-                            date1,
-                            time1,
-                            date2: document.getElementById('date2').value || null,
-                            time2: document.getElementById('time2').value || null,
-                            date3: document.getElementById('date3').value || null,
-                            time3: document.getElementById('time3').value || null,
-                            notes,
-                            name,
-                            email
-                        }),
+                        body: JSON.stringify(requestBody),
                         credentials: 'include' // Include cookies for auth
                     });
                     
-                    if (response.ok) {
-                        console.log('Private session booking saved successfully');
-                    } else {
-                        console.warn('Error saving private session booking:', await response.text());
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error saving private session booking:', errorText);
                     }
                 } catch (error) {
                     console.error('Error submitting private session booking:', error);
@@ -174,6 +176,13 @@ function openPrivateBookingModal() {
 
 // Function to fetch and populate session packages for booking modal
 function fetchSessionPackagesForModal() {
+    // First check if the private booking modal exists on this page
+    const privateBookingModal = document.getElementById('private-booking-modal');
+    if (!privateBookingModal) {
+        // Modal doesn't exist on this page, skip loading packages
+        return;
+    }
+    
     fetch('/api/pricing')
         .then(response => {
             if (!response.ok) {

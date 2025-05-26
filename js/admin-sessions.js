@@ -35,6 +35,13 @@ async function initializeSessionsPage() {
  */
 async function loadSessionsData() {
     try {
+        // Check if AdminApiService exists
+        if (typeof AdminApiService === 'undefined') {
+            console.error('AdminApiService is not defined!');
+            showErrorMessage('AdminApiService is not loaded. Please refresh the page.');
+            return;
+        }
+        
         // Get all private sessions
         const sessionsResponse = await AdminApiService.getPrivateSessions();
         const sessions = sessionsResponse.sessions || [];

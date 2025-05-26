@@ -33,6 +33,7 @@ const galleryRoutes = require('./api/gallery');
 const blogRoutes = require('./api/blog'); // Import blog routes
 const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
 const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
+const privateSessionsRoutes = require('./api/private-sessions'); // Import private sessions routes
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -178,6 +179,7 @@ app.use('/api', adminPricingRoutes); // For public pricing endpoint
 app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
 app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 app.use('/api/stripe', stripeRoutes); // Stripe payment routes
+app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers
