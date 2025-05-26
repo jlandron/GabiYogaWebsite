@@ -142,11 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Private sessions buttons event handlers
-    if (privateSessionBtn) {
-        privateSessionBtn.addEventListener('click', () => {
+    // Use event delegation since the button is created dynamically
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'private-session-btn') {
+            e.preventDefault();
             openPrivateBookingModal();
-        });
-    }
+        }
+    });
     
     // Private sessions section main CTA button
     const privateSectionsBtn = document.getElementById('private-sessions-btn');
@@ -854,16 +856,8 @@ const addLoginRequirements = () => {
         });
     });
     
-    // Private sessions button
-    const privateSessionBtn = document.getElementById('private-session-btn');
-    if (privateSessionBtn) {
-        privateSessionBtn.addEventListener('click', (e) => {
-            if (loginPrompt(e, 'dashboard.html#private-sessions')) {
-                // If logged in, redirect to the dashboard private sessions panel
-                window.location.href = 'dashboard.html#private-sessions';
-            }
-        });
-    }
+    // Private sessions button is handled separately in the main DOMContentLoaded
+    // to open the booking modal instead of redirecting to dashboard
     
     // Private booking buttons in pricing section
     const privateBookingBtns = document.querySelectorAll('.private-booking-btn');
