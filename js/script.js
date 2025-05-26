@@ -146,15 +146,44 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         if (e.target && e.target.id === 'private-session-btn') {
             e.preventDefault();
-            openPrivateBookingModal();
+            
+            // Check if user is logged in first
+            const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
+            
+            if (!isLoggedIn) {
+                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
+                
+                if (wantsLogin) {
+                    // Store intent to book private session after login
+                    localStorage.setItem('loginRedirect', 'book-private-session');
+                    window.location.href = 'login.html';
+                }
+            } else {
+                openPrivateBookingModal();
+            }
         }
     });
     
     // Private sessions section main CTA button
     const privateSectionsBtn = document.getElementById('private-sessions-btn');
     if (privateSectionsBtn) {
-        privateSectionsBtn.addEventListener('click', () => {
-            openPrivateBookingModal();
+        privateSectionsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Check if user is logged in first
+            const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
+            
+            if (!isLoggedIn) {
+                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
+                
+                if (wantsLogin) {
+                    // Store intent to book private session after login
+                    localStorage.setItem('loginRedirect', 'book-private-session');
+                    window.location.href = 'login.html';
+                }
+            } else {
+                openPrivateBookingModal();
+            }
         });
     }
 });
