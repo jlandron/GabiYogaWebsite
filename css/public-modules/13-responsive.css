@@ -15,9 +15,7 @@
         max-width: 960px;
     }
     
-    .hero-content h1 {
-        font-size: var(--custom-hero-heading-size, 3rem);
-    }
+    /* Hero font size now handled by JavaScript for better responsive control */
 }
 
 /* Small Screens (768px - 991px) */
@@ -127,10 +125,7 @@
         grid-template-columns: repeat(2, 1fr);
     }
     
-    /* Hero adjustments */
-    .hero-content h1 {
-        font-size: var(--custom-hero-heading-size, 2.5rem);
-    }
+    /* Hero adjustments - font size now handled by JavaScript for better responsive control */
     
     .hero-content p,
     .blog-hero-content p {
@@ -253,9 +248,7 @@
         margin-bottom: var(--spacing-lg);
     }
     
-    .hero-content h1 {
-        font-size: var(--custom-hero-heading-size, 2rem);
-    }
+    /* Hero heading font size now handled by JavaScript for better responsive control */
     
     .hero-content p {
         font-size: 0.9rem;
