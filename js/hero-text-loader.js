@@ -96,147 +96,41 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.log('[Hero Debug] Added default subheading size: 16px');
             }
             
-            // Update heading
+            // Update heading - simplified approach
             if (heading) {
-                console.log('[Hero Debug] Processing heading with:', {
-                    textLength: heading.text?.length || 0,
-                    isHTML: heading.text?.trim().startsWith('<') || false,
-                    font: heading.font,
-                    size: heading.size,
-                    weight: heading.fontWeight,
-                    style: heading.fontStyle,
-                    decoration: heading.textDecoration,
-                    align: heading.textAlign || 'center'
-                });
+                console.log('[Hero Debug] Processing heading with text and font only');
                 
-                // Add an isolated class to the heading to avoid style conflicts
-                heroHeading.className = 'isolated-hero-heading';
-                console.log('[Hero Debug] Applied isolated class to heading');
-                
-                // Check if text is HTML or plain text
+                // Set text content
                 if (heading.text) {
                     if (heading.text.trim().startsWith('<')) {
-                        // If it's HTML, use innerHTML
                         heroHeading.innerHTML = heading.text;
-                        console.log('[Hero Debug] Applied heading HTML content, length:', heading.text.length);
                     } else {
-                        // If it's plain text, use textContent
                         heroHeading.textContent = heading.text;
-                        console.log('[Hero Debug] Applied heading plain text content:', heading.text.substring(0, 50));
                     }
                 } else {
                     heroHeading.textContent = 'Find Your Inner Peace';
-                    console.log('[Hero Debug] Applied default heading text: "Find Your Inner Peace"');
                 }
                 
-                // Create a style tag specifically for the isolated hero heading
-                const styleId = 'isolated-hero-heading-style';
-                let styleEl1 = document.getElementById(styleId);
-                
-                if (!styleEl1) {
-                    styleEl1 = document.createElement('style');
-                    styleEl1.id = styleId;
-                    document.head.appendChild(styleEl1);
-                    console.log('[Hero Debug] Created style element for isolated heading');
-                }
-                
-                // Define all styling for the isolated heading in this CSS rule
-                let cssRules = [];
-                cssRules.push(`font-size: ${heading.size || '3.5rem'}`);
-                cssRules.push(`font-family: ${heading.font || "'Julietta', serif"}`);
-                
-                if (heading.fontWeight) {
-                    cssRules.push(`font-weight: ${heading.fontWeight}`);
-                }
-                
-                if (heading.fontStyle) {
-                    cssRules.push(`font-style: ${heading.fontStyle}`);
-                }
-                
-                if (heading.textDecoration) {
-                    cssRules.push(`text-decoration: ${heading.textDecoration}`);
-                }
-                
-                cssRules.push(`text-align: ${heading.textAlign || 'center'}`);
-                cssRules.push('margin-bottom: 20px');
-                cssRules.push('text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7)');
-                cssRules.push('color: #fff');
-                
-                // Create the complete rule
-                styleEl1.textContent = `.isolated-hero-heading { ${cssRules.join('; ')}; }`;
-                console.log('[Hero Debug] Applied custom CSS rule:', styleEl1.textContent);
-                
-                // Apply styles with improved font handling
+                // Only apply font family - let CSS handle font size
                 if (heading.font) {
-                    console.log('[Hero Debug] Processing heading font value:', heading.font);
-                    
-                    // Extract actual font name from CSS font-family value if quoted
-                    const fontMatch = heading.font.match(/'([^']+)'|"([^"]+)"|([^,\s]+)/);
-                    if (fontMatch) {
-                        const fontName = fontMatch[1] || fontMatch[2] || fontMatch[3];
-                        console.log('[Hero Debug] Extracted heading font name:', fontName);
-                    }
-                    
-                    // Apply the font directly to the element
                     heroHeading.style.fontFamily = heading.font;
-                    console.log('[Hero Debug] Applied heading font:', heading.font);
                 }
-                
-                // Set the CSS custom property for the size with !important to increase priority
-                document.documentElement.style.setProperty('--custom-hero-heading-size', heading.size + ' !important');
-                console.log('[Hero Debug] Applied heading size via CSS variable with !important:', heading.size);
-                
-                // Apply direct inline style with important flag using setAttribute to guarantee highest priority
-                heroHeading.setAttribute('style', `font-size: ${heading.size} !important; ${heroHeading.getAttribute('style') || ''}`);
-                console.log('[Hero Debug] Applied heading size with inline style:', heading.size);
-                
-                // Add a custom style tag with high specificity as another fallback
-                const customStyleId = 'custom-hero-style';
-                let styleEl2 = document.getElementById(customStyleId);
-                
-                if (!styleEl2) {
-                    styleEl2 = document.createElement('style');
-                    styleEl2.id = customStyleId;
-                    document.head.appendChild(styleEl2);
-                }
-                
-                // Add a unique ID to the heading for maximum specificity
-                const headingId = `hero-heading-${Date.now()}`;
-                heroHeading.id = headingId;
-                
-                // Add high specificity CSS rule using ID selector (highest CSS specificity)
-                styleEl2.textContent = `
-                  #${headingId} { font-size: ${heading.size} !important; }
-                  .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
-                  body .hero-content h1#${headingId} { font-size: ${heading.size} !important; }
-                  h1.isolated-hero-heading#${headingId} { font-size: ${heading.size} !important; }
-                `;
-                console.log('[Hero Debug] Added maximum specificity CSS rules using ID selector:', styleEl2.textContent);
                 
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
-                    console.log('[Hero Debug] Applied heading weight:', heading.fontWeight);
                 }
                 
                 if (heading.fontStyle) {
                     heroHeading.style.fontStyle = heading.fontStyle;
-                    console.log('[Hero Debug] Applied heading style:', heading.fontStyle);
                 }
                 
                 if (heading.textDecoration) {
                     heroHeading.style.textDecoration = heading.textDecoration;
-                    console.log('[Hero Debug] Applied heading decoration:', heading.textDecoration);
                 }
                 
                 heroHeading.style.textAlign = heading.textAlign || 'center';
-                console.log('[Hero Debug] Applied heading alignment:', heading.textAlign || 'center');
             } else {
-                // Default text and styles if no settings are available
                 heroHeading.textContent = 'Find Your Inner Peace';
-                heroHeading.style.fontWeight = 'normal';
-                heroHeading.style.fontStyle = 'normal';
-                heroHeading.style.textDecoration = 'none';
-                heroHeading.style.textAlign = 'center';
             }
             
             // Update subheading

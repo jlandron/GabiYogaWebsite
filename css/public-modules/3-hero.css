@@ -142,10 +142,7 @@
 
 /* Responsive Hero Sections */
 @media screen and (max-width: 768px) {
-    .hero-content h1 {
-        /* Maintain hardcoded font size even on smaller screens */
-        font-size: 64px;
-    }
+    /* Hero heading font size is now handled by JavaScript for better responsiveness */
     
     .page-hero-content h1 {
         font-size: 2.5rem;
@@ -163,10 +160,7 @@
 }
 
 @media screen and (max-width: 576px) {
-    .hero-content h1 {
-        /* Maintain hardcoded font size even on mobile */
-        font-size: 64px;
-    }
+    /* Hero heading font size is now handled by JavaScript for better responsiveness */
     
     .blog-hero {
         min-height: 250px;
