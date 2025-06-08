@@ -13,36 +13,24 @@
     color: #fff;
     padding-top: 80px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    background-color: #7a9899; /* Initial placeholder color */
-    /* Background image is set via JavaScript for smooth loading */
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../images/photo-1615729947596-a598e5de0ab3.jpeg');
     background-size: cover;
     background-position: center;
-    transition: background 1s ease-in; /* Smooth background transition */
 }
 
 .hero-content {
     max-width: 800px;
     padding: 20px;
-    opacity: 0; /* Start with content hidden for fade-in animation */
-    visibility: visible; /* Maintain layout */
-    animation: fadeIn 0.8s forwards 0.3s; /* Faster animation with reduced delay */
+    /* Removed opacity and animations to prevent interference with hardcoded content */
 }
 
 .hero-content h1 {
-    /* Allow for custom font size from admin settings */
-    font-size: var(--custom-hero-heading-size, 3.5rem);
-    margin-bottom: 20px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-    opacity: 0;
-    animation: fadeIn 0.8s forwards 0.6s; /* Faster animation with reduced delay */
+    /* All styling now handled by inline styles in HTML */
 }
 
 /* This was the issue - removing font-size from .hero-content p */
 .hero-content p {
-    margin-bottom: 30px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-    opacity: 0;
-    animation: fadeIn 0.8s forwards 0.9s; /* Faster animation with reduced delay */
+    /* All styling now handled by inline styles in HTML */
 }
 
 .hero-content .btn {
