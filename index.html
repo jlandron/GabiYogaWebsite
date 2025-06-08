@@ -552,5 +552,30 @@
     <script src="js/bio-content-loader.js"></script>
     <script src="js/offerings-content-loader.js"></script>
     <script src="js/section-background-alternator.js"></script>
+    
+    <!-- Simple hero image loader -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const heroSection = document.querySelector('.hero');
+        if (!heroSection) return;
+        
+        // Create image object to preload
+        const img = new Image();
+        
+        img.onload = function() {
+            // Add smooth transition class when image is loaded
+            setTimeout(() => {
+                heroSection.classList.add('image-loaded');
+            }, 100); // Small delay for smoother transition
+        };
+        
+        img.onerror = function() {
+            console.warn('Hero image failed to load, keeping gradient background');
+        };
+        
+        // Start loading the full-resolution image
+        img.src = 'images/photo-1615729947596-a598e5de0ab3.jpeg';
+    });
+    </script>
 </body>
 </html>

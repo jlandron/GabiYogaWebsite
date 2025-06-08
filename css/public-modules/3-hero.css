@@ -13,9 +13,16 @@
     color: #fff;
     padding-top: 80px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../images/photo-1615729947596-a598e5de0ab3.jpeg');
+    /* Start with a pleasant gradient placeholder */
+    background: linear-gradient(135deg, #7a9899 0%, #5c8a7d 50%, #4a7968 100%);
     background-size: cover;
     background-position: center;
+    transition: background-image 0.8s ease-in-out;
+}
+
+/* Class added when full image is loaded */
+.hero.image-loaded {
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../images/photo-1615729947596-a598e5de0ab3.jpeg');
 }
 
 .hero-content {
