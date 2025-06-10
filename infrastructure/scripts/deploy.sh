@@ -71,7 +71,40 @@ if [ "$UPDATE_MODE" == "quick" ]; then
   fi
   
   echo "Quick update completed successfully!"
-else    
+else
+  # Perform normal full deployment
+  
+  # Run all tests before deployment
+  echo "Running all tests before deployment..."
+  cd ../..
+  
+  # Start the server for integration tests in the background
+  echo "Starting test server for integration tests on port 5001..."
+  NODE_ENV=test PORT=5001 node server.js &
+  SERVER_PID=$!
+  
+  # Give the server a moment to start
+  sleep 3
+  
+  # Run all tests (unit, DOM, and integration)
+  npm run test:all
+  
+  # Store test result
+  TEST_RESULT=$?
+  
+  # Kill the test server
+  echo "Stopping test server..."
+  kill $SERVER_PID
+  
+  # Check if tests passed
+  if [ $TEST_RESULT -ne 0 ]; then
+    echo "Tests failed. Stopping deployment."
+    exit 1
+  fi
+
+  echo "All tests passed successfully. Proceeding with deployment..."
+  cd infrastructure
+  
   # Clean and build the project
   ./scripts/build-clean.sh
   

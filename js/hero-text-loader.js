@@ -31,7 +31,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     heroContent.appendChild(heroSubheading);
     heroContent.appendChild(heroButton);
     
-    // Remove manual animation styles - now handled by CSS
+    // Set initial state for fade-in animation
+    heroContent.style.opacity = '0';
+    heroContent.style.transform = 'translateY(25px)';
+    heroContent.style.transition = 'opacity 0.8s ease, transform 0.8s ease'; // Faster animation
+    
+    heroHeading.style.opacity = '0';
+    heroHeading.style.transition = 'opacity 0.8s ease'; // Faster animation
+    
+    heroSubheading.style.opacity = '0';
+    heroSubheading.style.transition = 'opacity 0.8s ease 0.2s'; // Faster animation with reduced delay
+    
+    heroButton.style.opacity = '0';
+    heroButton.style.transform = 'translateY(20px)';
+    heroButton.style.transition = 'opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s'; // Faster animation with reduced delay
     
     try {
         // Fetch the website settings from the API
@@ -230,26 +243,29 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
         
-        // Trigger fade-in animation after content is fully loaded and styled
-        // Match the header timing: 0.8s animation with 0.2s delay
+        // Trigger fade-in animation after content is loaded and processed
         setTimeout(() => {
             if (heroContent) {
                 heroContent.style.opacity = '1';
                 heroContent.style.transform = 'translateY(0)';
-                console.log('[Hero Debug] Hero content fade-in triggered');
             }
-        }, 200); // 200ms delay to match header timing
+            
+            if (heroHeading) {
+                heroHeading.style.opacity = '1';
+            }
+            
+            if (heroSubheading) {
+                heroSubheading.style.opacity = '1';
+            }
+            
+            if (heroButton) {
+                heroButton.style.opacity = '1';
+                heroButton.style.transform = 'translateY(0)';
+            }
+        }, 500); // Increased delay to ensure a more noticeable fade-in effect
         
     } catch (error) {
         console.error('Error loading hero text:', error);
-        
-        // Even if there's an error, show the hero with default content
-        setTimeout(() => {
-            if (heroContent) {
-                heroContent.style.opacity = '1';
-                heroContent.style.transform = 'translateY(0)';
-            }
-        }, 200);
     }
 });
 
