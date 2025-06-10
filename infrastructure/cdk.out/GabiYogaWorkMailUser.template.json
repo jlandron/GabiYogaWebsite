@@ -329,7 +329,7 @@
     "SecretArn": {
      "Ref": "WorkMailSmtpCredentials04C6BE96"
     },
-    "UpdateTimestamp": "2025-05-05T04:27:02.465Z"
+    "UpdateTimestamp": "2025-06-08T22:02:39.162Z"
    },
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",

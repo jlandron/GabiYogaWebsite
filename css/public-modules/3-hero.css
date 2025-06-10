@@ -30,16 +30,25 @@
 .hero-content {
     max-width: 800px;
     padding: 20px;
-    /* Removed opacity and animations to prevent interference with hardcoded content */
+    opacity: 0; /* Start hidden like header */
+    animation: fadeIn 1s forwards 0.2s; /* Slower than header - starts after 0.2s delay, takes 1s to complete */
 }
 
 .hero-content h1 {
-    /* All styling now handled by inline styles in HTML */
+    font-size: 3rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Julietta', serif;
+    font-weight: normal;
+    line-height: 1.3;
 }
 
-/* This was the issue - removing font-size from .hero-content p */
 .hero-content p {
-    /* All styling now handled by inline styles in HTML */
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.2rem;
 }
 
 .hero-content .btn {
