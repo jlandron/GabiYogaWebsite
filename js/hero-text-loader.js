@@ -98,14 +98,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     heroHeading.textContent = 'Find Your Inner Peace';
                 }
                 
-                // Apply font family and size from API data
+                // Only apply font family - let CSS handle font size
                 if (heading.font) {
                     heroHeading.style.fontFamily = heading.font;
-                }
-                
-                if (heading.size) {
-                    heroHeading.style.fontSize = heading.size;
-                    console.log('[Hero Debug] Applied heading size:', heading.size);
                 }
                 
                 if (heading.fontWeight) {
