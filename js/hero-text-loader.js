@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Preload the hero image
     preloadHeroImage();
     
-    // Create hero elements
-    const heroHeading = document.createElement('h1');
+    // Get existing hardcoded h1 or create other elements
+    const heroHeading = heroContent.querySelector('h1'); // Use existing hardcoded h1
     const heroSubheading = document.createElement('p');
     const heroButton = document.createElement('a');
     
@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     heroButton.className = 'btn';
     heroButton.textContent = 'Explore Classes';
     
-    // Append elements to hero content
-    heroContent.appendChild(heroHeading);
+    // Append only subheading and button (h1 already exists in HTML)
     heroContent.appendChild(heroSubheading);
     heroContent.appendChild(heroButton);
     
@@ -75,65 +74,37 @@ document.addEventListener('DOMContentLoaded', async function() {
             const heading = {...(data.settings.heroText.heading || {})};
             const subheading = {...(data.settings.heroText.subheading || {})};
             
-            // Set default fonts if missing
+            // Set default fonts if missing - NO SIZE OVERRIDES
             if (!heading.font) {
                 heading.font = "'Julietta', serif";
                 console.log('[Hero Debug] Added default heading font: Julietta');
             }
             
-            if (!heading.size) {
-                heading.size = "64px";
-                console.log('[Hero Debug] Added default heading size: 64px');
-            }
+            // NO font size override - CSS and HTML handle this at 64pt
             
             if (!subheading.font) {
                 subheading.font = "'Satisfy', cursive";
                 console.log('[Hero Debug] Added default subheading font: Satisfy');
             }
             
-            if (!subheading.size) {
-                subheading.size = "16px";
-                console.log('[Hero Debug] Added default subheading size: 16px');
-            }
+            // NO subheading size override - let CSS handle sizing
             
-            // Update heading - simplified approach
-            if (heading) {
-                console.log('[Hero Debug] Processing heading with text and font only');
+            // Update heading text only - DO NOT modify any styles (hardcoded in HTML)
+            if (heading && heading.text) {
+                console.log('[Hero Debug] Processing heading text only - styles are hardcoded');
                 
-                // Set text content
-                if (heading.text) {
-                    if (heading.text.trim().startsWith('<')) {
-                        heroHeading.innerHTML = heading.text;
-                    } else {
-                        heroHeading.textContent = heading.text;
-                    }
+                // Set text content only
+                if (heading.text.trim().startsWith('<')) {
+                    heroHeading.innerHTML = heading.text;
                 } else {
-                    heroHeading.textContent = 'Find Your Inner Peace';
+                    heroHeading.textContent = heading.text;
                 }
                 
-                // DO NOT override font-size - CSS sets it to 64pt (5.33rem) and it should NEVER change
-                if (heading.font) {
-                    heroHeading.style.fontFamily = heading.font;
-                }
-                
-                // Font size is ALWAYS 64pt - never override from API settings
-                // This ensures the heading stays large and wraps instead of shrinking
-                
-                if (heading.fontWeight) {
-                    heroHeading.style.fontWeight = heading.fontWeight;
-                }
-                
-                if (heading.fontStyle) {
-                    heroHeading.style.fontStyle = heading.fontStyle;
-                }
-                
-                if (heading.textDecoration) {
-                    heroHeading.style.textDecoration = heading.textDecoration;
-                }
-                
-                heroHeading.style.textAlign = heading.textAlign || 'center';
+                // DO NOT modify any styles - they are hardcoded in HTML with !important
+                console.log('[Hero Debug] Updated heading text only');
             } else {
-                heroHeading.textContent = 'Find Your Inner Peace';
+                // Keep default text if no settings
+                console.log('[Hero Debug] Using default heading text');
             }
             
             // Update subheading
