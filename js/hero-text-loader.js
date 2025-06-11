@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Preload the hero image
     preloadHeroImage();
     
-    // Get existing hardcoded h1 or create other elements
-    const heroHeading = heroContent.querySelector('h1'); // Use existing hardcoded h1
+    // Create all hero elements dynamically with smooth animations
+    const heroHeading = document.createElement('h1');
     const heroSubheading = document.createElement('p');
     const heroButton = document.createElement('a');
     
@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     heroButton.className = 'btn';
     heroButton.textContent = 'Explore Classes';
     
-    // Append only subheading and button (h1 already exists in HTML)
+    // Append all elements to hero content
+    heroContent.appendChild(heroHeading);
     heroContent.appendChild(heroSubheading);
     heroContent.appendChild(heroButton);
     
@@ -89,23 +90,44 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // NO subheading size override - let CSS handle sizing
             
-            // Update heading text only - DO NOT modify any styles (hardcoded in HTML)
+            // Update heading with dynamic styling (no longer hardcoded in HTML)
             if (heading && heading.text) {
-                console.log('[Hero Debug] Processing heading text only - styles are hardcoded');
+                console.log('[Hero Debug] Processing heading with dynamic styles');
                 
-                // Set text content only
+                // Set text content
                 if (heading.text.trim().startsWith('<')) {
                     heroHeading.innerHTML = heading.text;
                 } else {
                     heroHeading.textContent = heading.text;
                 }
-                
-                // DO NOT modify any styles - they are hardcoded in HTML with !important
-                console.log('[Hero Debug] Updated heading text only');
             } else {
-                // Keep default text if no settings
+                // Set default text
+                heroHeading.textContent = 'Find Your Inner Peace';
                 console.log('[Hero Debug] Using default heading text');
             }
+            
+            // Apply heading styles dynamically (CSS will handle via selectors)
+            // Font family can be customized, but size is controlled by CSS at 64pt
+            if (heading.font) {
+                heroHeading.style.fontFamily = heading.font;
+                console.log('[Hero Debug] Applied heading font:', heading.font);
+            }
+            
+            // Font weight, style, decoration can be customized
+            if (heading.fontWeight) {
+                heroHeading.style.fontWeight = heading.fontWeight;
+            }
+            
+            if (heading.fontStyle) {
+                heroHeading.style.fontStyle = heading.fontStyle;
+            }
+            
+            if (heading.textDecoration) {
+                heroHeading.style.textDecoration = heading.textDecoration;
+            }
+            
+            heroHeading.style.textAlign = heading.textAlign || 'center';
+            console.log('[Hero Debug] Applied dynamic heading styles');
             
             // Update subheading
             if (subheading) {
