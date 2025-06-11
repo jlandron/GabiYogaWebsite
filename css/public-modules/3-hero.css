@@ -179,9 +179,9 @@
         font-size: 2.2rem;
     }
     
-    .hero-content p,
-    .blog-hero-content p,
-    .page-hero-content p {
+    .hero-content > p,
+    .blog-hero-content > p,
+    .page-hero-content > p {
         font-size: 1rem;
     }
 }
