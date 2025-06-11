@@ -286,6 +286,12 @@ function preloadHeroImage() {
     // Check if multi-region image loader is available
     if (typeof window.MultiRegionImageLoader !== 'undefined') {
         console.log('[Hero Debug] Using multi-region image loader for hero image');
+        console.log('[Hero Debug] Environment check:', {
+            NODE_ENV: window.NODE_ENV,
+            GLOBAL_CLOUDFRONT_URL: window.GLOBAL_CLOUDFRONT_URL ? 'SET' : 'NOT SET',
+            isProduction: window.MultiRegionImageLoader.isProduction,
+            globalCloudFrontUrl: window.MultiRegionImageLoader.globalCloudFrontUrl
+        });
         
         // Use multi-region image loader for optimal performance
         window.MultiRegionImageLoader.loadOptimizedImage(`images/${heroImageFile}`)

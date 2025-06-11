@@ -147,9 +147,20 @@ class MultiRegionImageLoader {
    * Get optimized image URL based on user location
    */
   getOptimizedImageUrl(imagePath) {
+    // Debug logging
+    console.log('[MultiRegion Debug] getOptimizedImageUrl called with:', {
+      imagePath,
+      isProduction: this.isProduction,
+      globalCloudFrontUrl: this.globalCloudFrontUrl,
+      userCountry: this.userCountry,
+      preferredRegion: this.getBestRegion()
+    });
+
     if (!this.isProduction || !this.globalCloudFrontUrl) {
       // Development mode or no CloudFront - return as-is
-      return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+      const localUrl = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+      console.log('[MultiRegion Debug] Using local URL:', localUrl);
+      return localUrl;
     }
 
     const preferredRegion = this.getBestRegion();
@@ -157,13 +168,17 @@ class MultiRegionImageLoader {
     // Remove leading slash if present
     const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
     
+    let optimizedUrl;
     if (preferredRegion === 'eu') {
       // Route EU users through eu/ path to get EU bucket content
-      return `${this.globalCloudFrontUrl}/eu/${cleanPath}`;
+      optimizedUrl = `${this.globalCloudFrontUrl}/eu/${cleanPath}`;
     } else {
       // Route other users to default (US) bucket
-      return `${this.globalCloudFrontUrl}/${cleanPath}`;
+      optimizedUrl = `${this.globalCloudFrontUrl}/${cleanPath}`;
     }
+    
+    console.log('[MultiRegion Debug] Using optimized URL:', optimizedUrl);
+    return optimizedUrl;
   }
 
   /**

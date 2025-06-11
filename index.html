@@ -545,10 +545,18 @@
         window.NODE_ENV = window.NODE_ENV || 'production';
         window.GLOBAL_CLOUDFRONT_URL = window.GLOBAL_CLOUDFRONT_URL || '';
         
-        // Debug: Log configuration in console (remove in production)
+        // TEMPORARY: Manual override for testing (replace with your CloudFront URL)
+        if (!window.GLOBAL_CLOUDFRONT_URL && window.NODE_ENV === 'production') {
+            // TODO: Replace this with your actual CloudFront distribution URL
+            window.GLOBAL_CLOUDFRONT_URL = 'https://YOUR_CLOUDFRONT_DISTRIBUTION.cloudfront.net';
+            console.warn('Using manual CloudFront URL override. Please set GLOBAL_CLOUDFRONT_URL environment variable.');
+        }
+        
+        // Debug: Log configuration in console
         console.log('Multi-region config:', {
             NODE_ENV: window.NODE_ENV,
-            GLOBAL_CLOUDFRONT_URL: window.GLOBAL_CLOUDFRONT_URL ? 'SET' : 'NOT SET'
+            GLOBAL_CLOUDFRONT_URL: window.GLOBAL_CLOUDFRONT_URL ? 'SET' : 'NOT SET',
+            actualUrl: window.GLOBAL_CLOUDFRONT_URL
         });
     </script>
     <script src="js/multi-region-image-loader.js"></script>
