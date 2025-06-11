@@ -367,6 +367,14 @@ class MultiRegionImageLoader {
   }
 
   /**
+   * Alias for preloadImage to maintain compatibility
+   */
+  async loadOptimizedImage(imagePath, options = {}) {
+    const result = await this.preloadImage(imagePath, options);
+    return result.url; // Return just the URL for simpler usage
+  }
+
+  /**
    * Get performance statistics
    */
   getPerformanceStats() {

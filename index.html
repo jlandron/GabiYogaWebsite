@@ -35,6 +35,7 @@
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/public-unified.css">
+    <link rel="stylesheet" href="css/multi-region-image-loader.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/fonts.css">
@@ -61,7 +62,7 @@
             <h2>About Me</h2>
             <div class="about-content">
                 <div class="about-image">
-                    <img src="images/DSC02659.JPG" alt="Yoga Instructor">
+                    <img data-src="images/DSC02659.JPG" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f8f9fa'/%3E%3C/svg%3E" alt="Yoga Instructor" class="lazy-load">
                 </div>
                 <div class="about-text">
                     <!-- Instructor bio content dynamically injected by bio-content-loader.js -->
@@ -539,6 +540,18 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Multi-region configuration - should be set by server in production
+        window.NODE_ENV = window.NODE_ENV || 'production';
+        window.GLOBAL_CLOUDFRONT_URL = window.GLOBAL_CLOUDFRONT_URL || '';
+        
+        // Debug: Log configuration in console (remove in production)
+        console.log('Multi-region config:', {
+            NODE_ENV: window.NODE_ENV,
+            GLOBAL_CLOUDFRONT_URL: window.GLOBAL_CLOUDFRONT_URL ? 'SET' : 'NOT SET'
+        });
+    </script>
+    <script src="js/multi-region-image-loader.js"></script>
     <script src="js/user-data-manager.js"></script>
     <script src="js/header-loader.js"></script>
     <script src="js/script.js"></script>
@@ -547,34 +560,9 @@
     <script src="js/latest-blog.js"></script>
     <script src="js/stripe-payment.js"></script>
     <script src="js/profile-loader.js"></script>
-    <!-- <script src="js/hero-text-loader.js"></script> -->
+    <script src="js/hero-text-loader.js"></script>
     <script src="js/bio-content-loader.js"></script>
     <script src="js/offerings-content-loader.js"></script>
     <script src="js/section-background-alternator.js"></script>
-    
-    <!-- Simple hero image loader -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const heroSection = document.querySelector('.hero');
-        if (!heroSection) return;
-        
-        // Create image object to preload
-        const img = new Image();
-        
-        img.onload = function() {
-            // Add smooth transition class when image is loaded
-            setTimeout(() => {
-                heroSection.classList.add('image-loaded');
-            }, 100); // Small delay for smoother transition
-        };
-        
-        img.onerror = function() {
-            console.warn('Hero image failed to load, keeping gradient background');
-        };
-        
-        // Start loading the full-resolution image
-        img.src = 'images/photo-1615729947596-a598e5de0ab3.jpeg';
-    });
-    </script>
 </body>
 </html>
