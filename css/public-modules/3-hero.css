@@ -50,21 +50,30 @@
 }
 
 .hero-content h1 {
-    font-size: 5.33rem; /* 64pt - NEVER scale down */
-    color: white;
-    text-align: center;
-    margin-bottom: 20px;
-    font-family: 'Julietta', serif;
-    font-weight: normal;
-    line-height: 1.2;
-    word-wrap: break-word;
-    hyphens: auto;
-    overflow-wrap: break-word;
+    font-size: 5.33rem !important; /* 64pt - NEVER scale down */
+    color: white !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    font-family: 'Julietta', serif !important;
+    font-weight: normal !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+    hyphens: auto !important;
+    overflow-wrap: break-word !important;
     /* Ensure text wraps properly and never shrinks */
-    min-font-size: 5.33rem; /* Prevent any shrinking */
+    min-font-size: 5.33rem !important; /* Prevent any shrinking */
 }
 
-.hero-content p {
+/* Ensure paragraph rules don't affect h1 */
+.hero-content p:not(h1) {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+}
+
+/* Alternative specific targeting for actual paragraphs only */
+.hero-content > p {
     color: white;
     text-align: center;
     margin-bottom: 30px;
