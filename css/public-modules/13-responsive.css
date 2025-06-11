@@ -127,8 +127,8 @@
     
     /* Hero adjustments - font size now handled by JavaScript for better responsive control */
     
-    .hero-content p,
-    .blog-hero-content p {
+    .hero-content > p,
+    .blog-hero-content > p {
         font-size: 1rem;
     }
     
@@ -250,7 +250,7 @@
     
     /* Hero heading font size now handled by JavaScript for better responsive control */
     
-    .hero-content p {
+    .hero-content > p {
         font-size: 0.9rem;
     }
     

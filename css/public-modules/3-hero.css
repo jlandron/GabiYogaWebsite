@@ -64,15 +64,7 @@
     min-font-size: 5.33rem !important; /* Prevent any shrinking */
 }
 
-/* Ensure paragraph rules don't affect h1 */
-.hero-content p:not(h1) {
-    color: white;
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 1.2rem;
-}
-
-/* Alternative specific targeting for actual paragraphs only */
+/* Target only direct paragraph children - never affects h1 */
 .hero-content > p {
     color: white;
     text-align: center;
