@@ -111,10 +111,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                     heroHeading.textContent = 'Find Your Inner Peace';
                 }
                 
-                // Only apply font family - let CSS handle font size
+                // DO NOT override font-size - CSS sets it to 64pt (5.33rem) and it should NEVER change
                 if (heading.font) {
                     heroHeading.style.fontFamily = heading.font;
                 }
+                
+                // Font size is ALWAYS 64pt - never override from API settings
+                // This ensures the heading stays large and wraps instead of shrinking
                 
                 if (heading.fontWeight) {
                     heroHeading.style.fontWeight = heading.fontWeight;
