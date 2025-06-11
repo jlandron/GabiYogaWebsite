@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 /**
- * Preloads the hero image and applies it directly to the hero background
+ * Preloads the hero image using multi-region optimization and applies it to the hero background
  * when the image is fully loaded for a smooth transition experience.
  */
 function preloadHeroImage() {
@@ -280,35 +280,89 @@ function preloadHeroImage() {
     // First set up a transition on the background for smooth appearance
     heroSection.style.transition = "background 1s ease-in";
     
+    // Hero image filename (without path)
+    const heroImageFile = 'photo-1615729947596-a598e5de0ab3.jpeg';
+    
+    // Check if multi-region image loader is available
+    if (typeof window.MultiRegionImageLoader !== 'undefined') {
+        console.log('[Hero Debug] Using multi-region image loader for hero image');
+        
+        // Use multi-region image loader for optimal performance
+        window.MultiRegionImageLoader.loadOptimizedImage(`images/${heroImageFile}`)
+            .then(optimizedUrl => {
+                console.log('[Hero Debug] Multi-region hero image URL:', optimizedUrl);
+                
+                // Create a new image object to preload the optimized image
+                const img = new Image();
+                
+                img.onload = function() {
+                    console.log('[Hero Debug] Multi-region hero image preloaded successfully');
+                    
+                    // Add a small delay before showing the image for a smoother experience
+                    setTimeout(() => {
+                        // Apply the background with the optimized URL
+                        heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${optimizedUrl}')`;
+                        heroSection.style.backgroundSize = 'cover';
+                        heroSection.style.backgroundPosition = 'center';
+                        console.log('[Hero Debug] Applied multi-region background image to hero section');
+                        
+                        // Add the class for any additional CSS styling
+                        heroSection.classList.add('image-loaded', 'multi-region-optimized');
+                        console.log('[Hero Debug] Added image-loaded and multi-region-optimized classes');
+                    }, 100);
+                };
+                
+                img.onerror = function() {
+                    console.warn('[Hero Debug] Error loading multi-region hero image, trying fallback');
+                    loadFallbackHeroImage(heroSection, heroImageFile);
+                };
+                
+                // Start loading the optimized image
+                img.src = optimizedUrl;
+            })
+            .catch(error => {
+                console.warn('[Hero Debug] Multi-region image loader failed:', error);
+                loadFallbackHeroImage(heroSection, heroImageFile);
+            });
+    } else {
+        console.log('[Hero Debug] Multi-region image loader not available, using direct loading');
+        loadFallbackHeroImage(heroSection, heroImageFile);
+    }
+}
+
+/**
+ * Fallback function to load hero image directly when multi-region loading fails
+ */
+function loadFallbackHeroImage(heroSection, heroImageFile) {
     // Create a new image object to preload the hero image
     const img = new Image();
     
     // When the image is loaded, apply it directly as a background
     img.onload = function() {
-        console.log('[Hero Debug] Hero image preloaded successfully');
+        console.log('[Hero Debug] Fallback hero image preloaded successfully');
         
         // Add a small delay before showing the image for a smoother experience
-        // This allows the page to render and stabilize first
         setTimeout(() => {
             // Apply the background directly to the hero element
-            heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/images/photo-1615729947596-a598e5de0ab3.jpeg')`;
+            heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/images/${heroImageFile}')`;
             heroSection.style.backgroundSize = 'cover';
             heroSection.style.backgroundPosition = 'center';
-            console.log('[Hero Debug] Applied background image directly to hero section');
+            console.log('[Hero Debug] Applied fallback background image to hero section');
             
-            // Also add the class for any additional CSS styling
+            // Add the class for any additional CSS styling
             heroSection.classList.add('image-loaded');
             console.log('[Hero Debug] Added image-loaded class to hero section');
         }, 100);
     };
     
-    // In case of error, use a fallback or keep the color background
+    // In case of error, use a solid color background
     img.onerror = function() {
-        console.warn('[Hero Debug] Error loading hero image, using fallback');
-        // Optionally, you could set a fallback image here
+        console.warn('[Hero Debug] Error loading fallback hero image, using solid background');
+        heroSection.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        heroSection.classList.add('image-failed');
     };
     
     // Start loading the image with absolute path from domain root
-    img.src = '/images/photo-1615729947596-a598e5de0ab3.jpeg';
-    console.log('[Hero Debug] Started preloading hero image: ' + img.src);
+    img.src = `/images/${heroImageFile}`;
+    console.log('[Hero Debug] Started preloading fallback hero image: ' + img.src);
 }

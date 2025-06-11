@@ -43,5 +43,6 @@ uploads/images/*
 # Project-specific
 TODO
 .env
-.env
 coverage/*
+infrastructure/cdk.out/
+

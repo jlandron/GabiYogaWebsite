@@ -35,6 +35,7 @@ const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
 const { router: authRouter, authenticateToken } = require('./api/auth');  // Import auth router and middleware
 const privateSessionsRoutes = require('./api/private-sessions'); // Import private sessions routes
 const dashboardRoutes = require('./api/dashboard'); // Import dashboard routes
+const userLocationApi = require('./api/user-location'); // Import user location API
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -182,6 +183,10 @@ app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 app.use('/api/stripe', stripeRoutes); // Stripe payment routes
 app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
 app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
+
+// User location detection endpoints (public)
+app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
+app.get('/api/get-region-recommendation', asyncHandler(userLocationApi.handleGetRegionRecommendation));
 
 // Fallback route for SPA
 // This should be after API routes but before error handlers

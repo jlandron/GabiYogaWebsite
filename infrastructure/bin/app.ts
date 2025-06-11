@@ -5,6 +5,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { config } from 'dotenv';
 import { DatabaseStack } from '../lib/database-stack';
 import { StorageStack } from '../lib/storage-stack';
+import { MultiRegionStorageStack } from '../lib/multi-region-storage-stack';
+import { PrimaryBucketPolicyStack } from '../lib/primary-bucket-policy-stack';
+import { S3ReplicationStack } from '../lib/s3-replication-stack';
 import { WebAppStack } from '../lib/webapp-stack';
 import { NetworkStack } from '../lib/network-stack';
 import { DnsStack } from '../lib/dns-stack';
@@ -27,6 +30,33 @@ const app = new App();
 // Create the stacks with proper dependencies
 const networkStack = new NetworkStack(app, 'GabiYogaNetwork', { env });
 const storageStack = new StorageStack(app, 'GabiYogaStorage', { env });
+
+// Create multi-region storage stack for improved EU performance
+const multiRegionStorageStack = new MultiRegionStorageStack(app, 'GabiYogaMultiRegionStorage', {
+  env: { account: accountId, region: 'eu-west-1' }, // Deploy EU resources in eu-west-1
+  primaryRegion: 'us-west-2',
+  secondaryRegion: 'eu-west-1',
+  primaryBucketName: 'gabi-yoga-uploads',
+});
+
+// Create primary bucket policy stack (must be in same region as primary bucket)
+const primaryBucketPolicyStack = new PrimaryBucketPolicyStack(app, 'GabiYogaPrimaryBucketPolicy', {
+  env, // us-west-2
+  primaryBucketName: 'gabi-yoga-uploads',
+});
+
+// Create S3 replication configuration stack
+const s3ReplicationStack = new S3ReplicationStack(app, 'GabiYogaS3Replication', {
+  env,
+  primaryBucketName: 'gabi-yoga-uploads',
+  secondaryBucketName: 'gabi-yoga-uploads-eu',
+  secondaryRegion: 'eu-west-1',
+  replicationRole: multiRegionStorageStack.replicationRole,
+});
+
+// Add dependencies
+s3ReplicationStack.addDependency(multiRegionStorageStack);
+primaryBucketPolicyStack.addDependency(multiRegionStorageStack); // Ensure global distribution exists first
 
 // Create database stack FIRST
 const databaseStack = new DatabaseStack(app, 'GabiYogaDatabase', {
