@@ -27,8 +27,8 @@ function initPublicGallery() {
     // Get gallery settings (still from localStorage for now)
     const gallerySettings = loadGallerySettings();
     
-    // Fetch photos from API
-    fetch('/api/gallery/images')
+    // Fetch photos from API - only get photos that should be shown on homepage
+    fetch('/api/gallery/images/homepage')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Failed to fetch gallery images: ${response.statusText}`);

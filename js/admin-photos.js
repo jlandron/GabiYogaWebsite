@@ -540,7 +540,8 @@ class PhotoGalleryManager {
                     caption: '',
                     alt: '',
                     tags: [],
-                    isProfilePhoto: false
+                    isProfilePhoto: false,
+                    showOnHomepage: true // Default to showing on homepage
                 };
                 
                 const success = await this.savePhoto(photo);
@@ -777,7 +778,7 @@ class PhotoGalleryManager {
         
         const homepageCheckbox = document.getElementById('show-on-homepage');
         if (homepageCheckbox) {
-            homepageCheckbox.checked = photo.showOnHomepage || false;
+            homepageCheckbox.checked = photo.showOnHomepage !== undefined ? photo.showOnHomepage : true;
         }
         
         this.photoFilename.textContent = photo.title ? `${photo.title}${this.getFileExtension(photo.type)}` : '-';
@@ -830,6 +831,12 @@ class PhotoGalleryManager {
                                 <div class="profile-photo-checkbox">
                                     <input type="checkbox" id="use-as-profile">
                                     <label for="use-as-profile">Use as Profile Photo (About Me section)</label>
+                                </div>
+                            </div>
+                            <div class="admin-form-group homepage-photo-option">
+                                <div class="homepage-photo-checkbox">
+                                    <input type="checkbox" id="show-on-homepage">
+                                    <label for="show-on-homepage">Show on Homepage (Featured in homepage gallery)</label>
                                 </div>
                             </div>
                             <div class="admin-form-group">
