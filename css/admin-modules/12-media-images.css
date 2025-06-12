@@ -231,3 +231,130 @@
     font-style: italic;
     margin-top: var(--spacing-xs);
 }
+
+/* Profile Photo Badge */
+.profile-photo-badge {
+    position: absolute;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-circle);
+    font-size: var(--font-size-sm);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-photo-badge i {
+    font-size: 12px;
+}
+
+.photo-item.profile-photo {
+    border: 2px solid var(--primary-color);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Notifications */
+.notification-container {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.notification {
+    background-color: var(--success-color, #28a745);
+    color: white;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    min-width: 300px;
+    max-width: 400px;
+    word-wrap: break-word;
+    animation: slideInRight 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
+}
+
+.notification.error {
+    background-color: var(--danger-color, #dc3545);
+}
+
+.notification.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Profile Photo Option Styling */
+.profile-photo-option, .homepage-photo-option {
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+    background-color: var(--hover-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.profile-photo-checkbox, .homepage-photo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.profile-photo-checkbox input[type="checkbox"], 
+.homepage-photo-checkbox input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.profile-photo-checkbox label, 
+.homepage-photo-checkbox label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+}

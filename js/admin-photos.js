@@ -168,21 +168,45 @@ class PhotoGalleryManager {
     
     // Preload thumbnails for all photos
     async preloadThumbnails() {
-        for (const photo of this.photos) {
+        const loadPromises = this.photos.map(async (photo) => {
             if (typeof photo.data === 'string' && photo.data.startsWith('/api/')) {
                 try {
-                    const response = await fetch(photo.data);
+                    const token = localStorage.getItem('auth_token');
+                    const headers = {};
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
+                    const response = await fetch(photo.data, { headers });
                     if (response.ok) {
                         const blob = await response.blob();
                         photo.data = URL.createObjectURL(blob);
+                        photo.loaded = true;
+                    } else {
+                        console.error(`Failed to load thumbnail for photo ${photo.id}: ${response.status} ${response.statusText}`);
+                        photo.loaded = false;
                     }
                 } catch (error) {
                     console.error(`Error preloading thumbnail for photo ${photo.id}:`, error);
+                    photo.loaded = false;
                 }
+            } else {
+                photo.loaded = true; // Already loaded or base64 data
             }
-        }
+        });
+        
+        // Wait for a few thumbnails to load before rendering, but don't wait for all
+        const maxWait = Math.min(5, this.photos.length);
+        await Promise.allSettled(loadPromises.slice(0, maxWait));
         
         this.renderGallery();
+        
+        // Continue loading the rest in the background
+        if (this.photos.length > maxWait) {
+            Promise.allSettled(loadPromises.slice(maxWait)).then(() => {
+                this.renderGallery(); // Re-render once all images are loaded
+            });
+        }
     }
     
     // Save a photo to the database
@@ -402,19 +426,25 @@ class PhotoGalleryManager {
             }
             
             photoItem.innerHTML = `
-                <input type="checkbox" class="photo-checkbox" data-id="${photo.id}">
                 ${profileBadge}
                 <img src="${photo.data}" alt="${photo.alt || 'Photo'}" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="photo-overlay-actions">
-                        <button title="Edit" class="edit-photo-btn" data-id="${photo.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button title="Delete" class="delete-photo-btn" data-id="${photo.id}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+                    <div class="photo-actions">
+                        <div class="photo-select">
+                            <input type="checkbox" class="photo-checkbox" data-id="${photo.id}">
+                        </div>
+                        <div class="photo-buttons">
+                            <button title="Edit" class="edit-photo-btn" data-id="${photo.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button title="Delete" class="delete-photo-btn" data-id="${photo.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                     </div>
-                    <h3 class="photo-title">${photo.title || 'Untitled'}</h3>
+                    <div class="photo-info">
+                        <h3 class="photo-title">${photo.title || 'Untitled'}</h3>
+                    </div>
                 </div>
             `;
             
