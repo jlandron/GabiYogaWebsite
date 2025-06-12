@@ -24,7 +24,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         // If we got a valid URL, update the image
         if (data && data.url) {
             profileImage.src = data.url;
+            
+            // Important: Remove lazy-loading attributes to prevent multi-region loader interference
+            profileImage.removeAttribute('data-src');
+            profileImage.classList.remove('lazy-load');
+            profileImage.classList.add('loaded');
+            
             console.log('Profile photo updated successfully');
+            console.log('Profile photo updated in About section');
         }
     } catch (error) {
         console.error('Error loading profile photo:', error);

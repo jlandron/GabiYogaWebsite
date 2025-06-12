@@ -351,6 +351,12 @@ class MultiRegionImageLoader {
       const originalSrc = imgElement.dataset.src;
       if (!originalSrc) return;
 
+      // Skip if image is already loaded (e.g., by profile-loader.js)
+      if (imgElement.classList.contains('loaded') || imgElement.src !== imgElement.dataset.src) {
+        console.debug('Skipping already loaded image:', originalSrc);
+        return;
+      }
+
       // Show loading state
       imgElement.classList.add('loading');
 
