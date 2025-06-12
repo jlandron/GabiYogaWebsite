@@ -220,20 +220,32 @@ class MultiRegionImageLoader {
    */
   async _loadImageWithFallbacks(imagePath, fallbackUrls, timeout, retries) {
     const optimizedUrl = this.getOptimizedImageUrl(imagePath);
-    const urlsToTry = [optimizedUrl, ...fallbackUrls];
+    
+    // Create comprehensive fallback URL list
+    const urlsToTry = [
+      optimizedUrl,
+      ...fallbackUrls,
+      // Add direct local paths as additional fallbacks
+      imagePath.startsWith('/') ? imagePath : `/${imagePath}`,
+      imagePath.startsWith('/') ? imagePath.substring(1) : imagePath
+    ].filter((url, index, array) => array.indexOf(url) === index); // Remove duplicates
 
     for (let i = 0; i < urlsToTry.length; i++) {
       const url = urlsToTry[i];
       
-      for (let retry = 0; retry <= retries; retry++) {
+      // Use fewer retries for CloudFront to fail faster and fallback quicker
+      const maxRetries = i === 0 && this.isProduction ? 1 : retries;
+      const currentTimeout = i === 0 && this.isProduction ? 3000 : timeout; // Shorter timeout for CloudFront
+      
+      for (let retry = 0; retry <= maxRetries; retry++) {
         try {
-          const imageData = await this._loadSingleImage(url, timeout);
+          const imageData = await this._loadSingleImage(url, currentTimeout);
           
-          // Log performance information
+          // Log performance information with more detail
           if (i === 0) {
-            console.debug(`Image loaded from optimal URL: ${url}`);
+            console.debug(`[MultiRegion] Image loaded from optimal URL: ${url}`);
           } else {
-            console.warn(`Image loaded from fallback URL #${i}: ${url}`);
+            console.warn(`[MultiRegion] Image loaded from fallback URL #${i}: ${url}`);
           }
           
           return {
@@ -241,14 +253,15 @@ class MultiRegionImageLoader {
             data: imageData,
             isOptimal: i === 0,
             fallbackUsed: i > 0,
-            retryCount: retry
+            retryCount: retry,
+            fallbackLevel: i
           };
         } catch (error) {
-          console.debug(`Failed to load ${url} (attempt ${retry + 1}):`, error);
+          console.debug(`[debug] Failed to load ${url} (attempt ${retry + 1}):`, error);
           
           // If this is the last retry for the last URL, throw the error
-          if (i === urlsToTry.length - 1 && retry === retries) {
-            throw new Error(`Failed to load image after trying ${urlsToTry.length} URLs with ${retries + 1} attempts each`);
+          if (i === urlsToTry.length - 1 && retry === maxRetries) {
+            throw new Error(`[MultiRegion] Failed to load image after trying ${urlsToTry.length} URLs with multiple attempts each. Last error: ${error.message}`);
           }
         }
       }

@@ -545,9 +545,9 @@
         
         // TEMPORARY: Manual override for testing (replace with your CloudFront URL)
         if (!window.GLOBAL_CLOUDFRONT_URL && window.NODE_ENV === 'production') {
-            // Using actual CloudFront distribution URL from deployment
-            window.GLOBAL_CLOUDFRONT_URL = 'https://d2k455uz1e3sou.cloudfront.net';
-            console.warn('Using manual CloudFront URL override. Please set GLOBAL_CLOUDFRONT_URL environment variable.');
+            // Using correct CloudFront distribution URL from infrastructure deployment
+            window.GLOBAL_CLOUDFRONT_URL = 'https://dan3ifh3jhral.cloudfront.net';
+            console.warn('Using correct CloudFront URL from infrastructure. Please set GLOBAL_CLOUDFRONT_URL environment variable.');
         }
         
         // Debug: Log configuration in console
