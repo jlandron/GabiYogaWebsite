@@ -86,8 +86,30 @@
     <section id="gallery" class="gallery">
         <div class="container">
             <h2>Gallery</h2>
-            <div class="gallery-grid">
-                <div class="gallery-item">
+            <div class="gallery-carousel-container">
+                <div class="carousel-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading gallery...
+                </div>
+                <div class="gallery-carousel" style="display: none;">
+                    <div class="gallery-carousel-track">
+                        <!-- Carousel items will be dynamically inserted here -->
+                    </div>
+                    <button class="carousel-nav-btn prev-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-nav-btn next-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="carousel-indicators">
+                    <!-- Indicators will be dynamically inserted here -->
+                </div>
+                <div style="text-align: center;">
+                    <button class="view-all-btn">
+                        <i class="fas fa-images"></i>
+                        View All Photos
+                    </button>
                 </div>
             </div>
         </div>

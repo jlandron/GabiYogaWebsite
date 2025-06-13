@@ -1,31 +1,31 @@
 /**
  * Gallery.js
- * Loads photos from the admin photo gallery (localStorage) for display on the public-facing site
+ * Interactive Carousel Gallery for displaying photos from the admin photo gallery
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the gallery
-    initPublicGallery();
+    // Initialize the gallery carousel
+    initGalleryCarousel();
     
     // Initialize the profile photo in the About Me section
     initProfilePhoto();
 });
 
+// Global carousel state
+let currentCarouselIndex = 0;
+let carouselPhotos = [];
+let carouselAutoPlayInterval = null;
+
 /**
- * Initialize the public gallery with photos from the database
+ * Initialize the interactive carousel gallery
  */
-function initPublicGallery() {
-    const galleryGrid = document.querySelector('.gallery-grid');
+function initGalleryCarousel() {
+    const carouselContainer = document.querySelector('.gallery-carousel-container');
+    const loadingElement = document.querySelector('.carousel-loading');
     
-    if (!galleryGrid) {
+    if (!carouselContainer || !loadingElement) {
         return;
     }
-    
-    // Clear existing content (static placeholders)
-    galleryGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i>Loading gallery...</div>';
-    
-    // Get gallery settings (still from localStorage for now)
-    const gallerySettings = loadGallerySettings();
     
     // Fetch photos from API - only get photos that should be shown on homepage
     fetch('/api/gallery/images/homepage')
@@ -36,47 +36,32 @@ function initPublicGallery() {
             return response.json();
         })
         .then(data => {
-            // Photos are already sorted from the server
             const photos = data.images || [];
             
-            // Clear loading indicator
-            galleryGrid.innerHTML = '';
-            
             if (photos.length === 0) {
-                galleryGrid.innerHTML = '<p>No photos available.</p>';
+                loadingElement.innerHTML = '<p>No photos available for the gallery.</p>';
                 return;
             }
             
-            // Limit to a reasonable number for the public gallery
-            const displayLimit = Math.min(photos.length, gallerySettings.publicDisplayLimit || 6);
-            
-            // Load each photo and add to gallery
-            const loadPhotoPromises = [];
-            
-            for (let i = 0; i < displayLimit; i++) {
-                const photo = photos[i];
-                loadPhotoPromises.push(loadAndAddPhoto(galleryGrid, photo));
-            }
-            
-            Promise.all(loadPhotoPromises).then(() => {
-                // If there are more photos than we're displaying, add a "View All" button
-                if (photos.length > displayLimit) {
-                    addViewAllButton(galleryGrid);
-                }
-            });
+            // Load photo data and create carousel
+            loadCarouselPhotos(photos);
         })
         .catch(error => {
             console.error('Error loading gallery:', error);
-            galleryGrid.innerHTML = '<p>Error loading gallery. Please try again later.</p>';
+            loadingElement.innerHTML = '<p>Error loading gallery. Please try again later.</p>';
         });
 }
 
 /**
- * Load photo data and add it to the gallery
+ * Load carousel photos and initialize the carousel
  */
-function loadAndAddPhoto(galleryGrid, photoInfo) {
-    return new Promise((resolve, reject) => {
-        fetch(`/api/gallery/images/${photoInfo.image_id}/data`)
+function loadCarouselPhotos(photoInfos) {
+    const loadingElement = document.querySelector('.carousel-loading');
+    const carousel = document.querySelector('.gallery-carousel');
+    
+    // Load each photo data
+    const loadPromises = photoInfos.map(photoInfo => {
+        return fetch(`/api/gallery/images/${photoInfo.image_id}/data`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Failed to fetch image data: ${response.statusText}`);
@@ -84,146 +69,309 @@ function loadAndAddPhoto(galleryGrid, photoInfo) {
                 return response.blob();
             })
             .then(blob => {
-                // Create a URL for the blob
-                const url = URL.createObjectURL(blob);
-                
-                // Create photo object for gallery
-                const photo = {
+                return {
                     id: photoInfo.image_id,
                     title: photoInfo.title || '',
                     description: photoInfo.description || '',
                     alt: photoInfo.alt_text || '',
                     caption: photoInfo.caption || '',
-                    data: url,
+                    data: URL.createObjectURL(blob),
                     tags: photoInfo.tags ? JSON.parse(photoInfo.tags) : [],
                     uploadDate: photoInfo.created_at,
                     isProfilePhoto: photoInfo.is_profile_photo === 1
                 };
-                
-                // Add photo to gallery
-                addPhotoToGallery(galleryGrid, photo);
-                resolve();
-            })
-            .catch(error => {
-                console.error(`Error loading photo ${photoInfo.image_id}:`, error);
-                reject(error);
             });
     });
+    
+    Promise.all(loadPromises)
+        .then(photos => {
+            carouselPhotos = photos;
+            
+            // Hide loading and show carousel
+            loadingElement.style.display = 'none';
+            carousel.style.display = 'block';
+            
+            // Build carousel
+            buildCarousel();
+            buildCarouselIndicators();
+            initCarouselNavigation();
+            initViewAllButton();
+            
+            // Start auto-play (optional)
+            startCarouselAutoPlay();
+        })
+        .catch(error => {
+            console.error('Error loading carousel photos:', error);
+            loadingElement.innerHTML = '<p>Error loading gallery photos. Please try again later.</p>';
+        });
 }
 
 /**
- * Load gallery settings from localStorage
+ * Build the carousel structure
  */
-function loadGallerySettings() {
-    try {
-        const storedSettings = localStorage.getItem('admin_gallery_settings');
-        return storedSettings ? JSON.parse(storedSettings) : {
-            title: 'Yoga Gallery',
-            description: 'A collection of yoga practice photos',
-            photosPerPage: 24,
-            layout: 'grid',
-            publicDisplayLimit: 6,
-            sortOrder: 'newest'
-        };
-    } catch (error) {
-        console.error('Error loading gallery settings:', error);
-        return {
-            title: 'Yoga Gallery',
-            description: 'A collection of yoga practice photos',
-            photosPerPage: 24,
-            layout: 'grid',
-            publicDisplayLimit: 6,
-            sortOrder: 'newest'
-        };
-    }
-}
-
-/**
- * Load photos from localStorage
- */
-function loadPhotos() {
-    try {
-        const storedPhotos = localStorage.getItem('admin_gallery_photos');
-        return storedPhotos ? JSON.parse(storedPhotos) : [];
-    } catch (error) {
-        console.error('Error loading photos from localStorage:', error);
-        return [];
-    }
-}
-
-/**
- * Sort photos based on the provided sort order
- */
-function sortPhotos(photos, sortOrder) {
-    const sortedPhotos = [...photos];
+function buildCarousel() {
+    const track = document.querySelector('.gallery-carousel-track');
     
-    switch (sortOrder) {
-        case 'newest':
-            sortedPhotos.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-            break;
-        case 'oldest':
-            sortedPhotos.sort((a, b) => new Date(a.uploadDate) - new Date(b.uploadDate));
-            break;
-        case 'name-asc':
-            sortedPhotos.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-            break;
-        case 'name-desc':
-            sortedPhotos.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-            break;
-    }
+    if (!track) return;
     
-    return sortedPhotos;
-}
-
-/**
- * Add a photo to the gallery grid
- */
-function addPhotoToGallery(galleryGrid, photo) {
-    const galleryItem = document.createElement('div');
-    galleryItem.className = 'gallery-item';
-    galleryItem.setAttribute('data-id', photo.id);
+    // Clear existing content
+    track.innerHTML = '';
     
-    const img = document.createElement('img');
-    img.src = photo.data;
-    img.alt = photo.alt || photo.title || 'Yoga photo';
-    
-    galleryItem.appendChild(img);
-    
-    // Add click event to show photo in modal
-    galleryItem.addEventListener('click', () => {
-        showPhotoModal(photo);
+    // Create carousel items
+    carouselPhotos.forEach((photo, index) => {
+        const carouselItem = document.createElement('div');
+        carouselItem.className = 'gallery-carousel-item';
+        carouselItem.setAttribute('data-index', index);
+        
+        const img = document.createElement('img');
+        img.src = photo.data;
+        img.alt = photo.alt || photo.title || 'Yoga photo';
+        img.loading = 'lazy';
+        
+        carouselItem.appendChild(img);
+        
+        // Add click event to show photo in modal
+        carouselItem.addEventListener('click', () => {
+            showPhotoModal(photo);
+        });
+        
+        track.appendChild(carouselItem);
     });
     
-    galleryGrid.appendChild(galleryItem);
+    // Set initial positions
+    updateCarouselPositions();
 }
 
 /**
- * Add a "View All" button to the gallery
+ * Build carousel indicators (dots)
  */
-function addViewAllButton(galleryGrid) {
-    const viewAllItem = document.createElement('div');
-    viewAllItem.className = 'gallery-item view-all';
+function buildCarouselIndicators() {
+    const indicatorsContainer = document.querySelector('.carousel-indicators');
     
-    const viewAllContent = document.createElement('div');
-    viewAllContent.className = 'view-all-content';
-    viewAllContent.innerHTML = `
-        <i class="fas fa-images"></i>
-        <p>View All Photos</p>
-    `;
+    if (!indicatorsContainer) return;
     
-    // Add click event to show full gallery modal
-    viewAllItem.addEventListener('click', () => {
-        showGalleryModal();
+    // Clear existing indicators
+    indicatorsContainer.innerHTML = '';
+    
+    // Create indicator for each photo
+    carouselPhotos.forEach((_, index) => {
+        const indicator = document.createElement('button');
+        indicator.className = 'carousel-indicator';
+        indicator.setAttribute('data-index', index);
+        
+        if (index === currentCarouselIndex) {
+            indicator.classList.add('active');
+        }
+        
+        indicator.addEventListener('click', () => {
+            goToCarouselSlide(index);
+        });
+        
+        indicatorsContainer.appendChild(indicator);
+    });
+}
+
+/**
+ * Initialize carousel navigation (prev/next buttons)
+ */
+function initCarouselNavigation() {
+    const prevBtn = document.querySelector('.carousel-nav-btn.prev-btn');
+    const nextBtn = document.querySelector('.carousel-nav-btn.next-btn');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            goToPreviousSlide();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            goToNextSlide();
+        });
+    }
+    
+    // Add keyboard navigation
+    document.addEventListener('keydown', (event) => {
+        const carousel = document.querySelector('.gallery-carousel');
+        if (carousel && carousel.style.display !== 'none') {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                goToPreviousSlide();
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                goToNextSlide();
+            }
+        }
     });
     
-    viewAllItem.appendChild(viewAllContent);
-    galleryGrid.appendChild(viewAllItem);
+    // Add touch/swipe support for mobile
+    initTouchNavigation();
+}
+
+/**
+ * Initialize touch/swipe navigation for mobile
+ */
+function initTouchNavigation() {
+    const carousel = document.querySelector('.gallery-carousel');
+    if (!carousel) return;
+    
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+    
+    carousel.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        isDragging = true;
+        stopCarouselAutoPlay(); // Stop auto-play during interaction
+    });
+    
+    carousel.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentX = e.touches[0].clientX;
+    });
+    
+    carousel.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        const deltaX = startX - currentX;
+        const threshold = 50; // Minimum swipe distance
+        
+        if (Math.abs(deltaX) > threshold) {
+            if (deltaX > 0) {
+                goToNextSlide();
+            } else {
+                goToPreviousSlide();
+            }
+        }
+        
+        startCarouselAutoPlay(); // Restart auto-play
+    });
+}
+
+/**
+ * Initialize View All button
+ */
+function initViewAllButton() {
+    const viewAllBtn = document.querySelector('.view-all-btn');
+    
+    if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', () => {
+            showGalleryModal();
+        });
+    }
+}
+
+/**
+ * Go to specific carousel slide
+ */
+function goToCarouselSlide(index) {
+    if (index < 0 || index >= carouselPhotos.length) return;
+    
+    currentCarouselIndex = index;
+    updateCarouselPositions();
+    updateCarouselIndicators();
+}
+
+/**
+ * Go to previous slide
+ */
+function goToPreviousSlide() {
+    const newIndex = currentCarouselIndex === 0 ? carouselPhotos.length - 1 : currentCarouselIndex - 1;
+    goToCarouselSlide(newIndex);
+}
+
+/**
+ * Go to next slide
+ */
+function goToNextSlide() {
+    const newIndex = (currentCarouselIndex + 1) % carouselPhotos.length;
+    goToCarouselSlide(newIndex);
+}
+
+/**
+ * Update carousel item positions based on current index
+ */
+function updateCarouselPositions() {
+    const items = document.querySelectorAll('.gallery-carousel-item');
+    
+    items.forEach((item, index) => {
+        // Remove all position classes
+        item.classList.remove('active', 'prev', 'next', 'far-prev', 'far-next', 'hidden');
+        
+        // Calculate relative position to current index
+        const relativeIndex = index - currentCarouselIndex;
+        
+        if (relativeIndex === 0) {
+            item.classList.add('active');
+        } else if (relativeIndex === 1 || (relativeIndex === -(carouselPhotos.length - 1))) {
+            item.classList.add('next');
+        } else if (relativeIndex === -1 || (relativeIndex === carouselPhotos.length - 1)) {
+            item.classList.add('prev');
+        } else if (relativeIndex === 2 || (relativeIndex === -(carouselPhotos.length - 2))) {
+            item.classList.add('far-next');
+        } else if (relativeIndex === -2 || (relativeIndex === carouselPhotos.length - 2)) {
+            item.classList.add('far-prev');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+}
+
+/**
+ * Update carousel indicators
+ */
+function updateCarouselIndicators() {
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    
+    indicators.forEach((indicator, index) => {
+        if (index === currentCarouselIndex) {
+            indicator.classList.add('active');
+        } else {
+            indicator.classList.remove('active');
+        }
+    });
+}
+
+/**
+ * Start carousel auto-play
+ */
+function startCarouselAutoPlay() {
+    // Auto-play every 5 seconds
+    carouselAutoPlayInterval = setInterval(() => {
+        goToNextSlide();
+    }, 5000);
+}
+
+/**
+ * Stop carousel auto-play
+ */
+function stopCarouselAutoPlay() {
+    if (carouselAutoPlayInterval) {
+        clearInterval(carouselAutoPlayInterval);
+        carouselAutoPlayInterval = null;
+    }
+}
+
+/**
+ * Pause auto-play when user hovers over carousel
+ */
+function initCarouselHoverPause() {
+    const carousel = document.querySelector('.gallery-carousel');
+    
+    if (carousel) {
+        carousel.addEventListener('mouseenter', stopCarouselAutoPlay);
+        carousel.addEventListener('mouseleave', startCarouselAutoPlay);
+    }
 }
 
 /**
  * Show a modal with the photo details
  */
 function showPhotoModal(photo) {
+    // Stop auto-play when modal is open
+    stopCarouselAutoPlay();
+    
     // Create modal if it doesn't exist
     let modal = document.getElementById('photo-modal');
     
@@ -253,16 +401,19 @@ function showPhotoModal(photo) {
         `;
         
         document.body.appendChild(modal);
+        modal.appendChild(modalContent);
         
         // Add event listeners for navigation and closing
         const closeBtn = modal.querySelector('.close-modal');
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
+            startCarouselAutoPlay(); // Restart auto-play when modal closes
         });
         
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 modal.style.display = 'none';
+                startCarouselAutoPlay(); // Restart auto-play when modal closes
             }
         });
         
@@ -286,6 +437,7 @@ function showPhotoModal(photo) {
                     navigatePhoto('next');
                 } else if (event.key === 'Escape') {
                     modal.style.display = 'none';
+                    startCarouselAutoPlay(); // Restart auto-play when modal closes
                 }
             }
         });
@@ -317,100 +469,30 @@ function navigatePhoto(direction) {
     
     const currentPhotoId = modal.dataset.currentPhotoId;
     
-    // Fetch all images from API 
-    fetch('/api/gallery/images')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Failed to fetch photos: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const photos = data.images || [];
-            
-            // Find current photo index
-            const currentIndex = photos.findIndex(photo => photo.image_id.toString() === currentPhotoId.toString());
-            if (currentIndex === -1) return;
-            
-            // Calculate next index
-            let nextIndex;
-            if (direction === 'prev') {
-                nextIndex = (currentIndex - 1 + photos.length) % photos.length;
-            } else {
-                nextIndex = (currentIndex + 1) % photos.length;
-            }
-            
-            // Get next photo data
-            const nextPhoto = photos[nextIndex];
-            
-            // Fetch the image data for the next photo
-            return fetch(`/api/gallery/images/${nextPhoto.image_id}/data`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch image data: ${response.statusText}`);
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    // Create photo object for the modal
-                    const photoObj = {
-                        id: nextPhoto.image_id,
-                        title: nextPhoto.title || '',
-                        alt: nextPhoto.alt_text || '',
-                        caption: nextPhoto.caption || '',
-                        data: URL.createObjectURL(blob)
-                    };
-                    
-                    // Show the next/previous photo
-                    showPhotoModal(photoObj);
-                });
-        })
-        .catch(error => {
-            console.error('Error navigating photos:', error);
-        });
+    // Find current photo index in carousel photos
+    const currentIndex = carouselPhotos.findIndex(photo => photo.id.toString() === currentPhotoId.toString());
+    if (currentIndex === -1) return;
+    
+    // Calculate next index
+    let nextIndex;
+    if (direction === 'prev') {
+        nextIndex = (currentIndex - 1 + carouselPhotos.length) % carouselPhotos.length;
+    } else {
+        nextIndex = (currentIndex + 1) % carouselPhotos.length;
+    }
+    
+    // Show the next/previous photo
+    const nextPhoto = carouselPhotos[nextIndex];
+    showPhotoModal(nextPhoto);
 }
 
 /**
  * Show a modal with all gallery photos
  */
-/**
- * Initialize and load the profile photo for the About Me section
- */
-function initProfilePhoto() {
-    try {
-        // Get the about section image
-        const aboutImage = document.querySelector('.about-image img');
-        
-        if (aboutImage) {
-            // Fetch profile photo from API - no need to use localStorage anymore
-            fetch('/api/gallery/profile-photo')
-                .then(response => {
-                    if (!response.ok) {
-                        // If no profile photo is set, we'll use the default
-                        return;
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    if (blob) {
-                        // Create an object URL for the blob
-                        const url = URL.createObjectURL(blob);
-                        
-                        // Set the profile photo in the About section
-                        aboutImage.src = url;
-                        console.log('Profile photo updated in About section');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error fetching profile photo:', err);
-                });
-        }
-    } catch (error) {
-        console.error('Error loading profile photo:', error);
-    }
-}
-
 function showGalleryModal() {
+    // Stop auto-play when modal is open
+    stopCarouselAutoPlay();
+    
     // Create modal if it doesn't exist
     let modal = document.getElementById('gallery-modal');
     
@@ -441,11 +523,13 @@ function showGalleryModal() {
         const closeBtn = modal.querySelector('.close-modal');
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
+            startCarouselAutoPlay(); // Restart auto-play when modal closes
         });
         
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 modal.style.display = 'none';
+                startCarouselAutoPlay(); // Restart auto-play when modal closes
             }
         });
         
@@ -453,6 +537,7 @@ function showGalleryModal() {
         document.addEventListener('keydown', (event) => {
             if (modal.style.display === 'block' && event.key === 'Escape') {
                 modal.style.display = 'none';
+                startCarouselAutoPlay(); // Restart auto-play when modal closes
             }
         });
     }
@@ -464,7 +549,7 @@ function showGalleryModal() {
     const modalGrid = modal.querySelector('.gallery-modal-grid');
     modalGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i>Loading all photos...</div>';
     
-    // Fetch photos from the API
+    // Fetch all photos from the API
     fetch('/api/gallery/images')
         .then(response => {
             if (!response.ok) {
@@ -516,6 +601,7 @@ function showGalleryModal() {
                             const img = document.createElement('img');
                             img.src = photoObj.data;
                             img.alt = photoObj.alt || photoObj.title || 'Yoga photo';
+                            img.loading = 'lazy';
                             
                             galleryItem.appendChild(img);
                             
@@ -537,3 +623,73 @@ function showGalleryModal() {
             modalGrid.innerHTML = '<p>Error loading gallery. Please try again later.</p>';
         });
 }
+
+/**
+ * Initialize and load the profile photo for the About Me section
+ */
+function initProfilePhoto() {
+    try {
+        // Get the about section image
+        const aboutImage = document.querySelector('.about-image img');
+        
+        if (aboutImage) {
+            // Fetch profile photo from API
+            fetch('/api/gallery/profile-photo')
+                .then(response => {
+                    if (!response.ok) {
+                        // If no profile photo is set, we'll use the default
+                        return;
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    if (blob) {
+                        // Create an object URL for the blob
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Set the profile photo in the About section
+                        aboutImage.src = url;
+                        console.log('Profile photo updated in About section');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching profile photo:', err);
+                });
+        }
+    } catch (error) {
+        console.error('Error loading profile photo:', error);
+    }
+}
+
+/**
+ * Load gallery settings from localStorage
+ */
+function loadGallerySettings() {
+    try {
+        const storedSettings = localStorage.getItem('admin_gallery_settings');
+        return storedSettings ? JSON.parse(storedSettings) : {
+            title: 'Yoga Gallery',
+            description: 'A collection of yoga practice photos',
+            photosPerPage: 24,
+            layout: 'grid',
+            publicDisplayLimit: 6,
+            sortOrder: 'newest'
+        };
+    } catch (error) {
+        console.error('Error loading gallery settings:', error);
+        return {
+            title: 'Yoga Gallery',
+            description: 'A collection of yoga practice photos',
+            photosPerPage: 24,
+            layout: 'grid',
+            publicDisplayLimit: 6,
+            sortOrder: 'newest'
+        };
+    }
+}
+
+// Initialize hover pause when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure carousel is built first
+    setTimeout(initCarouselHoverPause, 1000);
+});

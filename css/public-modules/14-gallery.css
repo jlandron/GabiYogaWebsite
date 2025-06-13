@@ -2,39 +2,288 @@
  * 14. GALLERY STYLES
  *******************************/
 
-/* View All Gallery Item */
-.gallery-item.view-all {
+/* Interactive Carousel Gallery */
+.gallery-carousel-container {
     position: relative;
-    background-color: var(--secondary-color);
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.gallery-carousel {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    height: 400px !important;
+    margin-bottom: 30px;
+}
+
+.gallery-carousel-track {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    position: relative !important;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gallery-carousel-item {
+    position: absolute !important;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    display: block !important;
+}
+
+.gallery-carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 20px;
+}
+
+/* Active (center) item */
+.gallery-carousel-item.active {
+    width: 500px;
+    height: 350px;
+    z-index: 3;
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Previous item (left side) */
+.gallery-carousel-item.prev {
+    width: 300px;
+    height: 250px;
+    z-index: 2;
+    transform: translateX(-250px) scale(0.85);
+    opacity: 0.7;
+}
+
+/* Next item (right side) */
+.gallery-carousel-item.next {
+    width: 300px;
+    height: 250px;
+    z-index: 2;
+    transform: translateX(250px) scale(0.85);
+    opacity: 0.7;
+}
+
+/* Far items (barely visible) */
+.gallery-carousel-item.far-prev {
+    width: 200px;
+    height: 180px;
+    z-index: 1;
+    transform: translateX(-400px) scale(0.7);
+    opacity: 0.4;
+}
+
+.gallery-carousel-item.far-next {
+    width: 200px;
+    height: 180px;
+    z-index: 1;
+    transform: translateX(400px) scale(0.7);
+    opacity: 0.4;
+}
+
+/* Hidden items */
+.gallery-carousel-item.hidden {
+    opacity: 0;
+    transform: scale(0.5);
+    z-index: 0;
+}
+
+/* Carousel Navigation */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-nav-btn.prev-btn {
+    left: 20px;
+}
+
+.carousel-nav-btn.next-btn {
+    right: 20px;
+}
+
+.carousel-nav-btn i {
+    font-size: 1.2rem;
+}
+
+/* Carousel Indicators */
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.carousel-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(109, 152, 134, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.carousel-indicator.active {
+    background: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.carousel-indicator:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* View All Button */
+.view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--primary-color);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    border: none;
     cursor: pointer;
 }
 
-.view-all-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.view-all-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.view-all-btn i {
+    font-size: 1.1rem;
+}
+
+/* Carousel Loading State */
+.carousel-loading {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: var(--transition);
-}
-
-.view-all-content i {
-    font-size: 2.5rem;
+    height: 400px;
     color: var(--primary-color);
-    margin-bottom: 10px;
+    font-size: 1.1rem;
 }
 
-.view-all-content p {
-    color: var(--primary-color);
-    font-weight: 600;
+.carousel-loading i {
+    margin-right: 10px;
+    font-size: 1.5rem;
+    animation: spin 1s infinite linear;
 }
 
-.gallery-item.view-all:hover .view-all-content {
-    transform: scale(1.1);
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .gallery-carousel {
+        height: 300px;
+    }
+    
+    .gallery-carousel-item.active {
+        width: 350px;
+        height: 250px;
+    }
+    
+    .gallery-carousel-item.prev,
+    .gallery-carousel-item.next {
+        width: 200px;
+        height: 150px;
+        transform: translateX(-150px) scale(0.8);
+    }
+    
+    .gallery-carousel-item.next {
+        transform: translateX(150px) scale(0.8);
+    }
+    
+    .gallery-carousel-item.far-prev,
+    .gallery-carousel-item.far-next {
+        display: none;
+    }
+    
+    .carousel-nav-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .carousel-nav-btn.prev-btn {
+        left: 10px;
+    }
+    
+    .carousel-nav-btn.next-btn {
+        right: 10px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .gallery-carousel {
+        height: 250px;
+    }
+    
+    .gallery-carousel-item.active {
+        width: 280px;
+        height: 200px;
+    }
+    
+    .gallery-carousel-item.prev,
+    .gallery-carousel-item.next {
+        width: 150px;
+        height: 120px;
+        transform: translateX(-100px) scale(0.7);
+    }
+    
+    .gallery-carousel-item.next {
+        transform: translateX(100px) scale(0.7);
+    }
+    
+    .carousel-indicators {
+        gap: 8px;
+    }
+    
+    .carousel-indicator {
+        width: 10px;
+        height: 10px;
+    }
 }
 
 /* Photo Modal */
