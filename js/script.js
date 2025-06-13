@@ -1,5 +1,17 @@
 // Mobile Navigation Menu Toggle
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if progressive loading is enabled
+    if (window.PROGRESSIVE_LOADING_ENABLED) {
+        console.log('[Script.js] Progressive loading enabled - skipping automatic content loading');
+        
+        // Only initialize essential UI components
+        initializeEssentialComponents();
+        return;
+    }
+    
+    // Legacy loading behavior (when progressive loading is disabled)
+    console.log('[Script.js] Using legacy loading behavior');
+    
     // Load website settings and sections visibility first
     loadVisibilitySettings();
     
@@ -187,6 +199,180 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Function to initialize essential UI components when progressive loading is enabled
+function initializeEssentialComponents() {
+    console.log('[Script.js] Initializing essential UI components only');
+    
+    // Initialize modal functionality - this is critical for user interaction
+    initializeModals();
+    
+    // Initialize login requirements for buttons that might already be in DOM
+    addLoginRequirements();
+    
+    // Mobile menu will be handled by progressive loader via header loader
+    console.log('[Script.js] Essential components initialized');
+}
+
+// Function to initialize modal functionality
+function initializeModals() {
+    // Private Session Booking Modal functionality
+    const privateBookingModal = document.getElementById('private-booking-modal');
+    const closePrivateModal = document.querySelector('#private-booking-modal .close-modal');
+    
+    if (privateBookingModal && closePrivateModal) {
+        // Close modal with X button
+        closePrivateModal.addEventListener('click', () => {
+            privateBookingModal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', (e) => {
+            if (e.target === privateBookingModal) {
+                privateBookingModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Handle private booking form submission
+        const privateBookingForm = document.getElementById('private-booking-form');
+        if (privateBookingForm) {
+            privateBookingForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Gather form data
+                const sessionTypeSelect = document.getElementById('session-type');
+                const sessionType = sessionTypeSelect.value;
+                const sessionTypeText = sessionTypeSelect.options[sessionTypeSelect.selectedIndex].text;
+                const sessionFocus = document.getElementById('session-focus').value;
+                const date1 = document.getElementById('date1').value;
+                const time1 = document.getElementById('time1').value;
+                const notes = document.getElementById('booking-notes').value;
+                
+                // Get user data from user data manager
+                let name = '';
+                let email = '';
+                let userId = null;
+                
+                try {
+                    if (window.userDataManager) {
+                        name = await window.userDataManager.getFullName();
+                        email = await window.userDataManager.getEmail();
+                        userId = await window.userDataManager.getUserId();
+                    }
+                } catch (userDataError) {
+                    console.warn('Failed to load user data for private booking:', userDataError);
+                }
+                
+                // Focus area names for the alert message
+                const focusNames = {
+                    'beginner': 'Beginners Introduction',
+                    'alignment': 'Alignment & Technique',
+                    'flexibility': 'Improving Flexibility',
+                    'strength': 'Building Strength',
+                    'meditation': 'Meditation & Breathwork',
+                    'prenatal': 'Prenatal Yoga',
+                    'therapeutic': 'Therapeutic Practice',
+                    'custom': 'Custom Focus'
+                };
+                
+                // Get package data from the sessionPackageData object
+                const packageData = window.sessionPackageData ? window.sessionPackageData[sessionType] : null;
+                const packageName = packageData ? packageData.name : sessionTypeText;
+                
+                // Prepare request body
+                const requestBody = {
+                    userId,
+                    sessionType,
+                    sessionFocus,
+                    packageName,
+                    date1,
+                    time1,
+                    date2: document.getElementById('date2').value || null,
+                    time2: document.getElementById('time2').value || null,
+                    date3: document.getElementById('date3').value || null,
+                    time3: document.getElementById('time3').value || null,
+                    notes,
+                    name,
+                    email
+                };
+                
+                // Save booking to the API
+                try {
+                    const response = await fetch('/api/private-sessions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody),
+                        credentials: 'include' // Include cookies for auth
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error saving private session booking:', errorText);
+                    }
+                } catch (error) {
+                    console.error('Error submitting private session booking:', error);
+                }
+                
+                // Show success message
+                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusNames[sessionFocus]} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
+                
+                privateBookingModal.style.display = 'none';
+                document.body.style.overflow = '';
+                privateBookingForm.reset();
+            });
+        }
+    }
+    
+    // Private sessions buttons event handlers
+    // Use event delegation since the button is created dynamically
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'private-session-btn') {
+            e.preventDefault();
+            
+            // Check if user is logged in first
+            const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
+            
+            if (!isLoggedIn) {
+                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
+                
+                if (wantsLogin) {
+                    // Store intent to book private session after login
+                    localStorage.setItem('loginRedirect', 'book-private-session');
+                    window.location.href = 'login.html';
+                }
+            } else {
+                openPrivateBookingModal();
+            }
+        }
+    });
+    
+    // Private sessions section main CTA button
+    const privateSectionsBtn = document.getElementById('private-sessions-btn');
+    if (privateSectionsBtn) {
+        privateSectionsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Check if user is logged in first
+            const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
+            
+            if (!isLoggedIn) {
+                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
+                
+                if (wantsLogin) {
+                    // Store intent to book private session after login
+                    localStorage.setItem('loginRedirect', 'book-private-session');
+                    window.location.href = 'login.html';
+                }
+            } else {
+                openPrivateBookingModal();
+            }
+        });
+    }
+}
 
 // Function to open private booking modal
 function openPrivateBookingModal() {

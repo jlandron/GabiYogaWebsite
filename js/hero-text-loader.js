@@ -7,6 +7,12 @@
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
+    // Check if progressive loading is enabled
+    if (window.PROGRESSIVE_LOADING_ENABLED) {
+        console.log('[Hero Text Loader] Progressive loading enabled - skipping hero text loading');
+        return;
+    }
+    
     // Get the hero content container
     const heroContent = document.querySelector('.hero-content');
     const heroSection = document.querySelector('.hero');

@@ -579,18 +579,35 @@
             actualUrl: window.GLOBAL_CLOUDFRONT_URL
         });
     </script>
+    
+    <!-- Critical scripts loaded first -->
     <script src="js/multi-region-image-loader.js"></script>
     <script src="js/user-data-manager.js"></script>
+    
+    <!-- Progressive loader - manages all other script loading -->
+    <script src="js/progressive-loader.js"></script>
+    
+    <!-- Content loaders - loaded on-demand by progressive loader -->
+    <script>
+        // Make content loaders available to progressive loader
+        window.contentLoaders = {};
+    </script>
     <script src="js/header-loader.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/pricing-display.js"></script>
-    <script src="js/gallery.js"></script>
-    <script src="js/latest-blog.js"></script>
-    <script src="js/stripe-payment.js"></script>
-    <script src="js/profile-loader.js"></script>
     <script src="js/hero-text-loader.js"></script>
     <script src="js/bio-content-loader.js"></script>
     <script src="js/offerings-content-loader.js"></script>
+    <script src="js/latest-blog.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/pricing-display.js"></script>
+    <script src="js/stripe-payment.js"></script>
+    <script src="js/profile-loader.js"></script>
     <script src="js/section-background-alternator.js"></script>
+    
+    <!-- Legacy script - functionality moved to progressive loader -->
+    <script>
+        // Disable automatic loading from script.js since progressive loader handles it
+        window.PROGRESSIVE_LOADING_ENABLED = true;
+    </script>
+    <script src="js/script.js"></script>
 </body>
 </html>
