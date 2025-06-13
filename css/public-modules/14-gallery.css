@@ -342,10 +342,11 @@
 
 /* Gallery Modal */
 .gallery-modal-content {
-    max-width: 1200px;
-    width: 90%;
-    max-height: 90vh;
+    max-width: 1600px !important;
+    width: 98% !important;
+    max-height: 95vh;
     overflow-y: auto;
+    margin: 2.5% auto !important;
 }
 
 .gallery-modal-content h2 {
@@ -357,11 +358,60 @@
     margin-bottom: 20px;
 }
 
+/* Masonry Gallery Grid - Pinterest Style */
 .gallery-modal-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
+    column-count: 4;
+    column-gap: 16px;
     margin-top: 30px;
+    padding: 0 10px;
+}
+
+.gallery-modal-grid .gallery-item {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: #fff;
+}
+
+.gallery-modal-grid .gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-modal-grid .gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    vertical-align: top;
+    /* Remove object-fit and height constraints to allow natural image proportions */
+}
+
+/* Add loading states for better masonry layout */
+.gallery-modal-grid .gallery-item img:not([src]) {
+    height: 200px;
+    background: #f5f5f5;
+}
+
+.gallery-modal-grid .gallery-item img[src=""] {
+    height: 200px;
+    background: #f5f5f5;
+}
+
+/* Optional: Add some variety by randomly adjusting some image widths for more Pinterest-like effect */
+.gallery-modal-grid .gallery-item:nth-child(4n+1) {
+    /* Every 4th item gets slightly more space - creates visual variety */
+}
+
+.gallery-modal-grid .gallery-item:nth-child(7n+1) {
+    /* Every 7th item - adds more randomness to the layout */
 }
 
 /* Responsive Styles */
@@ -375,14 +425,73 @@
     }
 }
 
-@media screen and (max-width: 576px) {
+/* Masonry Responsive Styles - Pinterest Style */
+@media screen and (min-width: 1600px) {
+    .gallery-modal-grid {
+        column-count: 6;
+        column-gap: 20px;
+    }
+}
+
+@media screen and (min-width: 1200px) and (max-width: 1599px) {
+    .gallery-modal-grid {
+        column-count: 5;
+        column-gap: 18px;
+    }
+}
+
+@media screen and (min-width: 900px) and (max-width: 1199px) {
+    .gallery-modal-grid {
+        column-count: 4;
+        column-gap: 16px;
+    }
+}
+
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    .gallery-modal-grid {
+        column-count: 3;
+        column-gap: 14px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .gallery-modal-content {
+        width: 95% !important;
+        padding: 15px;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .gallery-modal-grid {
+        column-count: 2;
+        column-gap: 12px;
+        padding: 0 5px;
+    }
+    
+    .gallery-modal-grid .gallery-item {
+        margin-bottom: 12px;
+    }
+}
+
+@media screen and (max-width: 400px) {
     .nav-btn {
         width: 36px;
         height: 36px;
     }
 
+    .gallery-modal-content {
+        width: 95% !important;
+        margin: 5% auto !important;
+        padding: 10px;
+    }
+
     .gallery-modal-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
+        column-count: 1;
+        column-gap: 0;
+        padding: 0;
+    }
+    
+    .gallery-modal-grid .gallery-item {
+        margin-bottom: 10px;
     }
 }

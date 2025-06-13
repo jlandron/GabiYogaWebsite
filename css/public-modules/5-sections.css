@@ -117,12 +117,6 @@ section {
     grid-gap: 20px;
 }
 
-.gallery-item {
-    overflow: hidden;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    height: 250px;
-}
 
 .gallery-item img {
     width: 100%;
