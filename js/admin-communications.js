@@ -10,8 +10,22 @@ let contactSearchTerm = '';
 let subscriberSearchTerm = '';
 let currentContactSubmission = null;
 
+/**
+ * Check if user is authenticated
+ */
+function isAuthenticated() {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
+    return token !== null && token !== '';
+}
+
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is authenticated before loading data
+    if (!isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
     loadContactSubmissions();
     loadNewsletterSubscribers();
     
@@ -46,10 +60,11 @@ async function loadContactSubmissions(page = 1, search = '') {
             search: search
         });
         
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
         const response = await fetch(`/api/admin/contact-submissions?${params}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -96,10 +111,11 @@ async function loadNewsletterSubscribers(page = 1, search = '') {
             search: search
         });
         
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
         const response = await fetch(`/api/admin/newsletter-subscribers?${params}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -277,10 +293,11 @@ async function updateContactStatus() {
     const newStatus = statusSelect.value;
     
     try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
         const response = await fetch(`/api/admin/contact-submissions/${currentContactSubmission}/status`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: newStatus })
@@ -310,10 +327,11 @@ async function updateContactStatus() {
  */
 async function toggleSubscriberStatus(subscriberId, activate) {
     try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
         const response = await fetch(`/api/admin/newsletter-subscribers/${subscriberId}/status`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ active: activate })

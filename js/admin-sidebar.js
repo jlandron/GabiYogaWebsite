@@ -63,6 +63,8 @@ function highlightCurrentPage() {
         activePage = 'retreats';
     } else if (currentPage.includes('pricing')) {
         activePage = 'pricing';
+    } else if (currentPage.includes('communications')) {
+        activePage = 'communications';
     } else if (currentPage.includes('settings')) {
         activePage = 'settings';
     }
