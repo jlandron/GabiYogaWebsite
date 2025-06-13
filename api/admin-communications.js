@@ -42,6 +42,27 @@ router.get('/contact-submissions', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /api/admin/contact-submissions/:id
+ * Get individual contact submission details
+ */
+router.get('/contact-submissions/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const submission = await ContactOperations.getContactSubmissionById(parseInt(id));
+    
+    if (!submission) {
+      return sendError(res, 'Contact submission not found', 404);
+    }
+    
+    return sendSuccess(res, { submission }, 'Contact submission fetched successfully');
+  } catch (error) {
+    console.error('Error fetching contact submission:', error);
+    return sendError(res, 'Failed to fetch contact submission', 500);
+  }
+}));
+
+/**
  * PUT /api/admin/contact-submissions/:id/status
  * Update contact submission status
  */

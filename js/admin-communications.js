@@ -217,29 +217,11 @@ function renderNewsletterSubscribers(subscribers) {
  */
 async function viewContactDetails(submissionId) {
     try {
-        // Find the submission in current data or fetch it
-        const submissions = Array.from(document.querySelectorAll('#contactSubmissionsBody tr')).map((row, index) => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
-                return {
-                    submission_id: submissionId, // This is a simplification
-                    name: cells[0].textContent.trim(),
-                    email: cells[1].textContent.trim(),
-                    subject: cells[2].textContent.trim(),
-                    status: cells[3].textContent.trim(),
-                    created_at: cells[4].textContent.trim()
-                };
-            }
-            return null;
-        }).filter(Boolean);
-        
-        // For now, we'll need to make another API call to get full details
-        // In a real implementation, you might want to store more data or make a separate endpoint
-        
         const modal = document.getElementById('contactDetailModal');
         const content = document.getElementById('contactDetailContent');
         const statusSelect = document.getElementById('contactStatusSelect');
         
+        // Show loading state
         content.innerHTML = `
             <div class="contact-detail-grid">
                 <div class="detail-item">
@@ -268,15 +250,77 @@ async function viewContactDetails(submissionId) {
         // Store current submission ID for status updates
         currentContactSubmission = submissionId;
         
+        // Show modal
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
-        // For demo purposes, we'll show a basic view
-        // In production, you'd want a separate API endpoint for full contact details
+        // Fetch contact details from API
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
+        const response = await fetch(`/api/admin/contact-submissions/${submissionId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load contact details');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.submission) {
+            const submission = data.submission;
+            const date = new Date(submission.created_at).toLocaleDateString();
+            const time = new Date(submission.created_at).toLocaleTimeString();
+            
+            // Update modal content with actual data
+            content.innerHTML = `
+                <div class="contact-detail-grid">
+                    <div class="detail-item">
+                        <label>Name:</label>
+                        <span>${escapeHtml(submission.name)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email:</label>
+                        <span>${escapeHtml(submission.email)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Subject:</label>
+                        <span>${escapeHtml(submission.subject)}</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Message:</label>
+                        <div class="message-content">${escapeHtml(submission.message)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Date:</label>
+                        <span>${date} at ${time}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Set the current status in the select dropdown
+            statusSelect.value = submission.status || 'New';
+        } else {
+            throw new Error(data.message || 'Failed to load contact details');
+        }
         
     } catch (error) {
         console.error('Error viewing contact details:', error);
         showError('Failed to load contact details: ' + error.message);
+        
+        // Show error in modal content
+        const content = document.getElementById('contactDetailContent');
+        content.innerHTML = `
+            <div class="contact-detail-grid">
+                <div class="detail-item full-width">
+                    <label>Error:</label>
+                    <span style="color: var(--danger-color);">Failed to load contact details. Please try again.</span>
+                </div>
+            </div>
+        `;
     }
 }
 

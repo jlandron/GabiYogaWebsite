@@ -105,3 +105,112 @@
     color: var(--danger-color);
     margin-top: var(--spacing-sm);
 }
+
+/* Large modal variant */
+.large-modal {
+    width: 90%;
+    max-width: 900px;
+}
+
+/* Contact detail grid */
+.contact-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    padding: var(--spacing-sm);
+    background-color: var(--hover-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.message-content {
+    padding: var(--spacing-md);
+    background-color: var(--hover-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    white-space: pre-wrap;
+    line-height: 1.6;
+    color: var(--text-primary);
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Modal actions */
+.modal-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-lg);
+}
+
+.modal-actions select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--panel-bg);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+}
+
+/* Close button styling */
+.close {
+    color: var(--text-muted);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: var(--spacing-xs);
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+    .contact-detail-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .modal-content,
+    .large-modal {
+        width: 95%;
+        margin: 20px auto;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

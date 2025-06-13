@@ -2133,6 +2133,31 @@ const ContactOperations = {
   },
   
   /**
+   * Get contact submission by ID
+   */
+  getContactSubmissionById: async (submissionId) => {
+    try {
+      const submissions = await db.query(`
+        SELECT 
+          submission_id,
+          name,
+          email,
+          subject,
+          message,
+          status,
+          created_at
+        FROM contact_submissions
+        WHERE submission_id = ?
+      `, [submissionId]);
+      
+      return submissions.length > 0 ? submissions[0] : null;
+    } catch (error) {
+      console.error('Error getting contact submission by ID:', error);
+      throw error;
+    }
+  },
+  
+  /**
    * Update contact submission status
    */
   updateContactSubmissionStatus: async (submissionId, status) => {
