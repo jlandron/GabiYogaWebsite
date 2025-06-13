@@ -210,6 +210,9 @@ function initializeEssentialComponents() {
     // Initialize login requirements for buttons that might already be in DOM
     addLoginRequirements();
     
+    // Initialize form handlers
+    initializeFormHandlers();
+    
     // Mobile menu will be handled by progressive loader via header loader
     console.log('[Script.js] Essential components initialized');
 }
@@ -1087,3 +1090,112 @@ const addLoginRequirements = () => {
         });
     }
 };
+
+// Function to initialize form handlers
+function initializeFormHandlers() {
+    // Newsletter subscription form
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const emailInput = newsletterForm.querySelector('input[type="email"]');
+            const submitButton = newsletterForm.querySelector('button[type="submit"]');
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+            
+            // Disable button and show loading state
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Subscribing...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    emailInput.value = ''; // Clear the form
+                } else {
+                    alert(data.message || 'Failed to subscribe. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error subscribing to newsletter:', error);
+                alert('Failed to subscribe. Please check your connection and try again.');
+            } finally {
+                // Re-enable button
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
+        });
+    }
+    
+    // Contact form
+    const contactForm = document.querySelector('.contact-form form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nameInput = contactForm.querySelector('#name');
+            const emailInput = contactForm.querySelector('#email');
+            const subjectInput = contactForm.querySelector('#subject');
+            const messageInput = contactForm.querySelector('#message');
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+            
+            const formData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                subject: subjectInput.value.trim(),
+                message: messageInput.value.trim()
+            };
+            
+            // Basic validation
+            if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Disable button and show loading state
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/contact/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    contactForm.reset(); // Clear the form
+                } else {
+                    alert(data.message || 'Failed to send message. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting contact form:', error);
+                alert('Failed to send message. Please check your connection and try again.');
+            } finally {
+                // Re-enable button
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
+        });
+    }
+}

@@ -15,4 +15,4 @@ Allow: /js/
 Allow: /images/
 
 # Link to sitemap
-Sitemap: https://gabiyoga.com/sitemap.xml
+Sitemap: https://gabi.yoga/sitemap.xml

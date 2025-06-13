@@ -313,3 +313,19 @@ CREATE TABLE newsletter_subscribers (
     INDEX (email),
     INDEX (active)
 );
+
+-- Contact Submissions table - For the contact form
+CREATE TABLE contact_submissions (
+    submission_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('New', 'Read', 'Responded', 'Archived') DEFAULT 'New',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX (email),
+    INDEX (status),
+    INDEX (created_at)
+);

@@ -415,7 +415,7 @@ function addToCalendar(bookingId) {
 VERSION:2.0
 PRODID:-//Gabi Yoga//EN
 BEGIN:VEVENT
-UID:${bookingId}@gabiyoga.com
+UID:${bookingId}@gabi.yoga
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}Z
 DTSTART:${dtstart}
 DTEND:${dtend}

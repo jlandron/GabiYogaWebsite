@@ -29,6 +29,7 @@ const adminRoutes = require('./api/admin');
 const adminSettingsRoutes = require('./api/admin-settings');
 const adminPricingRoutes = require('./api/admin-pricing');
 const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
+const adminCommunicationsRoutes = require('./api/admin-communications');
 const galleryRoutes = require('./api/gallery');
 const blogRoutes = require('./api/blog'); // Import blog routes
 const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
@@ -36,6 +37,8 @@ const { router: authRouter, authenticateToken } = require('./api/auth');  // Imp
 const privateSessionsRoutes = require('./api/private-sessions'); // Import private sessions routes
 const dashboardRoutes = require('./api/dashboard'); // Import dashboard routes
 const userLocationApi = require('./api/user-location'); // Import user location API
+const newsletterRoutes = require('./api/newsletter'); // Import newsletter routes
+const contactRoutes = require('./api/contact'); // Import contact routes
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -174,6 +177,7 @@ adminRouter.use('/', adminRoutes);
 adminRouter.use('/', adminSettingsRoutes);
 adminRouter.use('/', adminPricingRoutes);
 adminRouter.use('/', adminCustomerDashboardRoutes);
+adminRouter.use('/', adminCommunicationsRoutes);
 
 // Register API routes
 app.use('/api/admin', adminRouter);
@@ -183,6 +187,8 @@ app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
 app.use('/api/stripe', stripeRoutes); // Stripe payment routes
 app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
 app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
+app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
+app.use('/api/contact', contactRoutes); // Contact routes
 
 // User location detection endpoints (public)
 app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));

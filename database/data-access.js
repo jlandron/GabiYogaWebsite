@@ -1862,6 +1862,296 @@ const WebsiteSettingsOperations = {
   }
 };
 
+/**
+ * Newsletter Subscription operations
+ */
+const NewsletterOperations = {
+  /**
+   * Subscribe to newsletter
+   */
+  subscribe: async (email) => {
+    try {
+      // Check if email already exists
+      const existing = await db.query(`
+        SELECT subscriber_id FROM newsletter_subscribers 
+        WHERE email = ?
+      `, [email]);
+      
+      if (existing.length > 0) {
+        // Update existing subscription to active if it was inactive
+        const datetimeFunc = getDatetimeFunction();
+        await db.query(`
+          UPDATE newsletter_subscribers 
+          SET active = 1, updated_at = ${datetimeFunc}
+          WHERE email = ?
+        `, [email]);
+        return { isNew: false, email };
+      }
+      
+      // Create new subscription
+      const datetimeFunc = getDatetimeFunction();
+      await db.query(`
+        INSERT INTO newsletter_subscribers (email, active, subscribe_date, created_at, updated_at)
+        VALUES (?, 1, ${datetimeFunc}, ${datetimeFunc}, ${datetimeFunc})
+      `, [email]);
+      
+      return { isNew: true, email };
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get all newsletter subscribers
+   */
+  getAllSubscribers: async () => {
+    try {
+      const subscribers = await db.query(`
+        SELECT 
+          subscriber_id,
+          email,
+          active,
+          subscribe_date,
+          created_at
+        FROM newsletter_subscribers
+        WHERE active = 1
+        ORDER BY subscribe_date DESC
+      `);
+      
+      return subscribers;
+    } catch (error) {
+      console.error('Error getting newsletter subscribers:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get newsletter subscribers with pagination and search
+   */
+  getNewsletterSubscribers: async ({ limit = 10, offset = 0, search = '' }) => {
+    try {
+      let query = `
+        SELECT 
+          subscriber_id,
+          email,
+          active,
+          subscribe_date,
+          created_at
+        FROM newsletter_subscribers
+      `;
+      
+      const queryParams = [];
+      
+      if (search) {
+        query += ` WHERE email LIKE ?`;
+        queryParams.push(`%${search}%`);
+      }
+      
+      query += ` ORDER BY subscribe_date DESC LIMIT ? OFFSET ?`;
+      queryParams.push(limit, offset);
+      
+      const subscribers = await db.query(query, queryParams);
+      return subscribers;
+    } catch (error) {
+      console.error('Error getting newsletter subscribers with pagination:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get newsletter subscribers count for pagination
+   */
+  getNewsletterSubscribersCount: async (search = '') => {
+    try {
+      let query = `SELECT COUNT(*) as count FROM newsletter_subscribers`;
+      const queryParams = [];
+      
+      if (search) {
+        query += ` WHERE email LIKE ?`;
+        queryParams.push(`%${search}%`);
+      }
+      
+      const result = await db.query(query, queryParams);
+      return result[0]?.count || 0;
+    } catch (error) {
+      console.error('Error getting newsletter subscribers count:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Update subscriber status (activate/deactivate)
+   */
+  updateSubscriberStatus: async (subscriberId, active) => {
+    try {
+      const datetimeFunc = getDatetimeFunction();
+      await db.query(`
+        UPDATE newsletter_subscribers 
+        SET active = ?, updated_at = ${datetimeFunc}
+        WHERE subscriber_id = ?
+      `, [active ? 1 : 0, subscriberId]);
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating subscriber status:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Unsubscribe from newsletter
+   */
+  unsubscribe: async (email) => {
+    try {
+      const datetimeFunc = getDatetimeFunction();
+      await db.query(`
+        UPDATE newsletter_subscribers 
+        SET active = 0, updated_at = ${datetimeFunc}
+        WHERE email = ?
+      `, [email]);
+      
+      return true;
+    } catch (error) {
+      console.error('Error unsubscribing from newsletter:', error);
+      throw error;
+    }
+  }
+};
+
+/**
+ * Contact Form operations
+ */
+const ContactOperations = {
+  /**
+   * Save contact form submission
+   */
+  saveContactSubmission: async (contactData) => {
+    try {
+      const { name, email, subject, message } = contactData;
+      const datetimeFunc = getDatetimeFunction();
+      
+      const result = await db.query(`
+        INSERT INTO contact_submissions (name, email, subject, message, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
+      `, [name, email, subject, message]);
+      
+      return {
+        submission_id: result.lastID,
+        name,
+        email,
+        subject,
+        message
+      };
+    } catch (error) {
+      console.error('Error saving contact submission:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get all contact submissions
+   */
+  getAllContactSubmissions: async () => {
+    try {
+      const submissions = await db.query(`
+        SELECT 
+          submission_id,
+          name,
+          email,
+          subject,
+          message,
+          status,
+          created_at
+        FROM contact_submissions
+        ORDER BY created_at DESC
+      `);
+      
+      return submissions;
+    } catch (error) {
+      console.error('Error getting contact submissions:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get contact submissions with pagination and search
+   */
+  getContactSubmissions: async ({ limit = 10, offset = 0, search = '' }) => {
+    try {
+      let query = `
+        SELECT 
+          submission_id,
+          name,
+          email,
+          subject,
+          message,
+          status,
+          created_at
+        FROM contact_submissions
+      `;
+      
+      const queryParams = [];
+      
+      if (search) {
+        query += ` WHERE (name LIKE ? OR email LIKE ? OR subject LIKE ? OR message LIKE ?)`;
+        const searchTerm = `%${search}%`;
+        queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+      }
+      
+      query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+      queryParams.push(limit, offset);
+      
+      const submissions = await db.query(query, queryParams);
+      return submissions;
+    } catch (error) {
+      console.error('Error getting contact submissions with pagination:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get contact submissions count for pagination
+   */
+  getContactSubmissionsCount: async (search = '') => {
+    try {
+      let query = `SELECT COUNT(*) as count FROM contact_submissions`;
+      const queryParams = [];
+      
+      if (search) {
+        query += ` WHERE (name LIKE ? OR email LIKE ? OR subject LIKE ? OR message LIKE ?)`;
+        const searchTerm = `%${search}%`;
+        queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+      }
+      
+      const result = await db.query(query, queryParams);
+      return result[0]?.count || 0;
+    } catch (error) {
+      console.error('Error getting contact submissions count:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Update contact submission status
+   */
+  updateContactSubmissionStatus: async (submissionId, status) => {
+    try {
+      const datetimeFunc = getDatetimeFunction();
+      await db.query(`
+        UPDATE contact_submissions 
+        SET status = ?, updated_at = ${datetimeFunc}
+        WHERE submission_id = ?
+      `, [status, submissionId]);
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating contact submission status:', error);
+      throw error;
+    }
+  }
+};
+
 module.exports = {
   MemberOperations,
   BookingOperations,
@@ -1870,5 +2160,7 @@ module.exports = {
   PrivateSessionOperations,
   AuthOperations,
   RetreatOperations,
-  WebsiteSettingsOperations
+  WebsiteSettingsOperations,
+  NewsletterOperations,
+  ContactOperations
 };
