@@ -6,9 +6,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Get the profile image element
-    const profileImage = document.querySelector('#about .about-image img');
-    if (!profileImage) return;
+    // Get profile image elements from both homepage and blog page
+    const profileImages = document.querySelectorAll('#about .about-image img, .about-widget .about-image');
+    if (profileImages.length === 0) return;
     
     try {
         // Fetch the profile photo URL from the API
@@ -21,17 +21,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         const data = await response.json();
         
-        // If we got a valid URL, update the image
+        // If we got a valid URL, update all profile images
         if (data && data.url) {
-            profileImage.src = data.url;
-            
-            // Important: Remove lazy-loading attributes to prevent multi-region loader interference
-            profileImage.removeAttribute('data-src');
-            profileImage.classList.remove('lazy-load');
-            profileImage.classList.add('loaded');
+            profileImages.forEach(profileImage => {
+                profileImage.src = data.url;
+                
+                // Important: Remove lazy-loading attributes to prevent multi-region loader interference
+                profileImage.removeAttribute('data-src');
+                profileImage.classList.remove('lazy-load');
+                profileImage.classList.add('loaded');
+            });
             
             console.log('Profile photo updated successfully');
-            console.log('Profile photo updated in About section');
+            console.log(`Profile photo updated in ${profileImages.length} location(s)`);
         }
     } catch (error) {
         console.error('Error loading profile photo:', error);

@@ -389,10 +389,6 @@ function showPhotoModal(photo) {
                 <div class="photo-modal-image">
                     <img id="modal-photo-img" src="" alt="">
                 </div>
-                <div class="photo-modal-details">
-                    <h3 id="modal-photo-title"></h3>
-                    <p id="modal-photo-caption"></p>
-                </div>
             </div>
             <div class="photo-modal-navigation">
                 <button id="prev-photo-btn" class="nav-btn"><i class="fas fa-chevron-left"></i></button>
@@ -445,13 +441,9 @@ function showPhotoModal(photo) {
     
     // Set current photo data
     const modalImg = modal.querySelector('#modal-photo-img');
-    const modalTitle = modal.querySelector('#modal-photo-title');
-    const modalCaption = modal.querySelector('#modal-photo-caption');
     
     modalImg.src = photo.data;
     modalImg.alt = photo.alt || photo.title || 'Yoga photo';
-    modalTitle.textContent = photo.title || 'Untitled';
-    modalCaption.textContent = photo.caption || '';
     
     // Store current photo ID for navigation
     modal.dataset.currentPhotoId = photo.id;

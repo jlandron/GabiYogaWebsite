@@ -690,29 +690,56 @@ class BlogManager {
             if (this.postTitle) this.postTitle.value = post.title || '';
             if (this.postSlug) this.postSlug.value = post.slug || '';
             if (this.postExcerpt) this.postExcerpt.value = post.excerpt || '';
-            if (this.postContent) this.postContent.value = post.content || '';
             if (this.postAuthor) this.postAuthor.value = post.author || 'Gabi';
             if (this.postTags) this.postTags.value = post.tags ? post.tags.join(', ') : '';
             
-            // Set featured image if exists
+            // Load content into Quill editor properly
+            if (this.postContent) {
+                // Set the textarea value first
+                this.postContent.value = post.content || '';
+                
+                // If Quill editor exists, load content into it
+                if (this.quill) {
+                    try {
+                        console.log('Loading content into Quill editor:', post.content);
+                        
+                        // Clear existing content first
+                        this.quill.setText('');
+                        
+                        // Load content into Quill
+                        if (post.content) {
+                            // Check if content is HTML
+                            if (post.content.trim().startsWith('<')) {
+                                // Set HTML content directly
+                                this.quill.root.innerHTML = post.content;
+                            } else {
+                                // Set as plain text
+                                this.quill.setText(post.content);
+                            }
+                        }
+                        
+                        console.log('Content loaded successfully into Quill editor');
+                    } catch (editorError) {
+                        console.error('Error loading content into Quill editor:', editorError);
+                        // Fallback to textarea
+                        this.postContent.value = post.content || '';
+                    }
+                }
+            }
+            
+            // Set featured image if exists with better error handling
             if (post.coverImage && post.coverImage.url) {
                 console.log('Post has cover image:', post.coverImage);
                 
-                // Check if we have a valid URL
-                let coverImageUrl = post.coverImage.url;
-                
-                // If URL is relative and doesn't start with a data URL indicator,
-                // make sure it's properly formed
-                if (!coverImageUrl.startsWith('data:') && !coverImageUrl.startsWith('http')) {
-                    // Make sure URL starts with a slash
-                    if (!coverImageUrl.startsWith('/')) {
-                        coverImageUrl = '/' + coverImageUrl;
+                try {
+                    await this.setFeaturedImageWithErrorHandling(post.coverImage.url);
+                    if (this.featuredImageAlt) {
+                        this.featuredImageAlt.value = post.coverImage.alt || '';
                     }
-                }
-                
-                this.setFeaturedImage(coverImageUrl);
-                if (this.featuredImageAlt) {
-                    this.featuredImageAlt.value = post.coverImage.alt || '';
+                } catch (imageError) {
+                    console.error('Failed to load cover image:', imageError);
+                    this.showNotification('Featured image could not be loaded', 'warning');
+                    this.removeFeaturedImage();
                 }
             } else {
                 this.removeFeaturedImage();
@@ -1184,99 +1211,108 @@ class BlogManager {
     }
     
     /**
-     * Set the featured image
+     * Set the featured image with enhanced error handling
      */
-    setFeaturedImage(imageUrl) {
-        if (!this.featuredImagePreview || !this.featuredImagePlaceholder) return;
-        
-        // Make sure we have a valid image URL or data URL
-        if (!imageUrl) {
-            console.error('Invalid image URL provided to setFeaturedImage');
-            this.showNotification('Failed to set image. Invalid image data.', 'error');
-            return;
-        }
-        
-        console.log('Setting featured image with URL:', imageUrl);
-        
-        // Remove previous error handler before setting new src to prevent recursion
-        this.featuredImagePreview.onerror = null;
-        
-        // Set up the onload handler
-        this.featuredImagePreview.onload = () => {
-            console.log('Featured image loaded successfully');
-            // Show the preview once image is loaded
-            this.featuredImagePreview.style.display = '';
-            this.featuredImagePlaceholder.style.display = 'none';
-            
-            if (this.removeFeaturedImageBtn) {
-                this.removeFeaturedImageBtn.style.display = '';
+    async setFeaturedImageWithErrorHandling(imageUrl) {
+        return new Promise((resolve, reject) => {
+            if (!this.featuredImagePreview || !this.featuredImagePlaceholder) {
+                reject(new Error('Featured image elements not found'));
+                return;
             }
-        };
-        
-        // Process different types of URLs appropriately
-        let processedUrl = imageUrl;
-        
-        // Handle blog-specific URLs
-        if (imageUrl.startsWith('/uploads/blog/')) {
-            // For local development, convert relative paths to absolute paths if needed
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                const base = window.location.origin;
-                processedUrl = `${base}${imageUrl}`;
+            
+            // Make sure we have a valid image URL or data URL
+            if (!imageUrl) {
+                reject(new Error('Invalid image URL provided'));
+                return;
             }
-        } else if (imageUrl.includes('/api/gallery/')) {
-            // For gallery images, fetch the actual image data
-            this.showLoadingOverlay();
             
-            // Fetch the image data and create a blob URL
-            fetch(imageUrl)
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to load image data');
-                    return response.blob();
-                })
-                .then(blob => {
-                    // Clean up any previous object URL
-                    if (this._previousFeaturedImageObjectUrl) {
-                        URL.revokeObjectURL(this._previousFeaturedImageObjectUrl);
-                    }
-                    
-                    // Create new object URL
-                    const objectUrl = URL.createObjectURL(blob);
-                    
-                    // Store for later cleanup
-                    this._previousFeaturedImageObjectUrl = objectUrl;
-                    
-                    // Set the image source
-                    this.featuredImagePreview.src = objectUrl;
-                    
-                    this.hideLoadingOverlay();
-                })
-                .catch(error => {
-                    console.error('Error loading gallery image:', error);
-                    this.showNotification('Failed to load featured image. Please set it again.', 'error');
-                    this.removeFeaturedImage();
-                    this.hideLoadingOverlay();
-                });
+            console.log('Setting featured image with URL:', imageUrl);
             
-            return; // Skip the default src setting below as we're handling it in the fetch
-        }
-        
-        // Set up error handler after a small delay to avoid potential race conditions
-        setTimeout(() => {
+            // Remove previous error handler before setting new src to prevent recursion
+            this.featuredImagePreview.onerror = null;
+            this.featuredImagePreview.onload = null;
+            
+            // Set up the onload handler
+            this.featuredImagePreview.onload = () => {
+                console.log('Featured image loaded successfully');
+                // Show the preview once image is loaded
+                this.featuredImagePreview.style.display = '';
+                this.featuredImagePlaceholder.style.display = 'none';
+                
+                if (this.removeFeaturedImageBtn) {
+                    this.removeFeaturedImageBtn.style.display = '';
+                }
+                
+                resolve();
+            };
+            
+            // Set up error handler
             this.featuredImagePreview.onerror = (e) => {
                 console.error('Failed to load image in preview', e);
-                // Prevent recursive notifications by removing the handler immediately
+                // Clean up handlers
                 this.featuredImagePreview.onerror = null;
+                this.featuredImagePreview.onload = null;
                 
-                // Show notification only once
-                this.showNotification('Failed to load image preview. Please try again.', 'error');
-                
-                // Safely clean up the image
+                // Clean up the image display
                 this.removeFeaturedImage();
+                
+                reject(new Error('Failed to load image'));
             };
-        }, 0);
-        
-        // Use the processed URL for the image source
-        this.featuredImagePreview.src = processedUrl;
+            
+            // Process different types of URLs appropriately
+            let processedUrl = imageUrl;
+            
+            // Handle blog-specific URLs
+            if (imageUrl.startsWith('/uploads/blog/')) {
+                // For local development, convert relative paths to absolute paths if needed
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    const base = window.location.origin;
+                    processedUrl = `${base}${imageUrl}`;
+                }
+            } else if (imageUrl.includes('/api/gallery/')) {
+                // For gallery images, fetch the actual image data
+                fetch(imageUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load image data');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // Clean up any previous object URL
+                        if (this._previousFeaturedImageObjectUrl) {
+                            URL.revokeObjectURL(this._previousFeaturedImageObjectUrl);
+                        }
+                        
+                        // Create new object URL
+                        const objectUrl = URL.createObjectURL(blob);
+                        
+                        // Store for later cleanup
+                        this._previousFeaturedImageObjectUrl = objectUrl;
+                        
+                        // Set the image source
+                        this.featuredImagePreview.src = objectUrl;
+                    })
+                    .catch(error => {
+                        console.error('Error loading gallery image:', error);
+                        reject(error);
+                    });
+                
+                return; // Skip the default src setting below as we're handling it in the fetch
+            }
+            
+            // Use the processed URL for the image source
+            this.featuredImagePreview.src = processedUrl;
+        });
+    }
+    
+    /**
+     * Set the featured image (legacy method for backward compatibility)
+     */
+    setFeaturedImage(imageUrl) {
+        this.setFeaturedImageWithErrorHandling(imageUrl)
+            .catch(error => {
+                console.error('Failed to set featured image:', error);
+                this.showNotification('Failed to load image preview. Please try again.', 'error');
+            });
     }
     
     /**
