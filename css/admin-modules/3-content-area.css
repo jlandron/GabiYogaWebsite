@@ -39,3 +39,74 @@
 .admin-panel-content.active {
     display: block;
 }
+
+/* Main content area (used in communications and other pages) */
+.main-content {
+    flex-grow: 1;
+    margin-left: 250px;
+    padding: var(--spacing-xl);
+    position: relative;
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.header h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-xxl);
+}
+
+.admin-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: var(--text-muted);
+}
+
+.content-area {
+    padding: 0;
+}
+
+/* Menu toggle button */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+}
+
+.menu-toggle span {
+    width: 20px;
+    height: 2px;
+    background-color: var(--text-primary);
+    margin: 2px 0;
+    transition: 0.3s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: var(--spacing-md);
+    }
+    
+    .menu-toggle {
+        display: flex;
+    }
+}

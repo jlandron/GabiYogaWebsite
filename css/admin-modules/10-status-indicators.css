@@ -49,3 +49,49 @@
     background-color: #f5f5f5;
     color: var(--text-secondary);
 }
+
+/* Status badges for communications page */
+.status-badge {
+    display: inline-block;
+    padding: 4px var(--spacing-sm);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-new {
+    background-color: var(--info-bg);
+    color: var(--info-color);
+}
+
+.status-read {
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
+}
+
+.status-responded {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-archived {
+    background-color: #f5f5f5;
+    color: var(--text-secondary);
+}
+
+.status-active {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-inactive {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.status-default {
+    background-color: #f5f5f5;
+    color: var(--text-secondary);
+}

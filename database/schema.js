@@ -320,6 +320,20 @@ const createSchema = async () => {
         updated_at TEXT NOT NULL
       )
     `);
+
+    // Contact Submissions table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS contact_submissions (
+        submission_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
+        name ${DB_TYPE === 'mysql' ? 'VARCHAR(255)' : 'TEXT'} NOT NULL,
+        email ${DB_TYPE === 'mysql' ? 'VARCHAR(255)' : 'TEXT'} NOT NULL,
+        subject ${DB_TYPE === 'mysql' ? 'VARCHAR(500)' : 'TEXT'} NOT NULL,
+        message TEXT NOT NULL,
+        status ${DB_TYPE === 'mysql' ? 'VARCHAR(50)' : 'TEXT'} DEFAULT 'New',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
     
     // Create indexes for better performance
     console.log(`Creating indexes with database type: ${DB_TYPE} (NODE_ENV: ${NODE_ENV})`);

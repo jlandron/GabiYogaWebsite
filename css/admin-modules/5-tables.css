@@ -109,3 +109,26 @@
 .admin-table-error {
     color: var(--danger-color);
 }
+
+/* Table container for proper spacing and overflow handling */
+.table-container {
+    overflow-x: auto;
+    margin: var(--spacing-md) 0;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.table-container .admin-table {
+    margin: 0;
+    border-radius: 0;
+}
+
+.table-container .admin-table th:first-child,
+.table-container .admin-table td:first-child {
+    padding-left: var(--spacing-lg);
+}
+
+.table-container .admin-table th:last-child,
+.table-container .admin-table td:last-child {
+    padding-right: var(--spacing-lg);
+}
