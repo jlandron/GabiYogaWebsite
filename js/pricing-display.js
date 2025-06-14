@@ -376,6 +376,20 @@ function updateHomepagePrivateSessions(sessionPackages) {
         const durationText = pkg.session_duration ? `${pkg.session_duration} minutes` : '';
         const pricePerSession = pkg.sessions > 1 ? `$${(pkg.price / pkg.sessions).toFixed(2)} per session` : durationText;
         
+        // Create focus options list
+        let focusOptionsHTML = '';
+        if (pkg.focus_options && pkg.focus_options.length > 0) {
+            const focusItems = pkg.focus_options.map(option => `<li>${escapeHTML(option)}</li>`).join('');
+            focusOptionsHTML = `
+                <div class="focus-options">
+                    <p><strong>Available Focus:</strong></p>
+                    <ul class="focus-list">
+                        ${focusItems}
+                    </ul>
+                </div>
+            `;
+        }
+        
         optionDiv.innerHTML = `
             <div class="header">
                 <h4>${escapeHTML(pkg.name)}</h4>
@@ -383,6 +397,7 @@ function updateHomepagePrivateSessions(sessionPackages) {
             <div class="content">
                 <p class="price">$${pkg.price.toFixed(2)}</p>
                 <p>${pricePerSession}</p>
+                ${focusOptionsHTML}
             </div>
         `;
         
