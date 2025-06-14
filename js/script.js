@@ -460,6 +460,19 @@ function populateSessionPackageDropdown(packages) {
     
     // Add event listener to update focus options when session type changes
     sessionTypeSelect.addEventListener('change', updateFocusOptions);
+    
+    // Auto-load focus options for the first package if there's only one option
+    // or if user hasn't manually selected anything yet
+    if (packages.length > 0) {
+        // Set the first package as selected
+        const firstPackageId = packages[0].id.toString();
+        sessionTypeSelect.value = firstPackageId;
+        
+        // Trigger the focus options update for the first package
+        setTimeout(() => {
+            updateFocusOptions();
+        }, 100); // Small delay to ensure DOM is ready
+    }
 }
 
 // Function to update focus options based on selected session package
