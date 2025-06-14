@@ -233,6 +233,68 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Class Bookings Modal (hidden by default) -->
+            <div id="class-bookings-modal" class="admin-modal" style="display: none;">
+                <div class="admin-modal-content admin-modal-large">
+                    <div class="admin-modal-header">
+                        <h2 id="bookings-modal-title">Class Bookings</h2>
+                        <span class="admin-modal-close">&times;</span>
+                    </div>
+                    <div class="admin-modal-body">
+                        <div class="bookings-info-panel">
+                            <div class="booking-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="bookings-count">0</div>
+                                    <div class="stat-label">Total Bookings</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="available-spaces">0</div>
+                                    <div class="stat-label">Available Spaces</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="class-capacity">0</div>
+                                    <div class="stat-label">Total Capacity</div>
+                                </div>
+                            </div>
+                            <div class="class-details-summary">
+                                <div id="class-summary-content">
+                                    <!-- Class details will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bookings-table-container">
+                            <table id="class-bookings-table" class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Booking Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;padding:30px;">
+                                            <i class="fas fa-spinner fa-spin"></i> Loading bookings...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="bookings-modal-actions">
+                            <button class="admin-btn admin-btn-secondary" id="export-bookings-btn">
+                                <i class="fas fa-download"></i> Export List
+                            </button>
+                            <button class="admin-btn admin-btn-secondary admin-modal-cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 

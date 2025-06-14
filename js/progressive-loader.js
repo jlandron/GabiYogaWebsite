@@ -731,9 +731,9 @@ class ProgressiveLoader {
                     classBlock.style.zIndex = '10';
                     classBlock.style.cursor = 'pointer';
                     
-                    // Class content - clean and simple, just show the class name
+                    // Class content - just show the class name (spaces available only in popup)
                     const cls = overlay.class;
-                    classBlock.innerHTML = `<strong class="class-title">${cls.name}</strong>`;
+                    classBlock.innerHTML = `<strong class="class-title" style="font-size: 1.1em; line-height: 1.2;">${cls.name}</strong>`;
                     
                     // Add click handler for popup
                     classBlock.addEventListener('click', (e) => {
@@ -836,6 +836,29 @@ class ProgressiveLoader {
         
         // Create content
         const content = document.createElement('div');
+        
+        // Generate available spaces display
+        let availabilitySection = '';
+        if (typeof classData.availableSpaces !== 'undefined') {
+            const spacesColor = classData.availableSpaces <= 3 ? '#e74c3c' : (classData.availableSpaces <= 7 ? '#f39c12' : '#27ae60');
+            const statusText = classData.availableSpaces === 0 ? 'Class Full' : 
+                              classData.availableSpaces <= 3 ? 'Almost Full' : 
+                              'Available';
+            
+            availabilitySection = `
+                <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid ${spacesColor};">
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: var(--accent-color);">Availability:</strong>
+                        <span style="margin-left: 10px; color: ${spacesColor}; font-weight: bold;">${statusText}</span>
+                    </div>
+                    <div style="font-size: 0.9em; color: #666;">
+                        ${classData.availableSpaces} spaces available
+                        ${classData.capacity ? ` out of ${classData.capacity}` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
         content.innerHTML = `
             <h3 style="color: var(--primary-color); margin-bottom: 20px; margin-right: 40px;">${classData.name}</h3>
             <div style="margin-bottom: 15px;">
@@ -860,6 +883,7 @@ class ProgressiveLoader {
                     <span style="margin-left: 10px;">${classData.level}</span>
                 </div>
             ` : ''}
+            ${availabilitySection}
             ${classData.description ? `
                 <div style="margin-bottom: 20px;">
                     <strong style="color: var(--accent-color);">Description:</strong>
@@ -868,7 +892,7 @@ class ProgressiveLoader {
             ` : ''}
             <div style="text-align: center; margin-top: 25px;">
                 <a href="#" class="btn" style="display: inline-block;" onclick="event.preventDefault(); document.querySelector('.class-signup .btn')?.click();">
-                    Sign Up for Class
+                    ${classData.availableSpaces === 0 ? 'Join Waitlist' : 'Sign Up for Class'}
                 </a>
             </div>
         `;

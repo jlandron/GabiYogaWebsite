@@ -975,6 +975,19 @@ async function loadWeeklySchedule() {
  * Setup event listeners for weekly calendar
  */
 function setupWeeklyCalendarListeners() {
+    // Add event listeners for clicking on classes to view bookings
+    document.querySelectorAll('.calendar-class').forEach(classElement => {
+        classElement.addEventListener('click', (e) => {
+            // Don't trigger if clicking on action buttons
+            if (e.target.closest('.calendar-class-actions')) {
+                return;
+            }
+            
+            const classId = classElement.getAttribute('data-id');
+            openBookingsModal(classId);
+        });
+    });
+    
     // Add event listeners for editing classes
     document.querySelectorAll('.calendar-class-actions .edit-class').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -1052,4 +1065,277 @@ function showSuccessMessage(message) {
             successDiv.remove();
         }, 5000);
     }
+}
+
+/**
+ * Open bookings modal for a specific class
+ */
+async function openBookingsModal(classId) {
+    try {
+        const modal = document.getElementById('class-bookings-modal');
+        const modalTitle = document.getElementById('bookings-modal-title');
+        
+        if (!modal || !modalTitle) return;
+        
+        // Show modal
+        modal.style.display = 'block';
+        
+        // Set loading state
+        modalTitle.textContent = 'Loading Class Bookings...';
+        document.getElementById('bookings-count').textContent = '0';
+        document.getElementById('available-spaces').textContent = '0';
+        document.getElementById('class-capacity').textContent = '0';
+        document.getElementById('class-summary-content').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        
+        const bookingsTableBody = document.querySelector('#class-bookings-table tbody');
+        if (bookingsTableBody) {
+            bookingsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center;padding:30px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading bookings...
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Get class details first
+        const classes = await AdminApiService.getClasses();
+        const classData = classes.find(cls => cls.class_id == classId);
+        
+        if (!classData) {
+            showErrorMessage('Class not found');
+            modal.style.display = 'none';
+            return;
+        }
+        
+        // Update modal title with class name
+        modalTitle.textContent = `Bookings: ${classData.name}`;
+        
+        // Calculate next class date (for current week)
+        const today = new Date();
+        const dayOfWeek = classData.day_of_week; // 0 = Sunday, 1 = Monday, etc.
+        const nextClassDate = getNextClassDate(dayOfWeek);
+        const dateString = nextClassDate.toISOString().split('T')[0];
+        
+        // Update class summary
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        document.getElementById('class-summary-content').innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div><strong>Instructor:</strong> ${classData.instructor}</div>
+                <div><strong>Level:</strong> ${classData.level || 'All Levels'}</div>
+                <div><strong>Day:</strong> ${dayNames[dayOfWeek]}</div>
+                <div><strong>Time:</strong> ${formatTimeForDisplay(classData.start_time)}</div>
+                <div><strong>Duration:</strong> ${classData.duration} minutes</div>
+                <div><strong>Next Class:</strong> ${nextClassDate.toLocaleDateString()}</div>
+            </div>
+        `;
+        
+        // Fetch bookings for this class
+        const response = await fetch(`/api/schedule/class/${classId}/bookings?date=${dateString}`);
+        const bookingsData = await response.json();
+        
+        if (bookingsData.success) {
+            const bookings = bookingsData.bookings || [];
+            const capacity = classData.capacity || 20;
+            const bookedCount = bookings.length;
+            const availableSpaces = Math.max(0, capacity - bookedCount);
+            
+            // Update stats
+            document.getElementById('bookings-count').textContent = bookedCount;
+            document.getElementById('available-spaces').textContent = availableSpaces;
+            document.getElementById('class-capacity').textContent = capacity;
+            
+            // Render bookings table
+            renderBookingsTable(bookings);
+        } else {
+            showErrorMessage('Failed to load bookings: ' + bookingsData.message);
+            renderBookingsTable([]);
+        }
+        
+        // Setup modal event handlers
+        setupBookingsModalEventHandlers();
+        
+    } catch (error) {
+        console.error('Error opening bookings modal:', error);
+        showErrorMessage('Failed to load class bookings');
+        
+        const modal = document.getElementById('class-bookings-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Get the next occurrence of a class (for current week)
+ */
+function getNextClassDate(dayOfWeek) {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Calculate days until the target day
+    let daysUntilClass = dayOfWeek - currentDay;
+    
+    // If the class day has already passed this week, get next week's occurrence
+    if (daysUntilClass < 0) {
+        daysUntilClass += 7;
+    }
+    
+    const nextClassDate = new Date(today);
+    nextClassDate.setDate(today.getDate() + daysUntilClass);
+    
+    return nextClassDate;
+}
+
+/**
+ * Render bookings table
+ */
+function renderBookingsTable(bookings) {
+    const bookingsTableBody = document.querySelector('#class-bookings-table tbody');
+    if (!bookingsTableBody) return;
+    
+    if (!bookings || bookings.length === 0) {
+        bookingsTableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center;padding:30px;">
+                    <i class="fas fa-info-circle"></i> No bookings found for this class.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    bookingsTableBody.innerHTML = bookings.map(booking => {
+        const statusClass = booking.status === 'Confirmed' ? 'status-confirmed' : 
+                           booking.status === 'Attended' ? 'status-attended' : 
+                           booking.status === 'Cancelled' ? 'status-cancelled' : 'status-pending';
+        
+        const bookingDate = new Date(booking.created_at).toLocaleDateString();
+        
+        return `
+            <tr>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">${booking.user_name}</div>
+                        <div class="customer-id" style="font-size: 0.8em; color: #666;">ID: ${booking.user_id}</div>
+                    </div>
+                </td>
+                <td>
+                    <a href="mailto:${booking.user_email}" style="color: var(--primary-color);">
+                        ${booking.user_email}
+                    </a>
+                </td>
+                <td>
+                    ${booking.user_phone ? `<a href="tel:${booking.user_phone}" style="color: var(--primary-color);">${booking.user_phone}</a>` : 'N/A'}
+                </td>
+                <td>
+                    <span class="booking-status ${statusClass}">${booking.status}</span>
+                </td>
+                <td>${bookingDate}</td>
+                <td class="booking-actions">
+                    <button class="admin-btn-icon" onclick="viewCustomerProfile(${booking.user_id})" title="View Profile">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="admin-btn-icon" onclick="sendMessage('${booking.user_email}')" title="Send Message">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Setup bookings modal event handlers
+ */
+function setupBookingsModalEventHandlers() {
+    const modal = document.getElementById('class-bookings-modal');
+    if (!modal) return;
+    
+    // Close modal when clicking X
+    const closeBtn = modal.querySelector('.admin-modal-close');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+    
+    // Close modal when clicking Cancel
+    const cancelBtn = modal.querySelector('.admin-modal-cancel');
+    if (cancelBtn) {
+        cancelBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+    
+    // Export bookings functionality
+    const exportBtn = document.getElementById('export-bookings-btn');
+    if (exportBtn) {
+        exportBtn.onclick = () => {
+            exportBookings();
+        };
+    }
+}
+
+/**
+ * View customer profile (placeholder function)
+ */
+function viewCustomerProfile(userId) {
+    // This could open a customer profile modal or navigate to a customer page
+    console.log('View customer profile:', userId);
+    showSuccessMessage(`Customer profile view for user ${userId} - Feature coming soon!`);
+}
+
+/**
+ * Send message to customer (placeholder function)
+ */
+function sendMessage(email) {
+    // This could open an email client or messaging modal
+    window.location.href = `mailto:${email}`;
+}
+
+/**
+ * Export bookings to CSV
+ */
+function exportBookings() {
+    const table = document.getElementById('class-bookings-table');
+    const modalTitle = document.getElementById('bookings-modal-title').textContent;
+    
+    if (!table) return;
+    
+    let csv = 'Customer Name,Email,Phone,Status,Booking Date\n';
+    
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 5) {
+            const customerName = cells[0].querySelector('.customer-name')?.textContent || '';
+            const email = cells[1].textContent.trim();
+            const phone = cells[2].textContent.trim() === 'N/A' ? '' : cells[2].textContent.trim();
+            const status = cells[3].textContent.trim();
+            const bookingDate = cells[4].textContent.trim();
+            
+            csv += `"${customerName}","${email}","${phone}","${status}","${bookingDate}"\n`;
+        }
+    });
+    
+    // Create and download file
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${modalTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_bookings.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showSuccessMessage('Bookings exported successfully!');
 }

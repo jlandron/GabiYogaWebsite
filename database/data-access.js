@@ -277,6 +277,124 @@ const BookingOperations = {
       console.error('Error getting all bookings:', error);
       throw error;
     }
+  },
+  
+  /**
+   * Create a class booking
+   */
+  createClassBooking: async (bookingData) => {
+    try {
+      const { user_id, class_id, date, payment_method, status = 'Confirmed' } = bookingData;
+      const datetimeFunc = getDatetimeFunction();
+      
+      // Check if user already has a booking for this class on this date
+      const existingBookings = await db.query(`
+        SELECT booking_id FROM bookings 
+        WHERE user_id = ? AND class_id = ? AND date = ?
+      `, [user_id, class_id, date]);
+      
+      if (existingBookings.length > 0) {
+        throw new Error('User already has a booking for this class on this date');
+      }
+      
+      // Create the booking
+      const result = await db.query(`
+        INSERT INTO bookings (
+          user_id, 
+          class_id, 
+          date, 
+          status, 
+          booking_date,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc}, ${datetimeFunc})
+      `, [user_id, class_id, date, status]);
+      
+      // Get the created booking details
+      const bookings = await db.query(`
+        SELECT 
+          b.booking_id,
+          b.user_id,
+          b.class_id,
+          b.date,
+          b.status,
+          b.booking_date,
+          b.created_at,
+          c.name as class_name,
+          u.first_name || ' ' || u.last_name as user_name,
+          u.email as user_email
+        FROM bookings b
+        JOIN classes c ON b.class_id = c.class_id
+        JOIN users u ON b.user_id = u.user_id
+        WHERE b.booking_id = ?
+      `, [result.lastID]);
+      
+      return bookings.length > 0 ? bookings[0] : null;
+    } catch (error) {
+      console.error('Error creating class booking:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get user's bookings
+   */
+  getUserBookings: async (userId) => {
+    try {
+      const bookings = await db.query(`
+        SELECT 
+          b.booking_id,
+          b.class_id,
+          b.date,
+          b.status,
+          b.booking_date,
+          b.created_at,
+          c.name as class_name,
+          c.start_time,
+          c.duration,
+          c.instructor,
+          c.level
+        FROM bookings b
+        JOIN classes c ON b.class_id = c.class_id
+        WHERE b.user_id = ?
+        AND b.status != 'Cancelled'
+        ORDER BY b.date DESC, c.start_time
+      `, [userId]);
+      
+      return bookings;
+    } catch (error) {
+      console.error('Error getting user bookings:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Cancel a booking
+   */
+  cancelBooking: async (bookingId, userId = null) => {
+    try {
+      const datetimeFunc = getDatetimeFunction();
+      
+      // If userId is provided, verify the booking belongs to the user
+      let whereClause = 'booking_id = ?';
+      let params = [bookingId];
+      
+      if (userId) {
+        whereClause += ' AND user_id = ?';
+        params.push(userId);
+      }
+      
+      const result = await db.query(`
+        UPDATE bookings 
+        SET status = 'Cancelled', updated_at = ${datetimeFunc}
+        WHERE ${whereClause}
+      `, params);
+      
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      throw error;
+    }
   }
 };
 
@@ -582,6 +700,57 @@ const ClassOperations = {
       return true;
     } catch (error) {
       console.error('Error deleting class:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get bookings for a specific class on a specific date
+   */
+  getBookingsForClassAndDate: async (classId, date) => {
+    try {
+      const bookings = await db.query(`
+        SELECT 
+          booking_id,
+          user_id,
+          class_id,
+          date,
+          status,
+          booking_date,
+          created_at
+        FROM bookings
+        WHERE class_id = ? AND date = ?
+        AND status IN ('Confirmed', 'Attended')
+        ORDER BY created_at
+      `, [classId, date]);
+      
+      return bookings;
+    } catch (error) {
+      console.error('Error getting bookings for class and date:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get user by ID
+   */
+  getUserById: async (userId) => {
+    try {
+      const users = await db.query(`
+        SELECT 
+          user_id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          role
+        FROM users
+        WHERE user_id = ?
+      `, [userId]);
+      
+      return users.length > 0 ? users[0] : null;
+    } catch (error) {
+      console.error('Error getting user by ID:', error);
       throw error;
     }
   }

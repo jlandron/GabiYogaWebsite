@@ -146,12 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
             
             if (!isLoggedIn) {
-                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
-                
-                if (wantsLogin) {
-                    // Store intent to book private session after login
-                    localStorage.setItem('loginRedirect', 'book-private-session');
-                    window.location.href = 'login.html';
+                // Show login modal with callback to open booking modal
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal(false, () => {
+                        openPrivateBookingModal();
+                    });
+                } else {
+                    alert('Please log in to book a private session');
                 }
             } else {
                 openPrivateBookingModal();
@@ -169,12 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
             
             if (!isLoggedIn) {
-                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
-                
-                if (wantsLogin) {
-                    // Store intent to book private session after login
-                    localStorage.setItem('loginRedirect', 'book-private-session');
-                    window.location.href = 'login.html';
+                // Show login modal with callback to open booking modal
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal(false, () => {
+                        openPrivateBookingModal();
+                    });
+                } else {
+                    alert('Please log in to book a private session');
                 }
             } else {
                 openPrivateBookingModal();
@@ -315,12 +317,11 @@ function initializeModals() {
             const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
             
             if (!isLoggedIn) {
-                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
-                
-                if (wantsLogin) {
-                    // Store intent to book private session after login
-                    localStorage.setItem('loginRedirect', 'book-private-session');
-                    window.location.href = 'login.html';
+                // Show login modal without redirecting after login
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal(false);
+                } else {
+                    alert('Please log in to book a private session');
                 }
             } else {
                 openPrivateBookingModal();
@@ -338,12 +339,11 @@ function initializeModals() {
             const isLoggedIn = window.userDataManager && window.userDataManager.isLoggedIn();
             
             if (!isLoggedIn) {
-                const wantsLogin = confirm('You need to be logged in to book a private session. Would you like to log in now?');
-                
-                if (wantsLogin) {
-                    // Store intent to book private session after login
-                    localStorage.setItem('loginRedirect', 'book-private-session');
-                    window.location.href = 'login.html';
+                // Show login modal without redirecting after login
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal(false);
+                } else {
+                    alert('Please log in to book a private session');
                 }
             } else {
                 openPrivateBookingModal();
@@ -514,23 +514,16 @@ function updateFocusOptions() {
 function loginPrompt(event, redirectUrl) {
     event.preventDefault();
     
-    // Check if user is logged in (this would typically query a session cookie or token)
-    // For demo purposes, we'll just use localStorage
-    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    // Check if user is logged in using UserService if available
+    const isLoggedIn = (window.UserService && window.UserService.isLoggedIn()) || 
+                      localStorage.getItem('userLoggedIn') === 'true';
     
     if (!isLoggedIn) {
-        // If not logged in, ask user to login
-        const wantsLogin = confirm('You need to be logged in to access this feature. Would you like to log in now?');
-        
-        if (wantsLogin) {
-            // Store the page they wanted to access for redirection after login
-            if (redirectUrl) {
-                localStorage.setItem('loginRedirect', redirectUrl);
-            }
-            
-            // Redirect to login page
-            window.location.href = 'login.html';
-            return false;
+        // Show login modal without redirecting after login
+        if (typeof showLoginModal === 'function') {
+            showLoginModal(false);
+        } else {
+            alert('Please log in to access this feature');
         }
         return false;
     }
@@ -637,9 +630,24 @@ const addLoginRequirements = () => {
     const signupBtn = document.getElementById('signup-btn');
     if (signupBtn) {
         signupBtn.addEventListener('click', (e) => {
-            if (loginPrompt(e, 'dashboard.html#bookings')) {
-                // If logged in, redirect to the dashboard bookings panel
-                window.location.href = 'dashboard.html#bookings';
+            e.preventDefault();
+            
+            // Check if user is logged in using UserService if available
+            const isLoggedIn = (window.UserService && window.UserService.isLoggedIn()) || 
+                              localStorage.getItem('userLoggedIn') === 'true';
+            
+            if (!isLoggedIn) {
+                // Show login modal with callback to open signup modal
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal(false, () => {
+                        openClassSignupModal();
+                    });
+                } else {
+                    alert('Please log in to sign up for classes');
+                }
+            } else {
+                // If logged in, open the class signup modal
+                openClassSignupModal();
             }
         });
     }
@@ -716,6 +724,136 @@ const addLoginRequirements = () => {
     }
 };
 
+// Function to open class signup modal
+function openClassSignupModal() {
+    const signupModal = document.getElementById('signup-modal');
+    if (signupModal) {
+        // Populate class options from schedule
+        populateClassOptions();
+        
+        // Show the modal
+        signupModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Function to populate class options in signup modal
+async function populateClassOptions() {
+    const classSelect = document.getElementById('class-select');
+    
+    if (!classSelect) return;
+    
+    try {
+        // Fetch schedule from API
+        const response = await fetch('/api/schedule');
+        const data = await response.json();
+        
+        if (data.success && data.schedule) {
+            // Clear existing options except the first placeholder
+            while (classSelect.options.length > 1) {
+                classSelect.options.remove(1);
+            }
+            
+            // Add classes from schedule
+            data.schedule.forEach(classItem => {
+                const option = document.createElement('option');
+                option.value = `${classItem.day.toLowerCase()}-${classItem.time}-${classItem.name}`;
+                option.textContent = `${classItem.day} ${classItem.time} - ${classItem.name} (${classItem.level})`;
+                classSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading class schedule:', error);
+    }
+}
+
+// Function to handle class signup form submission
+async function handleClassSignupSubmit(event) {
+    event.preventDefault();
+    
+    const classSelect = document.getElementById('class-select');
+    const paymentMethod = document.getElementById('payment-method');
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    
+    // Get form values 
+    const selectedClass = classSelect.value;
+    const selectedPayment = paymentMethod.value;
+    
+    if (!selectedClass || !selectedPayment) {
+        alert('Please select both a class and payment method');
+        return;
+    }
+    
+    // Disable button and show loading state
+    const originalButtonText = submitButton.textContent;
+    submitButton.textContent = 'Reserving...';
+    submitButton.disabled = true;
+    
+    try {
+        // Get user data
+        let userId = null;
+        let userName = '';
+        let userEmail = '';
+        
+        if (window.UserService && window.UserService.isLoggedIn()) {
+            const user = window.UserService.getUser();
+            userId = user.id;
+            userName = `${user.firstName} ${user.lastName}`;
+            userEmail = user.email;
+        } else if (window.userDataManager) {
+            try {
+                userId = await window.userDataManager.getUserId();
+                userName = await window.userDataManager.getFullName();
+                userEmail = await window.userDataManager.getEmail();
+            } catch (error) {
+                console.warn('Could not get user data:', error);
+            }
+        }
+        
+        // Prepare booking data
+        const bookingData = {
+            userId,
+            className: classSelect.options[classSelect.selectedIndex].text,
+            classIdentifier: selectedClass,
+            paymentMethod: selectedPayment,
+            userName,
+            userEmail
+        };
+        
+        // Submit class signup (this would need an API endpoint)
+        const response = await fetch('/api/class-bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bookingData),
+            credentials: 'include'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            alert(`Great! Your spot in ${classSelect.options[classSelect.selectedIndex].text} has been reserved. You'll receive a confirmation email shortly.`);
+            
+            // Close modal and reset form
+            document.getElementById('signup-modal').style.display = 'none';
+            document.body.style.overflow = '';
+            event.target.reset();
+        } else {
+            alert(result.message || 'Failed to reserve class. Please try again.');
+        }
+        
+    } catch (error) {
+        console.error('Error submitting class signup:', error);
+        alert('Failed to reserve class. Please check your connection and try again.');
+    } finally {
+        // Re-enable button
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+    }
+}
+
 // Function to initialize form handlers
 function initializeFormHandlers() {
     // Newsletter subscription form
@@ -762,6 +900,32 @@ function initializeFormHandlers() {
                 // Re-enable button
                 submitButton.textContent = originalButtonText;
                 submitButton.disabled = false;
+            }
+        });
+    }
+    
+    // Class signup form
+    const classSignupForm = document.getElementById('class-signup-form');
+    if (classSignupForm) {
+        classSignupForm.addEventListener('submit', handleClassSignupSubmit);
+    }
+    
+    // Set up modal close functionality for signup modal
+    const signupModal = document.getElementById('signup-modal');
+    const signupModalClose = document.querySelector('#signup-modal .close-modal');
+    
+    if (signupModal && signupModalClose) {
+        // Close modal with X button
+        signupModalClose.addEventListener('click', () => {
+            signupModal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', (e) => {
+            if (e.target === signupModal) {
+                signupModal.style.display = 'none';
+                document.body.style.overflow = '';
             }
         });
     }

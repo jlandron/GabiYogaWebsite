@@ -40,6 +40,7 @@ const userLocationApi = require('./api/user-location'); // Import user location 
 const newsletterRoutes = require('./api/newsletter'); // Import newsletter routes
 const contactRoutes = require('./api/contact'); // Import contact routes
 const scheduleRoutes = require('./api/schedule'); // Import schedule routes
+const classBookingsRoutes = require('./api/class-bookings'); // Import class bookings routes
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -155,6 +156,7 @@ app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
 app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
 app.use('/api/contact', contactRoutes); // Contact routes
 app.use('/api/schedule', scheduleRoutes); // Schedule routes
+app.use('/api/class-bookings', classBookingsRoutes); // Class bookings routes
 
 // User location detection endpoints (public)
 app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));

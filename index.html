@@ -46,6 +46,9 @@
 <body>
     <!-- Header Component Placeholder -->
     <div id="header-placeholder"></div>
+    
+    <!-- Login Modal Component Placeholder -->
+    <div id="login-modal-placeholder"></div>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
@@ -594,6 +597,30 @@
     <script src="js/stripe-payment.js"></script>
     <script src="js/profile-loader.js"></script>
     <script src="js/section-background-alternator.js"></script>
+    
+    <!-- Authentication and login modal scripts -->
+    <script src="js/account.js"></script>
+    <script src="js/login-modal.js"></script>
+    <script>
+        // Load login modal component
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginModalPlaceholder = document.getElementById('login-modal-placeholder');
+            if (loginModalPlaceholder) {
+                fetch('/components/login-modal.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        loginModalPlaceholder.innerHTML = html;
+                        // Initialize login modal functionality after component is loaded
+                        if (typeof initializeLoginModals === 'function') {
+                            initializeLoginModals();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading login modal component:', error);
+                    });
+            }
+        });
+    </script>
     
     <!-- Legacy script - functionality moved to progressive loader -->
     <script>

@@ -63,6 +63,9 @@
 <body>
     <!-- Header Component Placeholder -->
     <div id="header-placeholder"></div>
+    
+    <!-- Login Modal Component Placeholder -->
+    <div id="login-modal-placeholder"></div>
 
     <!-- Blog Main Section -->
     <section class="blog-hero">
@@ -216,5 +219,29 @@
     <script src="js/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="js/blog.js"></script>
+    
+    <!-- Authentication and login modal scripts -->
+    <script src="js/account.js"></script>
+    <script src="js/login-modal.js"></script>
+    <script>
+        // Load login modal component
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginModalPlaceholder = document.getElementById('login-modal-placeholder');
+            if (loginModalPlaceholder) {
+                fetch('/components/login-modal.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        loginModalPlaceholder.innerHTML = html;
+                        // Initialize login modal functionality after component is loaded
+                        if (typeof initializeLoginModals === 'function') {
+                            initializeLoginModals();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading login modal component:', error);
+                    });
+            }
+        });
+    </script>
 </body>
 </html>

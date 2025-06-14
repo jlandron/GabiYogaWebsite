@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add active class to current page nav link
             highlightCurrentPage();
+            
+            // Initialize My Account link functionality
+            initMyAccountLink();
         })
         .catch(error => {
             console.error('Error loading header component:', error);
@@ -77,4 +80,34 @@ function highlightCurrentPage() {
             link.classList.add('active');
         }
     });
+}
+
+/**
+ * Initialize My Account link functionality
+ */
+function initMyAccountLink() {
+    const myAccountLink = document.getElementById('myAccountLink');
+    if (myAccountLink) {
+        myAccountLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            // Check if user is logged in
+            if (typeof UserService !== 'undefined' && UserService.isLoggedIn()) {
+                // Redirect to appropriate dashboard
+                if (UserService.isAdmin()) {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                // Show login modal if function is available
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal();
+                } else {
+                    // Fallback to login page if modal functions aren't loaded
+                    window.location.href = 'login.html';
+                }
+            }
+        });
+    }
 }

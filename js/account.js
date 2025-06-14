@@ -305,16 +305,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // First check if user is already logged in
     if (UserService.isLoggedIn()) {
-        // If on login page, redirect to appropriate dashboard
-        if (!window.location.pathname.includes('dashboard') && 
-            !window.location.pathname.includes('admin')) {
+        // Only redirect if on the login page specifically
+        if (window.location.pathname.includes('login.html')) {
             redirectToDashboard();
             return;
         }
         
         // If admin tries to access regular dashboard or vice versa, redirect
         const isAdminPath = window.location.pathname.includes('admin');
-        if (UserService.isAdmin() && !isAdminPath) {
+        if (UserService.isAdmin() && !isAdminPath && (window.location.pathname.includes('dashboard'))) {
             window.location.href = 'admin-dashboard.html';
             return;
         } else if (!UserService.isAdmin() && isAdminPath) {
@@ -323,8 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } else if (window.location.pathname.includes('dashboard') || 
                window.location.pathname.includes('admin')) {
-        // Not logged in but trying to access dashboard, redirect to login
-        window.location.href = 'login.html';
+        // Not logged in but trying to access dashboard, redirect to homepage
+        window.location.href = 'index.html';
         return;
     }
     
@@ -490,9 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Clear user info and redirect to login page
+            // Clear user info and redirect to homepage
             UserService.logout();
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         });
     }
     
