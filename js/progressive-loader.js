@@ -853,7 +853,6 @@ class ProgressiveLoader {
                     </div>
                     <div style="font-size: 0.9em; color: #666;">
                         ${classData.availableSpaces} spaces available
-                        ${classData.capacity ? ` out of ${classData.capacity}` : ''}
                     </div>
                 </div>
             `;
