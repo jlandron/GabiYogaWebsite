@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
         time: formatTime(cls.start_time),
         instructor: cls.instructor,
         level: cls.level,
-        duration: cls.duration,
+        duration: cls.duration || 60, // Default to 60 minutes if not specified
         type: cls.level // Use level as type for styling
       };
     });

@@ -517,7 +517,6 @@ class ProgressiveLoader {
         const scheduleTable = document.querySelector('.schedule-table tbody');
         
         if (!scheduleTable || !scheduleData || !scheduleData.length) {
-            // If no schedule data, show message
             if (scheduleTable) {
                 scheduleTable.innerHTML = `
                     <tr>
@@ -530,96 +529,180 @@ class ProgressiveLoader {
             return;
         }
         
-        // Clear loading message
         scheduleTable.innerHTML = '';
         
-        // All possible time slots in chronological order
-        const allTimeSlots = [
-            '6:30 AM',
-            '7:00 AM', 
-            '8:00 AM',
-            '9:00 AM', 
-            '9:00 AM',
-            '10:00 AM', 
-            '12:00 PM', 
-            '3:00 PM',
-            '5:00 PM',
-            '6:00 PM', 
-            '7:00 PM',
-            '7:30 PM'
-        ];
-        
-        // Days of the week
         const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
-        // Function to check if a time slot has any classes
-        const hasClasses = (timeSlot) => {
-            return scheduleData.some(c => c.time === timeSlot);
-        };
-        
-        // Filter time slots to avoid consecutive empty rows
-        const getFilteredTimeSlots = () => {
-            const filteredSlots = [];
-            let inEmptySequence = false;
+        // LAYER 1: Build background time structure
+        const createTimeStructure = () => {
+            const classHours = new Set();
             
-            for (let i = 0; i < allTimeSlots.length; i++) {
-                const currentSlot = allTimeSlots[i];
-                const hasCurrentClasses = hasClasses(currentSlot);
+            // Find all hours that have any part of a class (including overflow)
+            scheduleData.forEach(cls => {
+                const startTime = this.parseTime(cls.time);
+                const duration = cls.duration || 60;
+                const endTime = startTime + duration;
                 
-                if (hasCurrentClasses) {
-                    // If current slot has classes, always include it
-                    filteredSlots.push(currentSlot);
-                    inEmptySequence = false;
-                } else {
-                    // Current slot is empty
-                    if (!inEmptySequence) {
-                        // This is the first empty slot in a sequence, include it
-                        filteredSlots.push(currentSlot);
-                        inEmptySequence = true;
-                    }
-                    // If we're already in an empty sequence, skip this slot
+                const startHour = Math.floor(startTime / 60);
+                const endHour = Math.floor(endTime / 60);
+                
+                // Add all hours this class touches
+                for (let hour = startHour; hour <= endHour; hour++) {
+                    classHours.add(hour);
+                }
+            });
+            
+            if (classHours.size === 0) return [];
+            
+            const sortedClassHours = [...classHours].sort((a, b) => a - b);
+            const minTime = Math.max(6, sortedClassHours[0] - 1);
+            const maxTime = Math.min(23, sortedClassHours[sortedClassHours.length - 1] + 1);
+            
+            const timeSlots = [];
+            
+            // Add starting padding hour
+            timeSlots.push({
+                hour: minTime,
+                formatted: this.formatHour(minTime),
+                type: 'padding'
+            });
+            
+            // Add all class hours as individual slots
+            sortedClassHours.forEach(hour => {
+                timeSlots.push({
+                    hour: hour,
+                    formatted: this.formatHour(hour),
+                    type: 'class-hour'
+                });
+            });
+            
+            // Add gaps between non-consecutive hours
+            const finalTimeSlots = [];
+            for (let i = 0; i < timeSlots.length - 1; i++) {
+                finalTimeSlots.push(timeSlots[i]);
+                
+                const currentHour = timeSlots[i].hour;
+                const nextHour = timeSlots[i + 1].hour;
+                const gap = nextHour - currentHour;
+                
+                // If there's a gap larger than 1 hour, create consolidated gap
+                if (gap > 1) {
+                    const gapStart = currentHour + 1;
+                    const gapEnd = nextHour - 1;
+                    finalTimeSlots.push({
+                        hour: gapStart,
+                        formatted: `${this.formatHour(gapStart)} - ${this.formatHour(gapEnd)}`,
+                        type: 'gap'
+                    });
                 }
             }
             
-            return filteredSlots;
+            // Add the last slot and ending padding
+            if (timeSlots.length > 0) {
+                finalTimeSlots.push(timeSlots[timeSlots.length - 1]);
+                finalTimeSlots.push({
+                    hour: maxTime,
+                    formatted: this.formatHour(maxTime),
+                    type: 'padding'
+                });
+            }
+            
+            return finalTimeSlots;
         };
         
-        const timeSlots = getFilteredTimeSlots();
+        const timeSlots = createTimeStructure();
         
-        // Create a row for each filtered time slot
-        timeSlots.forEach(timeSlot => {
-            const row = document.createElement('tr');
+        // LAYER 2: Prepare class overlays
+        const classOverlays = {};
+        daysOfWeek.forEach(day => {
+            classOverlays[day] = [];
+        });
+        
+        scheduleData.forEach(cls => {
+            const day = cls.day;
+            const startTime = this.parseTime(cls.time);
+            const duration = cls.duration || 60;
+            const endTime = startTime + duration;
             
-            // Add time cell
+            // Find the table rows this class spans
+            const startHour = Math.floor(startTime / 60);
+            const endHour = Math.floor(endTime / 60);
+            
+            // Calculate position relative to the first affected time slot
+            const firstSlot = timeSlots.find(slot => slot.hour === startHour);
+            const firstSlotIndex = timeSlots.indexOf(firstSlot);
+            
+            if (firstSlotIndex >= 0) {
+                // Calculate precise positioning
+                const startMinuteInFirstHour = startTime % 60;
+                const topOffset = (startMinuteInFirstHour / 60) * 60; // 60px per hour
+                
+                // Calculate how many table rows this spans
+                let spanRows = 1;
+                let totalHeight = 60; // Base height for first row
+                
+                // Add height for additional rows if class spans multiple hours
+                for (let hour = startHour + 1; hour <= endHour; hour++) {
+                    const slotForHour = timeSlots.find(slot => slot.hour === hour);
+                    if (slotForHour) {
+                        spanRows++;
+                        totalHeight += 60; // Each additional row adds 60px
+                    }
+                }
+                
+                // Adjust height based on actual class duration
+                const actualHeight = (duration / 60) * 60; // 60px per hour
+                
+                classOverlays[day].push({
+                    class: cls,
+                    rowIndex: firstSlotIndex,
+                    topOffset: topOffset,
+                    height: Math.min(actualHeight, totalHeight),
+                    spanRows: spanRows
+                });
+            }
+        });
+        
+        // Create the table structure (background layer)
+        timeSlots.forEach((timeSlot, rowIndex) => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-row-index', rowIndex);
+            
+            // Time cell
             const timeCell = document.createElement('td');
-            timeCell.textContent = timeSlot;
+            timeCell.textContent = timeSlot.formatted;
             timeCell.classList.add('time-slot');
+            
+            if (timeSlot.type === 'gap') {
+                timeCell.classList.add('gap-slot');
+            } else if (timeSlot.type === 'padding') {
+                timeCell.classList.add('padding-slot');
+            } else {
+                timeCell.classList.add('class-hour-slot');
+            }
+            
             row.appendChild(timeCell);
             
-            // Add a cell for each day of the week
+            // Day cells (background)
             daysOfWeek.forEach(dayOfWeek => {
                 const cell = document.createElement('td');
+                cell.classList.add('schedule-cell');
+                cell.setAttribute('data-day', dayOfWeek);
+                cell.setAttribute('data-row', rowIndex);
                 
-                // Find class for this day and time
-                const classData = scheduleData.find(c => 
-                    c.day === dayOfWeek && 
-                    c.time === timeSlot
-                );
-                
-                if (classData) {
-                    cell.innerHTML = `
-                        <strong>${classData.name}</strong><br>
-                        <span class="instructor">${classData.instructor}</span>
-                    `;
-                    cell.classList.add('class-slot');
-                    
-                    // Add classes for styling based on class type
-                    if (classData.type) {
-                        cell.classList.add(`class-${classData.type.toLowerCase().replace(/\s+/g, '-')}`);
-                    }
-                } else {
+                // Style based on slot type
+                if (timeSlot.type === 'gap') {
+                    cell.innerHTML = '—';
+                    cell.classList.add('gap-slot');
+                } else if (timeSlot.type === 'padding') {
                     cell.innerHTML = '—';
                     cell.classList.add('empty-slot');
+                } else {
+                    // Class hour - set up for positioning
+                    cell.style.position = 'relative';
+                    cell.style.height = '60px';
+                    cell.style.padding = '0';
+                    cell.classList.add('class-hour-background');
                 }
                 
                 row.appendChild(cell);
@@ -628,7 +711,200 @@ class ProgressiveLoader {
             scheduleTable.appendChild(row);
         });
         
-        console.log('Schedule data rendered');
+        // Add class overlays (foreground layer)
+        daysOfWeek.forEach(dayOfWeek => {
+            classOverlays[dayOfWeek].forEach(overlay => {
+                const targetCell = scheduleTable.querySelector(
+                    `tr[data-row-index="${overlay.rowIndex}"] td[data-day="${dayOfWeek}"]`
+                );
+                
+                if (targetCell) {
+                    const classBlock = document.createElement('div');
+                    classBlock.className = 'class-overlay';
+                    
+                    // Position the overlay
+                    classBlock.style.position = 'absolute';
+                    classBlock.style.top = `${overlay.topOffset}px`;
+                    classBlock.style.height = `${overlay.height}px`;
+                    classBlock.style.left = '4px';
+                    classBlock.style.right = '4px';
+                    classBlock.style.zIndex = '10';
+                    classBlock.style.cursor = 'pointer';
+                    
+                    // Class content - clean and simple, just show the class name
+                    const cls = overlay.class;
+                    classBlock.innerHTML = `<strong class="class-title">${cls.name}</strong>`;
+                    
+                    // Add click handler for popup
+                    classBlock.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.showClassDetails(cls);
+                    });
+                    
+                    // Store class data for reference
+                    classBlock.setAttribute('data-class-id', cls.id || `${cls.day}-${cls.time}-${cls.name}`);
+                    
+                    targetCell.appendChild(classBlock);
+                }
+            });
+        });
+        
+        console.log('Layered schedule rendered with', timeSlots.length, 'time slots');
+    }
+    
+    // Helper method to parse time string to minutes since midnight
+    parseTime(timeStr) {
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        
+        let totalMinutes = hours * 60 + minutes;
+        
+        // Convert to 24-hour format
+        if (period === 'PM' && hours !== 12) {
+            totalMinutes += 12 * 60;
+        } else if (period === 'AM' && hours === 12) {
+            totalMinutes -= 12 * 60;
+        }
+        
+        return totalMinutes;
+    }
+    
+    // Helper method to format hour number to time string
+    formatHour(hour) {
+        if (hour === 0) return '12:00 AM';
+        if (hour < 12) return `${hour}:00 AM`;
+        if (hour === 12) return '12:00 PM';
+        return `${hour - 12}:00 PM`;
+    }
+    
+    // Class details popup functionality
+    showClassDetails(classData) {
+        // Remove existing popup if any
+        this.hideClassDetails();
+        
+        // Create popup overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'class-details-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        // Create popup content
+        const popup = document.createElement('div');
+        popup.className = 'class-details-popup';
+        popup.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        // Create close button
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        `;
+        
+        // Create content
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <h3 style="color: var(--primary-color); margin-bottom: 20px; margin-right: 40px;">${classData.name}</h3>
+            <div style="margin-bottom: 15px;">
+                <strong style="color: var(--accent-color);">Instructor:</strong>
+                <span style="margin-left: 10px;">${classData.instructor}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong style="color: var(--accent-color);">Day:</strong>
+                <span style="margin-left: 10px;">${classData.day}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong style="color: var(--accent-color);">Time:</strong>
+                <span style="margin-left: 10px;">${classData.time}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong style="color: var(--accent-color);">Duration:</strong>
+                <span style="margin-left: 10px;">${classData.duration || 60} minutes</span>
+            </div>
+            ${classData.level ? `
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: var(--accent-color);">Level:</strong>
+                    <span style="margin-left: 10px;">${classData.level}</span>
+                </div>
+            ` : ''}
+            ${classData.description ? `
+                <div style="margin-bottom: 20px;">
+                    <strong style="color: var(--accent-color);">Description:</strong>
+                    <p style="margin-top: 8px; line-height: 1.5; color: #555;">${classData.description}</p>
+                </div>
+            ` : ''}
+            <div style="text-align: center; margin-top: 25px;">
+                <a href="#" class="btn" style="display: inline-block;" onclick="event.preventDefault(); document.querySelector('.class-signup .btn')?.click();">
+                    Sign Up for Class
+                </a>
+            </div>
+        `;
+        
+        // Assemble popup
+        popup.appendChild(closeBtn);
+        popup.appendChild(content);
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+        
+        // Add event listeners
+        closeBtn.addEventListener('click', () => this.hideClassDetails());
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                this.hideClassDetails();
+            }
+        });
+        
+        // Close on escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                this.hideClassDetails();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    }
+    
+    hideClassDetails() {
+        const overlay = document.querySelector('.class-details-overlay');
+        if (overlay) {
+            overlay.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
+        }
     }
     
     populateSessionPackages(packages) {

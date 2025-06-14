@@ -174,13 +174,15 @@ section {
 .schedule-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 700px;
+    min-width: 900px;
+    table-layout: fixed;
 }
 
 .schedule-table th, .schedule-table td {
     padding: 12px;
     text-align: center;
     border: 1px solid #ddd;
+    vertical-align: top;
 }
 
 .schedule-table th {
@@ -192,9 +194,150 @@ section {
     background-color: #f9f9f9;
 }
 
+/* Time slot styling - fixed width */
+.schedule-table .time-slot {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+}
+
+/* Day columns - equal width for all days */
+.schedule-table th:not(.time-slot),
+.schedule-table td:not(.time-slot):not(.padding-slot):not(.class-hour-slot):not(.gap-slot) {
+    width: calc((100% - 120px) / 7);
+    min-width: 100px;
+    max-width: calc((100% - 120px) / 7);
+}
+
+/* Background cell styling */
+.schedule-table .class-hour-background {
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.schedule-table .padding-slot {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.schedule-table .class-hour-slot {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Class overlay styling (foreground layer) */
+.schedule-table .class-overlay {
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
+    padding: 6px 8px;
+    border-radius: 4px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-table .class-overlay strong {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    line-height: 1.1;
+}
+
+.schedule-table .class-overlay .instructor {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1px;
+    line-height: 1.1;
+}
+
+.schedule-table .class-overlay .class-time {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+    line-height: 1.1;
+}
+
+/* Empty slot styling */
+.schedule-table .empty-slot {
+    background-color: #f8f9fa;
+    color: #999;
+    font-size: 1.2rem;
+}
+
+/* Gap slot styling */
+.schedule-table .gap-slot {
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 6px;
+}
+
+/* Simplified color scheme - all classes use the same soft green */
+.schedule-table .class-beginner,
+.schedule-table .class-intermediate,
+.schedule-table .class-advanced,
+.schedule-table .class-all-levels {
+    background-color: var(--accent-color);
+}
+
+/* Remove gradients - clean flat design */
+.schedule-table td[rowspan] {
+    background-color: var(--accent-color);
+}
+
 .class-signup {
     text-align: center;
     margin-top: 30px;
+}
+
+/* Class details popup animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Enhanced class overlay cursor and hover effects */
+.schedule-table .class-overlay:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.schedule-table .class-overlay .class-title {
+    display: block;
+    font-weight: bold;
 }
 
 /* Membership Section */
