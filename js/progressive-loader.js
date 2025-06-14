@@ -533,33 +533,71 @@ class ProgressiveLoader {
         // Clear loading message
         scheduleTable.innerHTML = '';
         
-        // Time slots (rows)
-        const timeSlots = [
+        // All possible time slots in chronological order
+        const allTimeSlots = [
+            '6:30 AM',
             '7:00 AM', 
             '8:00 AM',
             '9:00 AM', 
-            '9:30 AM',
-            '10:30 AM', 
+            '9:00 AM',
+            '10:00 AM', 
             '12:00 PM', 
-            '3:30 PM',
+            '3:00 PM',
             '5:00 PM',
-            '5:30 PM',
             '6:00 PM', 
             '7:00 PM',
             '7:30 PM'
         ];
         
-        // Create a row for each time slot
+        // Days of the week
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        // Function to check if a time slot has any classes
+        const hasClasses = (timeSlot) => {
+            return scheduleData.some(c => c.time === timeSlot);
+        };
+        
+        // Filter time slots to avoid consecutive empty rows
+        const getFilteredTimeSlots = () => {
+            const filteredSlots = [];
+            let inEmptySequence = false;
+            
+            for (let i = 0; i < allTimeSlots.length; i++) {
+                const currentSlot = allTimeSlots[i];
+                const hasCurrentClasses = hasClasses(currentSlot);
+                
+                if (hasCurrentClasses) {
+                    // If current slot has classes, always include it
+                    filteredSlots.push(currentSlot);
+                    inEmptySequence = false;
+                } else {
+                    // Current slot is empty
+                    if (!inEmptySequence) {
+                        // This is the first empty slot in a sequence, include it
+                        filteredSlots.push(currentSlot);
+                        inEmptySequence = true;
+                    }
+                    // If we're already in an empty sequence, skip this slot
+                }
+            }
+            
+            return filteredSlots;
+        };
+        
+        const timeSlots = getFilteredTimeSlots();
+        
+        // Create a row for each filtered time slot
         timeSlots.forEach(timeSlot => {
             const row = document.createElement('tr');
             
             // Add time cell
             const timeCell = document.createElement('td');
             timeCell.textContent = timeSlot;
+            timeCell.classList.add('time-slot');
             row.appendChild(timeCell);
             
             // Add a cell for each day of the week
-            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(dayOfWeek => {
+            daysOfWeek.forEach(dayOfWeek => {
                 const cell = document.createElement('td');
                 
                 // Find class for this day and time
@@ -573,6 +611,7 @@ class ProgressiveLoader {
                         <strong>${classData.name}</strong><br>
                         <span class="instructor">${classData.instructor}</span>
                     `;
+                    cell.classList.add('class-slot');
                     
                     // Add classes for styling based on class type
                     if (classData.type) {
@@ -580,6 +619,7 @@ class ProgressiveLoader {
                     }
                 } else {
                     cell.innerHTML = '—';
+                    cell.classList.add('empty-slot');
                 }
                 
                 row.appendChild(cell);
