@@ -251,7 +251,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-.schedule-class:hover .calendar-class-actions {
+.calendar-class:hover .calendar-class-actions {
     display: flex;
     gap: 8px;
 }
