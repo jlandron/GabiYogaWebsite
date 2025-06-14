@@ -514,12 +514,81 @@ class ProgressiveLoader {
     }
     
     renderSchedule(scheduleData) {
-        // Simplified schedule rendering
         const scheduleTable = document.querySelector('.schedule-table tbody');
-        if (scheduleTable && scheduleData && scheduleData.length) {
-            // Implementation would go here - keeping simple for now
-            console.log('Schedule data rendered');
+        
+        if (!scheduleTable || !scheduleData || !scheduleData.length) {
+            // If no schedule data, show message
+            if (scheduleTable) {
+                scheduleTable.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:20px;">
+                            No classes currently scheduled. Please check back later.
+                        </td>
+                    </tr>
+                `;
+            }
+            return;
         }
+        
+        // Clear loading message
+        scheduleTable.innerHTML = '';
+        
+        // Time slots (rows)
+        const timeSlots = [
+            '7:00 AM', 
+            '8:00 AM',
+            '9:00 AM', 
+            '9:30 AM',
+            '10:30 AM', 
+            '12:00 PM', 
+            '3:30 PM',
+            '5:00 PM',
+            '5:30 PM',
+            '6:00 PM', 
+            '7:00 PM',
+            '7:30 PM'
+        ];
+        
+        // Create a row for each time slot
+        timeSlots.forEach(timeSlot => {
+            const row = document.createElement('tr');
+            
+            // Add time cell
+            const timeCell = document.createElement('td');
+            timeCell.textContent = timeSlot;
+            row.appendChild(timeCell);
+            
+            // Add a cell for each day of the week
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(dayOfWeek => {
+                const cell = document.createElement('td');
+                
+                // Find class for this day and time
+                const classData = scheduleData.find(c => 
+                    c.day === dayOfWeek && 
+                    c.time === timeSlot
+                );
+                
+                if (classData) {
+                    cell.innerHTML = `
+                        <strong>${classData.name}</strong><br>
+                        <span class="instructor">${classData.instructor}</span>
+                    `;
+                    
+                    // Add classes for styling based on class type
+                    if (classData.type) {
+                        cell.classList.add(`class-${classData.type.toLowerCase().replace(/\s+/g, '-')}`);
+                    }
+                } else {
+                    cell.innerHTML = '—';
+                }
+                
+                row.appendChild(cell);
+            });
+            
+            scheduleTable.appendChild(row);
+        });
+        
+        console.log('Schedule data rendered');
     }
     
     populateSessionPackages(packages) {

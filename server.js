@@ -39,6 +39,7 @@ const dashboardRoutes = require('./api/dashboard'); // Import dashboard routes
 const userLocationApi = require('./api/user-location'); // Import user location API
 const newsletterRoutes = require('./api/newsletter'); // Import newsletter routes
 const contactRoutes = require('./api/contact'); // Import contact routes
+const scheduleRoutes = require('./api/schedule'); // Import schedule routes
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -101,42 +102,6 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRouter);
 
 // Public API endpoints for homepage data
-app.get('/api/schedule', asyncHandler(async (req, res) => {
-  const classes = await ClassOperations.getClasses();
-
-  // Format classes by day and time for easy rendering on the frontend
-  const formattedSchedule = {
-    0: [], // Sunday
-    1: [], // Monday
-    2: [], // Tuesday
-    3: [], // Wednesday
-    4: [], // Thursday
-    5: [], // Friday
-    6: []  // Saturday
-  };
-
-  classes.forEach(classInfo => {
-    if (classInfo.active) {
-      formattedSchedule[classInfo.day_of_week].push({
-        class_id: classInfo.class_id,
-        name: classInfo.name,
-        start_time: classInfo.start_time,
-        duration: classInfo.duration,
-        instructor: classInfo.instructor,
-        level: classInfo.level
-      });
-    }
-  });
-
-  // Sort classes by start_time for each day
-  Object.keys(formattedSchedule).forEach(day => {
-    formattedSchedule[day].sort((a, b) => {
-      return a.start_time.localeCompare(b.start_time);
-    });
-  });
-
-  return sendSuccess(res, { schedule: formattedSchedule }, 'Class schedule fetched successfully');
-}));
 
 // Public API endpoint for featured retreats (for homepage)
 app.get('/api/retreats/featured', asyncHandler(async (req, res) => {
@@ -189,6 +154,7 @@ app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions rou
 app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
 app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
 app.use('/api/contact', contactRoutes); // Contact routes
+app.use('/api/schedule', scheduleRoutes); // Schedule routes
 
 // User location detection endpoints (public)
 app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
