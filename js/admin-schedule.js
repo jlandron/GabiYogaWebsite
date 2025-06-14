@@ -366,8 +366,8 @@ async function openClassModal(classData = null) {
         // Reset form
         form.reset();
         
-        // Set modal title and populate form if editing
-        if (classData) {
+        // Set modal title and populate form if editing (check for class_id to determine if editing)
+        if (classData && classData.class_id) {
             modalTitle.textContent = 'Edit Class';
             document.getElementById('class-id').value = classData.class_id;
             
@@ -390,6 +390,34 @@ async function openClassModal(classData = null) {
             const activeDay = document.querySelector('.schedule-day.active');
             if (activeDay) {
                 document.getElementById('class-day').value = activeDay.getAttribute('data-day-number');
+            }
+            
+            // Pre-fill with any provided data for new classes
+            if (classData) {
+                if (classData.day_of_week) {
+                    document.getElementById('class-day').value = classData.day_of_week;
+                }
+                if (classData.start_time) {
+                    document.getElementById('class-time').value = classData.start_time.split(':').slice(0, 2).join(':');
+                }
+                if (classData.name) {
+                    document.getElementById('class-name').value = classData.name;
+                }
+                if (classData.duration) {
+                    document.getElementById('class-duration').value = classData.duration;
+                }
+                if (classData.instructor) {
+                    document.getElementById('class-instructor').value = classData.instructor;
+                }
+                if (classData.level) {
+                    document.getElementById('class-level').value = classData.level;
+                }
+                if (classData.description) {
+                    document.getElementById('class-description').value = classData.description;
+                }
+                if (typeof classData.active === 'boolean') {
+                    document.getElementById('class-active').checked = classData.active;
+                }
             }
         }
         
@@ -971,12 +999,21 @@ function setupWeeklyCalendarListeners() {
             const day = slot.getAttribute('data-day');
             const time = slot.getAttribute('data-time');
             
-            // Open modal with pre-filled day and time
-            openClassModal({
-                day_of_week: day,
-                start_time: time,
-                active: true
-            });
+            // Open modal for adding new class (no data object)
+            openClassModal();
+            
+            // Pre-fill the day and time after modal opens
+            setTimeout(() => {
+                const daySelect = document.getElementById('class-day');
+                const timeInput = document.getElementById('class-time');
+                
+                if (daySelect) {
+                    daySelect.value = day;
+                }
+                if (timeInput && time) {
+                    timeInput.value = time.substring(0, 5); // Extract HH:MM from HH:MM:SS
+                }
+            }, 100);
         });
     });
 }
