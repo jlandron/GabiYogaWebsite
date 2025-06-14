@@ -383,39 +383,10 @@ function updateHomepagePrivateSessions(sessionPackages) {
             <div class="content">
                 <p class="price">$${pkg.price.toFixed(2)}</p>
                 <p>${pricePerSession}</p>
-                <div class="button-container">
-                    <a href="#" class="btn-small private-booking-btn" data-package="${escapeHTML(pkg.name)}">Book Now</a>
-                </div>
             </div>
         `;
         
         privatePricingContainer.appendChild(optionDiv);
-    });
-    
-    // Add event listeners to booking buttons
-    document.querySelectorAll('.private-booking-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const packageName = this.getAttribute('data-package');
-            
-            // Show private booking modal
-            const modal = document.getElementById('private-booking-modal');
-            if (modal) {
-                // Pre-select the package
-                const sessionTypeSelect = document.getElementById('session-type');
-                if (sessionTypeSelect) {
-                    // Find option that contains the package name text
-                    for (let i = 0; i < sessionTypeSelect.options.length; i++) {
-                        if (sessionTypeSelect.options[i].text.includes(packageName)) {
-                            sessionTypeSelect.selectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-                
-                modal.style.display = 'block';
-            }
-        });
     });
 }
 
