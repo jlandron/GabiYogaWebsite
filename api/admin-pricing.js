@@ -577,6 +577,7 @@ router.get('/pricing', async (req, res) => {
     // Get active session packages
     const packages = await query(`
       SELECT 
+        id,
         name,
         description,
         sessions,
