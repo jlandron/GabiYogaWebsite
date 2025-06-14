@@ -91,21 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('Failed to load user data for private booking:', userDataError);
                 }
                 
-                // Focus area names for the alert message
-                const focusNames = {
-                    'beginner': 'Beginners Introduction',
-                    'alignment': 'Alignment & Technique',
-                    'flexibility': 'Improving Flexibility',
-                    'strength': 'Building Strength',
-                    'meditation': 'Meditation & Breathwork',
-                    'prenatal': 'Prenatal Yoga',
-                    'therapeutic': 'Therapeutic Practice',
-                    'custom': 'Custom Focus'
-                };
-                
                 // Get package data from the sessionPackageData object
                 const packageData = window.sessionPackageData ? window.sessionPackageData[sessionType] : null;
                 const packageName = packageData ? packageData.name : sessionTypeText;
+                
+                // Get the display text for the selected focus option
+                const sessionFocusSelect = document.getElementById('session-focus');
+                const focusDisplayText = sessionFocusSelect.options[sessionFocusSelect.selectedIndex].text;
                 
                 // Prepare request body
                 const requestBody = {
@@ -144,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Show success message
-                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusNames[sessionFocus]} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
+                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusDisplayText} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
                 
                 privateBookingModal.style.display = 'none';
                 document.body.style.overflow = '';
@@ -268,21 +260,13 @@ function initializeModals() {
                     console.warn('Failed to load user data for private booking:', userDataError);
                 }
                 
-                // Focus area names for the alert message
-                const focusNames = {
-                    'beginner': 'Beginners Introduction',
-                    'alignment': 'Alignment & Technique',
-                    'flexibility': 'Improving Flexibility',
-                    'strength': 'Building Strength',
-                    'meditation': 'Meditation & Breathwork',
-                    'prenatal': 'Prenatal Yoga',
-                    'therapeutic': 'Therapeutic Practice',
-                    'custom': 'Custom Focus'
-                };
-                
                 // Get package data from the sessionPackageData object
                 const packageData = window.sessionPackageData ? window.sessionPackageData[sessionType] : null;
                 const packageName = packageData ? packageData.name : sessionTypeText;
+                
+                // Get the display text for the selected focus option
+                const sessionFocusSelect = document.getElementById('session-focus');
+                const focusDisplayText = sessionFocusSelect.options[sessionFocusSelect.selectedIndex].text;
                 
                 // Prepare request body
                 const requestBody = {
@@ -321,7 +305,7 @@ function initializeModals() {
                 }
                 
                 // Show success message
-                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusNames[sessionFocus]} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
+                alert(`Thank you${name ? ', ' + name : ''}! Your ${packageName} focusing on ${focusDisplayText} has been requested for ${date1} at ${time1}. I'll contact you within 24 hours to confirm your booking.`);
                 
                 privateBookingModal.style.display = 'none';
                 document.body.style.overflow = '';
@@ -458,7 +442,7 @@ function populateSessionPackageDropdown(packages) {
         sessionTypeSelect.appendChild(option);
     });
     
-    // Build the packageNames lookup table for the success message
+    // Build the packageNames lookup table for the success message and focus options
     window.sessionPackageData = {};
     packages.forEach(pkg => {
         // Skip packages without an id
@@ -467,11 +451,58 @@ function populateSessionPackageDropdown(packages) {
         window.sessionPackageData[pkg.id] = {
             name: pkg.name,
             price: pkg.price,
-            duration: pkg.session_duration || 60
+            duration: pkg.session_duration || 60,
+            focus_options: pkg.focus_options || []
         };
     });
     
     console.log('Session package data loaded:', window.sessionPackageData);
+    
+    // Add event listener to update focus options when session type changes
+    sessionTypeSelect.addEventListener('change', updateFocusOptions);
+}
+
+// Function to update focus options based on selected session package
+function updateFocusOptions() {
+    const sessionTypeSelect = document.getElementById('session-type');
+    const sessionFocusSelect = document.getElementById('session-focus');
+    
+    if (!sessionTypeSelect || !sessionFocusSelect) {
+        console.error('Session type or focus select elements not found');
+        return;
+    }
+    
+    const selectedPackageId = sessionTypeSelect.value;
+    
+    // Clear existing focus options (except the placeholder)
+    while (sessionFocusSelect.options.length > 1) {
+        sessionFocusSelect.options.remove(1);
+    }
+    
+    if (!selectedPackageId || !window.sessionPackageData) {
+        console.log('No package selected or no package data available');
+        return;
+    }
+    
+    const packageData = window.sessionPackageData[selectedPackageId];
+    if (!packageData || !packageData.focus_options) {
+        console.warn('No focus options found for selected package:', selectedPackageId);
+        return;
+    }
+    
+    console.log('Updating focus options for package:', packageData.name, 'with options:', packageData.focus_options);
+    
+    // Add focus options from the selected package
+    packageData.focus_options.forEach(focusOption => {
+        const option = document.createElement('option');
+        // Create a value from the option text (lowercase, replace spaces with hyphens)
+        option.value = focusOption.toLowerCase().replace(/\s+/g, '-').replace(/[&]/g, 'and');
+        option.textContent = focusOption;
+        sessionFocusSelect.appendChild(option);
+    });
+    
+    // Reset the focus selection to placeholder
+    sessionFocusSelect.selectedIndex = 0;
 }
 
 // Function to load visibility settings from the API and apply them
