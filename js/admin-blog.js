@@ -1662,14 +1662,13 @@ class BlogManager {
         
         const data = await response.json();
         
-        // Add to local images array with blog-specific structure
+        // Add to local images array using gallery structure
         this.images.unshift({
-            image_id: `blog_${Date.now()}`, // Generate a blog-specific ID
+            image_id: Date.now(), // Generate a temporary ID
             title: file.name.replace(/\.[^/.]+$/, ""), // Filename without extension
             alt_text: '',
-            url: data.url, // Direct blog upload URL
-            thumbnail_url: data.url,
-            isBlogImage: true // Flag to identify blog-uploaded images
+            url: data.url,
+            thumbnail_url: data.url
         });
             
             // Render gallery images

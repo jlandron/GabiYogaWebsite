@@ -12,6 +12,8 @@ const { sendSuccess: APISuccess, sendError: APIError, notFound: APINotFound } = 
 const { authenticateToken } = require('./auth');
 const { asyncHandler } = require('../utils/api-response');
 const { query } = require('../database/db-config'); // Use the centralized database config
+const logger = require('../utils/logger');
+const imageStorage = require('../utils/image-storage');
 
 // Get the DB_TYPE from process.env or based on NODE_ENV
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -456,36 +458,18 @@ const BlogOperations = {
   }
 };
 
-// Set up multer for image uploads
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        const uploadDir = path.join(__dirname, '../uploads/blog');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: function(req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-    }
-});
-
-// Filter only image files
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('Not an image! Please upload an image file.'), false);
-    }
-};
-
+// Set up multer for memory storage (to process with imageStorage)
 const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter,
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Not an image! Please upload an image file.'), false);
+        }
+    },
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5 MB limit
+        fileSize: 8 * 1024 * 1024 // 8 MB limit (same as gallery)
     }
 });
 
@@ -689,7 +673,7 @@ router.get('/tags', asyncHandler(async (req, res) => {
 }));
 
 /**
- * POST upload a blog image
+ * POST upload a blog image using unified gallery storage
  * Admin only route
  */
 router.post('/images/upload', authenticateToken, upload.single('image'), asyncHandler(async (req, res) => {
@@ -702,15 +686,42 @@ router.post('/images/upload', authenticateToken, upload.single('image'), asyncHa
         return APIError(res, 'No image file provided', null, 400);
     }
     
-    // Create the image URL
-    const imageUrl = `/uploads/blog/${req.file.filename}`;
-    
-    return APISuccess(res, {
-        url: imageUrl,
-        filename: req.file.filename,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-    });
+    try {
+        // Validate file size
+        const maxSize = 8 * 1024 * 1024; // 8MB max (same as gallery)
+        if (req.file.size > maxSize) {
+            return APIError(res, 'Image size exceeds the maximum allowed size of 8MB', null, 400);
+        }
+        
+        // Create filename from original name
+        const originalFilename = req.file.originalname;
+        const sanitizedFilename = originalFilename.toLowerCase().replace(/[^a-z0-9.-]/gi, '-');
+        
+        // Store the image using unified gallery storage
+        const imageInfo = await imageStorage.storeImage(
+            req.file.buffer,
+            sanitizedFilename,
+            req.file.mimetype
+        );
+        
+        logger.debug('Blog image stored successfully:', { 
+            filePath: imageInfo.filePath, 
+            url: imageInfo.url,
+            originalName: originalFilename 
+        });
+        
+        return APISuccess(res, {
+            url: imageInfo.url,
+            filename: sanitizedFilename,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            filePath: imageInfo.filePath
+        });
+        
+    } catch (error) {
+        logger.error('Error uploading blog image:', { error: error.message, stack: error.stack });
+        return APIError(res, 'Failed to upload image. Please try again.', null, 500);
+    }
 }));
 
 module.exports = router;
