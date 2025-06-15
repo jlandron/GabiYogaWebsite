@@ -644,29 +644,27 @@ class BlogManager {
                 postTags.style.display = 'none';
             }
             
-            // Update featured image
-            const featuredImage = document.getElementById('post-featured-image');
-            if (featuredImage) {
-                if (post.coverImage && post.coverImage.url) {
-                    const img = featuredImage.querySelector('img');
-                    if (img) {
-                        img.src = post.coverImage.url;
-                        img.alt = post.coverImage.alt || post.title;
-                        featuredImage.style.display = '';
-                    }
-                } else {
-                    featuredImage.style.display = 'none';
-                }
-            }
+            // Extract images from content first, then update masonry gallery
+            const extractedImages = this.extractImagesFromContent(post);
+            this.updateMasonryGallery(post, extractedImages);
             
-            // Update post content
+            // Update post content (now without embedded images)
             if (postContent) {
+                // Use the modified content that has images removed
+                let content = post.content;
+                
                 // Convert markdown to HTML if marked library is available
                 if (window.marked) {
-                    postContent.innerHTML = window.marked.parse(post.content);
+                    content = window.marked.parse(content);
                 } else {
-                    postContent.textContent = post.content;
+                    // If no markdown parser, just handle basic formatting
+                    content = content.replace(/\n/g, '<br>');
                 }
+                
+                // Process YouTube videos
+                content = this.processYouTubeEmbeds(content);
+                
+                postContent.innerHTML = content;
             }
             
             // Set up social sharing links
@@ -830,5 +828,225 @@ class BlogManager {
             
             relatedPostsList.appendChild(postElement);
         });
+    }
+    
+    /**
+     * Update masonry gallery with post images
+     */
+    updateMasonryGallery(post, extractedImages = []) {
+        const galleryColumn = document.getElementById('post-gallery-column');
+        const masonryGallery = document.getElementById('post-masonry-gallery');
+        const postContentLayout = document.querySelector('.blog-post-grid-container');
+        
+        if (!galleryColumn || !masonryGallery || !postContentLayout) return;
+        
+        // IMPORTANT: Remove any legacy full-width images that might have been added by other code
+        this.removeLegacyImages();
+        
+        // Collect all available images
+        const allImages = [];
+        
+        // Add featured image first if it exists
+        if (post.coverImage && post.coverImage.url) {
+            allImages.push({
+                url: post.coverImage.url,
+                alt: post.coverImage.alt || post.title,
+                featured: true
+            });
+        }
+        
+        // Add additional images from post.images array
+        if (post.images && Array.isArray(post.images)) {
+            post.images.forEach(image => {
+                // Don't duplicate the featured image
+                if (!post.coverImage || image.url !== post.coverImage.url) {
+                    allImages.push({
+                        url: image.url,
+                        alt: image.alt || '',
+                        featured: false
+                    });
+                }
+            });
+        }
+        
+        // Add extracted images to allImages (avoid duplicates)
+        extractedImages.forEach(image => {
+            const isDuplicate = allImages.some(existing => existing.url === image.url);
+            if (!isDuplicate) {
+                allImages.push({
+                    url: image.url,
+                    alt: image.alt || '',
+                    featured: false
+                });
+            }
+        });
+        
+        // Check if we have any images
+        if (allImages.length === 0) {
+            // No images - use text-only layout
+            galleryColumn.style.display = 'none';
+            postContentLayout.classList.add('text-only');
+            return;
+        }
+        
+        // Clear the gallery
+        masonryGallery.innerHTML = '';
+        
+        // Show gallery column and remove text-only class
+        galleryColumn.style.display = 'block';
+        postContentLayout.classList.remove('text-only');
+        
+        // Add images to masonry gallery
+        allImages.forEach((image, index) => {
+            const imageElement = document.createElement('div');
+            imageElement.className = `gallery-image${image.featured ? ' featured' : ''}`;
+            
+            // Set up error handling for failed image loads
+            const img = document.createElement('img');
+            img.onerror = () => {
+                console.warn('Failed to load gallery image:', image.url);
+                // Remove the failed image element
+                imageElement.remove();
+                
+                // Check if this was the last image - if so, switch to text-only layout
+                const remainingImages = masonryGallery.querySelectorAll('.gallery-image');
+                if (remainingImages.length === 0) {
+                    galleryColumn.style.display = 'none';
+                    postContentLayout.classList.add('text-only');
+                }
+            };
+            
+            img.onload = () => {
+                // Image loaded successfully - show the gallery column
+                galleryColumn.style.display = 'block';
+                postContentLayout.classList.remove('text-only');
+            };
+            
+            img.src = image.url;
+            img.alt = image.alt;
+            
+            // Add click handler for image expansion (optional future feature)
+            imageElement.addEventListener('click', () => {
+                this.expandImage(image.url, image.alt);
+            });
+            
+            imageElement.appendChild(img);
+            masonryGallery.appendChild(imageElement);
+        });
+    }
+    
+    /**
+     * Extract images from post content HTML and remove them from the content
+     */
+    extractImagesFromContent(post) {
+        const extractedImages = [];
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = post.content;
+        
+        // Find all img tags
+        const images = tempDiv.querySelectorAll('img');
+        
+        images.forEach(img => {
+            // Extract image data
+            extractedImages.push({
+                url: img.src,
+                alt: img.alt || ''
+            });
+            
+            // Remove the image from content
+            img.remove();
+        });
+        
+        // Update the post content without images
+        post.content = tempDiv.innerHTML;
+        
+        return extractedImages;
+    }
+    
+    /**
+     * Remove any legacy full-width images that might have been added by other code
+     */
+    removeLegacyImages() {
+        // Remove any images that might be added directly to the post content layout
+        const contentLayout = document.querySelector('.post-content-layout');
+        if (contentLayout) {
+            // Remove any direct img elements that aren't part of the masonry gallery
+            const directImages = contentLayout.querySelectorAll('img:not(.post-masonry-gallery img)');
+            directImages.forEach(img => {
+                // Only remove if it's not inside the text column content area
+                const isInTextContent = img.closest('.post-content');
+                if (!isInTextContent) {
+                    img.remove();
+                }
+            });
+        }
+        
+        // Remove any full-width featured image containers that might exist
+        const legacyImageContainers = document.querySelectorAll('.post-featured-image, .featured-image-container, .post-image-full');
+        legacyImageContainers.forEach(container => container.remove());
+        
+        // Remove any images that might be added to the single post container but outside the layout
+        const singlePostContainer = document.querySelector('.single-post-container');
+        if (singlePostContainer) {
+            const orphanImages = singlePostContainer.querySelectorAll('img:not(.post-masonry-gallery img):not(.post-content img):not(.about-image):not(.related-post-image img)');
+            orphanImages.forEach(img => {
+                // Check if the image is a featured/cover image being rendered outside the gallery
+                const parent = img.parentElement;
+                if (parent && !parent.closest('.post-masonry-gallery') && !parent.closest('.post-content')) {
+                    img.remove();
+                }
+            });
+        }
+    }
+    
+    /**
+     * Expand image in modal (placeholder for future implementation)
+     */
+    expandImage(imageUrl, imageAlt) {
+        // For now, just open in new tab
+        // This could be enhanced with a proper image modal in the future
+        window.open(imageUrl, '_blank');
+    }
+    
+    /**
+     * Process YouTube embeds in content
+     */
+    processYouTubeEmbeds(content) {
+        // Regular expression to match YouTube URLs
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
+        
+        // Replace YouTube URLs with embedded iframe
+        content = content.replace(youtubeRegex, (match, videoId) => {
+            return `
+                <div class="youtube-video-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}"
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+        });
+        
+        // Also handle YouTube Shorts URLs
+        const youtubeShortsRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/g;
+        
+        content = content.replace(youtubeShortsRegex, (match, videoId) => {
+            return `
+                <div class="youtube-video-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}"
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+        });
+        
+        return content;
     }
 }

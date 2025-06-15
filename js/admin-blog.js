@@ -170,6 +170,12 @@ class BlogManager {
             this.addMoreImagesBtn.addEventListener('click', () => this.openImageSelectionModal('content'));
         }
         
+        // Add YouTube video button
+        const addVideoBtn = document.getElementById('add-youtube-video-btn');
+        if (addVideoBtn) {
+            addVideoBtn.addEventListener('click', () => this.insertYouTubeVideo());
+        }
+        
         // Image selection modal events
         if (this.imageUploadZone) {
             this.imageUploadZone.addEventListener('click', () => this.imageFileInput.click());
@@ -633,6 +639,14 @@ class BlogManager {
         if (this.postTags) this.postTags.value = '';
         if (this.featuredImageAlt) this.featuredImageAlt.value = '';
         
+        // Clear Quill editor content if it exists
+        if (this.quill) {
+            console.log('Clearing Quill editor content for new post');
+            this.quill.setText('');
+            // Also clear any HTML content that might be lingering
+            this.quill.root.innerHTML = '<p><br></p>';
+        }
+        
         // Reset featured image
         this.removeFeaturedImage();
         
@@ -646,12 +660,14 @@ class BlogManager {
             this.editorStatus.classList.remove('published');
         }
         
-        // Hide blog images container
+        // Always show blog images container for new posts
         if (this.blogImagesContainer) {
-            this.blogImagesContainer.style.display = 'none';
+            this.blogImagesContainer.style.display = '';
         }
         if (this.blogImagesGallery) {
             this.blogImagesGallery.innerHTML = '';
+            // Render empty state message
+            this.renderBlogImages([]);
         }
         
         this.showEditorPanel();
@@ -759,12 +775,10 @@ class BlogManager {
                 }
             }
             
-            // Show blog images if any
-            if (post.images && post.images.length > 0 && this.blogImagesContainer) {
+            // Always show blog images container
+            if (this.blogImagesContainer) {
                 this.blogImagesContainer.style.display = '';
-                this.renderBlogImages(post.images);
-            } else if (this.blogImagesContainer) {
-                this.blogImagesContainer.style.display = 'none';
+                this.renderBlogImages(post.images || []);
             }
             
             this.showEditorPanel();
@@ -1228,6 +1242,14 @@ class BlogManager {
             
             console.log('Setting featured image with URL:', imageUrl);
             
+            // Handle blob URLs that are invalid/expired - show placeholder instead
+            if (imageUrl.startsWith('blob:') && !this.isValidBlobUrl(imageUrl)) {
+                console.warn('Invalid or expired blob URL, showing placeholder:', imageUrl);
+                this.showFeaturedImagePlaceholder();
+                resolve(); // Don't reject, just show placeholder
+                return;
+            }
+            
             // Remove previous error handler before setting new src to prevent recursion
             this.featuredImagePreview.onerror = null;
             this.featuredImagePreview.onload = null;
@@ -1248,15 +1270,21 @@ class BlogManager {
             
             // Set up error handler
             this.featuredImagePreview.onerror = (e) => {
-                console.error('Failed to load image in preview', e);
+                console.error('Failed to load image in preview:', imageUrl, e);
                 // Clean up handlers
                 this.featuredImagePreview.onerror = null;
                 this.featuredImagePreview.onload = null;
                 
-                // Clean up the image display
-                this.removeFeaturedImage();
+                // Show placeholder instead of removing completely
+                this.showFeaturedImagePlaceholder();
                 
-                reject(new Error('Failed to load image'));
+                // Don't reject for blob URLs, just resolve with placeholder
+                if (imageUrl.startsWith('blob:')) {
+                    console.warn('Blob URL failed to load, likely expired. Showing placeholder.');
+                    resolve();
+                } else {
+                    reject(new Error('Failed to load image'));
+                }
             };
             
             // Process different types of URLs appropriately
@@ -1302,6 +1330,41 @@ class BlogManager {
             // Use the processed URL for the image source
             this.featuredImagePreview.src = processedUrl;
         });
+    }
+    
+    /**
+     * Check if a blob URL still exists/is valid
+     */
+    isValidBlobUrl(blobUrl) {
+        try {
+            // Try to create a new URL object to test validity
+            new URL(blobUrl);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+    /**
+     * Show featured image placeholder with message
+     */
+    showFeaturedImagePlaceholder() {
+        if (this.featuredImagePreview) {
+            this.featuredImagePreview.style.display = 'none';
+        }
+        
+        if (this.featuredImagePlaceholder) {
+            this.featuredImagePlaceholder.style.display = '';
+            // Update placeholder text to indicate there was an image
+            const placeholderP = this.featuredImagePlaceholder.querySelector('p');
+            if (placeholderP) {
+                placeholderP.textContent = 'Featured image (failed to load)';
+            }
+        }
+        
+        if (this.removeFeaturedImageBtn) {
+            this.removeFeaturedImageBtn.style.display = 'none';
+        }
     }
     
     /**
@@ -1353,38 +1416,47 @@ class BlogManager {
         try {
             this.showLoadingOverlay();
             
-            // Process the image with appropriate compression
-            const imageData = await this.processImage(file);
+            // Upload to server using blog-specific endpoint
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('Authentication required. Please log in again.');
+            }
             
-            // Get image dimensions
-            const dimensions = await this.getImageDimensions(imageData);
+            const formData = new FormData();
+            formData.append('image', file);
             
-            // Store image metadata for later use
-            const imageMetadata = {
-                originalName: file.name,
-                fileType: file.type,
-                dimensions: dimensions,
-                size: this.getDataUrlSize(imageData)
-            };
+            const response = await fetch('/api/blog/images/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
             
-            console.log(`Featured image processed: ${file.name} (${dimensions.width}x${dimensions.height}, ${this.formatFileSize(imageMetadata.size)})`);
+            if (!response.ok) {
+                throw new Error(`Failed to upload image: ${response.statusText}`);
+            }
             
-            // Set as featured image with metadata
-            this.setFeaturedImage(imageData, imageMetadata);
+            const data = await response.json();
+            
+            console.log(`Featured image uploaded successfully: ${file.name} -> ${data.url}`);
+            
+            // Set as featured image using the server URL
+            this.setFeaturedImage(data.url);
             
             this.showNotification('Featured image uploaded successfully!');
             this.hideLoadingOverlay();
         } catch (error) {
-            console.error('Error processing image:', error);
-            this.showNotification('Failed to process image. Please try again.', 'error');
+            console.error('Error uploading featured image:', error);
+            this.showNotification('Failed to upload featured image. Please try again.', 'error');
             this.hideLoadingOverlay();
         }
             
-            // Reset file input
-            if (this.featuredImageUpload) {
-                this.featuredImageUpload.value = '';
-            }
+        // Reset file input
+        if (this.featuredImageUpload) {
+            this.featuredImageUpload.value = '';
         }
+    }
     
     /**
      * Load images from the gallery
@@ -1450,13 +1522,23 @@ class BlogManager {
             const imgItem = document.createElement('div');
             imgItem.className = 'gallery-image-item';
             imgItem.dataset.id = image.image_id;
-            imgItem.dataset.url = `/api/gallery/images/${image.image_id}/data`;
+            
+            // Handle blog images vs gallery images differently
+            let imageUrl, thumbnailUrl;
+            if (image.isBlogImage) {
+                // For blog images, use direct URLs
+                imageUrl = image.url;
+                thumbnailUrl = image.thumbnail_url || image.url;
+            } else {
+                // For gallery images, use API endpoints
+                imageUrl = `/api/gallery/images/${image.image_id}/data`;
+                thumbnailUrl = image.thumbnail_url || `/api/gallery/images/${image.image_id}/data`;
+            }
+            
+            imgItem.dataset.url = imageUrl;
             imgItem.dataset.alt = image.alt_text || '';
             
-            // Try to use thumbnail if available, otherwise use full image
-            const imgSrc = image.thumbnail_url || `/api/gallery/images/${image.image_id}/data`;
-            
-            imgItem.innerHTML = `<img src="${imgSrc}" alt="${image.alt_text || ''}">`;
+            imgItem.innerHTML = `<img src="${thumbnailUrl}" alt="${image.alt_text || ''}">`;
             
             this.imageGallery.appendChild(imgItem);
             console.log('Image item added:', imgItem)
@@ -1474,8 +1556,9 @@ class BlogManager {
                 // Store selected image
                 this.selectedImage = {
                     id: image.image_id,
-                    url: `/api/gallery/images/${image.image_id}/data`,
-                    alt: image.alt_text || ''
+                    url: imageUrl,
+                    alt: image.alt_text || '',
+                    isBlogImage: image.isBlogImage || false
                 };
                 
                 // Enable select button
@@ -1579,13 +1662,14 @@ class BlogManager {
         
         const data = await response.json();
         
-        // Add to local images array
+        // Add to local images array with blog-specific structure
         this.images.unshift({
-            image_id: Date.now(), // Generate a temporary ID
+            image_id: `blog_${Date.now()}`, // Generate a blog-specific ID
             title: file.name.replace(/\.[^/.]+$/, ""), // Filename without extension
             alt_text: '',
-            url: data.url,
-            thumbnail_url: data.url
+            url: data.url, // Direct blog upload URL
+            thumbnail_url: data.url,
+            isBlogImage: true // Flag to identify blog-uploaded images
         });
             
             // Render gallery images
@@ -1618,25 +1702,52 @@ class BlogManager {
         try {
             this.showLoadingOverlay();
             
-            // Get image URL (could be direct URL or gallery URL)
-            let imageUrl = this.selectedImage.url;
-            
-            // If it's a gallery URL, we need to load the blob and create an object URL
-            if (imageUrl.startsWith('/api/gallery/')) {
-                const response = await fetch(imageUrl);
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load image data');
-                }
-                
-                const blob = await response.blob();
-                imageUrl = URL.createObjectURL(blob);
-            }
-            
-            // Different handling based on where the image is being inserted
+            // For featured images, we need to upload to server to get permanent URL
             if (this.imageInsertCallback === 'featured') {
-                // Set as featured image
-                this.setFeaturedImage(imageUrl);
+                // If it's a gallery URL, fetch the image and upload it to blog storage
+                if (this.selectedImage.url.startsWith('/api/gallery/')) {
+                    const response = await fetch(this.selectedImage.url);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load image data');
+                    }
+                    
+                    const blob = await response.blob();
+                    
+                    // Create a File object from the blob for upload
+                    const file = new File([blob], 'featured-image.jpg', { type: blob.type });
+                    
+                    // Upload to server using blog-specific endpoint
+                    const token = localStorage.getItem('auth_token');
+                    if (!token) {
+                        throw new Error('Authentication required. Please log in again.');
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const uploadResponse = await fetch('/api/blog/images/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+                    }
+                    
+                    const uploadData = await uploadResponse.json();
+                    
+                    // Use the permanent URL from server
+                    this.setFeaturedImage(uploadData.url);
+                    
+                    console.log(`Featured image uploaded to permanent storage: ${uploadData.url}`);
+                } else {
+                    // Direct URL, use as-is
+                    this.setFeaturedImage(this.selectedImage.url);
+                }
                 
                 // Set alt text if available
                 if (this.featuredImageAlt && this.selectedImage.alt) {
@@ -1645,9 +1756,68 @@ class BlogManager {
                 
                 this.showNotification('Featured image set successfully!');
             } else if (this.imageInsertCallback === 'content') {
-                // Insert at cursor position in Quill editor
-                this.insertImage(imageUrl, this.selectedImage.alt || '');
-                this.showNotification('Image inserted into content!');
+                // For content images, add to gallery but don't auto-insert into editor
+                let imageUrl = this.selectedImage.url;
+                
+                // If it's a gallery URL, we need to upload it to get a permanent URL
+                if (imageUrl.startsWith('/api/gallery/')) {
+                    const response = await fetch(imageUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load image data');
+                    }
+                    
+                    const blob = await response.blob();
+                    
+                    // Create a File object from the blob for upload to get permanent URL
+                    const file = new File([blob], 'content-image.jpg', { type: blob.type });
+                    
+                    // Upload to server using blog-specific endpoint
+                    const token = localStorage.getItem('auth_token');
+                    if (!token) {
+                        throw new Error('Authentication required. Please log in again.');
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const uploadResponse = await fetch('/api/blog/images/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+                    }
+                    
+                    const uploadData = await uploadResponse.json();
+                    imageUrl = uploadData.url;
+                }
+                
+                // Add image to post images array for gallery display (don't auto-insert)
+                if (!this.currentPost.images) {
+                    this.currentPost.images = [];
+                }
+                
+                // Check if image already exists
+                const existingImage = this.currentPost.images.find(img => img.url === imageUrl);
+                if (!existingImage) {
+                    this.currentPost.images.push({
+                        url: imageUrl,
+                        alt: this.selectedImage.alt || '',
+                        caption: ''
+                    });
+                    
+                    // Update gallery display
+                    this.renderBlogImages(this.currentPost.images);
+                    
+                    this.showNotification('Image added to gallery! Click on it to insert into content.');
+                } else {
+                    this.showNotification('Image already exists in gallery.');
+                }
             }
             
             // Close the modal
@@ -1922,12 +2092,10 @@ class BlogManager {
                 }
             }
             
-            // Show blog images if any
-            if (post.images && post.images.length > 0 && this.blogImagesContainer) {
+            // Always show blog images container
+            if (this.blogImagesContainer) {
                 this.blogImagesContainer.style.display = '';
-                this.renderBlogImages(post.images);
-            } else if (this.blogImagesContainer) {
-                this.blogImagesContainer.style.display = 'none';
+                this.renderBlogImages(post.images || []);
             }
             
             this.showEditorPanel();
@@ -1937,5 +2105,91 @@ class BlogManager {
             this.showNotification('Failed to load post for editing. Please try again.', 'error');
             this.hideLoadingOverlay();
         }
+    }
+    
+    /**
+     * Insert YouTube video into content
+     */
+    insertYouTubeVideo() {
+        // Prompt user for YouTube URL
+        const youtubeUrl = prompt('Enter YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID):');
+        
+        if (!youtubeUrl) {
+            return; // User cancelled
+        }
+        
+        // Validate and extract video ID
+        const videoId = this.extractYouTubeVideoId(youtubeUrl);
+        
+        if (!videoId) {
+            this.showNotification('Invalid YouTube URL. Please enter a valid YouTube video URL.', 'error');
+            return;
+        }
+        
+        try {
+            // Insert YouTube embed at cursor position in Quill editor
+            if (this.quill) {
+                const range = this.quill.getSelection(true);
+                const index = range ? range.index : this.quill.getLength();
+                
+                // Insert a line break before the video if not at the beginning
+                if (index > 0) {
+                    this.quill.insertText(index, '\n', 'user');
+                }
+                
+                // Insert the YouTube URL (will be converted to embed on the frontend)
+                this.quill.insertText(index + (index > 0 ? 1 : 0), youtubeUrl + '\n', 'user');
+                
+                // Position cursor after the inserted content
+                this.quill.setSelection(index + youtubeUrl.length + (index > 0 ? 2 : 1));
+                
+                this.showNotification('YouTube video inserted successfully! It will be displayed as an embedded player when the post is viewed.');
+            } else {
+                // Fallback for textarea
+                if (this.postContent) {
+                    const cursorPos = this.postContent.selectionStart;
+                    const textBefore = this.postContent.value.substring(0, cursorPos);
+                    const textAfter = this.postContent.value.substring(cursorPos);
+                    
+                    // Add line breaks around the URL
+                    const videoInsert = (textBefore && !textBefore.endsWith('\n') ? '\n' : '') + 
+                                      youtubeUrl + 
+                                      (!textAfter.startsWith('\n') ? '\n' : '');
+                    
+                    this.postContent.value = textBefore + videoInsert + textAfter;
+                    
+                    // Position cursor after inserted content
+                    this.postContent.selectionStart = this.postContent.selectionEnd = cursorPos + videoInsert.length;
+                    this.postContent.focus();
+                    
+                    this.showNotification('YouTube video URL inserted successfully!');
+                }
+            }
+        } catch (error) {
+            console.error('Error inserting YouTube video:', error);
+            this.showNotification('Failed to insert YouTube video. Please try again.', 'error');
+        }
+    }
+    
+    /**
+     * Extract YouTube video ID from various YouTube URL formats
+     */
+    extractYouTubeVideoId(url) {
+        // Regular expressions for different YouTube URL formats
+        const patterns = [
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+            /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/,
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+        ];
+        
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        
+        return null;
     }
 }
