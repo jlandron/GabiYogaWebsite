@@ -704,14 +704,18 @@ router.post('/images/upload', authenticateToken, upload.single('image'), asyncHa
             req.file.mimetype
         );
         
+        // Generate presigned URL for immediate access (especially important in production)
+        const presignedUrl = await imageStorage.getPresignedUrl(imageInfo.filePath);
+        
         logger.debug('Blog image stored successfully:', { 
             filePath: imageInfo.filePath, 
             url: imageInfo.url,
+            presignedUrl: presignedUrl,
             originalName: originalFilename 
         });
         
         return APISuccess(res, {
-            url: imageInfo.url,
+            url: presignedUrl, // Use presigned URL for immediate access
             filename: sanitizedFilename,
             mimetype: req.file.mimetype,
             size: req.file.size,

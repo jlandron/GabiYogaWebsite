@@ -1278,9 +1278,10 @@ class BlogManager {
                 // Show placeholder instead of removing completely
                 this.showFeaturedImagePlaceholder();
                 
-                // Don't reject for blob URLs, just resolve with placeholder
-                if (imageUrl.startsWith('blob:')) {
-                    console.warn('Blob URL failed to load, likely expired. Showing placeholder.');
+                // For S3 URLs or blob URLs, just resolve with placeholder instead of rejecting
+                // This prevents blocking the UI when images are temporarily unavailable
+                if (imageUrl.startsWith('blob:') || imageUrl.includes('s3.') || imageUrl.includes('amazonaws.com')) {
+                    console.warn('Image failed to load (likely temporary S3/blob issue). Showing placeholder.');
                     resolve();
                 } else {
                     reject(new Error('Failed to load image'));
