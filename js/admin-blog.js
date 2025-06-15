@@ -402,6 +402,78 @@ class BlogManager {
     }
     
     /**
+     * Load content into Quill editor with proper timing
+     */
+    async loadContentIntoQuill(content) {
+        if (!content || !this.quill) {
+            return;
+        }
+        
+        try {
+            console.log('Loading content into Quill editor:', content);
+            
+            // Wait for Quill to be fully ready
+            await this.waitForQuillReady();
+            
+            // Clear existing content first
+            this.quill.setText('');
+            
+            // Wait a moment for the clear to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Load content into Quill
+            if (content.trim()) {
+                // Check if content is HTML
+                if (content.trim().startsWith('<')) {
+                    // Set HTML content directly
+                    this.quill.root.innerHTML = content;
+                    
+                    // Force Quill to recognize the new content
+                    this.quill.update();
+                } else {
+                    // Set as plain text
+                    this.quill.setText(content);
+                }
+            }
+            
+            console.log('Content loaded successfully into Quill editor');
+        } catch (editorError) {
+            console.error('Error loading content into Quill editor:', editorError);
+            // Fallback to textarea
+            if (this.postContent) {
+                this.postContent.value = content;
+            }
+        }
+    }
+    
+    /**
+     * Wait for Quill editor to be fully ready
+     */
+    async waitForQuillReady() {
+        if (!this.quill) {
+            throw new Error('Quill editor not initialized');
+        }
+        
+        // Check if Quill is ready by testing if we can get/set selection
+        let attempts = 0;
+        const maxAttempts = 50; // Wait up to 5 seconds
+        
+        while (attempts < maxAttempts) {
+            try {
+                // Try to get selection - if this works, Quill is ready
+                this.quill.getSelection();
+                return; // Success, Quill is ready
+            } catch (error) {
+                // Not ready yet, wait a bit more
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+        }
+        
+        console.warn('Quill editor may not be fully ready after waiting');
+    }
+    
+    /**
      * Insert image at current cursor position (with resizable support)
      */
     async insertImage(imageUrl, altText = '') {
@@ -709,38 +781,13 @@ class BlogManager {
             if (this.postAuthor) this.postAuthor.value = post.author || 'Gabi';
             if (this.postTags) this.postTags.value = post.tags ? post.tags.join(', ') : '';
             
-            // Load content into Quill editor properly
+            // Load content into editor with proper timing
             if (this.postContent) {
                 // Set the textarea value first
                 this.postContent.value = post.content || '';
                 
-                // If Quill editor exists, load content into it
-                if (this.quill) {
-                    try {
-                        console.log('Loading content into Quill editor:', post.content);
-                        
-                        // Clear existing content first
-                        this.quill.setText('');
-                        
-                        // Load content into Quill
-                        if (post.content) {
-                            // Check if content is HTML
-                            if (post.content.trim().startsWith('<')) {
-                                // Set HTML content directly
-                                this.quill.root.innerHTML = post.content;
-                            } else {
-                                // Set as plain text
-                                this.quill.setText(post.content);
-                            }
-                        }
-                        
-                        console.log('Content loaded successfully into Quill editor');
-                    } catch (editorError) {
-                        console.error('Error loading content into Quill editor:', editorError);
-                        // Fallback to textarea
-                        this.postContent.value = post.content || '';
-                    }
-                }
+                // Load content into Quill editor with proper timing
+                await this.loadContentIntoQuill(post.content || '');
             }
             
             // Set featured image if exists with better error handling
