@@ -23,7 +23,7 @@ const MemberOperations = {
         FROM users 
         LEFT JOIN memberships ON users.user_id = memberships.user_id 
         WHERE users.role = 'member' 
-        AND (memberships.end_date IS NULL OR memberships.end_date > date('now') 
+        AND (memberships.end_date IS NULL OR memberships.end_date > CURDATE() 
           OR memberships.classes_remaining > 0)
       `);
       
@@ -173,7 +173,7 @@ const BookingOperations = {
       const result = await db.query(`
         SELECT COUNT(*) as count 
         FROM class_bookings 
-        WHERE date BETWEEN date('now', '-7 days') AND date('now', '+7 days')
+        WHERE date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
         AND status != 'Cancelled'
       `);
       
@@ -193,14 +193,14 @@ const BookingOperations = {
       const membershipResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM memberships 
-        WHERE created_at >= date('now', 'start of month') AND created_at <= date('now')
+        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
       `);
       
       // Revenue from workshop registrations this month
       const workshopResult = await db.query(`
         SELECT COALESCE(SUM(amount_paid), 0) as total 
         FROM workshop_registrations 
-        WHERE registration_date >= date('now', 'start of month') AND registration_date <= date('now')
+        WHERE registration_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND registration_date <= CURDATE()
         AND payment_status = 'Paid'
       `);
       
@@ -208,7 +208,7 @@ const BookingOperations = {
       const sessionResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM private_sessions 
-        WHERE created_at >= date('now', 'start of month') AND created_at <= date('now')
+        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
         AND payment_status = 'Paid'
       `);
       
@@ -231,7 +231,7 @@ const BookingOperations = {
       const bookings = await db.query(`
         SELECT 
           b.booking_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          CONCAT(u.first_name, ' ', u.last_name) as user_name,
           c.name as class_name,
           b.date,
           c.start_time,
@@ -239,7 +239,7 @@ const BookingOperations = {
         FROM class_bookings b
         JOIN users u ON b.user_id = u.user_id
         JOIN class_schedules c ON b.class_id = c.class_id
-        WHERE b.date >= date('now', '-3 days')
+        WHERE b.date >= DATE_SUB(CURDATE(), INTERVAL 3 DAY)
         ORDER BY b.date, c.start_time
         LIMIT 10
       `);
@@ -259,7 +259,7 @@ const BookingOperations = {
       const bookings = await db.query(`
         SELECT 
           b.booking_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          CONCAT(u.first_name, ' ', u.last_name) as user_name,
           c.name as class_name,
           b.date,
           c.start_time,
@@ -1045,40 +1045,40 @@ const WorkshopOperations = {
   },
   
   /**
-   * Update registration attendance status
+   * Calculate monthly revenue
    */
-  updateRegistrationAttendance: async (registrationId, attended) => {
+  calculateMonthlyRevenue: async () => {
     try {
-      const datetimeFunc = getDatetimeFunction();
+      // Revenue from memberships purchased this month
+      const membershipResult = await db.query(`
+        SELECT COALESCE(SUM(price), 0) as total 
+        FROM memberships 
+        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+      `);
       
-      await db.query(`
-        UPDATE workshop_registrations
-        SET 
-          attended = ?,
-          updated_at = ${datetimeFunc}
-        WHERE registration_id = ?
-      `, [attended ? 1 : 0, registrationId]);
+      // Revenue from workshop registrations this month
+      const workshopResult = await db.query(`
+        SELECT COALESCE(SUM(amount_paid), 0) as total 
+        FROM workshop_registrations 
+        WHERE registration_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND registration_date <= CURDATE()
+        AND payment_status = 'Paid'
+      `);
       
-      // Get the updated registration
-      const registrations = await db.query(`
-        SELECT 
-          wr.registration_id,
-          u.first_name || ' ' || u.last_name as user_name,
-          u.email,
-          wr.registration_date,
-          wr.payment_status,
-          wr.payment_method,
-          wr.amount_paid,
-          wr.attended,
-          wr.notes
-        FROM workshop_registrations wr
-        JOIN users u ON wr.user_id = u.user_id
-        WHERE wr.registration_id = ?
-      `, [registrationId]);
+      // Revenue from private sessions this month
+      const sessionResult = await db.query(`
+        SELECT COALESCE(SUM(price), 0) as total 
+        FROM private_sessions 
+        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+        AND payment_status = 'Paid'
+      `);
       
-      return registrations.length > 0 ? registrations[0] : null;
+      const membershipRevenue = membershipResult[0]?.total || 0;
+      const workshopRevenue = workshopResult[0]?.total || 0;
+      const sessionRevenue = sessionResult[0]?.total || 0;
+      
+      return membershipRevenue + workshopRevenue + sessionRevenue;
     } catch (error) {
-      console.error('Error updating registration attendance:', error);
+      console.error('Error calculating monthly revenue:', error);
       throw error;
     }
   },
@@ -1450,7 +1450,7 @@ const PrivateSessionOperations = {
       const result = await db.query(`
         SELECT COUNT(*) as count 
         FROM private_sessions 
-        WHERE date >= date('now')
+        WHERE date >= CURDATE()
         AND status != 'Cancelled'
       `);
       

@@ -38,28 +38,7 @@ const API_ENDPOINTS = {
 
 // TokenService is already declared in account.js which loads before this script
 
-// User handling (same as in account.js)
-const UserService = {
-  getUser: () => {
-    const userInfo = localStorage.getItem('user_info');
-    return userInfo ? JSON.parse(userInfo) : null;
-  },
-  removeUser: () => localStorage.removeItem('user_info'),
-  
-  isLoggedIn: () => {
-    return !!TokenService.getToken() && !!UserService.getUser();
-  },
-  
-  isAdmin: () => {
-    const user = UserService.getUser();
-    return user && user.role === 'admin';
-  },
-  
-  logout: () => {
-    TokenService.removeToken();
-    UserService.removeUser();
-  }
-};
+// UserService is already declared in account.js which loads before this script
 
 // API service for admin operations
 const AdminApiService = {
