@@ -54,110 +54,188 @@ if (DB_TYPE === 'sqlite') {
 } else if (DB_TYPE === 'mysql') {
   // MySQL for production (AWS RDS)
   const mysql = require('mysql2');
+  const { getDatabaseCredentials } = require('../utils/aws-secrets');
   
-  // Create MySQL connection
-  const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 3306,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    // Add configuration for handling large data
-    maxAllowedPacket: 16 * 1024 * 1024, // 16MB packet size (client side)
-    connectTimeout: 60000, // 60 seconds
-    acquireTimeout: 60000, // 60 seconds
-    timeout: 60000, // 60 seconds
-    // Enable compression to help with large data transfers
-    compress: true,
-    // Better error handling
-    debug: process.env.NODE_ENV !== 'production',
-    // Use streams for BLOBs for better memory management
-    supportBigNumbers: true,
-    bigNumberStrings: true
-  });
-
-  // Log connection details
-  console.log('MySQL connection configured with extended parameters for handling large files');
+  // We need to create a promise initially since database creation is asynchronous
+  // but our module exports are synchronous
+  let connectionPromise;
+  let pool;
+  let promisePool;
   
-  // Handle pool errors globally
-  pool.on('error', (err) => {
-    console.error('MySQL Pool Error:', err);
-    if (err.code === 'ER_PACKET_TOO_LARGE') {
-      console.error('MySQL Error: Packet too large. Consider increasing max_allowed_packet on MySQL server.');
-    }
-  });
-  
-  // Promisify for async/await usage
-  const promisePool = pool.promise();
-  
-  // Custom db object to match our interface
+  // Initialize the db interface, which will make API calls once connection is ready
   db = {
     all: (sql, params, callback) => {
-      console.log('MySQL query (all):', sql.substring(0, 100) + '...');
-      promisePool.query(sql, params)
-        .then(([rows]) => {
-          console.log('MySQL query successful, rows:', rows.length);
-          callback(null, rows);
+      // Ensure we have a connection before executing the query
+      if (!connectionPromise) {
+        connectionPromise = initializeMySQLConnection();
+      }
+      
+      connectionPromise
+        .then(() => {
+          // Now that we have a connection, run the query
+          console.log('MySQL query (all):', sql.substring(0, 100) + '...');
+          promisePool.query(sql, params)
+            .then(([rows]) => {
+              console.log('MySQL query successful, rows:', rows.length);
+              callback(null, rows);
+            })
+            .catch(err => {
+              console.error('MySQL query error:', {
+                code: err.code,
+                errno: err.errno,
+                sqlState: err.sqlState,
+                sqlMessage: err.sqlMessage,
+                sql: sql.substring(0, 200)
+              });
+              callback(err);
+            });
         })
         .catch(err => {
-          console.error('MySQL query error:', {
-            code: err.code,
-            errno: err.errno,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage,
-            sql: sql.substring(0, 200)
-          });
+          console.error('Connection error in query:', err);
           callback(err);
         });
     },
+    
     run: (sql, params, callback) => {
-      console.log('MySQL query (run):', sql.substring(0, 100) + '...');
-      promisePool.query(sql, params)
-        .then(([result]) => {
-          console.log('MySQL run successful');
-          // Create a mock of the this context for SQLite compatibility
-          const context = { 
-            lastID: result.insertId,
-            changes: result.affectedRows
-          };
-          callback.call(context);
+      // Ensure we have a connection before executing the query
+      if (!connectionPromise) {
+        connectionPromise = initializeMySQLConnection();
+      }
+      
+      connectionPromise
+        .then(() => {
+          console.log('MySQL query (run):', sql.substring(0, 100) + '...');
+          promisePool.query(sql, params)
+            .then(([result]) => {
+              console.log('MySQL run successful');
+              // Create a mock of the this context for SQLite compatibility
+              const context = { 
+                lastID: result.insertId,
+                changes: result.affectedRows
+              };
+              callback.call(context);
+            })
+            .catch(err => {
+              console.error('MySQL run error:', {
+                code: err.code,
+                errno: err.errno,
+                sqlState: err.sqlState,
+                sqlMessage: err.sqlMessage
+              });
+              callback(err);
+            });
         })
         .catch(err => {
-          console.error('MySQL run error:', {
-            code: err.code,
-            errno: err.errno,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage
-          });
+          console.error('Connection error in run:', err);
           callback(err);
         });
     },
+    
     get: (sql, params, callback) => {
-      console.log('MySQL query (get):', sql.substring(0, 100) + '...');
-      promisePool.query(sql, params)
-        .then(([rows]) => {
-          console.log('MySQL get successful');
-          callback(null, rows[0]);
+      // Ensure we have a connection before executing the query
+      if (!connectionPromise) {
+        connectionPromise = initializeMySQLConnection();
+      }
+      
+      connectionPromise
+        .then(() => {
+          console.log('MySQL query (get):', sql.substring(0, 100) + '...');
+          promisePool.query(sql, params)
+            .then(([rows]) => {
+              console.log('MySQL get successful');
+              callback(null, rows[0]);
+            })
+            .catch(err => {
+              console.error('MySQL get error:', {
+                code: err.code,
+                errno: err.errno,
+                sqlState: err.sqlState,
+                sqlMessage: err.sqlMessage
+              });
+              callback(err);
+            });
         })
         .catch(err => {
-          console.error('MySQL get error:', {
-            code: err.code,
-            errno: err.errno,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage
-          });
+          console.error('Connection error in get:', err);
           callback(err);
         });
     },
+    
     close: (callback) => {
-      pool.end(callback);
+      if (pool) {
+        pool.end((err) => {
+          if (err) {
+            console.error('Error closing MySQL pool:', err);
+          } else {
+            console.log('MySQL connection closed');
+          }
+          if (callback) callback(err);
+        });
+      } else {
+        if (callback) callback();
+      }
     }
   };
   
-  console.log(`Connected to MySQL database at ${process.env.DB_HOST}/${process.env.DB_NAME}`);
+  // Function to initialize MySQL connection with AWS Secrets Manager
+  async function initializeMySQLConnection() {
+    try {
+      console.log('Retrieving database credentials from AWS Secrets Manager...');
+      // Get credentials from AWS Secrets Manager
+      const credentials = await getDatabaseCredentials();
+      
+      console.log('Creating MySQL connection pool with credentials from AWS Secrets Manager');
+      // Create MySQL connection pool with retrieved credentials
+      pool = mysql.createPool({
+        host: credentials.host || process.env.DB_HOST,
+        port: credentials.port || process.env.DB_PORT || 3306,
+        database: credentials.dbname || process.env.DB_NAME,
+        user: credentials.username || process.env.DB_USER,
+        password: credentials.password || process.env.DB_PASSWORD,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        // Add configuration for handling large data
+        maxAllowedPacket: 16 * 1024 * 1024, // 16MB packet size (client side)
+        connectTimeout: 60000, // 60 seconds
+        acquireTimeout: 60000, // 60 seconds
+        timeout: 60000, // 60 seconds
+        // Enable compression to help with large data transfers
+        compress: true,
+        // Better error handling
+        debug: process.env.NODE_ENV !== 'production',
+        // Use streams for BLOBs for better memory management
+        supportBigNumbers: true,
+        bigNumberStrings: true
+      });
+      
+      // Handle pool errors globally
+      pool.on('error', (err) => {
+        console.error('MySQL Pool Error:', err);
+        if (err.code === 'ER_PACKET_TOO_LARGE') {
+          console.error('MySQL Error: Packet too large. Consider increasing max_allowed_packet on MySQL server.');
+        }
+      });
+      
+      // Promisify for async/await usage
+      promisePool = pool.promise();
+      
+      // Test connection
+      const [rows] = await promisePool.query('SELECT 1');
+      console.log(`Connected to MySQL database at ${credentials.host}/${credentials.dbname}`);
+      
+      return rows;
+    } catch (error) {
+      console.error('Error setting up MySQL connection with AWS Secrets:', error);
+      throw error;
+    }
+  }
+  
+  // Start the connection process
+  connectionPromise = initializeMySQLConnection().catch(err => {
+    console.error('Initial MySQL connection failed:', err);
+    throw err;
+  });
 } else {
   throw new Error(`Unsupported database type: ${DB_TYPE}`);
 }
