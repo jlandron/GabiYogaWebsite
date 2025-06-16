@@ -1033,7 +1033,7 @@ const WorkshopOperations = {
       const registrations = await db.query(`
         SELECT 
           wr.registration_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           u.email,
           wr.registration_date,
           wr.payment_status,
@@ -1112,7 +1112,7 @@ const WorkshopOperations = {
       const registrations = await db.query(`
         SELECT 
           wr.registration_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           u.email,
           wr.registration_date,
           wr.payment_status,
@@ -1427,7 +1427,7 @@ const RetreatOperations = {
         SELECT 
           rr.registration_id,
           u.user_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           u.email,
           rr.registration_date,
           rr.payment_status,
@@ -1566,7 +1566,7 @@ const PrivateSessionOperations = {
       const sessions = await db.query(`
         SELECT 
           ps.session_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           ps.date,
           ps.start_time,
           ps.duration,
