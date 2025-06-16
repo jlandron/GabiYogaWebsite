@@ -21,7 +21,8 @@ function isAuthenticated() {
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user is authenticated before loading data
-    if (!isAuthenticated()) {
+      // Check if user is logged in and is admin (from admin.js)
+    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
         window.location.href = 'login.html';
         return;
     }

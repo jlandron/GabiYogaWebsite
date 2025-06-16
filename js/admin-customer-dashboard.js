@@ -6,6 +6,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+      // Check if user is logged in and is admin (from admin.js)
+    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+        window.location.href = 'login.html';
+        return;
+    }
     // Initialize the admin sidebar
     loadAdminSidebar();
 
@@ -20,21 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tabs functionality
     initDashboardTabs();
 });
-
-// Token handling (same as in admin.js)
-const TokenService = {
-    getToken: () => localStorage.getItem('auth_token'),
-    removeToken: () => localStorage.removeItem('auth_token')
-};
-
-// User handling (same as in admin.js)
-const UserService = {
-    getUser: () => {
-        const userInfo = localStorage.getItem('user_info');
-        return userInfo ? JSON.parse(userInfo) : null;
-    },
-    removeUser: () => localStorage.removeItem('user_info')
-};
 
 /**
  * Create fetch options with auth token

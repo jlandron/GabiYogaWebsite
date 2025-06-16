@@ -21,8 +21,11 @@ console.log('Using real database API endpoints for admin dashboard');
 // Using TokenService from admin.js which is loaded before this script
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // For development testing, we'll continue even without login
-    // In production, you'd want to redirect non-admin users
+  // Check if user is logged in and is admin (from admin.js)
+  if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+    window.location.href = 'login.html';
+    return;
+  }
 
     // Initialize dashboard data
     await loadDashboardData();
