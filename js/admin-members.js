@@ -6,9 +6,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Check if user is logged in and is admin (from admin.js)
   if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    // Save current page for redirect
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
+    window.location.href = 'login.html';
     return;
   }
 
@@ -20,9 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Token validation failed:', error);
     alert('Your session has expired. Please log in again.');
     UserService.logout();
-    // Save current page for redirect
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
+    window.location.href = 'login.html';
     return;
   }
 

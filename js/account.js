@@ -232,21 +232,9 @@ const ApiService = {
   /**
    * Get current user profile
    */
-    getCurrentUser: async () => {
-        try {
-            return await ApiService.authRequest(API_ENDPOINTS.me);
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-            // If token is invalid, logout and redirect with current page info
-            if (error.message === 'Invalid token') {
-                UserService.logout();
-                // Save current page for redirect
-                const currentPage = window.location.pathname.split('/').pop();
-                window.location.href = `login.html?redirect=${currentPage}`;
-            }
-            throw error;
-        }
-    }
+  getCurrentUser: async () => {
+    return ApiService.authRequest(API_ENDPOINTS.me);
+  }
 };
 
 // Show loading state on buttons
