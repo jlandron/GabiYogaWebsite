@@ -27,8 +27,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-    // Initialize dashboard data
-    await loadDashboardData();
+  // Check token validity with backend using AdminApiService
+  try {
+    await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
+    console.log('Token verified with backend');
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    alert('Your session has expired. Please log in again.');
+    UserService.logout();
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Initialize dashboard data
+  await loadDashboardData();
 
     // Setup refresh button
     const refreshBtn = document.querySelector('.admin-actions .admin-btn-primary');

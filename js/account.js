@@ -121,7 +121,12 @@ const redirectToDashboard = () => {
   const redirectParam = urlParams.get('redirect');
   
   if (UserService.isAdmin()) {
-    window.location.href = 'admin-dashboard.html';
+    // If admin and there's a redirect to admin page, use that redirect
+    if (redirectParam && redirectParam.startsWith('admin-')) {
+      window.location.href = redirectParam;
+    } else {
+      window.location.href = 'admin-dashboard.html';
+    }
   } else {
     // If there's a specific redirect for the dashboard, use it
     // This enables redirecting to specific dashboard tabs (e.g. dashboard.html#workshops)
