@@ -613,7 +613,7 @@ const ClassOperations = {
       const datetimeFunc = getDatetimeFunction();
       
       const result = await db.query(`
-        INSERT INTO classes (
+        INSERT INTO class_schedules (
           template_id,
           name, 
           day_of_week, 
@@ -657,7 +657,7 @@ const ClassOperations = {
       const datetimeFunc = getDatetimeFunction();
       
       await db.query(`
-        UPDATE classes
+        UPDATE class_schedules
         SET 
           template_id = ?,
           name = ?,
@@ -704,7 +704,7 @@ const ClassOperations = {
       }
       
       // Delete the class
-      await db.query(`DELETE FROM classes WHERE class_id = ?`, [classId]);
+      await db.query(`DELETE FROM class_schedules WHERE class_id = ?`, [classId]);
       
       return true;
     } catch (error) {
@@ -727,7 +727,7 @@ const ClassOperations = {
           status,
           booking_date,
           created_at
-        FROM bookings
+        FROM class_bookings
         WHERE class_id = ? AND date = ?
         AND status IN ('Confirmed', 'Attended')
         ORDER BY created_at
