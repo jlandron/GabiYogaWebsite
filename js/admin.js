@@ -267,28 +267,47 @@ const AdminApiService = {
   }
 };
 
+// Set up a global variable to track if token has been verified
+window.adminTokenVerified = false;
+
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', async () => {
-  // Simplified authentication - only check once on initial page load
+  // Use the centralized AuthHandler for authentication if available
   if (typeof AuthHandler !== 'undefined') {
-    // Check authentication once - redirect if not admin
     const isAuthenticated = await AuthHandler.validateAuth({
       adminRequired: true,
-      onSuccess: () => console.log('Admin authentication validated'),
-      onError: (error) => console.error('Admin authentication error:', error)
+      onSuccess: () => console.log('Authentication validated via AuthHandler'),
+      onError: (error) => console.error('Authentication error via AuthHandler:', error)
     });
     
     if (!isAuthenticated) {
       // AuthHandler has already handled the redirect
       return;
     }
+    window.adminTokenVerified = true;
   } else {
-    // Basic fallback if AuthHandler isn't loaded
+    // Fallback to original authentication method if AuthHandler is not available
+    console.warn('AuthHandler not available, using legacy authentication');
+    
+    // Check if user is logged in and is admin
     if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-      // Redirect non-admin users to login
+      // Save the current page as redirect parameter before redirecting to login
       const currentPage = window.location.pathname.split('/').pop();
       window.location.href = `login.html?redirect=${currentPage}`;
       return;
+    }
+    
+    // Only validate token once to prevent network overload
+    if (!window.adminTokenVerified) {
+      try {
+        await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
+        console.log('Token verified with backend on page load');
+        window.adminTokenVerified = true;
+      } catch (error) {
+        console.error('Token validation failed on page load:', error);
+        // Already handled by the authRequest method, will redirect to login
+        return;
+      }
     }
   }
   

@@ -27,23 +27,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   
-  // Simplified authentication check - no additional validation beyond initial page load
+  // Use the centralized AuthHandler for authentication to avoid duplicate validations
   if (typeof AuthHandler !== 'undefined') {
-    // Single auth check on page load
-    const isAuthenticated = await AuthHandler.validateAuth({
-      adminRequired: true,
-      onSuccess: () => console.log('Admin dashboard: Initial auth check passed'),
-      onError: (error) => console.error('Admin dashboard: Auth check failed:', error)
-    });
-    
-    if (!isAuthenticated) {
-      // AuthHandler has already handled the redirect
-      return;
+    // Skip validation if token is already validated
+    if (window.tokenValidated !== true) {
+      const isAuthenticated = await AuthHandler.validateAuth({
+        adminRequired: true,
+        onSuccess: () => console.log('Admin dashboard: Authentication validated via AuthHandler'),
+        onError: (error) => console.error('Admin dashboard: Authentication error via AuthHandler:', error)
+      });
+      
+      if (!isAuthenticated) {
+        // AuthHandler has already handled the redirect
+        return;
+      }
+    } else {
+      console.log('Token already validated, proceeding with dashboard initialization');
     }
   } else {
-    // Basic fallback if AuthHandler isn't available
+    // Fallback to basic check - no network calls
     if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-      console.log('User not logged in or not admin, redirecting');
+      console.log('User is not logged in or not admin, redirecting');
       const currentPage = window.location.pathname.split('/').pop();
       window.location.href = `login.html?redirect=${currentPage}`;
       return;

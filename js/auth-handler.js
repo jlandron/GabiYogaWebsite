@@ -1,25 +1,30 @@
 /**
  * Gabi Jyoti Yoga - Authentication Handler
- * Simplified authentication that only checks on initial page load
+ * Centralizes authentication logic for all secure pages
  */
+
+// Maximum retries for API calls
+const MAX_RETRIES = 2;
 
 // Use the existing TokenService and UserService from account.js
 const AuthHandler = {
     /**
-     * Simplified validation - only checks user data without additional API calls
+     * Validates a user's authentication when entering a secure page
      * @param {Object} options - Configuration options
-     * @param {boolean} options.adminRequired - Whether admin role is required
+     * @param {boolean} options.adminRequired - Whether admin role is required (default: false)
      * @param {Function} options.onSuccess - Callback function on successful validation
      * @param {Function} options.onError - Callback function on validation error
      * @returns {Promise<boolean>} - Whether authentication was successful
      */
     validateAuth: async function(options = {}) {
-        const adminRequired = options.adminRequired || false;
-        const onSuccess = options.onSuccess || null;
-        const onError = options.onError || null;
+        const { 
+            adminRequired = false, 
+            onSuccess = null, 
+            onError = null 
+        } = options;
 
         try {
-            console.log('AuthHandler: Checking local authentication data');
+            console.log('AuthHandler: Validating authentication...');
             
             // Step 1: Check if user is logged in (has token and user info)
             if (!TokenService.getToken() || !UserService.getUser()) {
@@ -35,83 +40,124 @@ const AuthHandler = {
                 window.location.href = 'dashboard.html';
                 return false;
             }
-            
-            // Step 3: On initial page load only, verify token with backend once
-            const initialAuthDone = window.tokenValidated === true || 
-                                   localStorage.getItem('initialAuthDone') === 'true';
-            
-            if (!initialAuthDone) {
-                console.log('AuthHandler: Initial authentication check');
-                try {
-                    // Single API call to verify token on first load
-                    const response = await fetch(`${API_BASE_URL}/auth/me`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${TokenService.getToken()}`
-                        },
-                        credentials: 'include',
-                        cache: 'no-store'
-                    });
+
+            // Step 3: Validate token with backend - with retry logic
+            try {
+                console.log('AuthHandler: Validating token with backend...');
+                
+                // Skip validation if we've already validated this token during this page load
+                if (window.tokenValidated === true) {
+                    console.log('AuthHandler: Token already validated in this session');
                     
-                    if (!response.ok) {
-                        throw new Error(`Token validation failed: ${response.statusText}`);
+                    // Call success callback if provided
+                    if (onSuccess && typeof onSuccess === 'function') {
+                        onSuccess();
                     }
                     
-                    const data = await response.json();
-                    
-                    if (!data.success || !data.user) {
-                        throw new Error('Invalid token');
-                    }
-                    
-                    // Update user data in local storage
-                    UserService.setUser(data.user);
-                    
-                    // Mark as authenticated for this session
-                    window.tokenValidated = true;
-                    localStorage.setItem('initialAuthDone', 'true');
-                    console.log('AuthHandler: Initial authentication successful');
-                    
-                } catch (error) {
-                    console.error('AuthHandler: Initial authentication failed:', error);
-                    
-                    if (onError && typeof onError === 'function') {
-                        onError(error);
-                    }
-                    
-                    // Handle failed initial auth
-                    UserService.logout();
-                    this.redirectToLogin();
-                    return false;
+                    return true;
                 }
-            } else {
-                console.log('AuthHandler: Using cached authentication state');
+                
+                // Implement retry logic for network errors
+                let retries = 0;
+                let success = false;
+                let lastError = null;
+                
+                while (retries <= MAX_RETRIES && !success) {
+                    try {
+                        // Use the existing /auth/me endpoint to validate the token
+                        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${TokenService.getToken()}`
+                            },
+                            credentials: 'include',
+                            // Add cache control to prevent caching
+                            cache: 'no-store'
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Token validation failed: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (!data.success || !data.user) {
+                            throw new Error('Invalid token');
+                        }
+                        
+                        // If we get here, validation was successful
+                        console.log('AuthHandler: Token validated successfully');
+                        success = true;
+                        
+                        // Set global flag to prevent redundant validations - both as window property and localStorage
+                        window.tokenValidated = true;
+                        localStorage.setItem('tokenValidated', 'true');
+                        
+                        // Update user data in local storage if needed
+                        if (data.user) {
+                            UserService.setUser(data.user);
+                        }
+                        
+                        break; // Exit retry loop on success
+                    } catch (retryError) {
+                        lastError = retryError;
+                        retries++;
+                        
+                        if (retries <= MAX_RETRIES) {
+                            console.warn(`AuthHandler: Retry ${retries}/${MAX_RETRIES} after error: ${retryError.message}`);
+                            // Wait briefly before retry
+                            await new Promise(resolve => setTimeout(resolve, 500 * retries));
+                        }
+                    }
+                }
+                
+                if (!success) {
+                    // All retries failed
+                    throw lastError || new Error('Token validation failed after multiple attempts');
+                }
+                
+                // Call success callback if provided
+                if (onSuccess && typeof onSuccess === 'function') {
+                    onSuccess();
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('AuthHandler: Token validation error:', error);
+                
+                // Call error callback if provided
+                if (onError && typeof onError === 'function') {
+                    onError(error);
+                }
+
+                // Handle invalid token by logging out and redirecting
+                this.handleAuthError(error);
+                return false;
             }
-            
-            // Call success callback if provided
-            if (onSuccess && typeof onSuccess === 'function') {
-                onSuccess();
-            }
-            
-            return true;
-            
         } catch (error) {
-            console.error('AuthHandler: Unexpected error:', error);
+            console.error('AuthHandler: Unexpected error during auth validation:', error);
             
+            // Call error callback if provided
             if (onError && typeof onError === 'function') {
                 onError(error);
             }
             
+            this.handleAuthError(error);
             return false;
         }
     },
 
     /**
-     * Simple error handler - no auto-logout
+     * Handle authentication errors consistently
      * @param {Error} error - The authentication error
      */
     handleAuthError: function(error) {
-        // Just log the error without automatic logout
-        console.log('AuthHandler: Auth error detected:', error.message);
+        // If the error is related to invalid token, log out and redirect
+        if (error.message.includes('token')) {
+            console.log('AuthHandler: Handling token error - logging out user');
+            UserService.logout();
+            this.redirectToLogin();
+        }
     },
 
     /**
@@ -132,18 +178,16 @@ const AuthHandler = {
         
         // Clear authentication data
         UserService.logout();
-        localStorage.removeItem('initialAuthDone');
-        window.tokenValidated = false;
         
         // Redirect to login with the saved page as redirect parameter
         window.location.href = `login.html?redirect=${currentPage}`;
     },
 
     /**
-     * Check if initial authentication is done
-     * @returns {boolean} - Whether initial auth check is done
+     * Check if token has already been validated on this page
+     * @returns {boolean} - Whether token has been validated
      */
-    isInitialAuthDone: function() {
-        return window.tokenValidated === true || localStorage.getItem('initialAuthDone') === 'true';
+    isTokenValidated: function() {
+        return window.tokenValidated === true || localStorage.getItem('tokenValidated') === 'true';
     }
 };
