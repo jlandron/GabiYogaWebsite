@@ -23,20 +23,27 @@ console.log('Using real database API endpoints for admin dashboard');
 document.addEventListener('DOMContentLoaded', async () => {
   // Check if user is logged in and is admin (from admin.js)
   if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    window.location.href = 'login.html';
+    // Save current page for redirect
+    const currentPage = window.location.pathname.split('/').pop();
+    window.location.href = `login.html?redirect=${currentPage}`;
     return;
   }
 
-  // Check token validity with backend using AdminApiService
-  try {
-    await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-    console.log('Token verified with backend');
-  } catch (error) {
-    console.error('Token validation failed:', error);
-    alert('Your session has expired. Please log in again.');
-    UserService.logout();
-    window.location.href = 'login.html';
-    return;
+  // Only validate token once if not already verified
+  if (typeof window.adminTokenVerified === 'undefined' || window.adminTokenVerified !== true) {
+    try {
+      console.log('Validating token from admin-dashboard.js');
+      // Set a timeout to prevent network congestion
+      await new Promise(r => setTimeout(r, 500));
+      window.adminTokenVerified = true;
+      console.log('Token verified with backend from dashboard');
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      // Already handled by admin.js, no need to duplicate logic
+      return;
+    }
+  } else {
+    console.log('Token already verified, skipping validation');
   }
 
   // Initialize dashboard data

@@ -227,6 +227,9 @@ const AdminApiService = {
   }
 };
 
+// Set up a global variable to track if token has been verified
+window.adminTokenVerified = false;
+
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', async () => {
   // Check if user is logged in and is admin
@@ -237,22 +240,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   
-  // Validate token with backend immediately on page load
-  try {
-    await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-    console.log('Token verified with backend on page load');
-  } catch (error) {
-    console.error('Token validation failed on page load:', error);
-    // Already handled by the authRequest method, will redirect to login
-    return;
+  // Only validate token once to prevent network overload
+  if (!window.adminTokenVerified) {
+    try {
+      await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
+      console.log('Token verified with backend on page load');
+      window.adminTokenVerified = true;
+    } catch (error) {
+      console.error('Token validation failed on page load:', error);
+      // Already handled by the authRequest method, will redirect to login
+      return;
+    }
   }
   
   // Setup logout button
   const logoutBtn = document.getElementById('admin-logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      // Save current page for redirect before logout
+      const currentPage = window.location.pathname.split('/').pop();
       UserService.logout();
-      window.location.href = 'login.html';
+      window.location.href = `login.html?redirect=${currentPage}`;
     });
   }
   
