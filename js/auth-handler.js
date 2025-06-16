@@ -89,9 +89,8 @@ const AuthHandler = {
                         console.log('AuthHandler: Token validated successfully');
                         success = true;
                         
-                        // Set global flag to prevent redundant validations - both as window property and localStorage
+                        // Set global flag to prevent redundant validations
                         window.tokenValidated = true;
-                        localStorage.setItem('tokenValidated', 'true');
                         
                         // Update user data in local storage if needed
                         if (data.user) {
@@ -188,6 +187,6 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been validated
      */
     isTokenValidated: function() {
-        return window.tokenValidated === true || localStorage.getItem('tokenValidated') === 'true';
+        return window.tokenValidated === true;
     }
 };

@@ -300,16 +300,12 @@
     </div>
 
     <script src="js/script.js"></script>
-    <!-- Load auth-handler first with defer=false to ensure it's available before other scripts -->
     <script src="js/auth-handler.js"></script>
-    <!-- Wait for auth-handler before loading account.js -->
-    <script src="js/account.js" defer></script>
-    <script src="js/login-modal.js" defer></script>
-    <!-- Load admin.js after auth-handler but before schedule-specific scripts -->
+    <script src="js/account.js"></script>  
+    <script src="js/login-modal.js"></script>
     <script src="js/admin.js"></script>
-    <script src="js/admin-sidebar-template.js" defer></script>
-    <script src="js/admin-sidebar.js" defer></script>
-    <!-- Load schedule script last -->
-    <script src="js/admin-schedule.js" defer></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <script src="js/admin-schedule.js"></script>
 </body>
 </html>
