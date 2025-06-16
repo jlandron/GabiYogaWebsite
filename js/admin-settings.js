@@ -2,26 +2,8 @@
  * Admin Settings JavaScript for Gabi Jyoti Yoga
  */
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     console.log('Admin Settings page loaded');
-
-    // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Check token validity with backend using AdminApiService
-    try {
-        await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-        console.log('Token verified with backend');
-    } catch (error) {
-        console.error('Token validation failed:', error);
-        alert('Your session has expired. Please log in again.');
-        UserService.logout();
-        window.location.href = 'login.html';
-        return;
-    }
     
     // Init all functionality
     fetchExistingSettings();
