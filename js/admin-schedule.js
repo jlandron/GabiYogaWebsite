@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('User authenticated as admin, proceeding with schedule builder initialization');
     
-    // Check token validity with backend using AdminApiService instead of ApiService
+    // Check token validity with backend
     try {
-        await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
+        await ApiService.getCurrentUser();
         console.log('Token verified with backend');
     } catch (error) {
         console.error('Token validation failed:', error);
