@@ -197,18 +197,32 @@ router.delete('/class-templates/:id', requireAdmin, async (req, res) => {
  */
 router.get('/classes', requireAdmin, async (req, res) => {
   try {
+    console.log('Admin classes endpoint called - attempting to fetch classes...');
     const classes = await ClassOperations.getClasses();
+    console.log('Classes fetched successfully:', classes?.length || 0, 'classes');
     
     return res.json({
       success: true,
       classes
     });
   } catch (error) {
-    console.error('Error fetching classes:', error);
+    console.error('Error fetching classes - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch classes',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : `Database error: ${error.message}`,
+      details: process.env.NODE_ENV === 'development' ? { 
+        code: error.code, 
+        errno: error.errno,
+        sqlState: error.sqlState 
+      } : undefined
     });
   }
 });
