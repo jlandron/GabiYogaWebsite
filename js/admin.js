@@ -36,11 +36,7 @@ const API_ENDPOINTS = {
   dashboardStats: `${API_BASE_URL}/admin/stats`
 };
 
-// Token handling (same as in account.js)
-const TokenService = {
-  getToken: () => localStorage.getItem('auth_token'),
-  removeToken: () => localStorage.removeItem('auth_token')
-};
+// TokenService is already declared in account.js which loads before this script
 
 // User handling (same as in account.js)
 const UserService = {
