@@ -96,13 +96,28 @@ if (DB_TYPE === 'sqlite') {
   // Custom db object to match our interface
   db = {
     all: (sql, params, callback) => {
+      console.log('MySQL query (all):', sql.substring(0, 100) + '...');
       promisePool.query(sql, params)
-        .then(([rows]) => callback(null, rows))
-        .catch(err => callback(err));
+        .then(([rows]) => {
+          console.log('MySQL query successful, rows:', rows.length);
+          callback(null, rows);
+        })
+        .catch(err => {
+          console.error('MySQL query error:', {
+            code: err.code,
+            errno: err.errno,
+            sqlState: err.sqlState,
+            sqlMessage: err.sqlMessage,
+            sql: sql.substring(0, 200)
+          });
+          callback(err);
+        });
     },
     run: (sql, params, callback) => {
+      console.log('MySQL query (run):', sql.substring(0, 100) + '...');
       promisePool.query(sql, params)
         .then(([result]) => {
+          console.log('MySQL run successful');
           // Create a mock of the this context for SQLite compatibility
           const context = { 
             lastID: result.insertId,
@@ -110,12 +125,32 @@ if (DB_TYPE === 'sqlite') {
           };
           callback.call(context);
         })
-        .catch(err => callback(err));
+        .catch(err => {
+          console.error('MySQL run error:', {
+            code: err.code,
+            errno: err.errno,
+            sqlState: err.sqlState,
+            sqlMessage: err.sqlMessage
+          });
+          callback(err);
+        });
     },
     get: (sql, params, callback) => {
+      console.log('MySQL query (get):', sql.substring(0, 100) + '...');
       promisePool.query(sql, params)
-        .then(([rows]) => callback(null, rows[0]))
-        .catch(err => callback(err));
+        .then(([rows]) => {
+          console.log('MySQL get successful');
+          callback(null, rows[0]);
+        })
+        .catch(err => {
+          console.error('MySQL get error:', {
+            code: err.code,
+            errno: err.errno,
+            sqlState: err.sqlState,
+            sqlMessage: err.sqlMessage
+          });
+          callback(err);
+        });
     },
     close: (callback) => {
       pool.end(callback);

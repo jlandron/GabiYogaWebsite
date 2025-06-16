@@ -539,6 +539,7 @@ const ClassOperations = {
    */
   getClasses: async () => {
     try {
+      console.log('ClassOperations.getClasses called - executing query...');
       const classes = await db.query(`
         SELECT 
           class_id,
@@ -556,9 +557,17 @@ const ClassOperations = {
         ORDER BY day_of_week, start_time
       `);
       
+      console.log('ClassOperations.getClasses query completed, found:', classes?.length || 0, 'classes');
       return classes;
     } catch (error) {
-      console.error('Error getting classes:', error);
+      console.error('Error in ClassOperations.getClasses - Full error:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno,
+        sqlState: error.sqlState,
+        sqlMessage: error.sqlMessage,
+        sql: error.sql
+      });
       throw error;
     }
   },
