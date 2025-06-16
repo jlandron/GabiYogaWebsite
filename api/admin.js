@@ -36,7 +36,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
     const activeMembers = await MemberOperations.countActiveMembers();
     const weeklyBookings = await BookingOperations.countWeeklyBookings();
     const upcomingSessions = await PrivateSessionOperations.countUpcomingSessions();
-    const monthlyRevenue = await BookingOperations.calculateMonthlyRevenue();
+    const monthlyRevenue = await WorkshopOperations.calculateMonthlyRevenue();
     
     return res.json({
       success: true,

@@ -62,7 +62,7 @@ const MemberOperations = {
         const memberships = await db.query(`
           SELECT 
             membership_id,
-            membership_type as type,
+            type,
             start_date,
             end_date,
             classes_remaining,
@@ -127,8 +127,8 @@ const MemberOperations = {
           b.date,
           c.start_time,
           b.status
-        FROM bookings b
-        JOIN classes c ON b.class_id = c.class_id
+        FROM class_bookings b
+        JOIN class_schedules c ON b.class_id = c.class_id
         WHERE b.user_id = ?
         ORDER BY b.date DESC, c.start_time DESC
       `, [userId]);
@@ -298,7 +298,7 @@ const BookingOperations = {
       
       // Check if user already has a booking for this class on this date
       const existingBookings = await db.query(`
-        SELECT booking_id FROM bookings 
+        SELECT booking_id FROM class_bookings
         WHERE user_id = ? AND class_id = ? AND date = ?
       `, [user_id, class_id, date]);
       
@@ -308,7 +308,7 @@ const BookingOperations = {
       
       // Create the booking
       const result = await db.query(`
-        INSERT INTO bookings (
+        INSERT INTO class_bookings (
           user_id, 
           class_id, 
           date, 
@@ -330,10 +330,10 @@ const BookingOperations = {
           b.booking_date,
           b.created_at,
           c.name as class_name,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           u.email as user_email
-        FROM bookings b
-        JOIN classes c ON b.class_id = c.class_id
+        FROM class_bookings b
+        JOIN class_schedules c ON b.class_id = c.class_id
         JOIN users u ON b.user_id = u.user_id
         WHERE b.booking_id = ?
       `, [result.lastID]);
@@ -363,8 +363,8 @@ const BookingOperations = {
           c.duration,
           c.instructor,
           c.level
-        FROM bookings b
-        JOIN classes c ON b.class_id = c.class_id
+        FROM class_bookings b
+        JOIN class_schedules c ON b.class_id = c.class_id
         WHERE b.user_id = ?
         AND b.status != 'Cancelled'
         ORDER BY b.date DESC, c.start_time
@@ -394,7 +394,7 @@ const BookingOperations = {
       }
       
       const result = await db.query(`
-        UPDATE bookings 
+        UPDATE class_bookings 
         SET status = 'Cancelled', updated_at = ${datetimeFunc}
         WHERE ${whereClause}
       `, params);
