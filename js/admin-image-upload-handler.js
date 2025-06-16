@@ -70,12 +70,17 @@
                 
                 const result = await response.json();
                 
-                // Call the success callback
-                if (typeof this.options.onSuccess === 'function') {
-                    this.options.onSuccess(result);
-                }
-                
-                return result;
+            // Call the success callback with properly formed result
+            if (typeof this.options.onSuccess === 'function') {
+                // Make sure filePath is included in the success result
+                const resultWithPath = {
+                    ...result,
+                    filePath: result.filePath || null  // Ensure filePath is always part of result
+                };
+                this.options.onSuccess(resultWithPath);
+            }
+            
+            return result;
             } catch (error) {
                 console.error('Error uploading image:', error);
                 

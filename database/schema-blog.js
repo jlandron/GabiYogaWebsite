@@ -1,3 +1,4 @@
+!
 /**
  * Schema definition for blog tables
  * This file provides functions to initialize and manage blog tables
@@ -55,6 +56,7 @@ const initializeBlogDatabase = async () => {
       id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
       post_id INTEGER NOT NULL,
       url TEXT NOT NULL,
+      file_path TEXT,
       alt TEXT,
       caption TEXT,
       FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE

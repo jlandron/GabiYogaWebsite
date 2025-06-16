@@ -20,6 +20,150 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
 const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
 
+// Ensure the file_path column exists in the blog_post_images table
+const ensureFilePathColumn = async () => {
+  try {
+    // Check if column already exists
+    let columnExists = false;
+    
+    if (DB_TYPE === 'sqlite') {
+      // For SQLite
+      const result = await query(`PRAGMA table_info(blog_post_images)`);
+      columnExists = result.some(column => column.name === 'file_path');
+    } else {
+      // For MySQL
+      try {
+        const result = await query(`
+          SELECT COUNT(*) as count 
+          FROM information_schema.columns 
+          WHERE table_schema = DATABASE() 
+          AND table_name = 'blog_post_images'
+          AND column_name = 'file_path'
+        `);
+        
+        columnExists = result && result[0] && result[0].count > 0;
+      } catch (error) {
+        logger.warn('Error checking for file_path column:', { error: error.message });
+      }
+    }
+    
+    if (!columnExists) {
+      logger.info('Adding file_path column to blog_post_images table');
+      
+      if (DB_TYPE === 'sqlite') {
+        await query(`ALTER TABLE blog_post_images ADD COLUMN file_path TEXT`);
+      } else {
+        await query(`ALTER TABLE blog_post_images ADD COLUMN file_path TEXT`);
+      }
+      
+      logger.info('file_path column added successfully');
+      
+      // Extract file paths from existing URLs and update records
+      await migrateExistingImageUrls();
+    }
+    
+    return true;
+  } catch (error) {
+    logger.error('Error ensuring file_path column exists:', { error: error.message, stack: error.stack });
+    // Don't throw - let the app continue even if this fails
+    return false;
+  }
+};
+
+// Function to extract file path from URL
+const extractFilePath = (url) => {
+  try {
+    if (!url) return null;
+    
+    // Handle S3 URLs
+    if (url.includes('.s3.amazonaws.com/')) {
+      // Extract the path after the bucket name
+      const pathMatch = url.match(/\.s3\.amazonaws\.com\/(.+)$/);
+      if (pathMatch && pathMatch[1]) {
+        return decodeURIComponent(pathMatch[1]);
+      }
+    }
+    
+    // Handle CloudFront URLs
+    if (url.includes('.cloudfront.net/')) {
+      const pathMatch = url.match(/\.cloudfront\.net\/(.+)$/);
+      if (pathMatch && pathMatch[1]) {
+        return decodeURIComponent(pathMatch[1]);
+      }
+    }
+    
+    // Handle local URLs (relative paths)
+    if (url.startsWith('/uploads/')) {
+      return url.substring(1); // Remove leading slash
+    }
+    
+    // Last resort - use the URL's filename as a path in gallery directory
+    const filename = path.basename(url);
+    if (filename) {
+      return `gallery/${filename}`;
+    }
+    
+    return null;
+  } catch (error) {
+    logger.error('Error extracting file path from URL:', { url, error: error.message });
+    return null;
+  }
+};
+
+// Migrate existing URLs to have file_path values
+const migrateExistingImageUrls = async () => {
+  try {
+    logger.info('Starting migration of existing blog image URLs to file_path values...');
+    
+    // Get all images without file_path
+    const images = await query(`
+      SELECT id, url FROM blog_post_images 
+      WHERE file_path IS NULL OR file_path = ''
+    `);
+    
+    if (!images || images.length === 0) {
+      logger.info('No blog images need migration');
+      return;
+    }
+    
+    logger.info(`Found ${images.length} images to migrate`);
+    
+    for (const image of images) {
+      try {
+        const filePath = extractFilePath(image.url);
+        
+        if (filePath) {
+          await query(`
+            UPDATE blog_post_images 
+            SET file_path = ? 
+            WHERE id = ?
+          `, [filePath, image.id]);
+          
+          logger.debug(`Migrated image ${image.id}, extracted path: ${filePath}`);
+        } else {
+          logger.warn(`Could not extract file path for image ${image.id} with URL: ${image.url}`);
+        }
+      } catch (updateError) {
+        logger.error(`Error updating file_path for image ${image.id}:`, { error: updateError.message });
+        // Continue with next image
+      }
+    }
+    
+    logger.info('Blog image URL migration completed');
+  } catch (error) {
+    logger.error('Error migrating existing image URLs:', { error: error.message, stack: error.stack });
+  }
+};
+
+// Call to ensure the column exists when the module is loaded
+ensureFilePathColumn()
+  .then(() => {
+    logger.info('Blog API initialized with file_path column check');
+  })
+  .catch(error => {
+    logger.error('Error during blog API initialization:', { error: error.message });
+  });
+
 // Blog tables are now initialized in database/schema-blog.js during server startup
 console.log('Blog API module loaded');
 
@@ -397,7 +541,20 @@ const BlogOperations = {
   // Get images for a post
   getPostImages: async (postId) => {
     try {
-      const rows = await query('SELECT url, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
+      const rows = await query('SELECT url, file_path, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
+      
+      // Generate presigned URLs for images with file_path
+      for (const row of rows) {
+        if (row.file_path) {
+          try {
+            row.url = await imageStorage.getPresignedUrl(row.file_path);
+          } catch (error) {
+            logger.error(`Error generating presigned URL for blog image (post ${postId}):`, error);
+            // Keep the original URL if it exists as a fallback
+          }
+        }
+      }
+      
       return rows;
     } catch (error) {
       console.error('Error getting post images:', error);
@@ -412,9 +569,15 @@ const BlogOperations = {
       
       for (const image of images) {
         await query(`
-          INSERT INTO blog_post_images (post_id, url, alt, caption)
-          VALUES (?, ?, ?, ?)
-        `, [postId, image.url, image.alt || null, image.caption || null]);
+          INSERT INTO blog_post_images (post_id, url, file_path, alt, caption)
+          VALUES (?, ?, ?, ?, ?)
+        `, [
+          postId, 
+          image.url,
+          image.filePath || null, // Store the file_path for generating new presigned URLs later
+          image.alt || null, 
+          image.caption || null
+        ]);
       }
     } catch (error) {
       console.error('Error adding images to post:', error);

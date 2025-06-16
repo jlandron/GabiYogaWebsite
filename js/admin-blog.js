@@ -292,6 +292,7 @@ class BlogManager {
                     if (!existingImage) {
                         this.currentPost.images.push({
                             url: result.url,
+                            filePath: result.filePath || null, // Store file path for generating new presigned URLs later
                             alt: '',
                             caption: ''
                         });
@@ -327,6 +328,7 @@ class BlogManager {
                     if (!existingImage) {
                         this.currentPost.images.push({
                             url: result.url,
+                            filePath: result.filePath || null, // Store file path for generating new presigned URLs later
                             alt: '',
                             caption: ''
                         });
@@ -1716,6 +1718,7 @@ class BlogManager {
             title: file.name.replace(/\.[^/.]+$/, ""), // Filename without extension
             alt_text: '',
             url: data.url,
+            filePath: data.filePath || null, // Store file path for generating new presigned URLs later
             thumbnail_url: data.url
         });
             
@@ -1803,60 +1806,63 @@ class BlogManager {
                 
                 this.showNotification('Featured image set successfully!');
             } else if (this.imageInsertCallback === 'content') {
-                // For content images, add to gallery but don't auto-insert into editor
-                let imageUrl = this.selectedImage.url;
-                
-                // If it's a gallery URL, we need to upload it to get a permanent URL
-                if (imageUrl.startsWith('/api/gallery/')) {
-                    const response = await fetch(imageUrl);
+                    // For content images, add to gallery but don't auto-insert into editor
+                    let imageUrl = this.selectedImage.url;
+                    let filePath = null;
                     
-                    if (!response.ok) {
-                        throw new Error('Failed to load image data');
+                    // If it's a gallery URL, we need to upload it to get a permanent URL
+                    if (imageUrl.startsWith('/api/gallery/')) {
+                        const response = await fetch(imageUrl);
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to load image data');
+                        }
+                        
+                        const blob = await response.blob();
+                        
+                        // Create a File object from the blob for upload to get permanent URL
+                        const file = new File([blob], 'content-image.jpg', { type: blob.type });
+                        
+                        // Upload to server using blog-specific endpoint
+                        const token = localStorage.getItem('auth_token');
+                        if (!token) {
+                            throw new Error('Authentication required. Please log in again.');
+                        }
+                        
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        const uploadResponse = await fetch('/api/blog/images/upload', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: formData
+                        });
+                        
+                        if (!uploadResponse.ok) {
+                            throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+                        }
+                        
+                        const uploadData = await uploadResponse.json();
+                        imageUrl = uploadData.url;
+                        filePath = uploadData.filePath || null; // Get file path from upload response
                     }
                     
-                    const blob = await response.blob();
-                    
-                    // Create a File object from the blob for upload to get permanent URL
-                    const file = new File([blob], 'content-image.jpg', { type: blob.type });
-                    
-                    // Upload to server using blog-specific endpoint
-                    const token = localStorage.getItem('auth_token');
-                    if (!token) {
-                        throw new Error('Authentication required. Please log in again.');
+                    // Add image to post images array for gallery display (don't auto-insert)
+                    if (!this.currentPost.images) {
+                        this.currentPost.images = [];
                     }
                     
-                    const formData = new FormData();
-                    formData.append('image', file);
-                    
-                    const uploadResponse = await fetch('/api/blog/images/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: formData
-                    });
-                    
-                    if (!uploadResponse.ok) {
-                        throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
-                    }
-                    
-                    const uploadData = await uploadResponse.json();
-                    imageUrl = uploadData.url;
-                }
-                
-                // Add image to post images array for gallery display (don't auto-insert)
-                if (!this.currentPost.images) {
-                    this.currentPost.images = [];
-                }
-                
-                // Check if image already exists
-                const existingImage = this.currentPost.images.find(img => img.url === imageUrl);
-                if (!existingImage) {
-                    this.currentPost.images.push({
-                        url: imageUrl,
-                        alt: this.selectedImage.alt || '',
-                        caption: ''
-                    });
+                    // Check if image already exists
+                    const existingImage = this.currentPost.images.find(img => img.url === imageUrl);
+                    if (!existingImage) {
+                        this.currentPost.images.push({
+                            url: imageUrl,
+                            filePath: filePath, // Include file path for generating presigned URLs
+                            alt: this.selectedImage.alt || '',
+                            caption: ''
+                        });
                     
                     // Update gallery display
                     this.renderBlogImages(this.currentPost.images);
