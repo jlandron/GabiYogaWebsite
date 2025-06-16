@@ -45,18 +45,31 @@ const UserService = {
 
 // Function to fetch website settings and apply to dashboard
 async function fetchWebsiteSettings() {
+  // Check if cached settings exist in sessionStorage first
   try {
-    // Skip settings fetch if no authentication token, to prevent unnecessary network errors
-    if (!TokenService.getToken()) {
-      console.log('Skipping website settings fetch - no authentication token available');
+    const cachedSettings = sessionStorage.getItem('website_settings');
+    if (cachedSettings) {
+      console.log('Using cached website settings');
+      applyDashboardSettings(JSON.parse(cachedSettings));
       return;
     }
-    
+  } catch (e) {
+    console.warn('Could not access cached settings:', e);
+  }
+
+  // Skip if not authenticated
+  if (!TokenService.getToken() || !UserService.getUser()) {
+    console.log('Skipping website settings fetch - user not authenticated');
+    return;
+  }
+
+  try {
     const response = await fetch('/api/website-settings', {
       headers: {
         'Authorization': `Bearer ${TokenService.getToken()}`
       },
-      credentials: 'include'
+      credentials: 'include',
+      cache: 'no-store' // Prevent caching
     });
     
     if (!response.ok) {
@@ -66,12 +79,22 @@ async function fetchWebsiteSettings() {
     const data = await response.json();
     
     if (data.success && data.settings) {
+      // Cache settings for future use
+      try {
+        sessionStorage.setItem('website_settings', JSON.stringify(data.settings));
+      } catch (e) {
+        console.warn('Could not cache settings:', e);
+      }
+      
       applyDashboardSettings(data.settings);
     } else {
-      console.error('Error fetching website settings:', data.message || 'Unknown error');
+      console.error('Error parsing website settings:', data.message || 'Unknown error');
     }
   } catch (error) {
-    console.error('Error fetching website settings:', error);
+    // Don't log no authentication errors - this is normal when not logged in
+    if (error.message !== 'No authentication token') {
+      console.error('Error fetching website settings:', error);
+    }
     // Continue without changing settings if there's an error
   }
 }
@@ -277,41 +300,42 @@ const ApiService = {
   },
 
   /**
-   * Get current user profile with enhanced error handling
+   * Get current user profile with simplified error handling
    */
     getCurrentUser: async () => {
         try {
-            // Wait for AuthHandler to be available if it's not already
-            if (window.AuthHandler === undefined && typeof AuthHandler === 'undefined') {
-                console.log('Waiting for AuthHandler to load...');
-                await new Promise(resolve => setTimeout(resolve, 100));
+            // First check if we have user data in local storage
+            const cachedUser = UserService.getUser();
+            if (cachedUser) {
+                console.log('Using cached user data');
+                return { success: true, user: cachedUser };
             }
             
-            // Check if token is already validated
-            if (typeof AuthHandler !== 'undefined' && AuthHandler.isTokenValidated()) {
-                console.log('Token already validated, using cached user data');
-                const user = UserService.getUser();
-                if (user) {
-                    return { success: true, user };
-                }
+            // If no cached user but we have a token, fetch from API
+            if (TokenService.getToken()) {
+                return await ApiService.authRequest(API_ENDPOINTS.me);
+            } else {
+                throw new Error('No authentication token');
             }
-            
-            return await ApiService.authRequest(API_ENDPOINTS.me);
         } catch (error) {
             // Don't log errors for when there's no token - this is normal when not logged in
             if (error.message !== 'No authentication token') {
                 console.error('Error fetching user data:', error);
             }
             
-            // Use AuthHandler to handle invalid tokens consistently
-            if (error.message === 'Invalid token' && typeof AuthHandler !== 'undefined') {
-                AuthHandler.handleAuthError(error);
-            } else if (error.message === 'Invalid token') {
-                // Fallback if AuthHandler is not yet loaded
+            // For invalid token, just logout
+            if (error.message === 'Invalid token') {
                 UserService.logout();
-                // Save current page for redirect
-                const currentPage = window.location.pathname.split('/').pop();
-                window.location.href = `login.html?redirect=${currentPage}`;
+                
+                // Use AuthHandler if available
+                if (typeof AuthHandler !== 'undefined') {
+                    // Let AuthHandler handle the redirect consistently
+                    AuthHandler.redirectToLogin();
+                } else {
+                    // Fallback if AuthHandler is not yet loaded
+                    const currentPage = window.location.pathname.split('/').pop();
+                    window.location.href = `login.html?redirect=${currentPage}`;
+                }
             }
             throw error;
         }

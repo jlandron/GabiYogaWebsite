@@ -12,27 +12,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
     
-    // Use the centralized AuthHandler for authentication
+    // Simplified authentication check - only perform once on initial page load
     if (typeof AuthHandler !== 'undefined') {
-        // Skip validation if we've already validated in this session
-        if (window.tokenValidated === true) {
-            console.log('Token already validated in this session, proceeding with schedule builder initialization');
-        } else {
-            const isAuthenticated = await AuthHandler.validateAuth({
-                adminRequired: true,
-                onSuccess: () => console.log('User authenticated as admin via AuthHandler'),
-                onError: (error) => console.error('Authentication error via AuthHandler:', error)
-            });
-            
-            if (!isAuthenticated) {
-                // AuthHandler has already handled the redirect
-                return;
-            }
+        // Single auth check on page load
+        const isAuthenticated = await AuthHandler.validateAuth({
+            adminRequired: true,
+            onSuccess: () => console.log('Schedule admin: Initial auth check passed'),
+            onError: (error) => console.error('Schedule admin: Auth check failed:', error)
+        });
+        
+        if (!isAuthenticated) {
+            // AuthHandler has already handled the redirect
+            return;
         }
     } else {
-        // Hard fallback to simple check - no network calls to avoid conflicts
-        console.warn('AuthHandler not available, using basic authentication check');
-        
+        // Basic fallback if AuthHandler isn't available
         if (!UserService.isLoggedIn()) {
             console.log('User not logged in, redirecting to login page');
             const currentPage = window.location.pathname.split('/').pop();
