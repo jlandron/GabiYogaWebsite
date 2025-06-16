@@ -629,12 +629,34 @@
         }
     </style>
 
+    <!-- Login Modal Component -->
+    <div id="login-modal-container"></div>
+
     <script src="js/script.js"></script>
     <script src="js/account.js"></script>
+    <script src="js/login-modal.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/pricing-display.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="js/stripe-payment.js"></script>
     <script src="js/header-loader.js"></script>
+    
+    <script>
+        // Load login modal on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('components/login-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('login-modal-container').innerHTML = html;
+                    // Initialize login modal after loading
+                    if (typeof initializeLoginModals === 'function') {
+                        initializeLoginModals();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading login modal:', error);
+                });
+        });
+    </script>
 </body>
 </html>

@@ -103,7 +103,8 @@ function setupSidebarEventListeners() {
             e.preventDefault();
             // Implement logout functionality
             console.log('Logout clicked');
-            // Properly log out by clearing the auth token and user info
+            
+            // Clear authentication data
             if (window.UserService && typeof window.UserService.logout === 'function') {
                 window.UserService.logout();
             } else {
@@ -111,8 +112,17 @@ function setupSidebarEventListeners() {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('user_info');
             }
-            // Redirect to login page
-            window.location.href = 'login.html';
+            
+            // Show login modal with callback to reload page after login
+            if (typeof showLoginModal === 'function') {
+                showLoginModal(false, function() {
+                    // Reload the page after successful login
+                    window.location.reload();
+                });
+            } else {
+                // Fallback: redirect to login page if modal isn't available
+                window.location.href = 'login.html';
+            }
         });
     }
 }

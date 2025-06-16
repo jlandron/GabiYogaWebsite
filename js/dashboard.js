@@ -1190,8 +1190,20 @@ function setupEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Clear authentication data
             UserService.logout();
-            window.location.href = 'login.html';
+            
+            // Show login modal with callback to reload page after login
+            if (typeof showLoginModal === 'function') {
+                showLoginModal(false, function() {
+                    // Reload the page after successful login
+                    window.location.reload();
+                });
+            } else {
+                // Fallback: redirect to login page if modal isn't available
+                window.location.href = 'login.html';
+            }
         });
     }
     
