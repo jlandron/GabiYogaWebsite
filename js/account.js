@@ -149,21 +149,12 @@ const redirectToDashboard = () => {
   }
 };
 
-// Maximum retries for API calls
-const MAX_API_RETRIES = 2;
-
 // API service with fetch wrappers
 const ApiService = {
   /**
-   * Make authenticated requests with retry logic
+   * Make authenticated requests
    */
   authRequest: async (url, method = 'GET', data = null) => {
-    // Skip request if no token to avoid unnecessary network errors
-    if (!TokenService.getToken()) {
-      console.log('No auth token available, skipping request to:', url);
-      throw new Error('No authentication token');
-    }
-    
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${TokenService.getToken()}`
@@ -172,48 +163,21 @@ const ApiService = {
     const options = {
       method,
       headers,
-      credentials: 'include',
-      cache: 'no-store' // Prevent caching
+      credentials: 'include'
     };
 
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
       options.body = JSON.stringify(data);
     }
 
-    // Implement retry logic for network errors
-    let retries = 0;
-    let lastError = null;
-    
-    while (retries <= MAX_API_RETRIES) {
-      try {
-        const response = await fetch(url, options);
-        const json = await response.json();
+    const response = await fetch(url, options);
+    const json = await response.json();
 
-        if (!response.ok) {
-          throw new Error(json.message || 'An error occurred');
-        }
-
-        return json;
-      } catch (error) {
-        lastError = error;
-        
-        // Only retry on network errors
-        if (error instanceof TypeError && error.message.includes('Network')) {
-          retries++;
-          if (retries <= MAX_API_RETRIES) {
-            console.warn(`Network error, retrying (${retries}/${MAX_API_RETRIES}): ${url}`);
-            // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 500 * retries));
-            continue;
-          }
-        }
-        
-        // For non-network errors or max retries reached, throw the error
-        throw error;
-      }
+    if (!response.ok) {
+      throw new Error(json.message || 'An error occurred');
     }
-    
-    throw lastError || new Error('Request failed after multiple attempts');
+
+    return json;
   },
 
   /**
@@ -277,32 +241,13 @@ const ApiService = {
   },
 
   /**
-   * Get current user profile with enhanced error handling
+   * Get current user profile
    */
     getCurrentUser: async () => {
         try {
-            // Wait for AuthHandler to be available if it's not already
-            if (window.AuthHandler === undefined && typeof AuthHandler === 'undefined') {
-                console.log('Waiting for AuthHandler to load...');
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            // Check if token is already validated
-            if (typeof AuthHandler !== 'undefined' && AuthHandler.isTokenValidated()) {
-                console.log('Token already validated, using cached user data');
-                const user = UserService.getUser();
-                if (user) {
-                    return { success: true, user };
-                }
-            }
-            
             return await ApiService.authRequest(API_ENDPOINTS.me);
         } catch (error) {
-            // Don't log errors for when there's no token - this is normal when not logged in
-            if (error.message !== 'No authentication token') {
-                console.error('Error fetching user data:', error);
-            }
-            
+            console.error('Error fetching user data:', error);
             // Use AuthHandler to handle invalid tokens consistently
             if (error.message === 'Invalid token' && typeof AuthHandler !== 'undefined') {
                 AuthHandler.handleAuthError(error);

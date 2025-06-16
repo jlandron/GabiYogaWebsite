@@ -620,53 +620,20 @@
     <script src="js/admin-dashboard.js" defer></script>
     
     <script>
-        // Load login modal on page load with retry logic
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Function to load modal with retry
-            async function loadLoginModalWithRetry(maxRetries = 3) {
-                let retries = 0;
-                
-                while (retries <= maxRetries) {
-                    try {
-                        const response = await fetch('components/login-modal.html', {
-                            cache: 'no-store' // Prevent browser caching
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`Failed to load modal: ${response.statusText}`);
-                        }
-                        
-                        const html = await response.text();
-                        document.getElementById('login-modal-container').innerHTML = html;
-                        
-                        // Initialize login modal after loading
-                        if (typeof initializeLoginModals === 'function') {
-                            initializeLoginModals();
-                        }
-                        
-                        console.log('Login modal loaded successfully');
-                        return;
-                    } catch (error) {
-                        retries++;
-                        console.warn(`Error loading login modal (attempt ${retries}/${maxRetries}):`, error);
-                        
-                        if (retries <= maxRetries) {
-                            // Wait with exponential backoff before retrying
-                            await new Promise(resolve => setTimeout(resolve, 500 * retries));
-                        } else {
-                            console.error('Failed to load login modal after multiple attempts');
-                            // Fall back to a basic implementation or show an error message
-                            document.getElementById('login-modal-container').innerHTML = 
-                                '<div id="login-modal" class="modal" style="display: none;"><div class="modal-content">' +
-                                '<span class="close">&times;</span><h3>Login required</h3>' +
-                                '<p>Please refresh the page or <a href="login.html">click here to login</a>.</p></div></div>';
-                        }
+        // Load login modal on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('components/login-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('login-modal-container').innerHTML = html;
+                    // Initialize login modal after loading
+                    if (typeof initializeLoginModals === 'function') {
+                        initializeLoginModals();
                     }
-                }
-            }
-            
-            // Call the function to load the modal
-            loadLoginModalWithRetry();
+                })
+                .catch(error => {
+                    console.error('Error loading login modal:', error);
+                });
         });
     </script>
 </body>
