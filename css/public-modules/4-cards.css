@@ -235,8 +235,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 320px; /* Fixed height for better predictability */
-    overflow: hidden;
+    min-height: 320px; /* Minimum height, allow growth for content */
     border: 2px solid transparent;
     flex: 1 1 250px;
     min-width: 240px;
@@ -286,10 +285,56 @@
 .private-option .button-container {
     margin-top: auto;
     padding-top: 10px;
-    height: 50px; /* Fixed height for button container */
+    min-height: 50px; /* Minimum height for button container */
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Focus Options Styling */
+.private-option .focus-options {
+    margin: 15px 0;
+    text-align: left;
+}
+
+.private-option .focus-options p {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.private-option .focus-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+    justify-content: center;
+}
+
+.private-option .focus-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    color: #fff;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* Color variations for focus tags */
+.private-option .focus-tag:nth-child(odd) {
+    background-color: #7db3a8; /* Teal/green */
+}
+
+.private-option .focus-tag:nth-child(even) {
+    background-color: #d4a574; /* Orange/tan */
+}
+
+.private-option .focus-tag:nth-child(3n) {
+    background-color: #8b6b47; /* Brown */
 }
 
 /* Workshop Cards */

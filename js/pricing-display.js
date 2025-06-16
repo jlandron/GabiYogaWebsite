@@ -379,13 +379,13 @@ function updateHomepagePrivateSessions(sessionPackages) {
         // Create focus options list
         let focusOptionsHTML = '';
         if (pkg.focus_options && pkg.focus_options.length > 0) {
-            const focusItems = pkg.focus_options.map(option => `<li>${escapeHTML(option)}</li>`).join('');
+            const focusItems = pkg.focus_options.map(option => `<span class="focus-tag">${escapeHTML(option)}</span>`).join('');
             focusOptionsHTML = `
                 <div class="focus-options">
                     <p><strong>Available Focus:</strong></p>
-                    <ul class="focus-list">
+                    <div class="focus-tags">
                         ${focusItems}
-                    </ul>
+                    </div>
                 </div>
             `;
         }

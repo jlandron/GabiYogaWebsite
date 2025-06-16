@@ -166,7 +166,27 @@
     
     .private-option {
         width: 100%;
-        max-width: 300px;
+        max-width: 350px;
+        min-height: auto; /* Remove fixed height on mobile */
+        height: auto; /* Allow natural height expansion */
+    }
+    
+    .private-option .content {
+        padding: 20px;
+    }
+    
+    .private-option .focus-options {
+        margin: 12px 0;
+    }
+    
+    .private-option .focus-tags {
+        gap: 4px;
+        margin: 8px 0;
+    }
+    
+    .private-option .focus-tag {
+        font-size: 0.75rem;
+        padding: 5px 10px;
     }
     
     /* Form adjustments */
@@ -302,5 +322,41 @@
     
     .footer-info p {
         justify-content: center;
+    }
+    
+    /* Private sessions mobile optimization */
+    .private-option {
+        max-width: 320px;
+        min-height: auto;
+        height: auto;
+        overflow: visible; /* Allow content to show */
+    }
+    
+    .private-option .content {
+        padding: 15px;
+    }
+    
+    .private-option .focus-options {
+        margin: 10px 0;
+    }
+    
+    .private-option .focus-options p {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    .private-option .focus-tags {
+        gap: 3px;
+        margin: 6px 0;
+    }
+    
+    .private-option .focus-tag {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .private-option .button-container {
+        min-height: 45px;
+        padding-top: 8px;
     }
 }
