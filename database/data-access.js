@@ -172,7 +172,7 @@ const BookingOperations = {
     try {
       const result = await db.query(`
         SELECT COUNT(*) as count 
-        FROM bookings 
+        FROM class_bookings 
         WHERE date BETWEEN date('now', '-7 days') AND date('now', '+7 days')
         AND status != 'Cancelled'
       `);
@@ -191,26 +191,25 @@ const BookingOperations = {
     try {
       // Revenue from memberships purchased this month
       const membershipResult = await db.query(`
-        SELECT COALESCE(SUM(amount), 0) as total 
-        FROM payments 
-        WHERE payment_date BETWEEN date('now', 'start of month') AND date('now', '+1 day')
-        AND payment_type = 'membership'
+        SELECT COALESCE(SUM(price), 0) as total 
+        FROM memberships 
+        WHERE created_at >= date('now', 'start of month') AND created_at <= date('now')
       `);
       
       // Revenue from workshop registrations this month
       const workshopResult = await db.query(`
-        SELECT COALESCE(SUM(amount), 0) as total 
-        FROM payments 
-        WHERE payment_date BETWEEN date('now', 'start of month') AND date('now', '+1 day')
-        AND payment_type = 'workshop'
+        SELECT COALESCE(SUM(amount_paid), 0) as total 
+        FROM workshop_registrations 
+        WHERE registration_date >= date('now', 'start of month') AND registration_date <= date('now')
+        AND payment_status = 'Paid'
       `);
       
       // Revenue from private sessions this month
       const sessionResult = await db.query(`
-        SELECT COALESCE(SUM(amount), 0) as total 
-        FROM payments 
-        WHERE payment_date BETWEEN date('now', 'start of month') AND date('now', '+1 day')
-        AND payment_type = 'private_session'
+        SELECT COALESCE(SUM(price), 0) as total 
+        FROM private_sessions 
+        WHERE created_at >= date('now', 'start of month') AND created_at <= date('now')
+        AND payment_status = 'Paid'
       `);
       
       const membershipRevenue = membershipResult[0]?.total || 0;
@@ -237,9 +236,9 @@ const BookingOperations = {
           b.date,
           c.start_time,
           b.status
-        FROM bookings b
+        FROM class_bookings b
         JOIN users u ON b.user_id = u.user_id
-        JOIN classes c ON b.class_id = c.class_id
+        JOIN class_schedules c ON b.class_id = c.class_id
         WHERE b.date >= date('now', '-3 days')
         ORDER BY b.date, c.start_time
         LIMIT 10
@@ -266,9 +265,9 @@ const BookingOperations = {
           c.start_time,
           b.status,
           b.created_at
-        FROM bookings b
+        FROM class_bookings b
         JOIN users u ON b.user_id = u.user_id
-        JOIN classes c ON b.class_id = c.class_id
+        JOIN class_schedules c ON b.class_id = c.class_id
         ORDER BY b.date DESC, c.start_time
       `);
       
@@ -543,7 +542,7 @@ const ClassOperations = {
           capacity,
           description,
           active
-        FROM classes
+        FROM class_schedules
         ORDER BY day_of_week, start_time
       `);
       
@@ -572,7 +571,7 @@ const ClassOperations = {
           capacity,
           description,
           active
-        FROM classes
+        FROM class_schedules
         WHERE class_id = ?
       `, [classId]);
       
