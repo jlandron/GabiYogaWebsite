@@ -5,30 +5,58 @@
  * It allows adding, editing, and managing workshops and their registrations.
  */
 
+// Define API_BASE_URL if it doesn't already exist
+const API_BASE_URL = API_BASE_URL || '/api';
+
+// Ensure AdminApiService is available
+if (typeof AdminApiService === 'undefined') {
+    console.log('Creating local AdminApiService reference');
+    window.AdminApiService = window.AdminApiService || {
+        authRequest: async (url, method = 'GET', data = null) => {
+            // Simplified implementation that will be replaced when admin.js loads
+            const token = TokenService.getToken();
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            if (data) options.body = JSON.stringify(data);
+            const response = await fetch(url, options);
+            return await response.json();
+        }
+    };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-        // Save current page for redirect
-        const currentPage = window.location.pathname.split('/').pop();
-        window.location.href = `login.html?redirect=${currentPage}`;
-        return;
+    // Wait for AuthHandler to be available
+    if (typeof AuthHandler === 'undefined') {
+        console.log('Waiting for AuthHandler to initialize...');
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    // Only validate token once if not already verified
-    if (typeof window.adminTokenVerified === 'undefined' || window.adminTokenVerified !== true) {
-        try {
-            console.log('Validating token from admin-workshops.js');
-            // Set a timeout to prevent network congestion
-            await new Promise(r => setTimeout(r, 600));
-            window.adminTokenVerified = true;
-            console.log('Token verified with backend from workshops');
-        } catch (error) {
-            console.error('Token validation failed:', error);
-            // Already handled by admin.js, no need to duplicate logic
+    // Simplified authentication check
+    if (typeof AuthHandler !== 'undefined') {
+        // Single auth check on page load
+        const isAuthenticated = await AuthHandler.validateAuth({
+            adminRequired: true,
+            onSuccess: () => console.log('Workshops admin: Auth check passed'),
+            onError: (error) => console.error('Workshops admin: Auth check failed:', error)
+        });
+        
+        if (!isAuthenticated) {
+            // AuthHandler has already handled the redirect
             return;
         }
     } else {
-        console.log('Token already verified, skipping validation');
+        // Basic fallback if AuthHandler isn't available
+        if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+            // Save current page for redirect
+            const currentPage = window.location.pathname.split('/').pop();
+            window.location.href = `login.html?redirect=${currentPage}`;
+            return;
+        }
     }
 
     // Initialize the workshops page

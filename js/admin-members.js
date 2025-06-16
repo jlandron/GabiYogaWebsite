@@ -3,27 +3,64 @@
  * This file handles the display and interaction with member data for the admin interface
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Check if user is logged in and is admin (from admin.js)
-  if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    // Save current page for redirect
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
-    return;
-  }
+// Define API_BASE_URL if it doesn't already exist
+const API_BASE_URL = API_BASE_URL || '/api';
 
-  // Check token validity with backend using AdminApiService
-  try {
-    await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-    console.log('Token verified with backend');
-  } catch (error) {
-    console.error('Token validation failed:', error);
-    alert('Your session has expired. Please log in again.');
-    UserService.logout();
-    // Save current page for redirect
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
-    return;
+// Ensure AdminApiService is available
+if (typeof AdminApiService === 'undefined') {
+    console.log('Creating local AdminApiService reference');
+    window.AdminApiService = window.AdminApiService || {
+        authRequest: async (url, method = 'GET', data = null) => {
+            // Simplified implementation that will be replaced when admin.js loads
+            const token = TokenService.getToken();
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            if (data) options.body = JSON.stringify(data);
+            const response = await fetch(url, options);
+            return await response.json();
+        },
+        getMembers: async () => {
+            return AdminApiService.authRequest('/api/admin/members');
+        },
+        getMemberById: async (memberId) => {
+            return AdminApiService.authRequest(`/api/admin/members/${memberId}`);
+        }
+    };
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for AuthHandler to be available
+  if (typeof AuthHandler === 'undefined') {
+    console.log('Waiting for AuthHandler to initialize...');
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  // Simplified authentication check
+  if (typeof AuthHandler !== 'undefined') {
+    // Single auth check on page load
+    const isAuthenticated = await AuthHandler.validateAuth({
+      adminRequired: true,
+      onSuccess: () => console.log('Members admin: Auth check passed'),
+      onError: (error) => console.error('Members admin: Auth check failed:', error)
+    });
+    
+    if (!isAuthenticated) {
+      // AuthHandler has already handled the redirect
+      return;
+    }
+  } else {
+    // Basic fallback if AuthHandler isn't available
+    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+      // Save current page for redirect
+      const currentPage = window.location.pathname.split('/').pop();
+      window.location.href = `login.html?redirect=${currentPage}`;
+      return;
+    }
   }
 
   try {

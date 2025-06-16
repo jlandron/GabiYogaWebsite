@@ -3,8 +3,10 @@
  * Handles admin functionality and database interactions
  */
 
-// Use API_BASE_URL from account.js which loads before this script
-// Additional admin-specific endpoints (extending the ones from account.js)
+// Define API_BASE_URL if it doesn't already exist - ensure this is always available
+const API_BASE_URL = '/api';
+
+// Additional admin-specific endpoints
 const ADMIN_API_ENDPOINTS = {
   // Member endpoints
   members: `${API_BASE_URL}/admin/members`,

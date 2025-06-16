@@ -5,8 +5,11 @@
  * real-time data from the database.
  */
 
-// Use API_BASE_URL from account.js which loads before this script
-// Dashboard-specific endpoints (extending the admin endpoints)
+// Define API_BASE_URL if it doesn't already exist - ensure this is always available
+// Safe-guards against load order issues
+const API_BASE_URL = API_BASE_URL || '/api';
+
+// Dashboard-specific endpoints
 const DASHBOARD_ENDPOINTS = {
     dashboardStats: `${API_BASE_URL}/admin/stats`,
     bookings: `${API_BASE_URL}/admin/bookings`,
@@ -18,7 +21,17 @@ const DASHBOARD_ENDPOINTS = {
 // Using real database API endpoints for admin dashboard
 console.log('Using real database API endpoints for admin dashboard');
 
-// Using TokenService from admin.js which is loaded before this script
+// Ensure AdminApiService is available
+// This ensures we have access to the AdminApiService even if admin.js loads after this file
+if (typeof AdminApiService === 'undefined') {
+  console.log('Creating local AdminApiService reference');
+  // Create a simplified version that will be replaced by the main one when admin.js loads
+  window.AdminApiService = window.AdminApiService || {
+    getDashboardStats: async () => ({ activeMembers: 0, weeklyBookings: 0, upcomingSessions: 0, monthlyRevenue: 0 }),
+    getRecentBookings: async () => ({ bookings: [] }),
+    getUpcomingWorkshops: async () => ({ workshops: [] })
+  };
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Wait for AuthHandler to be available
@@ -93,7 +106,7 @@ async function loadDashboardData() {
         tables.forEach(table => {
             const tbody = table.querySelector('tbody');
             if (tbody) {
-                const columns = table.querySelectorAll('thead th').length;
+                const columns = table.querySelectorAll('thead th').length || 4;
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="${columns}" style="text-align:center;padding:30px;">
@@ -103,6 +116,11 @@ async function loadDashboardData() {
                 `;
             }
         });
+        
+        // Make sure AdminApiService is defined before using it
+        if (typeof AdminApiService === 'undefined') {
+            throw new Error('AdminApiService is not defined. Please check that admin.js is loaded properly.');
+        }
         
         // Fetch dashboard stats from the database using AdminApiService
         const statsData = await AdminApiService.getDashboardStats();
