@@ -186,48 +186,9 @@
         </div>
     </div>
 
-    <script>
-        // Debug authentication
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Auth tokens:', {
-                auth_token: localStorage.getItem('auth_token'),
-                authToken: localStorage.getItem('authToken')
-            });
-            console.log('User info:', localStorage.getItem('user_info'));
-            
-            // Add error handling to fetch operations
-            const originalFetch = window.fetch;
-            window.fetch = async function(url, options) {
-                try {
-                    const response = await originalFetch(url, options);
-                    const clone = response.clone();
-                    
-                    // Try to parse as JSON for debugging
-                    clone.text().then(text => {
-                        try {
-                            const json = JSON.parse(text);
-                            console.log(`API Response ${url}:`, json);
-                        } catch (e) {
-                            console.log(`API Response ${url}:`, text);
-                        }
-                    }).catch(err => {
-                        console.error('Error reading response:', err);
-                    });
-                    
-                    return response;
-                } catch (error) {
-                    console.error('Fetch error:', error);
-                    throw error;
-                }
-            };
-        });
-    </script>
-    <script>
-        // Check if API_BASE_URL is already defined to avoid conflicts
-        if (typeof API_BASE_URL === 'undefined') {
-            const API_BASE_URL = '/api';
-        }
-    </script>
+    <script src="js/script.js"></script>
+    <script src="js/account.js"></script>  
+    <script src="js/login-modal.js"></script>
     <script src="js/api.js"></script>
     <script src="js/admin-sidebar-template.js"></script>
     <script src="js/admin-sidebar.js"></script>
