@@ -21,32 +21,40 @@ console.log('Using real database API endpoints for admin dashboard');
 // Using TokenService from admin.js which is loaded before this script
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check if user is logged in and is admin (from admin.js)
-  if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    // Save current page for redirect
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
-    return;
+  // Wait for AuthHandler to be available
+  if (typeof AuthHandler === 'undefined') {
+    console.log('Waiting for AuthHandler to initialize...');
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
-
-  // Only validate token once if not already verified
-  if (typeof window.adminTokenVerified === 'undefined' || window.adminTokenVerified !== true) {
-    try {
-      console.log('Validating token from admin-dashboard.js');
-      // Set a timeout to prevent network congestion
-      await new Promise(r => setTimeout(r, 500));
-      window.adminTokenVerified = true;
-      console.log('Token verified with backend from dashboard');
-    } catch (error) {
-      console.error('Token validation failed:', error);
-      // Already handled by admin.js, no need to duplicate logic
-      return;
+  
+  // Use the centralized AuthHandler for authentication to avoid duplicate validations
+  if (typeof AuthHandler !== 'undefined') {
+    // Skip validation if token is already validated
+    if (window.tokenValidated !== true) {
+      const isAuthenticated = await AuthHandler.validateAuth({
+        adminRequired: true,
+        onSuccess: () => console.log('Admin dashboard: Authentication validated via AuthHandler'),
+        onError: (error) => console.error('Admin dashboard: Authentication error via AuthHandler:', error)
+      });
+      
+      if (!isAuthenticated) {
+        // AuthHandler has already handled the redirect
+        return;
+      }
+    } else {
+      console.log('Token already validated, proceeding with dashboard initialization');
     }
   } else {
-    console.log('Token already verified, skipping validation');
+    // Fallback to basic check - no network calls
+    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+      console.log('User is not logged in or not admin, redirecting');
+      const currentPage = window.location.pathname.split('/').pop();
+      window.location.href = `login.html?redirect=${currentPage}`;
+      return;
+    }
   }
 
-  // Initialize dashboard data
+  // Initialize dashboard data after proper authentication
   await loadDashboardData();
 
     // Setup refresh button
@@ -100,19 +108,8 @@ async function loadDashboardData() {
             }
         });
         
-        // Fetch dashboard stats from the database
-        const statsResponse = await fetch(DASHBOARD_ENDPOINTS.dashboardStats, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${TokenService.getToken()}`
-            }
-        });
-        
-        if (!statsResponse.ok) {
-            throw new Error('Failed to fetch dashboard statistics');
-        }
-        
-        const statsData = await statsResponse.json();
+        // Fetch dashboard stats from the database using AdminApiService
+        const statsData = await AdminApiService.getDashboardStats();
         
         // Update stat cards with real data
         const statCards = document.querySelectorAll('.admin-card');
@@ -171,19 +168,8 @@ async function loadRecentBookings() {
         const tbody = bookingsTable.querySelector('tbody');
         if (!tbody) return;
         
-        // Fetch recent bookings from the database
-        const response = await fetch(`${DASHBOARD_ENDPOINTS.bookings}?recent=true`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${TokenService.getToken()}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch recent bookings');
-        }
-        
-        const data = await response.json();
+        // Fetch recent bookings from the database using AdminApiService
+        const data = await AdminApiService.getRecentBookings();
         const bookings = data.bookings || [];
         
         if (bookings.length === 0) {
@@ -277,19 +263,8 @@ async function loadUpcomingWorkshops() {
         const tbody = workshopsTable.querySelector('tbody');
         if (!tbody) return;
         
-        // Fetch upcoming workshops from the database
-        const response = await fetch(`${DASHBOARD_ENDPOINTS.workshops}?upcoming=true`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${TokenService.getToken()}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch upcoming workshops');
-        }
-        
-        const data = await response.json();
+        // Fetch upcoming workshops from the database using AdminApiService
+        const data = await AdminApiService.getUpcomingWorkshops();
         const workshops = data.workshops || [];
         
         if (workshops.length === 0) {

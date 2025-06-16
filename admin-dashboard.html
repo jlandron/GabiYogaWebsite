@@ -607,13 +607,17 @@
     <div id="login-modal-container"></div>
 
     <script src="js/script.js"></script>
+    <!-- Load auth-handler first with defer=false to ensure it's available before other scripts -->
     <script src="js/auth-handler.js"></script>
-    <script src="js/account.js"></script>
-    <script src="js/login-modal.js"></script>
+    <!-- Wait for auth-handler before loading account.js -->
+    <script src="js/account.js" defer></script>
+    <script src="js/login-modal.js" defer></script>
+    <!-- Load admin.js after auth-handler but before dashboard-specific scripts -->
     <script src="js/admin.js"></script>
-    <script src="js/admin-sidebar-template.js"></script>
-    <script src="js/admin-sidebar.js"></script>
-    <script src="js/admin-dashboard.js"></script>
+    <script src="js/admin-sidebar-template.js" defer></script>
+    <script src="js/admin-sidebar.js" defer></script>
+    <!-- Load dashboard script last -->
+    <script src="js/admin-dashboard.js" defer></script>
     
     <script>
         // Load login modal on page load
