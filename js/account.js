@@ -237,8 +237,11 @@ const ApiService = {
             return await ApiService.authRequest(API_ENDPOINTS.me);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            // If token is invalid, logout and redirect with current page info
-            if (error.message === 'Invalid token') {
+            // Use AuthHandler to handle invalid tokens consistently
+            if (error.message === 'Invalid token' && typeof AuthHandler !== 'undefined') {
+                AuthHandler.handleAuthError(error);
+            } else if (error.message === 'Invalid token') {
+                // Fallback if AuthHandler is not yet loaded
                 UserService.logout();
                 // Save current page for redirect
                 const currentPage = window.location.pathname.split('/').pop();
@@ -506,9 +509,16 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Clear user info and redirect to homepage
-            UserService.logout();
-            window.location.href = 'index.html';
+            // Use AuthHandler for logout if available
+            if (typeof AuthHandler !== 'undefined') {
+                AuthHandler.logout();
+            } else {
+                // Fallback if AuthHandler is not yet loaded
+                // Save current page for redirect before logout
+                const currentPage = window.location.pathname.split('/').pop();
+                UserService.logout();
+                window.location.href = `login.html?redirect=${currentPage}`;
+            }
         });
     }
     

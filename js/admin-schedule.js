@@ -6,35 +6,52 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn()) {
-        console.log('User not logged in, redirecting to login page');
-        // Save current page for redirect
-        const currentPage = window.location.pathname.split('/').pop();
-        window.location.href = `login.html?redirect=${currentPage}`;
-        return;
-    }
+    // Use the centralized AuthHandler for authentication if available
+    if (typeof AuthHandler !== 'undefined') {
+        const isAuthenticated = await AuthHandler.validateAuth({
+            adminRequired: true,
+            onSuccess: () => console.log('User authenticated as admin via AuthHandler'),
+            onError: (error) => console.error('Authentication error via AuthHandler:', error)
+        });
+        
+        if (!isAuthenticated) {
+            // AuthHandler has already handled the redirect
+            return;
+        }
+    } else {
+        // Fallback to original authentication method if AuthHandler is not available
+        console.warn('AuthHandler not available, using legacy authentication');
+        
+        // Check if user is logged in and is admin
+        if (!UserService.isLoggedIn()) {
+            console.log('User not logged in, redirecting to login page');
+            // Save current page for redirect
+            const currentPage = window.location.pathname.split('/').pop();
+            window.location.href = `login.html?redirect=${currentPage}`;
+            return;
+        }
 
-    if (!UserService.isAdmin()) {
-        console.log('User is not admin, redirecting to dashboard');
-        window.location.href = 'dashboard.html';
-        return;
-    }
+        if (!UserService.isAdmin()) {
+            console.log('User is not admin, redirecting to dashboard');
+            window.location.href = 'dashboard.html';
+            return;
+        }
 
-    console.log('User authenticated as admin, proceeding with schedule builder initialization');
-    
-    // Check token validity with backend using AdminApiService instead of ApiService
-    try {
-        await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-        console.log('Token verified with backend');
-    } catch (error) {
-        console.error('Token validation failed:', error);
-        alert('Your session has expired. Please log in again.');
-        UserService.logout();
-        // Save current page for redirect
-        const currentPage = window.location.pathname.split('/').pop();
-        window.location.href = `login.html?redirect=${currentPage}`;
-        return;
+        console.log('User authenticated as admin, proceeding with schedule builder initialization');
+        
+        // Check token validity with backend using AdminApiService instead of ApiService
+        try {
+            await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
+            console.log('Token verified with backend');
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            alert('Your session has expired. Please log in again.');
+            UserService.logout();
+            // Save current page for redirect
+            const currentPage = window.location.pathname.split('/').pop();
+            window.location.href = `login.html?redirect=${currentPage}`;
+            return;
+        }
     }
 
     // Initialize the schedule builder after confirmed authentication
