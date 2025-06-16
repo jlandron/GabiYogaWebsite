@@ -5,8 +5,8 @@
  * real-time data from the database.
  */
 
-// API endpoints - Using API_BASE_URL from admin.js
-// Additional dashboard-specific endpoints
+// Use API_BASE_URL from account.js which loads before this script
+// Dashboard-specific endpoints (extending the admin endpoints)
 const DASHBOARD_ENDPOINTS = {
     dashboardStats: `${API_BASE_URL}/admin/stats`,
     bookings: `${API_BASE_URL}/admin/bookings`,

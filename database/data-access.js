@@ -7,7 +7,17 @@
 
 const db = require('./db-config');
 const bcrypt = require('bcryptjs');
-const { getDatetimeFunction } = require('../utils/db-helper');
+const { 
+  getDatetimeFunction,
+  getCurrentDateFunction,
+  getDateSubtractFunction,
+  getDateAddFunction,
+  getConcatFunction,
+  getWeeklyDateRange,
+  getMonthlyDateRange,
+  getFutureDateComparison,
+  getBooleanValue
+} = require('../utils/db-helper');
 
 /**
  * Member operations for user management
@@ -23,7 +33,7 @@ const MemberOperations = {
         FROM users 
         LEFT JOIN memberships ON users.user_id = memberships.user_id 
         WHERE users.role = 'member' 
-        AND (memberships.end_date IS NULL OR memberships.end_date > CURDATE() 
+        AND (memberships.end_date IS NULL OR memberships.end_date > ${getCurrentDateFunction()} 
           OR memberships.classes_remaining > 0)
       `);
       
@@ -58,7 +68,7 @@ const MemberOperations = {
             classes_remaining,
             auto_renew
           FROM memberships
-          WHERE user_id = ? AND (end_date IS NULL OR end_date > date('now') OR classes_remaining > 0)
+          WHERE user_id = ? AND (end_date IS NULL OR end_date > ${getCurrentDateFunction()} OR classes_remaining > 0)
           ORDER BY start_date DESC
           LIMIT 1
         `, [member.user_id]);
@@ -173,7 +183,7 @@ const BookingOperations = {
       const result = await db.query(`
         SELECT COUNT(*) as count 
         FROM class_bookings 
-        WHERE date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        WHERE ${getWeeklyDateRange('date')}
         AND status != 'Cancelled'
       `);
       
@@ -193,14 +203,14 @@ const BookingOperations = {
       const membershipResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM memberships 
-        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+        WHERE ${getMonthlyDateRange('created_at')}
       `);
       
       // Revenue from workshop registrations this month
       const workshopResult = await db.query(`
         SELECT COALESCE(SUM(amount_paid), 0) as total 
         FROM workshop_registrations 
-        WHERE registration_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND registration_date <= CURDATE()
+        WHERE ${getMonthlyDateRange('registration_date')}
         AND payment_status = 'Paid'
       `);
       
@@ -208,7 +218,7 @@ const BookingOperations = {
       const sessionResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM private_sessions 
-        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+        WHERE ${getMonthlyDateRange('created_at')}
         AND payment_status = 'Paid'
       `);
       
@@ -231,7 +241,7 @@ const BookingOperations = {
       const bookings = await db.query(`
         SELECT 
           b.booking_id,
-          CONCAT(u.first_name, ' ', u.last_name) as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           c.name as class_name,
           b.date,
           c.start_time,
@@ -239,7 +249,7 @@ const BookingOperations = {
         FROM class_bookings b
         JOIN users u ON b.user_id = u.user_id
         JOIN class_schedules c ON b.class_id = c.class_id
-        WHERE b.date >= DATE_SUB(CURDATE(), INTERVAL 3 DAY)
+        WHERE b.date >= ${getDateSubtractFunction(3)}
         ORDER BY b.date, c.start_time
         LIMIT 10
       `);
@@ -259,7 +269,7 @@ const BookingOperations = {
       const bookings = await db.query(`
         SELECT 
           b.booking_id,
-          CONCAT(u.first_name, ' ', u.last_name) as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           c.name as class_name,
           b.date,
           c.start_time,
@@ -815,7 +825,7 @@ const WorkshopOperations = {
           w.active,
           (SELECT COUNT(*) FROM workshop_registrations wr WHERE wr.workshop_id = w.workshop_id) as registration_count
         FROM workshops w
-        WHERE w.date >= date('now')
+        WHERE w.date >= ${getCurrentDateFunction()}
         ORDER BY w.date, w.start_time
         LIMIT 10
       `);
@@ -1053,14 +1063,14 @@ const WorkshopOperations = {
       const membershipResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM memberships 
-        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+        WHERE ${getMonthlyDateRange('created_at')}
       `);
       
       // Revenue from workshop registrations this month
       const workshopResult = await db.query(`
         SELECT COALESCE(SUM(amount_paid), 0) as total 
         FROM workshop_registrations 
-        WHERE registration_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND registration_date <= CURDATE()
+        WHERE ${getMonthlyDateRange('registration_date')}
         AND payment_status = 'Paid'
       `);
       
@@ -1068,7 +1078,7 @@ const WorkshopOperations = {
       const sessionResult = await db.query(`
         SELECT COALESCE(SUM(price), 0) as total 
         FROM private_sessions 
-        WHERE created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND created_at <= CURDATE()
+        WHERE ${getMonthlyDateRange('created_at')}
         AND payment_status = 'Paid'
       `);
       
@@ -1174,7 +1184,7 @@ const RetreatOperations = {
           active,
           (SELECT COUNT(*) FROM retreat_registrations WHERE retreat_id = r.retreat_id) as registration_count
         FROM retreats r
-        WHERE start_date >= date('now')
+        WHERE start_date >= ${getCurrentDateFunction()}
         AND active = 1
         ORDER BY start_date
         LIMIT 10
@@ -1206,7 +1216,7 @@ const RetreatOperations = {
           image_url,
           active
         FROM retreats
-        WHERE start_date >= date('now')
+        WHERE start_date >= ${getCurrentDateFunction()}
         AND active = 1
         ORDER BY start_date
         LIMIT 3
@@ -1450,7 +1460,7 @@ const PrivateSessionOperations = {
       const result = await db.query(`
         SELECT COUNT(*) as count 
         FROM private_sessions 
-        WHERE date >= CURDATE()
+        WHERE date >= ${getCurrentDateFunction()}
         AND status != 'Cancelled'
       `);
       
@@ -1515,7 +1525,7 @@ const PrivateSessionOperations = {
       const sessions = await db.query(`
         SELECT 
           ps.session_id,
-          u.first_name || ' ' || u.last_name as user_name,
+          ${getConcatFunction(['u.first_name', "' '", 'u.last_name'])} as user_name,
           u.email as user_email,
           u.phone as user_phone,
           ps.date,
@@ -1526,7 +1536,7 @@ const PrivateSessionOperations = {
           ps.status
         FROM private_sessions ps
         JOIN users u ON ps.user_id = u.user_id
-        WHERE ps.date >= date('now', '-7 days')
+        WHERE ps.date >= ${getDateSubtractFunction(7)}
         ORDER BY ps.date, ps.start_time
       `);
       

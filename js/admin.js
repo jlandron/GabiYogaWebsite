@@ -3,42 +3,37 @@
  * Handles admin functionality and database interactions
  */
 
-// API endpoints - use existing global or default
-window.API_BASE_URL = window.API_BASE_URL || '/api';
-const API_ENDPOINTS = {
-  // Auth endpoints
-  me: `${window.API_BASE_URL}/auth/me`,
-  
+// Use API_BASE_URL from account.js which loads before this script
+// Additional admin-specific endpoints (extending the ones from account.js)
+const ADMIN_API_ENDPOINTS = {
   // Member endpoints
-  members: `${window.API_BASE_URL}/admin/members`,
-  memberById: (id) => `${window.API_BASE_URL}/admin/members/${id}`,
+  members: `${API_BASE_URL}/admin/members`,
+  memberById: (id) => `${API_BASE_URL}/admin/members/${id}`,
   
   // Class endpoints
-  classes: `${window.API_BASE_URL}/admin/classes`,
-  classById: (id) => `${window.API_BASE_URL}/admin/classes/${id}`,
-  classTemplates: `${window.API_BASE_URL}/admin/class-templates`,
-  classTemplateById: (id) => `${window.API_BASE_URL}/admin/class-templates/${id}`,
+  classes: `${API_BASE_URL}/admin/classes`,
+  classById: (id) => `${API_BASE_URL}/admin/classes/${id}`,
+  classTemplates: `${API_BASE_URL}/admin/class-templates`,
+  classTemplateById: (id) => `${API_BASE_URL}/admin/class-templates/${id}`,
   
   // Booking endpoints
-  bookings: `${window.API_BASE_URL}/admin/bookings`,
-  bookingById: (id) => `${window.API_BASE_URL}/admin/bookings/${id}`,
+  bookings: `${API_BASE_URL}/admin/bookings`,
+  bookingById: (id) => `${API_BASE_URL}/admin/bookings/${id}`,
   
   // Workshop endpoints
-  workshops: `${window.API_BASE_URL}/admin/workshops`,
-  workshopById: (id) => `${window.API_BASE_URL}/admin/workshops/${id}`,
-  workshopRegistrations: `${window.API_BASE_URL}/admin/workshop-registrations`,
+  workshops: `${API_BASE_URL}/admin/workshops`,
+  workshopById: (id) => `${API_BASE_URL}/admin/workshops/${id}`,
+  workshopRegistrations: `${API_BASE_URL}/admin/workshop-registrations`,
   
   // Private session endpoints
-  privateSessions: `${window.API_BASE_URL}/admin/private-sessions`,
-  privateSessionById: (id) => `${window.API_BASE_URL}/admin/private-sessions/${id}`,
+  privateSessions: `${API_BASE_URL}/admin/private-sessions`,
+  privateSessionById: (id) => `${API_BASE_URL}/admin/private-sessions/${id}`,
   
   // Stats endpoint
-  dashboardStats: `${window.API_BASE_URL}/admin/stats`
+  dashboardStats: `${API_BASE_URL}/admin/stats`
 };
 
-// TokenService is already declared in account.js which loads before this script
-
-// UserService is already declared in account.js which loads before this script
+// TokenService and UserService are available from account.js which loads before this script
 
 // API service for admin operations
 const AdminApiService = {
@@ -87,21 +82,21 @@ const AdminApiService = {
    * Get dashboard statistics
    */
   getDashboardStats: async () => {
-    return AdminApiService.authRequest(API_ENDPOINTS.dashboardStats);
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.dashboardStats);
   },
   
   /**
    * Get all members
    */
   getMembers: async () => {
-    return AdminApiService.authRequest(API_ENDPOINTS.members);
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.members);
   },
   
   /**
    * Get a member by ID
    */
   getMemberById: async (memberId) => {
-    return AdminApiService.authRequest(API_ENDPOINTS.memberById(memberId));
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.memberById(memberId));
   },
   
   /**
@@ -109,7 +104,7 @@ const AdminApiService = {
    */
   updateMember: async (memberId, memberData) => {
     return AdminApiService.authRequest(
-      API_ENDPOINTS.memberById(memberId),
+      ADMIN_API_ENDPOINTS.memberById(memberId),
       'PUT',
       memberData
     );
@@ -119,7 +114,7 @@ const AdminApiService = {
    * Get all class templates
    */
   getClassTemplates: async () => {
-    const response = await AdminApiService.authRequest(API_ENDPOINTS.classTemplates);
+    const response = await AdminApiService.authRequest(ADMIN_API_ENDPOINTS.classTemplates);
     return response.templates || [];
   },
   
@@ -128,7 +123,7 @@ const AdminApiService = {
    */
   createClassTemplate: async (templateData) => {
     return AdminApiService.authRequest(
-      API_ENDPOINTS.classTemplates,
+      ADMIN_API_ENDPOINTS.classTemplates,
       'POST',
       templateData
     );
@@ -138,7 +133,7 @@ const AdminApiService = {
    * Get all classes
    */
   getClasses: async () => {
-    const response = await AdminApiService.authRequest(API_ENDPOINTS.classes);
+    const response = await AdminApiService.authRequest(ADMIN_API_ENDPOINTS.classes);
     return response.classes || [];
   },
   
@@ -147,7 +142,7 @@ const AdminApiService = {
    */
   createClass: async (classData) => {
     return AdminApiService.authRequest(
-      API_ENDPOINTS.classes,
+      ADMIN_API_ENDPOINTS.classes,
       'POST',
       classData
     );
@@ -158,7 +153,7 @@ const AdminApiService = {
    */
   updateClass: async (classId, classData) => {
     return AdminApiService.authRequest(
-      API_ENDPOINTS.classById(classId),
+      ADMIN_API_ENDPOINTS.classById(classId),
       'PUT',
       classData
     );
@@ -168,35 +163,35 @@ const AdminApiService = {
    * Get recent bookings
    */
   getRecentBookings: async () => {
-    return AdminApiService.authRequest(`${API_ENDPOINTS.bookings}?recent=true`);
+    return AdminApiService.authRequest(`${ADMIN_API_ENDPOINTS.bookings}?recent=true`);
   },
   
   /**
    * Get all bookings
    */
   getAllBookings: async () => {
-    return AdminApiService.authRequest(API_ENDPOINTS.bookings);
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.bookings);
   },
   
   /**
    * Get all workshops
    */
   getWorkshops: async () => {
-    return AdminApiService.authRequest(API_ENDPOINTS.workshops);
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.workshops);
   },
   
   /**
    * Get upcoming workshops
    */
   getUpcomingWorkshops: async () => {
-    return AdminApiService.authRequest(`${API_ENDPOINTS.workshops}?upcoming=true`);
+    return AdminApiService.authRequest(`${ADMIN_API_ENDPOINTS.workshops}?upcoming=true`);
   },
   
   /**
    * Get private sessions
    */
   getPrivateSessions: async () => {
-    return AdminApiService.authRequest(API_ENDPOINTS.privateSessions);
+    return AdminApiService.authRequest(ADMIN_API_ENDPOINTS.privateSessions);
   }
 };
 
@@ -1362,7 +1357,7 @@ function addNewClass(timeSlot) {
 function deleteClass(id) {
   if (confirm('Are you sure you want to remove this class from the schedule? This action cannot be undone.')) {
     try {
-      AdminApiService.authRequest(API_ENDPOINTS.classById(id), 'DELETE')
+      AdminApiService.authRequest(ADMIN_API_ENDPOINTS.classById(id), 'DELETE')
         .then(() => {
           showSuccessMessage('Class removed successfully');
           // Reload schedule
