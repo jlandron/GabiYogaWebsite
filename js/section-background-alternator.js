@@ -3,12 +3,19 @@
  * 
  * Alternates section backgrounds between solid color and natural image backgrounds
  * based on the sections that are actually visible.
+ * 
+ * This module is designed to be controlled by the progressive loader instead of
+ * automatically executing on DOMContentLoaded.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for visibility settings to be applied first
-    setTimeout(alternateSectionBackgrounds, 500);
-});
+// Create a global controller that can be called by the progressive loader
+window.sectionBackgroundAlternator = {
+    init: function() {
+        alternateSectionBackgrounds();
+    }
+};
+
+// No longer auto-initialize on DOMContentLoaded - the progressive loader will call init()
 
 /**
  * Apply alternating backgrounds to visible sections

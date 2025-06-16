@@ -4,15 +4,113 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup listener for messages from parent iframe (for admin dashboard view)
+    setupIframeMessaging();
+    
     // Check if user is logged in
     if (!UserService.isLoggedIn()) {
-        window.location.href = 'login.html';
-        return;
+        // Check if we're in an iframe (admin view)
+        if (window.self !== window.top) {
+            // We're in an iframe, wait for auth data from parent
+            console.log("Dashboard loaded in iframe, waiting for auth data...");
+            // Send ready message to parent
+            window.parent.postMessage({
+                type: 'IFRAME_READY'
+            }, '*');
+            return;
+        } else {
+            // Regular view, redirect to login
+            window.location.href = 'login.html';
+            return;
+        }
     }
 
     // Initialize dashboard data and UI
     initializeDashboard();
 });
+
+/**
+ * Setup messaging for iframe communication (admin dashboard view)
+ */
+function setupIframeMessaging() {
+    // Only needed when loaded in an iframe
+    if (window.self === window.top) return;
+    
+    window.addEventListener('message', function(event) {
+        // Process messages from the parent frame
+        if (!event.data || !event.data.type) return;
+        
+        console.log("Dashboard iframe received message:", event.data.type);
+        
+        switch (event.data.type) {
+            case 'AUTH_DATA':
+                handleParentAuthData(event.data);
+                break;
+                
+            // Handle other message types if needed
+        }
+    });
+}
+
+/**
+ * Handle authentication data received from parent frame
+ */
+function handleParentAuthData(data) {
+    try {
+        if (!data.token || !data.user) {
+            console.error("Invalid auth data received from parent");
+            window.parent.postMessage({
+                type: 'IFRAME_AUTH_ERROR',
+                error: 'Invalid authentication data'
+            }, '*');
+            return;
+        }
+        
+        // Store the admin token and user data
+        TokenService.setToken(data.token);
+        UserService.setUser(data.user);
+        
+        console.log("Auth data from parent processed successfully");
+        
+        // Store mock data if provided for admin preview
+        if (data.mockMode && data.mockData) {
+            console.log("Using mock data for dashboard preview");
+            window.mockDashboardData = data.mockData;
+        }
+        
+        // Notify parent that auth was successful
+        window.parent.postMessage({
+            type: 'IFRAME_AUTH_SUCCESS'
+        }, '*');
+        
+        // Initialize dashboard with the admin data
+        initializeDashboard(true);
+        
+        // Add admin view indicator if not already present
+        addAdminViewIndicator();
+        
+    } catch (error) {
+        console.error("Error processing auth data from parent:", error);
+        window.parent.postMessage({
+            type: 'IFRAME_AUTH_ERROR',
+            error: error.message
+        }, '*');
+    }
+}
+
+/**
+ * Add admin view indicator
+ */
+function addAdminViewIndicator() {
+    // Add class to body for styling
+    document.body.classList.add('admin-view-mode');
+    
+    // Update welcome message to indicate admin view
+    const welcomeMessage = document.querySelector('.welcome-message p');
+    if (welcomeMessage) {
+        welcomeMessage.textContent = 'Admin View: Member Dashboard Preview';
+    }
+}
 
 /**
  * Initialize the dashboard with user data
@@ -106,10 +204,24 @@ function showError(message) {
  */
 async function fetchUserData() {
     try {
+        // Check if we're in an iframe with mock data (admin dashboard preview)
+        if (window.self !== window.top && window.mockDashboardData) {
+            console.log("Using mock user data in iframe admin preview");
+            return UserService.getUser();
+        }
+
+        // Normal API request for real data
         const response = await ApiService.authRequest(API_ENDPOINTS.me);
         return response.user;
     } catch (error) {
         console.error('Error fetching user data:', error);
+        
+        // If in iframe, return the user data from local storage as fallback
+        if (window.self !== window.top) {
+            console.log("API error in iframe - falling back to stored user data");
+            return UserService.getUser();
+        }
+        
         return null;
     }
 }
