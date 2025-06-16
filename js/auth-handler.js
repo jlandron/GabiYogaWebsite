@@ -41,8 +41,8 @@ const AuthHandler = {
             // Step 3: Validate token with backend
             try {
                 console.log('AuthHandler: Validating token with backend...');
-                // Use a specific endpoint for token validation to minimize payload
-                const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+                // Use the existing /auth/me endpoint to validate the token
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${TokenService.getToken()}`
@@ -56,7 +56,7 @@ const AuthHandler = {
 
                 const data = await response.json();
                 
-                if (!data.valid) {
+                if (!data.success || !data.user) {
                     throw new Error('Invalid token');
                 }
 
