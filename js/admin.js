@@ -50,9 +50,7 @@ const AdminApiService = {
         console.error('No authentication token found');
         alert('Your session has expired. Please log in again.');
         UserService.logout();
-        // Save current page for redirect
-        const currentPage = window.location.pathname.split('/').pop();
-        window.location.href = `login.html?redirect=${currentPage}`;
+        window.location.href = '/login.html';
         throw new Error('No authentication token found');
       }
       
@@ -84,9 +82,7 @@ const AdminApiService = {
           console.error('Authentication failed (401): Token is invalid or expired');
           alert('Your session has expired. Please log in again.');
           UserService.logout();
-          // Save current page for redirect
-          const currentPage = window.location.pathname.split('/').pop();
-          window.location.href = `login.html?redirect=${currentPage}`;
+          window.location.href = '/login.html';
           throw new Error('Session expired. Please log in again.');
         }
         
@@ -231,19 +227,7 @@ const AdminApiService = {
 document.addEventListener('DOMContentLoaded', async () => {
   // Check if user is logged in and is admin
   if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    // Save the current page as redirect parameter before redirecting to login
-    const currentPage = window.location.pathname.split('/').pop();
-    window.location.href = `login.html?redirect=${currentPage}`;
-    return;
-  }
-  
-  // Validate token with backend immediately on page load
-  try {
-    await AdminApiService.authRequest(`${API_BASE_URL}/auth/me`);
-    console.log('Token verified with backend on page load');
-  } catch (error) {
-    console.error('Token validation failed on page load:', error);
-    // Already handled by the authRequest method, will redirect to login
+    window.location.href = 'login.html';
     return;
   }
   
