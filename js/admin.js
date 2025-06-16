@@ -3,37 +3,37 @@
  * Handles admin functionality and database interactions
  */
 
-// API endpoints
-const API_BASE_URL = '/api';
+// API endpoints - use existing global or default
+window.API_BASE_URL = window.API_BASE_URL || '/api';
 const API_ENDPOINTS = {
   // Auth endpoints
-  me: `${API_BASE_URL}/auth/me`,
+  me: `${window.API_BASE_URL}/auth/me`,
   
   // Member endpoints
-  members: `${API_BASE_URL}/admin/members`,
-  memberById: (id) => `${API_BASE_URL}/admin/members/${id}`,
+  members: `${window.API_BASE_URL}/admin/members`,
+  memberById: (id) => `${window.API_BASE_URL}/admin/members/${id}`,
   
   // Class endpoints
-  classes: `${API_BASE_URL}/admin/classes`,
-  classById: (id) => `${API_BASE_URL}/admin/classes/${id}`,
-  classTemplates: `${API_BASE_URL}/admin/class-templates`,
-  classTemplateById: (id) => `${API_BASE_URL}/admin/class-templates/${id}`,
+  classes: `${window.API_BASE_URL}/admin/classes`,
+  classById: (id) => `${window.API_BASE_URL}/admin/classes/${id}`,
+  classTemplates: `${window.API_BASE_URL}/admin/class-templates`,
+  classTemplateById: (id) => `${window.API_BASE_URL}/admin/class-templates/${id}`,
   
   // Booking endpoints
-  bookings: `${API_BASE_URL}/admin/bookings`,
-  bookingById: (id) => `${API_BASE_URL}/admin/bookings/${id}`,
+  bookings: `${window.API_BASE_URL}/admin/bookings`,
+  bookingById: (id) => `${window.API_BASE_URL}/admin/bookings/${id}`,
   
   // Workshop endpoints
-  workshops: `${API_BASE_URL}/admin/workshops`,
-  workshopById: (id) => `${API_BASE_URL}/admin/workshops/${id}`,
-  workshopRegistrations: `${API_BASE_URL}/admin/workshop-registrations`,
+  workshops: `${window.API_BASE_URL}/admin/workshops`,
+  workshopById: (id) => `${window.API_BASE_URL}/admin/workshops/${id}`,
+  workshopRegistrations: `${window.API_BASE_URL}/admin/workshop-registrations`,
   
   // Private session endpoints
-  privateSessions: `${API_BASE_URL}/admin/private-sessions`,
-  privateSessionById: (id) => `${API_BASE_URL}/admin/private-sessions/${id}`,
+  privateSessions: `${window.API_BASE_URL}/admin/private-sessions`,
+  privateSessionById: (id) => `${window.API_BASE_URL}/admin/private-sessions/${id}`,
   
   // Stats endpoint
-  dashboardStats: `${API_BASE_URL}/admin/stats`
+  dashboardStats: `${window.API_BASE_URL}/admin/stats`
 };
 
 // TokenService is already declared in account.js which loads before this script
