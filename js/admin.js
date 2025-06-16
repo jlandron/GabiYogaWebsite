@@ -41,36 +41,64 @@ const AdminApiService = {
    * Make authenticated requests
    */
   authRequest: async (url, method = 'GET', data = null) => {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${TokenService.getToken()}`
-    };
-
-    const options = {
-      method,
-      headers,
-      credentials: 'include'
-    };
-
-    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      options.body = JSON.stringify(data);
-    }
-
     try {
+      console.log(`Preparing ${method} request to ${url}`);
+      
+      // Check if token exists
+      const token = TokenService.getToken();
+      if (!token) {
+        console.error('No authentication token found');
+        alert('Your session has expired. Please log in again.');
+        UserService.logout();
+        window.location.href = '/login.html';
+        throw new Error('No authentication token found');
+      }
+      
+      console.log('Token exists, preparing request headers');
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const options = {
+        method,
+        headers,
+        credentials: 'include'
+      };
+
+      if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        options.body = JSON.stringify(data);
+      }
+
+      console.log(`Sending ${method} request to ${url}`);
       const response = await fetch(url, options);
       
       if (!response.ok) {
+        console.error(`Request failed with status: ${response.status}`);
+        
         if (response.status === 401) {
           // Handle unauthorized (token expired)
+          console.error('Authentication failed (401): Token is invalid or expired');
+          alert('Your session has expired. Please log in again.');
           UserService.logout();
           window.location.href = '/login.html';
           throw new Error('Session expired. Please log in again.');
         }
         
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'API request failed');
+        let errorMessage = `API request failed with status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error('Error details:', errorData);
+        } catch (jsonError) {
+          console.error('Could not parse error response as JSON');
+        }
+        
+        throw new Error(errorMessage);
       }
       
+      console.log(`Request to ${url} completed successfully`);
       return await response.json();
     } catch (error) {
       console.error('API request error:', error);

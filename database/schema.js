@@ -83,7 +83,7 @@ const createSchema = async () => {
     
     // Classes table (recurring classes on the schedule)
     await db.query(`
-      CREATE TABLE IF NOT EXISTS classes (
+      CREATE TABLE IF NOT EXISTS class_schedules (
         class_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         template_id INTEGER,
         name TEXT NOT NULL,
@@ -103,7 +103,7 @@ const createSchema = async () => {
     
     // Bookings table (specific class instance bookings)
     await db.query(`
-      CREATE TABLE IF NOT EXISTS bookings (
+      CREATE TABLE IF NOT EXISTS class_bookings (
         booking_id INTEGER PRIMARY KEY ${DB_TYPE === 'mysql' ? 'AUTO_INCREMENT' : 'AUTOINCREMENT'},
         user_id INTEGER NOT NULL,
         class_id INTEGER NOT NULL,
@@ -113,7 +113,7 @@ const createSchema = async () => {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
-        FOREIGN KEY (class_id) REFERENCES classes (class_id) ON DELETE CASCADE
+        FOREIGN KEY (class_id) REFERENCES class_schedules (class_id) ON DELETE CASCADE
       )
     `);
     
@@ -405,9 +405,9 @@ const createSchema = async () => {
         { name: 'idx_users_role', table: 'users', columns: 'role' },
         { name: 'idx_memberships_user_id', table: 'memberships', columns: 'user_id' },
         { name: 'idx_memberships_dates', table: 'memberships', columns: 'start_date, end_date' },
-        { name: 'idx_classes_day_time', table: 'classes', columns: 'day_of_week, start_time' },
-        { name: 'idx_bookings_date', table: 'bookings', columns: 'date' },
-        { name: 'idx_bookings_user_id', table: 'bookings', columns: 'user_id' },
+      { name: 'idx_classes_day_time', table: 'class_schedules', columns: 'day_of_week, start_time' },
+      { name: 'idx_bookings_date', table: 'class_bookings', columns: 'date' },
+      { name: 'idx_bookings_user_id', table: 'class_bookings', columns: 'user_id' },
         { name: 'idx_workshops_date', table: 'workshops', columns: 'date' },
         { name: 'idx_workshops_slug', table: 'workshops', columns: 'workshop_slug' },
         { name: 'idx_private_sessions_date', table: 'private_sessions', columns: 'date' },
@@ -434,9 +434,9 @@ const createSchema = async () => {
       await db.query(`CREATE INDEX IF NOT EXISTS idx_users_role ON users (role)`);
       await db.query(`CREATE INDEX IF NOT EXISTS idx_memberships_user_id ON memberships (user_id)`);
       await db.query(`CREATE INDEX IF NOT EXISTS idx_memberships_dates ON memberships (start_date, end_date)`);
-      await db.query(`CREATE INDEX IF NOT EXISTS idx_classes_day_time ON classes (day_of_week, start_time)`);
-      await db.query(`CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings (date)`);
-      await db.query(`CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_classes_day_time ON class_schedules (day_of_week, start_time)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_bookings_date ON class_bookings (date)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON class_bookings (user_id)`);
       await db.query(`CREATE INDEX IF NOT EXISTS idx_workshops_date ON workshops (date)`);
       await db.query(`CREATE INDEX IF NOT EXISTS idx_workshops_slug ON workshops (workshop_slug)`);
       await db.query(`CREATE INDEX IF NOT EXISTS idx_private_sessions_date ON private_sessions (date)`);
@@ -498,10 +498,10 @@ const resetDatabase = async () => {
     await db.query(`DROP TABLE IF EXISTS gallery_images`);
     await db.query(`DROP TABLE IF EXISTS payments`);
     await db.query(`DROP TABLE IF EXISTS workshop_registrations`);
-    await db.query(`DROP TABLE IF EXISTS bookings`);
+    await db.query(`DROP TABLE IF EXISTS class_bookings`);
     await db.query(`DROP TABLE IF EXISTS private_sessions`);
     await db.query(`DROP TABLE IF EXISTS workshops`);
-    await db.query(`DROP TABLE IF EXISTS classes`);
+    await db.query(`DROP TABLE IF EXISTS class_schedules`);
     await db.query(`DROP TABLE IF EXISTS memberships`);
     await db.query(`DROP TABLE IF EXISTS unavailable_dates`);
     await db.query(`DROP TABLE IF EXISTS instructor_availability`);

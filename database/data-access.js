@@ -62,7 +62,7 @@ const MemberOperations = {
         const memberships = await db.query(`
           SELECT 
             membership_id,
-            type,
+            membership_type as type,
             start_date,
             end_date,
             classes_remaining,

@@ -7,12 +7,33 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
+    if (!UserService.isLoggedIn()) {
+        console.log('User not logged in, redirecting to login page');
         window.location.href = 'login.html';
         return;
     }
 
-    // Initialize the schedule builder
+    if (!UserService.isAdmin()) {
+        console.log('User is not admin, redirecting to dashboard');
+        window.location.href = 'dashboard.html';
+        return;
+    }
+
+    console.log('User authenticated as admin, proceeding with schedule builder initialization');
+    
+    // Check token validity with backend
+    try {
+        await ApiService.getCurrentUser();
+        console.log('Token verified with backend');
+    } catch (error) {
+        console.error('Token validation failed:', error);
+        alert('Your session has expired. Please log in again.');
+        UserService.logout();
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Initialize the schedule builder after confirmed authentication
     await initializeScheduleBuilder();
 
     // Setup action buttons
@@ -873,8 +894,25 @@ async function loadWeeklySchedule() {
             </div>
         `;
         
+        console.log('Attempting to fetch classes from API');
         // Use AdminApiService to fetch all classes
-        const classes = await AdminApiService.getClasses();
+        let classes;
+        try {
+            classes = await AdminApiService.getClasses();
+            console.log(`Successfully fetched ${classes.length} classes`);
+        } catch (error) {
+            console.error('Error loading weekly schedule:', error);
+            calendarBody.innerHTML = `
+                <div style="text-align:center;padding:30px;color:#e74c3c;grid-column: 1/-1;">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    Failed to load schedule: ${error.message}
+                    <button class="admin-btn admin-btn-secondary mt-3" onclick="location.reload()">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>
+            `;
+            throw error;
+        }
         
         // Get all unique time slots from the actual classes
         const allTimes = new Set();

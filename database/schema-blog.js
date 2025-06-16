@@ -1,15 +1,16 @@
-!
+
 /**
  * Schema definition for blog tables
  * This file provides functions to initialize and manage blog tables
  */
 
-const { query } = require('./db-config');
+var dbConfig = require('./db-config');
+var query = dbConfig.query;
 
 // Get the DB_TYPE from process.env or based on NODE_ENV
-const NODE_ENV = process.env.NODE_ENV || 'development';
-const DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
-const DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
+var NODE_ENV = process.env.NODE_ENV || 'development';
+var DEFAULT_DB_TYPE = NODE_ENV === 'production' ? 'mysql' : 'sqlite';
+var DB_TYPE = process.env.DB_TYPE || DEFAULT_DB_TYPE;
 
 /**
  * Initialize blog tables
