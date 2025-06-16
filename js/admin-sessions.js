@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Use centralized authentication handler for admin pages
+    const authenticated = await AuthHandler.initAdminPage();
+    if (!authenticated) {
+        return; // AuthHandler will have already redirected as needed
+    }
+    
     // Initialize session management
     initializeSessionsPage();
 });

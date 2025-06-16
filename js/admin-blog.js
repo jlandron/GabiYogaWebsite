@@ -3,7 +3,13 @@
  * Handles the blog posts management in the admin area
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Use centralized authentication handler for admin pages
+    const authenticated = await AuthHandler.initAdminPage();
+    if (!authenticated) {
+        return; // AuthHandler will have already redirected as needed
+    }
+    
     // Initialize the blog manager
     const blogManager = new BlogManager();
     blogManager.init();

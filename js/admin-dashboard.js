@@ -21,10 +21,10 @@ console.log('Using real database API endpoints for admin dashboard');
 // Using TokenService from admin.js which is loaded before this script
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check if user is logged in and is admin (from admin.js)
-  if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-    window.location.href = 'login.html';
-    return;
+  // Use centralized authentication handler for admin pages
+  const authenticated = await AuthHandler.initAdminPage();
+  if (!authenticated) {
+    return; // AuthHandler will have already redirected as needed
   }
 
     // Initialize dashboard data

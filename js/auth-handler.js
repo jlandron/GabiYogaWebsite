@@ -138,5 +138,31 @@ const AuthHandler = {
      */
     isTokenValidated: function() {
         return window.tokenValidated === true;
+    },
+    
+    /**
+     * Initialize admin pages with proper authentication
+     * @returns {Promise<boolean>} - Whether initialization was successful
+     */
+    initAdminPage: async function() {
+        console.log('AuthHandler: Initializing admin page');
+        
+        // Check if already validated in this session
+        if (this.isTokenValidated()) {
+            console.log('AuthHandler: Token already validated in this session');
+            return true;
+        }
+        
+        // Validate with admin required
+        return await this.validateAuth({
+            adminRequired: true,
+            onSuccess: () => {
+                console.log('AuthHandler: Admin page initialized successfully');
+            },
+            onError: (error) => {
+                console.error('AuthHandler: Admin page initialization failed:', error);
+                this.handleAuthError(error);
+            }
+        });
     }
 };

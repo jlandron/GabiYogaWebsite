@@ -6,32 +6,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn()) {
-        console.log('User not logged in, redirecting to login page');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    if (!UserService.isAdmin()) {
-        console.log('User is not admin, redirecting to dashboard');
-        window.location.href = 'dashboard.html';
-        return;
+    // Use centralized authentication handler for admin pages
+    const authenticated = await AuthHandler.initAdminPage();
+    if (!authenticated) {
+        return; // AuthHandler will have already redirected as needed
     }
 
     console.log('User authenticated as admin, proceeding with schedule builder initialization');
-    
-    // Check token validity with backend
-    try {
-        await ApiService.getCurrentUser();
-        console.log('Token verified with backend');
-    } catch (error) {
-        console.error('Token validation failed:', error);
-        alert('Your session has expired. Please log in again.');
-        UserService.logout();
-        window.location.href = 'login.html';
-        return;
-    }
 
     // Initialize the schedule builder after confirmed authentication
     await initializeScheduleBuilder();
