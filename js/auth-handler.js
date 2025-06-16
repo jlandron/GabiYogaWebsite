@@ -3,9 +3,6 @@
  * Centralizes authentication logic for all secure pages
  */
 
-// Maximum retries for API calls
-const MAX_RETRIES = 2;
-
 // Use the existing TokenService and UserService from account.js
 const AuthHandler = {
     /**
@@ -41,79 +38,32 @@ const AuthHandler = {
                 return false;
             }
 
-            // Step 3: Validate token with backend - with retry logic
+            // Step 3: Validate token with backend
             try {
                 console.log('AuthHandler: Validating token with backend...');
-                
-                // Skip validation if we've already validated this token during this page load
-                if (window.tokenValidated === true) {
-                    console.log('AuthHandler: Token already validated in this session');
-                    
-                    // Call success callback if provided
-                    if (onSuccess && typeof onSuccess === 'function') {
-                        onSuccess();
-                    }
-                    
-                    return true;
+                // Use the existing /auth/me endpoint to validate the token
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${TokenService.getToken()}`
+                    },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token validation failed: ${response.statusText}`);
                 }
+
+                const data = await response.json();
                 
-                // Implement retry logic for network errors
-                let retries = 0;
-                let success = false;
-                let lastError = null;
-                
-                while (retries <= MAX_RETRIES && !success) {
-                    try {
-                        // Use the existing /auth/me endpoint to validate the token
-                        const response = await fetch(`${API_BASE_URL}/auth/me`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${TokenService.getToken()}`
-                            },
-                            credentials: 'include',
-                            // Add cache control to prevent caching
-                            cache: 'no-store'
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`Token validation failed: ${response.statusText}`);
-                        }
-                        
-                        const data = await response.json();
-                        
-                        if (!data.success || !data.user) {
-                            throw new Error('Invalid token');
-                        }
-                        
-                        // If we get here, validation was successful
-                        console.log('AuthHandler: Token validated successfully');
-                        success = true;
-                        
-                        // Set global flag to prevent redundant validations
-                        window.tokenValidated = true;
-                        
-                        // Update user data in local storage if needed
-                        if (data.user) {
-                            UserService.setUser(data.user);
-                        }
-                        
-                        break; // Exit retry loop on success
-                    } catch (retryError) {
-                        lastError = retryError;
-                        retries++;
-                        
-                        if (retries <= MAX_RETRIES) {
-                            console.warn(`AuthHandler: Retry ${retries}/${MAX_RETRIES} after error: ${retryError.message}`);
-                            // Wait briefly before retry
-                            await new Promise(resolve => setTimeout(resolve, 500 * retries));
-                        }
-                    }
+                if (!data.success || !data.user) {
+                    throw new Error('Invalid token');
                 }
+
+                console.log('AuthHandler: Token validated successfully');
                 
-                if (!success) {
-                    // All retries failed
-                    throw lastError || new Error('Token validation failed after multiple attempts');
-                }
+                // Set global flag to prevent redundant validations
+                window.tokenValidated = true;
                 
                 // Call success callback if provided
                 if (onSuccess && typeof onSuccess === 'function') {

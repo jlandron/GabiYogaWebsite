@@ -46,18 +46,7 @@ const UserService = {
 // Function to fetch website settings and apply to dashboard
 async function fetchWebsiteSettings() {
   try {
-    // Skip settings fetch if no authentication token, to prevent unnecessary network errors
-    if (!TokenService.getToken()) {
-      console.log('Skipping website settings fetch - no authentication token available');
-      return;
-    }
-    
-    const response = await fetch('/api/website-settings', {
-      headers: {
-        'Authorization': `Bearer ${TokenService.getToken()}`
-      },
-      credentials: 'include'
-    });
+    const response = await fetch('/api/website-settings');
     
     if (!response.ok) {
       throw new Error('Failed to fetch website settings');

@@ -38,27 +38,21 @@ const ADMIN_API_ENDPOINTS = {
 // API service for admin operations
 const AdminApiService = {
   /**
-   * Make authenticated requests with retry logic
+   * Make authenticated requests
    */
   authRequest: async (url, method = 'GET', data = null) => {
     try {
       console.log(`Preparing ${method} request to ${url}`);
       
-      // Check if token exists without redundant validation
+      // Check if token exists
       const token = TokenService.getToken();
       if (!token) {
         console.error('No authentication token found');
-        
-        // Use AuthHandler if available for consistent error handling
-        if (typeof AuthHandler !== 'undefined') {
-          AuthHandler.redirectToLogin();
-        } else {
-          alert('Your session has expired. Please log in again.');
-          UserService.logout();
-          // Save current page for redirect
-          const currentPage = window.location.pathname.split('/').pop();
-          window.location.href = `login.html?redirect=${currentPage}`;
-        }
+        alert('Your session has expired. Please log in again.');
+        UserService.logout();
+        // Save current page for redirect
+        const currentPage = window.location.pathname.split('/').pop();
+        window.location.href = `login.html?redirect=${currentPage}`;
         throw new Error('No authentication token found');
       }
       
@@ -72,78 +66,44 @@ const AdminApiService = {
       const options = {
         method,
         headers,
-        credentials: 'include',
-        cache: 'no-store' // Prevent caching
+        credentials: 'include'
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         options.body = JSON.stringify(data);
       }
 
-      // Implement retry logic for network errors
-      const MAX_RETRIES = 2;
-      let retries = 0;
-      let lastError = null;
+      console.log(`Sending ${method} request to ${url}`);
+      const response = await fetch(url, options);
       
-      while (retries <= MAX_RETRIES) {
-        try {
-          console.log(`Sending ${method} request to ${url} (attempt ${retries + 1})`);
-          const response = await fetch(url, options);
-          
-          if (!response.ok) {
-            console.error(`Request failed with status: ${response.status}`);
-            
-            if (response.status === 401) {
-              // Handle unauthorized (token expired)
-              console.error('Authentication failed (401): Token is invalid or expired');
-              
-              // Use AuthHandler if available for consistent error handling
-              if (typeof AuthHandler !== 'undefined') {
-                AuthHandler.handleAuthError(new Error('Invalid token'));
-              } else {
-                alert('Your session has expired. Please log in again.');
-                UserService.logout();
-                // Save current page for redirect
-                const currentPage = window.location.pathname.split('/').pop();
-                window.location.href = `login.html?redirect=${currentPage}`;
-              }
-              throw new Error('Session expired. Please log in again.');
-            }
-            
-            let errorMessage = `API request failed with status: ${response.status}`;
-            try {
-              const errorData = await response.json();
-              errorMessage = errorData.message || errorMessage;
-              console.error('Error details:', errorData);
-            } catch (jsonError) {
-              console.error('Could not parse error response as JSON');
-            }
-            
-            throw new Error(errorMessage);
-          }
-          
-          console.log(`Request to ${url} completed successfully`);
-          return await response.json();
-        } catch (error) {
-          lastError = error;
-          
-          // Only retry on network errors, not on auth or other errors
-          if (error.name === 'TypeError' && error.message.includes('NetworkError')) {
-            retries++;
-            if (retries <= MAX_RETRIES) {
-              console.warn(`Network error, retrying (${retries}/${MAX_RETRIES})...`);
-              // Exponential backoff
-              await new Promise(resolve => setTimeout(resolve, 500 * retries));
-              continue;
-            }
-          }
-          
-          // Non-network errors or max retries reached
-          throw error;
+      if (!response.ok) {
+        console.error(`Request failed with status: ${response.status}`);
+        
+        if (response.status === 401) {
+          // Handle unauthorized (token expired)
+          console.error('Authentication failed (401): Token is invalid or expired');
+          alert('Your session has expired. Please log in again.');
+          UserService.logout();
+          // Save current page for redirect
+          const currentPage = window.location.pathname.split('/').pop();
+          window.location.href = `login.html?redirect=${currentPage}`;
+          throw new Error('Session expired. Please log in again.');
         }
+        
+        let errorMessage = `API request failed with status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error('Error details:', errorData);
+        } catch (jsonError) {
+          console.error('Could not parse error response as JSON');
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      throw lastError || new Error('Request failed after multiple attempts');
+      console.log(`Request to ${url} completed successfully`);
+      return await response.json();
     } catch (error) {
       console.error('API request error:', error);
       throw error;
