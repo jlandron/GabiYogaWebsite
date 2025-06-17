@@ -530,9 +530,28 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Clear user info and redirect to homepage
-            UserService.logout();
-            window.location.href = 'index.html';
+            // Use AuthHandler.logout() to properly clear session on server and client side
+            if (typeof AuthHandler === 'object' && typeof AuthHandler.logout === 'function') {
+                // Use AuthHandler if available
+                AuthHandler.logout();
+            } else {
+                // Fallback to basic logout if AuthHandler isn't available
+                // Make server logout request
+                try {
+                    fetch(`${API_BASE_URL}/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${TokenService.getToken()}`,
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    }).catch(err => console.warn('Logout request error:', err));
+                } finally {
+                    // Always clear token and redirect regardless of server response
+                    UserService.logout();
+                    window.location.href = 'index.html';
+                }
+            }
         });
     }
     

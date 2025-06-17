@@ -235,8 +235,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logoutBtn = document.getElementById('admin-logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      UserService.logout();
-      window.location.href = 'login.html';
+      // Use AuthHandler.logout() to ensure we call the server's logout endpoint
+      // and properly clean up local storage
+      AuthHandler.logout();
     });
   }
   

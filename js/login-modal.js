@@ -199,7 +199,13 @@ async function handleLoginSubmit(event) {
     
     try {
         // Use the existing ApiService from account.js
-        await ApiService.login({ email, password });
+        // Passport.js integration: ApiService.login will handle token parsing
+        const response = await ApiService.login({ email, password });
+        
+        // Check if login was successful
+        if (!response || (!response.token && !response.data?.token)) {
+            throw new Error('Login failed: Invalid server response');
+        }
         
         // Close modal
         closeLoginModal();
@@ -258,7 +264,13 @@ async function handleRegistrationSubmit(event) {
     
     try {
         // Use the existing ApiService from account.js
-        await ApiService.register({ firstName, lastName, email, password });
+        // Passport.js integration: ApiService.register will handle token parsing
+        const response = await ApiService.register({ firstName, lastName, email, password });
+        
+        // Check if registration was successful
+        if (!response || (!response.token && !response.data?.token)) {
+            throw new Error('Registration failed: Invalid server response');
+        }
         
         // Close modal and redirect to dashboard (new users are always regular members)
         closeRegistrationModal();
