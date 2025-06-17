@@ -63,8 +63,8 @@ const AdminApiService = {
 
       const options = {
         method,
-        headers
-        // Removed 'credentials: include' to be consistent with our token-based auth approach
+        headers,
+        credentials: 'include'  // Need to keep this for server-side session compatibility
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -72,6 +72,18 @@ const AdminApiService = {
       }
 
       console.log(`Sending ${method} request to ${url}`);
+      // Log the request details for debugging
+      console.log('Request options:', {
+        method: options.method,
+        headers: {
+          ...options.headers,
+          'Authorization': options.headers['Authorization'] ? 
+            `Bearer ${options.headers['Authorization'].substring(7, 15)}...` : 'none'
+        },
+        credentials: options.credentials,
+        bodyIncluded: !!options.body
+      });
+      
       const response = await fetch(url, options);
       
       if (!response.ok) {

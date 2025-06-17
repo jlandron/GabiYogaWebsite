@@ -126,7 +126,8 @@ const AuthHandler = {
                     headers: {
                         'Authorization': `Bearer ${TokenService.getToken()}`
                     },
-                    signal: controller.signal
+                    signal: controller.signal,
+                    credentials: 'include' // Keep cookies for server-side session compatibility
                 });
                 
                 // Clear timeout since we got a response
@@ -268,13 +269,15 @@ const AuthHandler = {
             
             // Call the logout endpoint
             if (token) {
+                // Log the logout request to help debug
+                console.log('AuthHandler: Making logout request with token', token ? token.substring(0, 10) + '...' : 'none');
                 await fetch(`${API_BASE_URL}/auth/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'include'
+                    credentials: 'include' // Always include credentials for logout
                 });
                 console.log('AuthHandler: Logout API call successful');
             }
