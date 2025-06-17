@@ -55,10 +55,10 @@ const AdminApiService = {
       const token = TokenService.getToken();
       if (!token) {
         console.error('No authentication token found');
-        alert('Your session has expired. Please log in again.');
-        UserService.logout();
-        window.location.href = '/login.html';
-        throw new Error('No authentication token found');
+        // alert('Your session has expired. Please log in again.');
+        // UserService.logout();
+        // window.location.href = '/login.html';
+        // throw new Error('No authentication token found');
       }
       
       console.log('Token exists, preparing request headers');
@@ -98,11 +98,11 @@ const AdminApiService = {
         
         if (response.status === 401) {
           // Handle unauthorized (token expired)
-          console.error('Authentication failed (401): Token is invalid or expired');
-          alert('Your session has expired. Please log in again.');
-          UserService.logout();
-          window.location.href = '/login.html';
-          throw new Error('Session expired. Please log in again.');
+          // console.error('Authentication failed (401): Token is invalid or expired');
+          // alert('Your session has expired. Please log in again.');
+          // UserService.logout();
+          // window.location.href = '/login.html';
+          // throw new Error('Session expired. Please log in again.');
         }
         
         let errorMessage = `API request failed with status: ${response.status}`;
