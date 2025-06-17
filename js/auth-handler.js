@@ -62,17 +62,38 @@ const AuthHandler = {
                     let data;
                     try {
                         const text = await response.text();
-                        // Try to parse the text as JSON
-                        data = text ? JSON.parse(text) : {};
+                        console.log('AuthHandler: Raw API response text:', text);
                         
-                        if (!data.valid) {
-                            throw new Error('Invalid token');
+                        // Check if response is empty or not JSON
+                        if (!text || text.trim() === '') {
+                            console.warn('AuthHandler: Empty response from validation endpoint');
+                            // Continue with validation process, assuming the token might still be valid
+                            return;
                         }
-                    } catch (jsonError) {
-                        console.warn('AuthHandler: JSON parse error during validation', jsonError);
-                        // Don't immediately invalidate the token for JSON parse errors
-                        // since this could be a temporary server issue
                         
+                        // Try to parse the text as JSON
+                        try {
+                            data = JSON.parse(text);
+                            
+                            // Log the parsed data for debugging
+                            console.log('AuthHandler: Parsed validation response:', data);
+                            
+                            if (!data.valid) {
+                                throw new Error('Invalid token');
+                            }
+                        } catch (parseError) {
+                            console.warn('AuthHandler: JSON parse error during validation:', parseError);
+                            console.warn('AuthHandler: Response that failed to parse:', text.substring(0, 100) + (text.length > 100 ? '...' : ''));
+                            
+                            // Try to determine if this is an HTML response (common for server errors)
+                            if (text.includes('<!DOCTYPE html>') || text.includes('<html>')) {
+                                console.warn('AuthHandler: Received HTML instead of JSON. Could be a server error page.');
+                            }
+                            
+                            // Continue with validation process, assuming the token might still be valid
+                        }
+                    } catch (fetchTextError) {
+                        console.warn('AuthHandler: Error reading response text:', fetchTextError);
                         // Continue with validation process, assuming the token might still be valid
                     }
                     
@@ -139,26 +160,34 @@ const AuthHandler = {
     },
 
     /**
-     * Redirect to login page with current page as redirect parameter
+     * Redirect to login page with current page as redirect parameter,
+     * or show login modal if on main site
      */
     redirectToLogin: function() {
         // Save current page for redirect
         const currentPage = window.location.pathname.split('/').pop();
-        window.location.href = `login.html?redirect=${currentPage}`;
+        
+        // Check if login-modal.js functions are available
+        if (typeof showLoginModal === 'function') {
+            // Show the login modal instead of redirecting
+            console.log('AuthHandler: Opening login modal');
+            showLoginModal(true);
+        } else {
+            // Fallback to index page since login.html doesn't exist
+            console.log('AuthHandler: Redirecting to index page');
+            window.location.href = `index.html?redirect=${currentPage}`;
+        }
     },
 
     /**
-     * Log out user and redirect to login page
+     * Log out user and redirect to index page
      */
     logout: function() {
-        // Save current page for redirect before logout
-        const currentPage = window.location.pathname.split('/').pop();
-        
         // Clear authentication data
         UserService.logout();
         
-        // Redirect to login with the saved page as redirect parameter
-        window.location.href = `login.html?redirect=${currentPage}`;
+        // Redirect to index page
+        window.location.href = 'index.html';
     },
 
     /**

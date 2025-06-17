@@ -231,6 +231,28 @@ const verifyToken = (req, res, next) => {
 };
 
 /**
+ * Token validation endpoint (protected route)
+ * GET /api/auth/validate
+ * 
+ * Simple endpoint to validate if the token is still valid
+ * Returns a minimal response to reduce payload size
+ */
+router.get('/validate', verifyToken, async (req, res) => {
+  try {
+    // If verifyToken middleware passed, the token is valid
+    return res.status(200).json({
+      valid: true,
+    });
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return res.status(401).json({
+      valid: false,
+      message: 'Invalid token'
+    });
+  }
+});
+
+/**
  * Get current user endpoint (protected route)
  * GET /api/auth/me
  */
