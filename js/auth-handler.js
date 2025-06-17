@@ -302,16 +302,6 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been recently validated
      */
     isRecentlyValidated: function() {
-        // In production environment, always validate with server
-        const hostname = window.location.hostname;
-        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
-        
-        if (isProduction) {
-            console.log('AuthHandler: Production environment detected - forcing server validation');
-            return false;
-        }
-        
-        // For development, use cached validation if available
         // Check both window.tokenValidated flag and lastValidated timestamp
         if (!window.tokenValidated || !this.authState.lastValidated) {
             return false;
@@ -320,6 +310,20 @@ const AuthHandler = {
         // Check if validation has expired based on timeout
         const now = Date.now();
         const timeSinceValidation = now - this.authState.lastValidated;
+        
+        // For production environment, use a shorter validation period but still cache
+        // This prevents excessive server validation on every page load
+        const hostname = window.location.hostname;
+        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
+        
+        if (isProduction) {
+            // In production, cache validation for 1 hour instead of forcing validation every time
+            // This will drastically reduce token validation requests while still being secure
+            console.log('AuthHandler: Production environment - using 1 hour validation cache');
+            return timeSinceValidation < (60 * 60 * 1000); // 1 hour in milliseconds
+        }
+        
+        // For development, use the standard timeout (15 min)
         return timeSinceValidation < this.authState.validationTimeout;
     },
 
@@ -409,13 +413,23 @@ const AuthHandler = {
             return false;
         }
         
-        // Check if we're approaching the token expiration (75% of validation timeout)
+        // Get the appropriate validation timeout for the environment
+        const hostname = window.location.hostname;
+        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
+        
+        // Use different timeout values for production vs development
+        const validationTimeout = isProduction ? 
+            (60 * 60 * 1000) : // 1 hour in production - same as in isRecentlyValidated
+            this.authState.validationTimeout; // 15 minutes in development
+        
+        // Check if we're approaching the token expiration (75% of the appropriate timeout)
         const now = Date.now();
         const timeSinceValidation = now - this.authState.lastValidated;
-        const refreshThreshold = this.authState.validationTimeout * 0.75;
+        const refreshThreshold = validationTimeout * 0.75;
         
         if (timeSinceValidation < refreshThreshold) {
             // Token is still fresh enough
+            console.log('AuthHandler: Token still fresh, no refresh needed');
             return true;
         }
         
