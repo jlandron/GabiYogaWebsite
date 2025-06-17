@@ -223,10 +223,39 @@ async function handleLoginSubmit(event) {
         
         // Only redirect if shouldRedirectAfterLogin is true
         if (shouldRedirectAfterLogin) {
-            // Check user role and redirect appropriately
+            // Check if there's a redirect parameter in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get('redirect');
+            
+            // Check user role
             if (UserService.isAdmin()) {
+                // Admin users always go to admin dashboard, regardless of redirect
                 window.location.href = 'admin-dashboard.html';
+            } else if (redirectParam) {
+                // Handle redirect parameter if present
+                // First check if it's a valid page to redirect to (not login-related)
+                const isLoginRelatedPage = 
+                    redirectParam.startsWith('login.html') || 
+                    redirectParam.startsWith('forgot-password.html') || 
+                    redirectParam.startsWith('reset-password.html');
+                    
+                if (!isLoginRelatedPage) {
+                    // Decode the redirect URL and navigate
+                    try {
+                        const decodedRedirect = decodeURIComponent(redirectParam);
+                        console.log(`Redirecting to: ${decodedRedirect}`);
+                        window.location.href = decodedRedirect;
+                        return; // Exit early
+                    } catch (e) {
+                        console.error('Error decoding redirect URL:', e);
+                        // Fall through to default redirect
+                    }
+                }
+                
+                // Fall back to dashboard if redirect is invalid
+                window.location.href = 'dashboard.html';
             } else {
+                // Default for regular users with no redirect
                 window.location.href = 'dashboard.html';
             }
         } else {

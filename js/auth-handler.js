@@ -17,7 +17,8 @@ const AuthHandler = {
         isValidating: false,
         lastValidated: null,
         validationTimeout: 15 * 60 * 1000, // 15 minutes in milliseconds
-        redirectInProgress: false
+        redirectInProgress: false,
+        pendingValidationPromise: null // Store pending validation promise
     },
     /**
      * Validates a user's authentication when entering a secure page
@@ -38,24 +39,60 @@ const AuthHandler = {
             onError = null 
         } = options;
 
-        // Check if we are already validating
-        if (this.authState.isValidating) {
-            console.log('AuthHandler: Authentication validation already in progress...');
-            return false;
+        // If a validation is already in progress, return the pending promise
+        // This fixes race conditions where multiple components request validation simultaneously
+        if (this.authState.isValidating && this.authState.pendingValidationPromise) {
+            console.log('AuthHandler: Reusing in-progress validation promise...');
+            try {
+                const result = await this.authState.pendingValidationPromise;
+                // Call the success/error callbacks based on the validation result
+                if (result && onSuccess) {
+                    onSuccess();
+                } else if (!result && onError) {
+                    onError(new Error('Authentication validation failed'));
+                }
+                return result;
+            } catch (error) {
+                if (onError) onError(error);
+                return false;
+            }
         }
-
-        // Set validating flag to prevent multiple simultaneous validations
-        this.authState.isValidating = true;
 
         // Check if we recently validated and don't need to revalidate
         if (!forceValidation && this.isRecentlyValidated()) {
             console.log('AuthHandler: Token was recently validated, skipping validation');
-            this.authState.isValidating = false;
             if (onSuccess && typeof onSuccess === 'function') {
                 onSuccess();
             }
             return true;
         }
+        
+        // Create a validation promise and store it
+        this.authState.isValidating = true;
+        this.authState.pendingValidationPromise = this._executeValidation(options);
+        
+        try {
+            const result = await this.authState.pendingValidationPromise;
+            return result;
+        } finally {
+            // Clear the pending promise once completed (success or failure)
+            this.authState.pendingValidationPromise = null;
+            this.authState.isValidating = false;
+        }
+    },
+    
+    /**
+     * Internal method to perform the actual validation
+     * This is separated to allow proper promise handling in validateAuth
+     * @private
+     */
+    _executeValidation: async function(options = {}) {
+        const { 
+            adminRequired = false,
+            timeout = 10000,
+            onSuccess = null, 
+            onError = null 
+        } = options;
 
         try {
             console.log('AuthHandler: Validating authentication...');
@@ -64,7 +101,6 @@ const AuthHandler = {
             if (!TokenService.getToken() || !UserService.getUser()) {
                 console.log('AuthHandler: No token or user info found');
                 this.redirectToLogin();
-                this.authState.isValidating = false;
                 return false;
             }
 
@@ -73,7 +109,6 @@ const AuthHandler = {
                 console.log('AuthHandler: User is not an admin');
                 // Redirect non-admin users to regular dashboard
                 window.location.href = 'dashboard.html';
-                this.authState.isValidating = false;
                 return false;
             }
 
@@ -81,27 +116,27 @@ const AuthHandler = {
             try {
                 console.log('AuthHandler: Validating token with backend...');
                 
-                // Create a promise that rejects after the timeout
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('Authentication timeout')), timeout);
-                });
+                // Create an AbortController for timeout management
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
                 
-                // Token validation request
-                const validationPromise = fetch(`${API_BASE_URL}/auth/validate`, {
+                // Token validation request with abort controller
+                const response = await fetch(`${API_BASE_URL}/auth/validate`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${TokenService.getToken()}`
                     },
-                    credentials: 'include'
-                }).then(async response => {
-                    if (!response.ok) {
-                        throw new Error(`Token validation failed: ${response.statusText}`);
-                    }
-                    return await response.json();
+                    signal: controller.signal
                 });
                 
-                // Race the validation against the timeout
-                const data = await Promise.race([validationPromise, timeoutPromise]);
+                // Clear timeout since we got a response
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`Token validation failed: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
                 console.log('AuthHandler: Validation response:', data);
                 
                 if (!data.valid) {
@@ -119,12 +154,15 @@ const AuthHandler = {
                     onSuccess();
                 }
                 
-                this.authState.isValidating = false;
                 return true;
             } catch (error) {
                 console.error('AuthHandler: Token validation error:', error);
                 
-                this.authState.isValidating = false;
+                // Check if this was an abort/timeout
+                if (error.name === 'AbortError') {
+                    console.error('AuthHandler: Authentication request timed out');
+                    error = new Error('Authentication timeout');
+                }
                 
                 // Call error callback if provided
                 if (onError && typeof onError === 'function') {
@@ -139,8 +177,6 @@ const AuthHandler = {
             }
         } catch (error) {
             console.error('AuthHandler: Unexpected error during auth validation:', error);
-            
-            this.authState.isValidating = false;
             
             // Call error callback if provided
             if (onError && typeof onError === 'function') {
@@ -189,7 +225,21 @@ const AuthHandler = {
         this.authState.redirectInProgress = true;
         
         // Save current page for redirect
-        const currentPage = window.location.pathname.split('/').pop();
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').pop();
+        const hasQueryParams = window.location.search && window.location.search.length > 1;
+        
+        // Don't try to redirect back to login-related pages
+        const isLoginRelatedPage = 
+            currentPage === 'login.html' || 
+            currentPage === 'index.html' || 
+            currentPage === 'forgot-password.html' || 
+            currentPage === 'reset-password.html';
+        
+        // Build redirect parameter - only include if it's a page worth returning to
+        const redirectParam = !isLoginRelatedPage ? 
+            `?redirect=${encodeURIComponent(currentPage + (hasQueryParams ? window.location.search : ''))}` : 
+            '';
         
         // Check if login-modal.js functions are available
         if (typeof showLoginModal === 'function') {
@@ -202,9 +252,9 @@ const AuthHandler = {
                 this.authState.redirectInProgress = false;
             }, 500);
         } else {
-            // Fallback to index page since login.html doesn't exist
+            // Fallback to index page 
             console.log('AuthHandler: Redirecting to index page');
-            window.location.href = `index.html?redirect=${currentPage}`;
+            window.location.href = `index.html${redirectParam}`;
             // Note: No need to reset redirectInProgress as page will reload
         }
     },
@@ -358,17 +408,34 @@ const AuthHandler = {
         
         console.log('AuthHandler: Token nearing expiration, refreshing...');
         
-        // Re-validate token with the backend
-        try {
-            const result = await this.validateAuth({
-                forceValidation: true, // Force validation even if recently validated
-                timeout: 5000 // Use a shorter timeout for refresh operations
-            });
-            
-            return result;
-        } catch (error) {
-            console.error('AuthHandler: Token refresh failed:', error);
-            return false;
+        // Store the refresh operation in a static variable to prevent multiple refreshes
+        if (AuthHandler.refreshInProgress) {
+            console.log('AuthHandler: Refresh already in progress, waiting for result...');
+            try {
+                return await AuthHandler.refreshInProgress;
+            } catch (error) {
+                console.error('AuthHandler: Error waiting for refresh:', error);
+                return false;
+            }
         }
+        
+        // Create and store the refresh promise
+        AuthHandler.refreshInProgress = (async () => {
+            try {
+                const result = await this.validateAuth({
+                    forceValidation: true, // Force validation even if recently validated
+                    timeout: 5000 // Use a shorter timeout for refresh operations
+                });
+                return result;
+            } catch (error) {
+                console.error('AuthHandler: Token refresh failed:', error);
+                return false;
+            } finally {
+                // Clear the refresh promise
+                AuthHandler.refreshInProgress = null;
+            }
+        })();
+        
+        return await AuthHandler.refreshInProgress;
     }
 };

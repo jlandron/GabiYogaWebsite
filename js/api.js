@@ -9,6 +9,9 @@ const API = {
   // Base URL for API requests (adjust based on environment)
   baseUrl: window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api',
   
+  // Track pending requests to avoid duplicates
+  pendingRequests: {},
+  
   /**
    * Generic function to make API requests
    * @param {string} endpoint - API endpoint
@@ -20,6 +23,18 @@ const API = {
   async request(endpoint, method = 'GET', body = null, requiresAuth = true) {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Generate a unique request key based on URL, method, and body
+    // This helps deduplicate concurrent identical requests
+    const requestKey = `${method}:${url}:${body ? JSON.stringify(body) : 'nobody'}`;
+    
+    // If this exact request is already pending, return the existing promise
+    // This prevents race conditions with multiple identical requests
+    if (this.pendingRequests[requestKey]) {
+      console.log('API: Reusing in-progress request for:', requestKey);
+      return this.pendingRequests[requestKey];
+    }
+    
+    // Set up request options
     const options = {
       method,
       headers: {
@@ -45,6 +60,9 @@ const API = {
       options.body = JSON.stringify(body);
     }
     
+    // Create the request promise and store it
+    this.pendingRequests[requestKey] = (async () => {
+    
     try {
       const response = await fetch(url, options);
       const data = await response.json();
@@ -57,7 +75,14 @@ const API = {
     } catch (error) {
       console.error(`API Error (${method} ${endpoint}):`, error);
       throw error;
+    } finally {
+      // Remove the pending request once completed (success or failure)
+      delete this.pendingRequests[requestKey];
     }
+    })(); // Execute the async function immediately
+    
+    // Return the promise
+    return this.pendingRequests[requestKey];
   },
   
   // Authentication endpoints

@@ -120,25 +120,58 @@ const redirectToDashboard = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectParam = urlParams.get('redirect');
   
+  // Always go to admin dashboard for admins
   if (UserService.isAdmin()) {
     window.location.href = 'admin-dashboard.html';
-  } else {
-    // If there's a specific redirect for the dashboard, use it
-    // This enables redirecting to specific dashboard tabs (e.g. dashboard.html#workshops)
-    if (redirectParam && redirectParam.startsWith('dashboard.html')) {
-      window.location.href = redirectParam;
-    } else {
-      window.location.href = 'dashboard.html';
+    return;
+  }
+  
+  // For regular users, check for valid redirect
+  if (redirectParam) {
+    // First check if it's a valid page to redirect to (not login-related)
+    const isLoginRelatedPage = 
+      redirectParam.startsWith('login.html') || 
+      redirectParam.startsWith('index.html') ||
+      redirectParam.startsWith('forgot-password.html') || 
+      redirectParam.startsWith('reset-password.html');
+      
+    if (!isLoginRelatedPage) {
+      // Decode the redirect URL and navigate
+      try {
+        const decodedRedirect = decodeURIComponent(redirectParam);
+        console.log(`Redirecting to: ${decodedRedirect}`);
+        window.location.href = decodedRedirect;
+        return;
+      } catch (e) {
+        console.error('Error decoding redirect URL:', e);
+        // Fall through to default redirect
+      }
     }
   }
+  
+  // Default fallback for regular users with no valid redirect
+  window.location.href = 'dashboard.html';
 };
 
 // API service with fetch wrappers
 const ApiService = {
+  // Track pending requests to prevent concurrent duplicates
+  pendingRequests: {},
+
   /**
-   * Make authenticated requests
+   * Make authenticated requests with deduplication
    */
   authRequest: async (url, method = 'GET', data = null) => {
+    // Create a request key to identify duplicate calls
+    const requestKey = `${method}:${url}:${data ? JSON.stringify(data) : 'nobody'}`;
+    
+    // If this exact request is already pending, return the promise
+    if (ApiService.pendingRequests[requestKey]) {
+      console.log('ApiService: Reusing pending request:', requestKey);
+      return ApiService.pendingRequests[requestKey];
+    }
+    
+    // Create request headers
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${TokenService.getToken()}`
@@ -155,48 +188,80 @@ const ApiService = {
       options.body = JSON.stringify(data);
     }
 
-    const response = await fetch(url, options);
-    const json = await response.json();
+    // Create and store the request promise
+    ApiService.pendingRequests[requestKey] = (async () => {
+      try {
+        const response = await fetch(url, options);
+        const json = await response.json();
 
-    if (!response.ok) {
-      throw new Error(json.message || 'An error occurred');
-    }
+        if (!response.ok) {
+          throw new Error(json.message || 'An error occurred');
+        }
 
-    return json;
+        return json;
+      } catch (error) {
+        console.error(`API Error (${method} ${url}):`, error);
+        throw error;
+      } finally {
+        // Always delete the pending request reference
+        delete ApiService.pendingRequests[requestKey];
+      }
+    })();
+    
+    return ApiService.pendingRequests[requestKey];
   },
 
   /**
-   * Make login request - Using JWT token approach
+   * Make login request - Using JWT token approach with race condition protection
    */
   login: async (credentials) => {
-    // For initial login, we still need to include credentials for backward compatibility
-    // as the server may use session authentication during the login process
-    const response = await fetch(API_ENDPOINTS.login, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include', // Only needed for login endpoint
-      body: JSON.stringify(credentials)
-    });
-
-    const json = await response.json();
-
-    if (!response.ok) {
-      throw new Error(json.message || 'Invalid credentials');
+    // Create a request key to identify duplicate calls
+    const requestKey = `POST:${API_ENDPOINTS.login}:${JSON.stringify(credentials)}`;
+    
+    // If this exact login request is already pending, return the promise
+    if (ApiService.pendingRequests[requestKey]) {
+      console.log('ApiService: Reusing pending login request');
+      return ApiService.pendingRequests[requestKey];
     }
+    
+    // Create and store the login promise
+    ApiService.pendingRequests[requestKey] = (async () => {
+      try {
+        // For initial login, we still need to include credentials for backward compatibility
+        // as the server may use session authentication during the login process
+        const response = await fetch(API_ENDPOINTS.login, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include', // Only needed for login endpoint
+          body: JSON.stringify(credentials)
+        });
 
-    // Handle token-based auth with Passport
-    if (json.data && json.data.token && json.data.user) {
-      TokenService.setToken(json.data.token);
-      UserService.setUser(json.data.user);
-    } else if (json.token && json.user) {
-      // Backward compatibility with old response format
-      TokenService.setToken(json.token);
-      UserService.setUser(json.user);
-    }
+        const json = await response.json();
 
-    return json;
+        if (!response.ok) {
+          throw new Error(json.message || 'Invalid credentials');
+        }
+
+        // Handle token-based auth with Passport
+        if (json.data && json.data.token && json.data.user) {
+          TokenService.setToken(json.data.token);
+          UserService.setUser(json.data.user);
+        } else if (json.token && json.user) {
+          // Backward compatibility with old response format
+          TokenService.setToken(json.token);
+          UserService.setUser(json.user);
+        }
+
+        return json;
+      } finally {
+        // Always delete the pending request reference
+        delete ApiService.pendingRequests[requestKey];
+      }
+    })();
+    
+    return ApiService.pendingRequests[requestKey];
   },
 
   /**
