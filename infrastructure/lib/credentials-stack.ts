@@ -10,6 +10,7 @@ export interface CredentialsStackProps extends StackProps {}
  */
 export class CredentialsStack extends Stack {
   public readonly databaseSecret: Secret;
+  public readonly jwtSecret: Secret;
 
   constructor(scope: Construct, id: string, props: CredentialsStackProps = {}) {
     super(scope, id, props);
@@ -26,10 +27,27 @@ export class CredentialsStack extends Stack {
       },
     });
 
+    // Create a secret for JWT authentication
+    this.jwtSecret = new Secret(this, 'JwtSecret', {
+      secretName: 'gabi-yoga-jwt-secret',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ description: 'JWT secret for authentication' }),
+        generateStringKey: 'secret',
+        excludePunctuation: true,
+        includeSpace: false,
+        passwordLength: 64, // 64 characters for strong JWT secret
+      },
+    });
+
     // Outputs
     new CfnOutput(this, 'DatabaseSecretArn', {
       value: this.databaseSecret.secretArn,
       description: 'Database credentials secret ARN',
+    });
+
+    new CfnOutput(this, 'JwtSecretArn', {
+      value: this.jwtSecret.secretArn,
+      description: 'JWT authentication secret ARN',
     });
   }
 }

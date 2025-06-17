@@ -253,8 +253,15 @@ function authenticateTokenCompat(req, res, next) {
     });
   }
 
-  // Use the JWT secret from environment
-  const JWT_SECRET = process.env.JWT_SECRET;
+  // Get the JWT secret from AWS Secrets Manager
+  // This is loaded asynchronously in server.js and shared across the application
+  const JWT_SECRET = req.app.get('jwtSecret');
+  
+  // If JWT_SECRET is not available through the app, fall back to environment variable
+  // This should only happen during development or if the server startup sequence is modified
+  if (!JWT_SECRET) {
+    logger.warn('JWT_SECRET not found in app settings, falling back to environment variable');
+  }
   
   try {
     // Verify token directly for backward compatibility

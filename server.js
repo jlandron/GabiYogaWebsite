@@ -51,27 +51,9 @@ const classBookingsRoutes = require('./api/class-bookings'); // Import class boo
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Set JWT secret from environment variable with validation
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  logger.error('JWT_SECRET environment variable is not set!', {
-    suggestion: 'Please set JWT_SECRET in your .env file'
-  });
-  process.exit(1);
-}
-
-// Set JWT expiry
+// JWT secret will be loaded asynchronously from AWS Secrets Manager
+let JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
-
-// Validate environment
-if (process.env.NODE_ENV === 'production') {
-  if (JWT_SECRET === 'CHANGE_THIS_IN_PRODUCTION_TO_SECURE_RANDOM_STRING') {
-    logger.error('Default JWT_SECRET detected in production environment!', {
-      suggestion: 'Please change the JWT_SECRET to a secure random string before deploying to production'
-    });
-    process.exit(1);
-  }
-}
 
 // Middleware
 app.use(cors());
@@ -249,9 +231,43 @@ process.on('uncaughtException', (error) => {
 app.use(notFoundHandler); // Handle 404 for unknown API routes
 app.use(errorHandler);    // Handle all other errors
 
+// Import the JWT Secret loader
+const { initializeJWTSecret } = require('./utils/aws-jwt-secret');
+
 // Initialize database and start server
 const startServer = async () => {
   try {
+    // Load JWT secret from AWS Secrets Manager
+    logger.info('Fetching JWT secret from AWS Secrets Manager...');
+    JWT_SECRET = await initializeJWTSecret();
+    
+    if (!JWT_SECRET) {
+      logger.error('Failed to obtain JWT_SECRET from AWS Secrets Manager or environment');
+      process.exit(1);
+    }
+    
+    // Store the JWT secret in the app object so it can be accessed by middleware
+    app.set('jwtSecret', JWT_SECRET);
+    logger.info('JWT secret stored in app settings');
+    
+    // Re-initialize Passport with the loaded JWT_SECRET
+    const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
+    app.use(passportInstance.initialize());
+    app.use(passportInstance.session());
+    
+    // Update session middleware with the new JWT_SECRET
+    app.use(session({
+      secret: JWT_SECRET,
+      resave: false,
+      saveUninitialized: false,
+      cookie: { 
+        secure: process.env.NODE_ENV === 'production', 
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/', // Ensure cookie is sent for all paths
+        httpOnly: true // Cannot be accessed by JavaScript (more secure)
+      }
+    }));
+    
     // Initialize core database tables
     logger.info('Initializing core database tables...');
     await initializeDatabase();
@@ -269,7 +285,8 @@ const startServer = async () => {
       logger.info(`Server started successfully on port ${PORT}`, {
         port: PORT,
         environment: process.env.NODE_ENV || 'development',
-        url: `http://localhost:${PORT}`
+        url: `http://localhost:${PORT}`,
+        jwtConfigured: !!JWT_SECRET
       });
     });
   } catch (error) {

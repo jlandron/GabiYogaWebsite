@@ -80,6 +80,7 @@ export class WebAppStack extends Stack {
         ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'), // For SSM
         ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'), // For S3 access
         ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'), // For CloudWatch
+        ManagedPolicy.fromAwsManagedPolicyName('SecretsManagerReadWrite'), // For accessing JWT and DB secrets
       ],
     });
 
@@ -218,10 +219,18 @@ export class WebAppStack extends Stack {
     
     // Generate environment file with fetched credentials
     'echo "Creating .env file with secure credentials"',
+    
+    // Fetch JWT secret from Secrets Manager
+    `echo "Fetching JWT secret from Secrets Manager"`,
+    `JWT_SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id gabi-yoga-jwt-secret --region ${awsRegion} --query SecretString --output text)`,
+    `JWT_SECRET_VALUE=$(echo $JWT_SECRET_JSON | jq -r '.secret')`,
+    `echo "JWT secret retrieved successfully"`,
+    
     'cat > /var/www/gabiyoga/.env << EOF',
       'NODE_ENV=production',
       'PORT=5001',
-      'JWT_SECRET=$(openssl rand -hex 64)',
+      'JWT_SECRET=${JWT_SECRET_VALUE}',
+      'JWT_SECRET_NAME=gabi-yoga-jwt-secret',
       'JWT_EXPIRY=24h',
       `DB_TYPE=mysql`,
       `DB_HOST=${dbHost}`,

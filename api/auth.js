@@ -13,15 +13,26 @@ const { generateToken, authenticateJWT, authenticateLocal, requireAdmin, validat
 const { sendSuccess, sendError } = require('../utils/api-response');
 const logger = require('../utils/logger');
 
-// Environment variables from .env file loaded by server.js
-// Get JWT secret from environment variable - no fallback for security
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  logger.error('ERROR: JWT_SECRET environment variable is not set in auth.js!', {
-    suggestion: 'Please set JWT_SECRET in your .env file'
-  });
-  process.exit(1);
-}
+// JWT secret will be loaded asynchronously from AWS Secrets Manager 
+// through utils/aws-jwt-secret.js on server startup
+let JWT_SECRET;
+
+// Initialize on import to ensure we have the secret by the time routes are used
+const { getJWTSecret } = require('../utils/aws-jwt-secret');
+
+// Function to ensure we have the JWT secret
+const getJwtSecret = async () => {
+  if (!JWT_SECRET) {
+    try {
+      JWT_SECRET = await getJWTSecret();
+      logger.info('JWT_SECRET loaded successfully in auth module');
+    } catch (error) {
+      logger.error('Failed to load JWT_SECRET in auth module:', error);
+      throw error;
+    }
+  }
+  return JWT_SECRET;
+};
 
 // Get JWT expiry from environment variable
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
