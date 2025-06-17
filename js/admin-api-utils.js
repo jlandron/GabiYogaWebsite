@@ -27,16 +27,9 @@ const AdminApiUtils = {
             const options = {
                 method: method,
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 },
-                // Always include credentials to send session cookies
-                credentials: 'include'
             };
-            
-            // Add authorization token if available
-            if (token) {
-                options.headers['Authorization'] = `Bearer ${token}`;
-            }
             
             // Add body for POST, PUT, PATCH methods
             if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {

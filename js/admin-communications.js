@@ -10,14 +10,6 @@ let contactSearchTerm = '';
 let subscriberSearchTerm = '';
 let currentContactSubmission = null;
 
-/**
- * Check if user is authenticated
- */
-function isAuthenticated() {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-    return token !== null && token !== '';
-}
-
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
   // Use centralized authentication handler for admin pages
