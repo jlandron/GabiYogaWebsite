@@ -3,10 +3,8 @@
  * Centralizes authentication logic for all secure pages
  */
 
-// Define API_BASE_URL if it's not already defined
-if (typeof API_BASE_URL === 'undefined') {
-    var API_BASE_URL = '/api';
-}
+// Using the API_BASE_URL from account.js (don't redefine it)
+// The variable should be available since account.js is loaded before this script
 
 // Use the existing TokenService and UserService from account.js
 const AuthHandler = {
