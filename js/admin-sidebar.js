@@ -101,27 +101,37 @@ function setupSidebarEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            // Implement logout functionality
             console.log('Logout clicked');
             
-            // Clear authentication data
-            if (window.UserService && typeof window.UserService.logout === 'function') {
-                window.UserService.logout();
+            // Use AuthHandler for proper server-side session invalidation if available
+            if (window.AuthHandler && typeof window.AuthHandler.logout === 'function') {
+                // AuthHandler.logout() will handle token removal and redirection
+                window.AuthHandler.logout();
             } else {
-                // Fallback if UserService is not available
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('user_info');
-            }
-            
-            // Show login modal with callback to reload page after login
-            if (typeof showLoginModal === 'function') {
-                showLoginModal(false, function() {
-                    // Reload the page after successful login
-                    window.location.reload();
-                });
-            } else {
-                // Fallback: redirect to login page if modal isn't available
-                window.location.href = 'login.html';
+                // Fallback if AuthHandler is not available
+                // Make server logout request
+                try {
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    }).catch(err => console.warn('Logout request error:', err));
+                } finally {
+                    // Clear authentication data
+                    if (window.UserService && typeof window.UserService.logout === 'function') {
+                        window.UserService.logout();
+                    } else {
+                        // Fallback if UserService is not available
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('user_info');
+                    }
+                    
+                    // Always redirect to homepage after logout
+                    window.location.href = 'index.html';
+                }
             }
         });
     }
