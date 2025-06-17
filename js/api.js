@@ -39,14 +39,9 @@ const API = {
       method,
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      credentials: 'include' // Include credentials for all requests to maintain session consistency
     };
-    
-    // Only for auth endpoints or explicitly non-auth requests, include credentials
-    // This helps with initial login/registration (for backward compatibility)
-    if (endpoint.startsWith('/auth')) {
-      options.credentials = 'include';
-    }
     
     // Add authorization header if token exists and auth is required
     if (requiresAuth && window.TokenService && typeof window.TokenService.getToken === 'function') {

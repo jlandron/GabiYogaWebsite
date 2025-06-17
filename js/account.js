@@ -314,8 +314,8 @@ const ApiService = {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${TokenService.getToken()}`
-        }
-        // No longer including credentials to avoid mixing authentication approaches
+        },
+        credentials: 'include' // Server requires both token and session cookie
       });
       
       const json = await response.json();
