@@ -302,6 +302,16 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been recently validated
      */
     isRecentlyValidated: function() {
+        // In production environment, always validate with server
+        const hostname = window.location.hostname;
+        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
+        
+        if (isProduction) {
+            console.log('AuthHandler: Production environment detected - forcing server validation');
+            return false;
+        }
+        
+        // For development, use cached validation if available
         // Check both window.tokenValidated flag and lastValidated timestamp
         if (!window.tokenValidated || !this.authState.lastValidated) {
             return false;

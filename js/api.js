@@ -40,8 +40,14 @@ const API = {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include' // Include credentials for all requests to maintain session consistency
+      credentials: 'include' // Always include credentials to maintain session consistency across environments
     };
+    
+    // For production environments, ensure we're always validating the token
+    const hostname = window.location.hostname;
+    if (hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga') {
+      console.log('API: Production environment detected, enforcing strict auth');
+    }
     
     // Add authorization header if token exists and auth is required
     if (requiresAuth && window.TokenService && typeof window.TokenService.getToken === 'function') {

@@ -44,6 +44,13 @@ const AdminApiService = {
     try {
       console.log(`Preparing ${method} request to ${url}`);
       
+      // Detect environment
+      const hostname = window.location.hostname;
+      const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
+      if (isProduction) {
+        console.log('AdminApiService: Production environment detected');
+      }
+      
       // Check if token exists
       const token = TokenService.getToken();
       if (!token) {
