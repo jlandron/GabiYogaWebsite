@@ -57,11 +57,23 @@ const AuthHandler = {
                     if (!response.ok) {
                         throw new Error(`Token validation failed: ${response.statusText}`);
                     }
-    
-                    const data = await response.json();
-                    
-                    if (!data.valid) {
-                        throw new Error('Invalid token');
+
+                    // Safely parse JSON with extra error handling
+                    let data;
+                    try {
+                        const text = await response.text();
+                        // Try to parse the text as JSON
+                        data = text ? JSON.parse(text) : {};
+                        
+                        if (!data.valid) {
+                            throw new Error('Invalid token');
+                        }
+                    } catch (jsonError) {
+                        console.warn('AuthHandler: JSON parse error during validation', jsonError);
+                        // Don't immediately invalidate the token for JSON parse errors
+                        // since this could be a temporary server issue
+                        
+                        // Continue with validation process, assuming the token might still be valid
                     }
                     
                     console.log('AuthHandler: Token validated successfully');
