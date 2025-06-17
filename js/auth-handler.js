@@ -1,6 +1,7 @@
 /**
  * Gabi Jyoti Yoga - Authentication Handler
  * Centralizes authentication logic for all secure pages
+ * Updated to work with Passport.js authentication
  */
 
 // Using the API_BASE_URL from account.js (don't redefine it)
@@ -41,73 +42,30 @@ const AuthHandler = {
                 return false;
             }
 
-            // Step 3: Validate token with backend
+            // Step 3: Validate token with backend using Passport/JWT
             try {
                 console.log('AuthHandler: Validating token with backend...');
-                try {
-                    // Use a specific endpoint for token validation to minimize payload
-                    const response = await fetch(`${API_BASE_URL}/auth/validate`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${TokenService.getToken()}`
-                        },
-                        credentials: 'include'
-                    });
-    
-                    if (!response.ok) {
-                        throw new Error(`Token validation failed: ${response.statusText}`);
-                    }
+                
+                // Use the token validation endpoint that uses Passport JWT strategy
+                const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${TokenService.getToken()}`
+                    },
+                    credentials: 'include'
+                });
 
-                    // Safely parse JSON with extra error handling
-                    let data;
-                    try {
-                        const text = await response.text();
-                        console.log('AuthHandler: Raw API response text:', text);
-                        
-                        // Check if response is empty or not JSON
-                        if (!text || text.trim() === '') {
-                            console.warn('AuthHandler: Empty response from validation endpoint');
-                            // Continue with validation process, assuming the token might still be valid
-                            return;
-                        }
-                        
-                        // Try to parse the text as JSON
-                        try {
-                            data = JSON.parse(text);
-                            
-                            // Log the parsed data for debugging
-                            console.log('AuthHandler: Parsed validation response:', data);
-                            
-                            if (!data.valid) {
-                                throw new Error('Invalid token');
-                            }
-                        } catch (parseError) {
-                            console.warn('AuthHandler: JSON parse error during validation:', parseError);
-                            console.warn('AuthHandler: Response that failed to parse:', text.substring(0, 100) + (text.length > 100 ? '...' : ''));
-                            
-                            // Try to determine if this is an HTML response (common for server errors)
-                            if (text.includes('<!DOCTYPE html>') || text.includes('<html>')) {
-                                console.warn('AuthHandler: Received HTML instead of JSON. Could be a server error page.');
-                            }
-                            
-                            // Continue with validation process, assuming the token might still be valid
-                        }
-                    } catch (fetchTextError) {
-                        console.warn('AuthHandler: Error reading response text:', fetchTextError);
-                        // Continue with validation process, assuming the token might still be valid
-                    }
-                    
-                    console.log('AuthHandler: Token validated successfully');
-                } catch (networkError) {
-                    // If this is a network error (e.g., offline, server unreachable)
-                    // We'll assume the token is still valid rather than logging the user out
-                    if (networkError.name === 'TypeError' && networkError.message.includes('NetworkError')) {
-                        console.warn('AuthHandler: Network error during validation, continuing with stored token');
-                        // Don't throw error and allow process to continue as if token is valid
-                    } else {
-                        // For non-network errors, rethrow
-                        throw networkError;
-                    }
+                if (!response.ok) {
+                    console.error('AuthHandler: Token validation failed with status:', response.status);
+                    throw new Error(`Token validation failed: ${response.statusText}`);
+                }
+
+                // Parse the response
+                const data = await response.json();
+                console.log('AuthHandler: Validation response:', data);
+                
+                if (!data.valid) {
+                    throw new Error('Invalid token');
                 }
                 
                 // Set global flag to prevent redundant validations
@@ -182,12 +140,29 @@ const AuthHandler = {
     /**
      * Log out user and redirect to index page
      */
-    logout: function() {
-        // Clear authentication data
-        UserService.logout();
-        
-        // Redirect to index page
-        window.location.href = 'index.html';
+    logout: async function() {
+        try {
+            // Call the logout endpoint
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${TokenService.getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            console.log('AuthHandler: Logout API call successful');
+        } catch (error) {
+            // Log error but continue with logout process
+            console.warn('AuthHandler: Error calling logout endpoint:', error);
+        } finally {
+            // Always clear local storage and redirect
+            console.log('AuthHandler: Clearing local user data');
+            UserService.logout();
+            
+            // Redirect to index page
+            window.location.href = 'index.html';
+        }
     },
 
     /**
@@ -198,6 +173,11 @@ const AuthHandler = {
         return window.tokenValidated === true;
     },
     
+    /**
+     * Flag to prevent multiple login redirects
+     */
+    redirectInProgress: false,
+
     /**
      * Initialize admin pages with proper authentication
      * @returns {Promise<boolean>} - Whether initialization was successful
@@ -211,16 +191,44 @@ const AuthHandler = {
             return true;
         }
         
-        // Validate with admin required
-        return await this.validateAuth({
-            adminRequired: true,
-            onSuccess: () => {
-                console.log('AuthHandler: Admin page initialized successfully');
-            },
-            onError: (error) => {
-                console.error('AuthHandler: Admin page initialization failed:', error);
-                this.handleAuthError(error);
+        // Check if we already have a token before trying validation
+        if (!TokenService.getToken()) {
+            console.log('AuthHandler: No auth token found, redirecting to login');
+            
+            // If we're not already redirecting, initiate redirect
+            if (!this.redirectInProgress) {
+                this.redirectInProgress = true;
+                
+                // Small delay to prevent multiple redirects
+                setTimeout(() => {
+                    this.redirectToLogin();
+                    this.redirectInProgress = false;
+                }, 100);
             }
-        });
+            
+            return false;
+        }
+        
+        // Validate with admin required
+        try {
+            const result = await this.validateAuth({
+                adminRequired: true,
+                onSuccess: () => {
+                    console.log('AuthHandler: Admin page initialized successfully');
+                },
+                onError: (error) => {
+                    console.error('AuthHandler: Admin page initialization failed:', error);
+                    // Only attempt to handle auth errors if we're not already redirecting
+                    if (!this.redirectInProgress) {
+                        this.handleAuthError(error);
+                    }
+                }
+            });
+            
+            return result;
+        } catch (error) {
+            console.error('AuthHandler: Unexpected error during admin page initialization:', error);
+            return false;
+        }
     }
 };

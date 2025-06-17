@@ -9,9 +9,13 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const { sendSuccess, sendError, asyncHandler } = require('./utils/api-response');
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 const logger = require('./utils/logger');
+const { initializePassport } = require('./utils/passport-config');
 const { initializeDatabase } = require('./database/schema');
 const { initializePricingDatabase } = require('./database/schema-pricing');
 const { initializeBlogDatabase } = require('./database/schema-blog');
@@ -74,6 +78,23 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));  // Increased from 10mb to 15mb
 app.use(express.static(path.join(__dirname)));
+app.use(cookieParser());
+
+// Session setup for Passport
+app.use(session({
+  secret: JWT_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', 
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
+app.use(passportInstance.initialize());
+app.use(passportInstance.session());
 
 // Serve files from uploads directory (for image storage)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
@@ -99,7 +120,7 @@ app.get('/api/health', (req, res) => {
 // Authentication middleware is imported from auth.js
 
 // API Routes
-// Use auth router for authentication endpoints
+// Use auth router for authentication endpoints (will be replaced with new auth routes)
 app.use('/api/auth', authRouter);
 
 // Public API endpoints for homepage data
@@ -161,6 +182,12 @@ app.use('/api/class-bookings', classBookingsRoutes); // Class bookings routes
 // User location detection endpoints (public)
 app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
 app.get('/api/get-region-recommendation', asyncHandler(userLocationApi.handleGetRegionRecommendation));
+
+// Add custom middleware to make user available to templates
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  next();
+});
 
 // Fallback route for SPA with environment variable injection
 // This should be after API routes but before error handlers

@@ -165,7 +165,7 @@ const ApiService = {
   },
 
   /**
-   * Make login request
+   * Make login request - Updated for Passport.js integration
    */
   login: async (credentials) => {
     const response = await fetch(API_ENDPOINTS.login, {
@@ -173,6 +173,7 @@ const ApiService = {
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include', // Include cookies for session-based auth
       body: JSON.stringify(credentials)
     });
 
@@ -182,7 +183,12 @@ const ApiService = {
       throw new Error(json.message || 'Invalid credentials');
     }
 
-    if (json.token && json.user) {
+    // Handle token-based auth with Passport
+    if (json.data && json.data.token && json.data.user) {
+      TokenService.setToken(json.data.token);
+      UserService.setUser(json.data.user);
+    } else if (json.token && json.user) {
+      // Backward compatibility with old response format
       TokenService.setToken(json.token);
       UserService.setUser(json.user);
     }
@@ -191,7 +197,7 @@ const ApiService = {
   },
 
   /**
-   * Make registration request
+   * Make registration request - Updated for Passport.js integration
    */
   register: async (userData) => {
     try {
@@ -200,6 +206,7 @@ const ApiService = {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include cookies for session-based auth
         body: JSON.stringify(userData)
       });
 
@@ -212,7 +219,12 @@ const ApiService = {
         throw new Error(`${errorMsg}${detailMsg}`);
       }
 
-      if (json.token && json.user) {
+      // Handle token-based auth with Passport
+      if (json.data && json.data.token && json.data.user) {
+        TokenService.setToken(json.data.token);
+        UserService.setUser(json.data.user);
+      } else if (json.token && json.user) {
+        // Backward compatibility with old response format
         TokenService.setToken(json.token);
         UserService.setUser(json.user);
       }
@@ -225,10 +237,39 @@ const ApiService = {
   },
 
   /**
-   * Get current user profile
+   * Get current user profile - Updated for Passport.js integration
    */
   getCurrentUser: async () => {
-    return ApiService.authRequest(API_ENDPOINTS.me);
+    try {
+      const response = await fetch(API_ENDPOINTS.me, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${TokenService.getToken()}`
+        },
+        credentials: 'include' // Include cookies for session-based auth
+      });
+      
+      const json = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(json.message || 'Failed to get user data');
+      }
+      
+      // Update stored user data with the most recent from server
+      if (json.data && json.data.user) {
+        UserService.setUser(json.data.user);
+        return { user: json.data.user };
+      } else if (json.user) {
+        // Backward compatibility with old response format
+        UserService.setUser(json.user);
+        return { user: json.user };
+      }
+      
+      return json;
+    } catch (error) {
+      console.error('Get current user error:', error);
+      throw error;
+    }
   }
 };
 

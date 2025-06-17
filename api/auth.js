@@ -2,21 +2,24 @@
  * Authentication API for Gabi Jyoti Yoga Website
  * 
  * This file provides API endpoints for authentication operations
- * that interact with the SQLite database.
+ * using Passport.js with JWT and local strategies.
  */
 
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const { AuthOperations } = require('../database/data-access');
+const { generateToken, authenticateJWT, authenticateLocal, requireAdmin, validateToken } = require('../utils/auth-middleware');
+const { sendSuccess, sendError } = require('../utils/api-response');
+const logger = require('../utils/logger');
 
 // Environment variables from .env file loaded by server.js
 // Get JWT secret from environment variable - no fallback for security
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET environment variable is not set in auth.js!');
-  console.error('Please set JWT_SECRET in your .env file');
+  logger.error('ERROR: JWT_SECRET environment variable is not set in auth.js!', {
+    suggestion: 'Please set JWT_SECRET in your .env file'
+  });
   process.exit(1);
 }
 
@@ -27,90 +30,41 @@ const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
  * Login endpoint
  * POST /api/auth/login
  */
-router.post('/login', async (req, res) => {
+router.post('/login', authenticateLocal, (req, res) => {
   try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email and password are required' 
-      });
-    }
-
-    // Find user by email
-    const user = await AuthOperations.findUserByEmail(email);
-    
-    if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
-      });
-    }
-
-    // Verify password
-    const validPassword = await AuthOperations.verifyPassword(password, user.password_hash);
-    
-    if (!validPassword) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid credentials' 
-      });
-    }
-
+    // At this point, authentication has succeeded and user is in req.user
     // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.user_id,
-        email: user.email,
-        role: user.role 
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
-    );
-
+    const token = generateToken(req.user, JWT_SECRET, JWT_EXPIRY);
+    
     // Return user info and token
-    return res.status(200).json({
-      success: true,
+    return sendSuccess(res, {
       message: 'Login successful',
       user: {
-        id: user.user_id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profile_picture
+        id: req.user.id,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        email: req.user.email,
+        role: req.user.role,
+        profilePicture: req.user.profilePicture
       },
       token
     });
     
   } catch (error) {
-    console.error('Login error:', error);
-    console.error('Login error stack:', error.stack);
+    logger.error('Login error:', error);
     
     // Check for MySQL specific errors
     if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is already registered'
-      });
+      return sendError(res, 'Email is already registered', 400);
     }
     
     // Handle connection errors
     if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.error('Database connection error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Unable to connect to database'
-      });
+      logger.error('Database connection error:', error);
+      return sendError(res, 'Unable to connect to database', 500);
     }
     
-    return res.status(500).json({
-      success: false,
-      message: 'An error occurred during login',
-      // Include error message in production to help debug the initial deployment
-      error: error.message
-    });
+    return sendError(res, 'An error occurred during login', 500);
   }
 });
 
@@ -123,20 +77,14 @@ router.post('/register', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
     
     if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'All fields are required' 
-      });
+      return sendError(res, 'All fields are required', 400);
     }
 
     // Check if user already exists
     const existingUser = await AuthOperations.findUserByEmail(email);
     
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email is already registered' 
-      });
+      return sendError(res, 'Email is already registered', 400);
     }
 
     // Create new user
@@ -147,16 +95,15 @@ router.post('/register', async (req, res) => {
       password
     });
 
+    // Create user object for token generation
+    const userForToken = {
+      id: user.user_id,
+      email: user.email,
+      role: user.role
+    };
+
     // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.user_id,
-        email: user.email,
-        role: user.role 
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
-    );
+    const token = generateToken(userForToken, JWT_SECRET, JWT_EXPIRY);
 
     // Return user info and token
     return res.status(201).json({
@@ -173,62 +120,23 @@ router.post('/register', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Registration error:', error);
-    // Log the full error stack in production to help with debugging
-    console.error('Registration error stack:', error.stack);
+    logger.error('Registration error:', error);
+    logger.error('Registration error stack:', error.stack);
     
     // Check for MySQL specific errors
     if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is already registered'
-      });
+      return sendError(res, 'Email is already registered', 400);
     }
     
     // Handle connection errors
     if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.error('Database connection error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Unable to connect to database'
-      });
+      logger.error('Database connection error:', error);
+      return sendError(res, 'Unable to connect to database', 500);
     }
     
-    return res.status(500).json({
-      success: false,
-      message: 'An error occurred during registration',
-      // Include error message in production to help debug the initial deployment
-      // This should be removed or limited once the system is stable
-      error: error.message
-    });
+    return sendError(res, 'An error occurred during registration', 500);
   }
 });
-
-/**
- * User verification middleware
- * Verifies JWT token and adds user data to request
- */
-const verifyToken = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Access denied. No token provided.' 
-    });
-  }
-
-  try {
-    const verified = jwt.verify(token, JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (error) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Invalid token' 
-    });
-  }
-};
 
 /**
  * Token validation endpoint (protected route)
@@ -237,38 +145,27 @@ const verifyToken = (req, res, next) => {
  * Simple endpoint to validate if the token is still valid
  * Returns a minimal response to reduce payload size
  */
-router.get('/validate', verifyToken, async (req, res) => {
-  try {
-    // If verifyToken middleware passed, the token is valid
-    return res.status(200).json({
-      valid: true,
-    });
-  } catch (error) {
-    console.error('Token validation error:', error);
-    return res.status(401).json({
-      valid: false,
-      message: 'Invalid token'
-    });
-  }
+router.get('/validate', validateToken, (req, res) => {
+  // If validateToken middleware passed, the token is valid and validation result is in req.tokenValidation
+  return res.status(200).json({
+    valid: true
+  });
 });
 
 /**
  * Get current user endpoint (protected route)
  * GET /api/auth/me
  */
-router.get('/me', verifyToken, async (req, res) => {
+router.get('/me', authenticateJWT, async (req, res) => {
   try {
+    // Get user with additional details from database
     const user = await AuthOperations.findUserById(req.user.id);
     
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
+      return sendError(res, 'User not found', 404);
     }
 
-    return res.status(200).json({
-      success: true,
+    return sendSuccess(res, {
       user: {
         id: user.user_id,
         firstName: user.first_name,
@@ -280,24 +177,15 @@ router.get('/me', verifyToken, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Get current user error:', error);
-    console.error('Get current user error stack:', error.stack);
+    logger.error('Get current user error:', error);
     
     // Handle connection errors
     if (error.code === 'ECONNREFUSED' || error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.error('Database connection error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Unable to connect to database'
-      });
+      logger.error('Database connection error:', error);
+      return sendError(res, 'Unable to connect to database', 500);
     }
     
-    return res.status(500).json({
-      success: false,
-      message: 'An error occurred while getting user data',
-      // Include error message in production to help debug the initial deployment
-      error: error.message
-    });
+    return sendError(res, 'An error occurred while getting user data', 500);
   }
 });
 
@@ -554,9 +442,26 @@ router.get('/verify-reset-token', async (req, res) => {
   }
 });
 
-// Export the router and the verifyToken middleware as authenticateToken 
-// for use in other files
+/**
+ * Logout endpoint
+ * POST /api/auth/logout
+ */
+router.post('/logout', (req, res) => {
+  // Since we use JWT, the client is responsible for removing the token
+  // We still provide this endpoint for consistency and future server-side logout handling
+  
+  // If using sessions, we would destroy the session here
+  if (req.session) {
+    req.session.destroy();
+  }
+  
+  return sendSuccess(res, {
+    message: 'Logged out successfully'
+  });
+});
+
+// Export the router and the authentication middleware
 module.exports = {
   router,
-  authenticateToken: verifyToken
+  authenticateToken: authenticateJWT
 };
