@@ -74,6 +74,7 @@ const AdminApiService = {
       const options = {
         method,
         headers,
+        credentials: 'include', // Include session cookies with request
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {

@@ -29,6 +29,7 @@ const AdminApiUtils = {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
+                credentials: 'include', // Include session cookies with request
             };
             
             // Add body for POST, PUT, PATCH methods
