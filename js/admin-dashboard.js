@@ -86,7 +86,8 @@ async function loadDashboardData() {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`
-            }
+            },
+            credentials: 'include' // Include session cookies with request
         });
         
         if (!statsResponse.ok) {
@@ -157,7 +158,8 @@ async function loadRecentBookings() {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`
-            }
+            },
+            credentials: 'include' // Include session cookies with request
         });
         
         if (!response.ok) {
@@ -263,7 +265,8 @@ async function loadUpcomingWorkshops() {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${TokenService.getToken()}`
-            }
+            },
+            credentials: 'include' // Include session cookies with request
         });
         
         if (!response.ok) {

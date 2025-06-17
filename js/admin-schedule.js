@@ -1142,7 +1142,9 @@ async function openBookingsModal(classId) {
         `;
         
         // Fetch bookings for this class
-        const response = await fetch(`/api/schedule/class/${classId}/bookings?date=${dateString}`);
+        const response = await fetch(`/api/schedule/class/${classId}/bookings?date=${dateString}`, {
+            credentials: 'include' // Include session cookies with request
+        });
         const bookingsData = await response.json();
         
         if (bookingsData.success) {
