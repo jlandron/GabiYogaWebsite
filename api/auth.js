@@ -41,11 +41,14 @@ const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
  * Login endpoint
  * POST /api/auth/login
  */
-router.post('/login', authenticateLocal, (req, res) => {
+router.post('/login', authenticateLocal, async (req, res) => {
   try {
     // At this point, authentication has succeeded and user is in req.user
+    // Get the JWT secret from the app settings (loaded during server startup)
+    const jwtSecret = req.app.get('jwtSecret') || await getJwtSecret();
+    
     // Generate JWT token
-    const token = generateToken(req.user, JWT_SECRET, JWT_EXPIRY);
+    const token = generateToken(req.user, jwtSecret, JWT_EXPIRY);
     
     // Establish session (important for session cookie)
     req.login(req.user, (loginErr) => {
@@ -108,6 +111,8 @@ router.post('/login', authenticateLocal, (req, res) => {
  * POST /api/auth/register
  */
 router.post('/register', async (req, res) => {
+  // Get the JWT secret from the app settings (loaded during server startup)
+  const jwtSecret = req.app.get('jwtSecret') || await getJwtSecret();
   try {
     const { firstName, lastName, email, password } = req.body;
     
@@ -137,8 +142,8 @@ router.post('/register', async (req, res) => {
       role: user.role
     };
 
-    // Generate JWT token
-    const token = generateToken(userForToken, JWT_SECRET, JWT_EXPIRY);
+    // Generate JWT token 
+    const token = generateToken(userForToken, jwtSecret, JWT_EXPIRY);
 
     // Return user info and token
     return res.status(201).json({

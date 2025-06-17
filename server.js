@@ -52,8 +52,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // JWT secret will be loaded asynchronously from AWS Secrets Manager
-let JWT_SECRET;
-const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h';
+// Load JWT secret from AWS Secrets Manager
+// Import the JWT Secret loader
+const { initializeJWTSecret } = require('./utils/aws-jwt-secret');
+logger.info('Fetching JWT secret from AWS Secrets Manager...');
+const JWT_SECRET = initializeJWTSecret();
 
 // Middleware
 app.use(cors());
@@ -231,15 +234,9 @@ process.on('uncaughtException', (error) => {
 app.use(notFoundHandler); // Handle 404 for unknown API routes
 app.use(errorHandler);    // Handle all other errors
 
-// Import the JWT Secret loader
-const { initializeJWTSecret } = require('./utils/aws-jwt-secret');
-
 // Initialize database and start server
 const startServer = async () => {
   try {
-    // Load JWT secret from AWS Secrets Manager
-    logger.info('Fetching JWT secret from AWS Secrets Manager...');
-    JWT_SECRET = await initializeJWTSecret();
     
     if (!JWT_SECRET) {
       logger.error('Failed to obtain JWT_SECRET from AWS Secrets Manager or environment');

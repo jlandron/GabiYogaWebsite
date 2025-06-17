@@ -255,17 +255,28 @@ function authenticateTokenCompat(req, res, next) {
 
   // Get the JWT secret from AWS Secrets Manager
   // This is loaded asynchronously in server.js and shared across the application
-  const JWT_SECRET = req.app.get('jwtSecret');
+  const jwtSecret = req.app.get('jwtSecret');
   
   // If JWT_SECRET is not available through the app, fall back to environment variable
   // This should only happen during development or if the server startup sequence is modified
-  if (!JWT_SECRET) {
+  if (!jwtSecret) {
     logger.warn('JWT_SECRET not found in app settings, falling back to environment variable');
+    // If we still don't have a secret, we can't verify the token
+    if (!process.env.JWT_SECRET) {
+      logger.error('No JWT_SECRET available from app settings or environment');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error'
+      });
+    }
   }
+  
+  // Use the secret from app settings or environment variable
+  const secretToUse = jwtSecret;
   
   try {
     // Verify token directly for backward compatibility
-    const verified = jwt.verify(token, JWT_SECRET);
+    const verified = jwt.verify(token, secretToUse);
     req.user = verified;
     next();
   } catch (error) {
