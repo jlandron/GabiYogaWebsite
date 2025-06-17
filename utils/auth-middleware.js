@@ -3,6 +3,7 @@
  * 
  * This file provides middleware functions for authentication
  * using Passport.js with JWT and local strategies.
+ * Enhanced to work consistently across SQLite and MySQL environments.
  */
 
 const passport = require('passport');
@@ -18,9 +19,18 @@ const logger = require('./logger');
  * @returns {string} JWT token
  */
 function generateToken(user, secret, expiresIn = '24h') {
+  // Ensure user ID is properly formatted - convert to string if needed
+  // This helps with consistency between SQLite (which may use numbers) and MySQL
+  const userId = user.id ? user.id.toString() : (user.user_id ? user.user_id.toString() : null);
+  
+  if (!userId) {
+    logger.error('Cannot generate token: Missing user ID', { user });
+    throw new Error('User ID is required to generate a token');
+  }
+  
   return jwt.sign(
     { 
-      id: user.id,
+      id: userId,
       email: user.email,
       role: user.role 
     },
@@ -30,9 +40,16 @@ function generateToken(user, secret, expiresIn = '24h') {
 }
 
 /**
- * Middleware to authenticate using JWT strategy
+ * Middleware to authenticate using JWT strategy with better error handling
  */
 function authenticateJWT(req, res, next) {
+  // Log authentication attempt for debugging
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  logger.debug('JWT Authentication attempt', { 
+    hasToken: !!token,
+    tokenLength: token ? token.length : 0
+  });
+  
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       logger.error('JWT authentication error:', err);
@@ -40,10 +57,16 @@ function authenticateJWT(req, res, next) {
     }
     
     if (!user) {
+      logger.warn('Invalid JWT token', { info: info?.message || 'No additional info' });
       return sendError(res, 'Access denied. Invalid token.', 401);
     }
     
     // Add user to request object
+    logger.debug('JWT Authentication successful', { 
+      userId: user.id || user.user_id,
+      role: user.role 
+    });
+    
     req.user = user;
     next();
   })(req, res, next);
@@ -51,9 +74,14 @@ function authenticateJWT(req, res, next) {
 
 /**
  * Middleware to authenticate using local strategy
- * Used for login routes
+ * Used for login routes with improved error handling
  */
 function authenticateLocal(req, res, next) {
+  // Log authentication attempt
+  logger.debug('Local Authentication attempt', { 
+    email: req.body.email && req.body.email.substring(0, 3) + '...' 
+  });
+  
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err) {
       logger.error('Local authentication error:', err);
@@ -61,10 +89,16 @@ function authenticateLocal(req, res, next) {
     }
     
     if (!user) {
+      logger.warn('Invalid credentials', { info: info?.message || 'No additional info' });
       return sendError(res, info?.message || 'Invalid credentials', 401);
     }
     
     // Add user to request object
+    logger.debug('Local Authentication successful', { 
+      userId: user.id || user.user_id,
+      role: user.role 
+    });
+    
     req.user = user;
     next();
   })(req, res, next);
@@ -88,9 +122,27 @@ function requireAdmin(req, res, next) {
 
 /**
  * Middleware to validate token
- * Used for token validation endpoint
+ * Used for token validation endpoint with extended error handling
  */
 function validateToken(req, res, next) {
+  // Get token from Authorization header
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  // Log validation attempt for debugging
+  logger.debug('Token validation attempt', { 
+    hasToken: !!token,
+    tokenLength: token ? token.length : 0 
+  });
+  
+  // If no token provided, return 401
+  if (!token) {
+    logger.warn('No token provided for validation');
+    return res.status(401).json({
+      valid: false,
+      message: 'No token provided'
+    });
+  }
+  
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       logger.error('Token validation error:', err);
@@ -101,6 +153,7 @@ function validateToken(req, res, next) {
     }
     
     if (!user) {
+      logger.warn('Invalid token for validation', { info: info?.message || 'No additional info' });
       return res.status(401).json({
         valid: false,
         message: 'Invalid token'
@@ -108,9 +161,46 @@ function validateToken(req, res, next) {
     }
     
     // Add validation result to request
+    logger.debug('Token validation successful', { 
+      userId: user.id || user.user_id,
+      role: user.role 
+    });
+    
     req.tokenValidation = { valid: true, user };
     next();
   })(req, res, next);
+}
+
+/**
+ * Fallback authentication middleware for compatibility with older code
+ * This mimics the behavior of the original authenticateToken function
+ * but uses Passport.js under the hood
+ */
+function authenticateTokenCompat(req, res, next) {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Access denied. No token provided.' 
+    });
+  }
+
+  // Use the JWT secret from environment
+  const JWT_SECRET = process.env.JWT_SECRET;
+  
+  try {
+    // Verify token directly for backward compatibility
+    const verified = jwt.verify(token, JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (error) {
+    logger.error('Token verification error:', error);
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Invalid token' 
+    });
+  }
 }
 
 module.exports = {
@@ -118,5 +208,6 @@ module.exports = {
   authenticateJWT,
   authenticateLocal,
   requireAdmin,
-  validateToken
+  validateToken,
+  authenticateTokenCompat
 };

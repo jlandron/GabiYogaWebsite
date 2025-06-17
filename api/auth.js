@@ -461,7 +461,10 @@ router.post('/logout', (req, res) => {
 });
 
 // Export the router and the authentication middleware
+// Use the compatibility function to ensure consistent behavior across databases
+const { authenticateTokenCompat } = require('../utils/auth-middleware');
+
 module.exports = {
   router,
-  authenticateToken: authenticateJWT
+  authenticateToken: authenticateTokenCompat
 };

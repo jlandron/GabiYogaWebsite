@@ -19,10 +19,13 @@ const { AuthOperations } = require('../database/data-access');
  */
 function initializePassport(options) {
   const { jwtSecret } = options;
+  const logger = require('./logger');
   
   if (!jwtSecret) {
     throw new Error('JWT secret is required for Passport initialization');
   }
+  
+  logger.info('Initializing Passport.js with authentication strategies');
   
   // Configure local strategy for username/password login
   passport.use(new LocalStrategy(
@@ -68,21 +71,43 @@ function initializePassport(options) {
   };
   
   passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
+    logger.debug('JWT Strategy: Verifying token payload', { 
+      id: payload.id,
+      role: payload.role,
+      exp: payload.exp
+    });
     try {
+      // Handle potential format differences between databases
+      const userId = payload.id ? payload.id.toString() : null;
+      
+      if (!userId) {
+        logger.warn('JWT payload missing user ID');
+        return done(null, false);
+      }
+      
       // Find user by ID from JWT payload
-      const user = await AuthOperations.findUserById(payload.id);
+      const user = await AuthOperations.findUserById(userId);
       
       if (!user) {
+        logger.warn(`JWT validation: User not found for ID ${userId}`);
         return done(null, false);
       }
       
       // Return user object without sensitive data
-      return done(null, {
+      const userForAuth = {
         id: user.user_id,
         email: user.email,
         role: user.role
+      };
+      
+      logger.debug('JWT validation successful', { 
+        userId: user.user_id,
+        role: user.role
       });
+      
+      return done(null, userForAuth);
     } catch (error) {
+      logger.error('JWT validation error:', error);
       return done(error, false);
     }
   }));
@@ -95,25 +120,43 @@ function initializePassport(options) {
   // Deserialize user from the session
   passport.deserializeUser(async (id, done) => {
     try {
-      const user = await AuthOperations.findUserById(id);
+      // Convert id to string to handle both SQLite and MySQL
+      const userId = id ? id.toString() : null;
+      
+      if (!userId) {
+        logger.warn('User deserialize: Missing user ID');
+        return done(null, false);
+      }
+      
+      const user = await AuthOperations.findUserById(userId);
       if (!user) {
+        logger.warn(`User deserialize: User not found for ID ${userId}`);
         return done(null, false);
       }
       
       // Return user object without sensitive data
-      done(null, {
+      const userObj = {
         id: user.user_id,
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
         role: user.role,
         profilePicture: user.profile_picture
+      };
+      
+      logger.debug('User deserialized successfully', {
+        userId: user.user_id,
+        role: user.role
       });
+      
+      done(null, userObj);
     } catch (error) {
+      logger.error('User deserialize error:', error);
       done(error, false);
     }
   });
   
+  logger.info('Passport initialization complete');
   return passport;
 }
 
