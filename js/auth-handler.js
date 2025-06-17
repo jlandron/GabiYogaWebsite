@@ -98,8 +98,19 @@ const AuthHandler = {
             console.log('AuthHandler: Validating authentication...');
             
             // Step 1: Check if user is logged in (has token and user info)
-            if (!TokenService.getToken() || !UserService.getUser()) {
-                console.log('AuthHandler: No token or user info found');
+            const hasJwtToken = !!TokenService.getToken();
+            const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
+            const hasUserInfo = !!UserService.getUser();
+            
+            console.log('AuthHandler: Authentication state check: ', { 
+                hasJwtToken, 
+                hasSessionCookie, 
+                hasUserInfo 
+            });
+            
+            // Consider authenticated if we have either a JWT token or a session cookie, plus user info
+            if ((!hasJwtToken && !hasSessionCookie) || !hasUserInfo) {
+                console.log('AuthHandler: No token, session cookie, or user info found');
                 this.redirectToLogin();
                 return false;
             }
@@ -253,20 +264,28 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been recently validated
      */
     isRecentlyValidated: function() {
-        // As requested, once the user has a token and is logged in, consider validation successful
-        // This removes the hard validation requirement until it's added back later
-        if (TokenService.getToken() && UserService.getUser()) {
+        // Check for either JWT token or session cookie
+        const hasJwtToken = !!TokenService.getToken();
+        const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
+        const hasUserInfo = !!UserService.getUser();
+        
+        // As requested, consider authentication valid if we have either token type and user info
+        if ((hasJwtToken || hasSessionCookie) && hasUserInfo) {
             // Check if we've already set lastValidated - if not, set it now
             if (!this.authState.lastValidated) {
                 this.authState.lastValidated = Date.now();
                 window.tokenValidated = true;
             }
             
-            console.log('AuthHandler: User has token and is logged in - skipping validation check');
+            console.log('AuthHandler: User has authentication (token or session) - skipping validation check', {
+                hasJwtToken,
+                hasSessionCookie,
+                hasUserInfo
+            });
             return true;
         }
         
-        // If no token or user, validation is definitely needed
+        // If no token/session or user, validation is definitely needed
         return false;
     },
 
