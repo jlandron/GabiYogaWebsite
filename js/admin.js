@@ -63,8 +63,8 @@ const AdminApiService = {
 
       const options = {
         method,
-        headers,
-        credentials: 'include'
+        headers
+        // Removed 'credentials: include' to be consistent with our token-based auth approach
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
