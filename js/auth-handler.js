@@ -112,70 +112,21 @@ const AuthHandler = {
                 return false;
             }
 
-            // Step 3: Validate token with backend using Passport/JWT with timeout
-            try {
-                console.log('AuthHandler: Validating token with backend...');
-                
-                // Create an AbortController for timeout management
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), timeout);
-                
-                // Token validation request with abort controller
-                const response = await fetch(`${API_BASE_URL}/auth/validate`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${TokenService.getToken()}`
-                    },
-                    signal: controller.signal,
-                    credentials: 'include' // Keep cookies for server-side session compatibility
-                });
-                
-                // Clear timeout since we got a response
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`Token validation failed: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('AuthHandler: Validation response:', data);
-                
-                if (!data.valid) {
-                    throw new Error('Invalid token');
-                }
-                
-                // Update validation timestamp
-                this.authState.lastValidated = Date.now();
-                
-                // Set global flag to prevent redundant validations
-                window.tokenValidated = true;
-                
-                // Call success callback if provided
-                if (onSuccess && typeof onSuccess === 'function') {
-                    onSuccess();
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('AuthHandler: Token validation error:', error);
-                
-                // Check if this was an abort/timeout
-                if (error.name === 'AbortError') {
-                    console.error('AuthHandler: Authentication request timed out');
-                    error = new Error('Authentication timeout');
-                }
-                
-                // Call error callback if provided
-                if (onError && typeof onError === 'function') {
-                    onError(error);
-                }
-
-                // Only handle auth errors (not network errors) by logging out
-                if (!error.message.includes('NetworkError')) {
-                    this.handleAuthError(error);
-                }
-                return false;
+            // Skip the backend validation call as requested - fail open while logging
+            console.log('AuthHandler: Skipping backend validation as requested - considering token valid');
+            
+            // Update validation timestamp
+            this.authState.lastValidated = Date.now();
+            
+            // Set global flag to prevent redundant validations
+            window.tokenValidated = true;
+            
+            // Call success callback if provided
+            if (onSuccess && typeof onSuccess === 'function') {
+                onSuccess();
             }
+            
+            return true;
         } catch (error) {
             console.error('AuthHandler: Unexpected error during auth validation:', error);
             
@@ -302,29 +253,21 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been recently validated
      */
     isRecentlyValidated: function() {
-        // Check both window.tokenValidated flag and lastValidated timestamp
-        if (!window.tokenValidated || !this.authState.lastValidated) {
-            return false;
+        // As requested, once the user has a token and is logged in, consider validation successful
+        // This removes the hard validation requirement until it's added back later
+        if (TokenService.getToken() && UserService.getUser()) {
+            // Check if we've already set lastValidated - if not, set it now
+            if (!this.authState.lastValidated) {
+                this.authState.lastValidated = Date.now();
+                window.tokenValidated = true;
+            }
+            
+            console.log('AuthHandler: User has token and is logged in - skipping validation check');
+            return true;
         }
         
-        // Check if validation has expired based on timeout
-        const now = Date.now();
-        const timeSinceValidation = now - this.authState.lastValidated;
-        
-        // For production environment, use a shorter validation period but still cache
-        // This prevents excessive server validation on every page load
-        const hostname = window.location.hostname;
-        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
-        
-        if (isProduction) {
-            // In production, cache validation for 1 hour instead of forcing validation every time
-            // This will drastically reduce token validation requests while still being secure
-            console.log('AuthHandler: Production environment - using 1 hour validation cache');
-            return timeSinceValidation < (60 * 60 * 1000); // 1 hour in milliseconds
-        }
-        
-        // For development, use the standard timeout (15 min)
-        return timeSinceValidation < this.authState.validationTimeout;
+        // If no token or user, validation is definitely needed
+        return false;
     },
 
     /**
@@ -408,31 +351,21 @@ const AuthHandler = {
      * @returns {Promise<boolean>} - Whether refresh was successful
      */
     refreshAuthTokenIfNeeded: async function() {
-        // If no token or not validated, no need to refresh
-        if (!TokenService.getToken() || !this.authState.lastValidated) {
+        // If no token, don't proceed
+        if (!TokenService.getToken()) {
             return false;
         }
         
-        // Get the appropriate validation timeout for the environment
-        const hostname = window.location.hostname;
-        const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
+        // As requested, we're now skipping validation calls to the server
+        // Just update the timestamp to indicate we've "refreshed" the token
+        console.log('AuthHandler: Skipping token refresh as requested');
+        this.authState.lastValidated = Date.now();
+        window.tokenValidated = true;
+        return true;
         
-        // Use different timeout values for production vs development
-        const validationTimeout = isProduction ? 
-            (60 * 60 * 1000) : // 1 hour in production - same as in isRecentlyValidated
-            this.authState.validationTimeout; // 15 minutes in development
-        
-        // Check if we're approaching the token expiration (75% of the appropriate timeout)
-        const now = Date.now();
-        const timeSinceValidation = now - this.authState.lastValidated;
-        const refreshThreshold = validationTimeout * 0.75;
-        
-        if (timeSinceValidation < refreshThreshold) {
-            // Token is still fresh enough
-            console.log('AuthHandler: Token still fresh, no refresh needed');
-            return true;
-        }
-        
+        // Note: The code below is now disabled since we're skipping validation
+        // It's been kept as a comment for future reference when validation is added back
+        /* 
         console.log('AuthHandler: Token nearing expiration, refreshing...');
         
         // Store the refresh operation in a static variable to prevent multiple refreshes
@@ -464,5 +397,6 @@ const AuthHandler = {
         })();
         
         return await AuthHandler.refreshInProgress;
+        */
     }
 };
