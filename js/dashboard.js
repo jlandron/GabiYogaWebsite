@@ -112,52 +112,10 @@ function addAdminViewIndicator() {
     }
 }
 
-/**
- * Initialize the dashboard with user data
- */
-async function initializeDashboard() {
-    try {
-        // Show loading spinner
-        showLoadingState();
-        
-        // Get current user data
-        const userData = await fetchUserData();
-        if (!userData) {
-            console.error('Failed to fetch user data');
-            showError('Failed to load your information. Please try again later.');
-            return;
-        }
-
-        // Update welcome message
-        updateWelcomeMessage(userData);
-        
-        // Load user profile data
-        loadProfileData(userData);
-        
-        // Fetch and display bookings, memberships, etc.
-        await Promise.all([
-            loadUpcomingClasses(userData.id),
-            loadMemberships(userData.id),
-            loadPurchaseHistory(userData.id),
-            loadWorkshops(),
-            loadRetreats(),
-            loadPrivateSessions(userData.id)
-        ]);
-        
-        // Setup event listeners after content is loaded
-        setupEventListeners();
-        
-        // Hide loading spinner
-        hideLoadingState();
-    } catch (error) {
-        console.error('Dashboard initialization error:', error);
-        showError('There was a problem loading your dashboard. Please try again later.');
-        hideLoadingState();
-    }
-}
+// Initialization function is now defined later in the file
 
 /**
- * Show loading spinner or state
+ * Show loading spinner or state with timeout and sign out option
  */
 function showLoadingState() {
     // Create loading overlay if it doesn't exist
@@ -165,8 +123,37 @@ function showLoadingState() {
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'dashboard-loading';
         loadingDiv.className = 'loading-overlay';
-        loadingDiv.innerHTML = '<div class="loading-spinner"></div><p>Loading your information...</p>';
+        
+        loadingDiv.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p>Loading your information...</p>
+            <div id="loading-timeout" style="display: none; margin-top: 20px;">
+                <p style="color: #d9534f; margin-bottom: 15px;">Taking longer than expected. Your session may have expired.</p>
+                <button id="loading-signout" class="btn">Sign Out</button>
+            </div>
+        `;
+        
         document.body.appendChild(loadingDiv);
+        
+        // Add timeout to show sign out button if loading takes too long
+        setTimeout(() => {
+            const timeoutElement = document.getElementById('loading-timeout');
+            if (timeoutElement) {
+                timeoutElement.style.display = 'block';
+            }
+            
+            // Add event listener to sign out button
+            const signOutBtn = document.getElementById('loading-signout');
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', () => {
+                    // Clear user data
+                    UserService.logout();
+                    // Redirect to login page
+                    window.location.href = 'index.html';
+                });
+            }
+        }, 5000); // Show after 5 seconds
+        
     } else {
         document.getElementById('dashboard-loading').style.display = 'flex';
     }
@@ -183,20 +170,56 @@ function hideLoadingState() {
 }
 
 /**
- * Show error message
+ * Show error message with sign out option
  */
 function showError(message) {
+    // Hide loading spinner first
+    hideLoadingState();
+    
     // Check if error container exists
     let errorContainer = document.querySelector('.dashboard-error');
     if (!errorContainer) {
         errorContainer = document.createElement('div');
         errorContainer.className = 'dashboard-error';
         const dashboardContent = document.querySelector('.dashboard-content');
-        dashboardContent.prepend(errorContainer);
+        
+        if (dashboardContent) {
+            dashboardContent.prepend(errorContainer);
+        } else {
+            // If dashboard content doesn't exist yet, create a container for the error
+            const container = document.createElement('div');
+            container.className = 'container error-container';
+            container.style.padding = '40px 20px';
+            container.style.textAlign = 'center';
+            container.appendChild(errorContainer);
+            document.body.appendChild(container);
+        }
     }
     
-    errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+    errorContainer.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i> 
+        <p>${message}</p>
+        <button id="error-signout-btn" class="btn" style="margin-top: 15px;">Sign Out</button>
+        <button id="error-retry-btn" class="btn btn-secondary" style="margin-top: 15px; margin-left: 10px;">Retry</button>
+    `;
     errorContainer.style.display = 'block';
+    
+    // Add event listeners
+    const signOutBtn = document.getElementById('error-signout-btn');
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', () => {
+            UserService.logout();
+            window.location.href = 'index.html';
+        });
+    }
+    
+    const retryBtn = document.getElementById('error-retry-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            // Refresh the page to retry
+            window.location.reload();
+        });
+    }
 }
 
 /**
@@ -457,31 +480,71 @@ function createBookingElement(booking, isUpcoming) {
 }
 
 /**
- * Add event listeners to booking buttons
+ * Initialize the dashboard with user data
  */
-function addBookingButtonListeners() {
-    // Add to calendar buttons
-    document.querySelectorAll('.add-to-calendar-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const bookingId = this.getAttribute('data-booking-id');
-            addToCalendar(bookingId);
-        });
-    });
-    
-    // Cancel booking buttons
-    document.querySelectorAll('.cancel-booking-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const bookingId = this.getAttribute('data-booking-id');
-            cancelBooking(bookingId);
-        });
-    });
+async function initializeDashboard(isAdminPreview = false) {
+    try {
+        // Show loading spinner
+        showLoadingState();
+        
+        // Get current user data with timeout
+        let userData;
+        try {
+            userData = await Promise.race([
+                fetchUserData(),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Authentication timeout - your session may have expired")), 10000)
+                )
+            ]);
+        } catch (timeoutErr) {
+            console.error('User data fetch timeout:', timeoutErr);
+            showError('Your session appears to be invalid or expired. Please sign out and sign back in.');
+            return;
+        }
+        
+        if (!userData) {
+            console.error('Failed to fetch user data');
+            showError('Failed to load your information. Your session may have expired.');
+            return;
+        }
+
+        // Update welcome message
+        updateWelcomeMessage(userData);
+        
+        // Load user profile data
+        loadProfileData(userData);
+        
+        // Fetch and display bookings, memberships, etc.
+        try {
+            await Promise.all([
+                loadUpcomingClasses(userData.id),
+                loadMemberships(userData.id),
+                loadPurchaseHistory(userData.id),
+                loadWorkshops(),
+                loadRetreats(),
+                loadPrivateSessions(userData.id)
+            ]);
+        } catch (dataError) {
+            console.error('Error loading dashboard data:', dataError);
+            // Continue anyway - we'll show what we can
+        }
+        
+        // Setup event listeners after content is loaded
+        setupEventListeners();
+        
+        // Hide loading spinner
+        hideLoadingState();
+    } catch (error) {
+        console.error('Dashboard initialization error:', error);
+        showError('There was a problem loading your dashboard. Your session may have expired.');
+    }
 }
 
 /**
- * Add a booking to calendar
+ * Add booking to calendar
  */
 function addToCalendar(bookingId) {
-    // Find the booking details from the DOM
+    // Find the booking item
     const bookingButton = document.querySelector(`.add-to-calendar-btn[data-booking-id="${bookingId}"]`);
     if (!bookingButton) return;
     
@@ -1303,18 +1366,29 @@ function setupEventListeners() {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Clear authentication data
-            UserService.logout();
-            
-            // Show login modal with callback to reload page after login
-            if (typeof showLoginModal === 'function') {
-                showLoginModal(false, function() {
-                    // Reload the page after successful login
-                    window.location.reload();
-                });
+            // Use AuthHandler.logout() to properly clear session on server and client side
+            if (window.AuthHandler && typeof window.AuthHandler.logout === 'function') {
+                // AuthHandler.logout() will handle token removal and redirection
+                window.AuthHandler.logout();
             } else {
-                // Fallback: redirect to login page if modal isn't available
-                window.location.href = 'login.html';
+                // Fallback if AuthHandler is not available
+                // Make server logout request
+                try {
+                    fetch(`${API_BASE_URL}/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${TokenService.getToken()}`,
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    }).catch(err => console.warn('Logout request error:', err));
+                } finally {
+                    // Clear authentication data
+                    UserService.logout();
+                    
+                    // Redirect to homepage
+                    window.location.href = 'index.html';
+                }
             }
         });
     }
