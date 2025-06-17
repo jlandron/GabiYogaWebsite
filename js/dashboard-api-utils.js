@@ -1,128 +1,112 @@
 /**
  * Dashboard API Utilities
  * 
- * Shared functions for making authenticated API requests in the customer dashboard.
- * This ensures consistent authentication handling using both JWT tokens and session cookies.
+ * This module provides consistent API access methods for user dashboard pages,
+ * ensuring proper authentication is always included with requests.
+ * 
+ * It handles both JWT token authentication and session cookie authentication,
+ * preferring session cookies when available for longer session persistence.
  */
 
 const DashboardApiUtils = {
-  /**
-   * Make authenticated request that works with both JWT and session auth
-   * 
-   * @param {string} url - API endpoint URL
-   * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
-   * @param {Object} data - Request body data for POST/PUT
-   * @returns {Promise} - Response JSON
-   */
-  request: async function(url, method = 'GET', data = null) {
-    try {
-      console.log(`DashboardApiUtils: ${method} request to ${url}`);
-      
-      // Get token if available, but don't require it (will use session auth)
-      const token = localStorage.getItem('auth_token') || localStorage.getItem('adminToken');
-      
-      // Setup request headers
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      // Add authorization token if available
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      } else {
-        console.warn('DashboardApiUtils: No JWT token found - proceeding with session auth only');
-      }
-      
-      // Setup request options
-      const options = {
-        method,
-        headers,
-        credentials: 'include' // Critical for session-based auth
-      };
-      
-      // Add request body for POST/PUT/PATCH
-      if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-        options.body = JSON.stringify(data);
-      }
-      
-      // Execute request
-      const response = await fetch(url, options);
-      
-      // Handle non-success responses
-      if (!response.ok) {
-        // Try to parse error details from response
-        let errorMessage = `Request failed with status ${response.status}`;
+    /**
+     * Make an authenticated API request
+     * @param {string} url - The API endpoint to call
+     * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
+     * @param {Object} data - Optional data to send with the request
+     * @returns {Promise} - Promise that resolves to the parsed JSON response
+     */
+    request: async function(url, method = 'GET', data = null) {
+        console.log(`DashboardApiUtils: Making ${method} request to ${url}`);
         
         try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch (e) {
-          // Couldn't parse JSON error response
-          console.warn('DashboardApiUtils: Unable to parse error response as JSON');
+            // Get JWT token if available
+            const token = localStorage.getItem('auth_token');
+            
+            // Configure fetch options
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // Always include credentials to send session cookies
+                credentials: 'include'
+            };
+            
+            // Add authorization token if available
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            // Add body for POST, PUT, PATCH methods
+            if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+                options.body = JSON.stringify(data);
+            }
+            
+            // Make the request
+            const response = await fetch(url, options);
+            
+            // Check for HTTP errors
+            if (!response.ok) {
+                // Special handling for authentication errors
+                if (response.status === 401) {
+                    console.error('DashboardApiUtils: Authentication failed');
+                    
+                    // Let AuthHandler deal with the redirect
+                    if (window.AuthHandler) {
+                        window.AuthHandler.handleAuthError(new Error('Authentication failed'));
+                    } else {
+                        // Fallback if AuthHandler is not available
+                        if (confirm('Your session has expired. Please log in again.')) {
+                            window.location.href = '/index.html';
+                        }
+                    }
+                    
+                    throw new Error('Authentication failed');
+                }
+                
+                // For other errors, try to get error message from response
+                const errorText = await response.text();
+                let errorMessage;
+                
+                try {
+                    // Try to parse as JSON
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorJson.error || `Error ${response.status}: ${response.statusText}`;
+                } catch (e) {
+                    // If parsing fails, use the raw text or status
+                    errorMessage = errorText || `Error ${response.status}: ${response.statusText}`;
+                }
+                
+                throw new Error(errorMessage);
+            }
+            
+            // Parse JSON response
+            const responseData = await response.json();
+            return responseData;
+        } catch (error) {
+            console.error('DashboardApiUtils request error:', error);
+            
+            // Re-throw error to be handled by caller
+            throw error;
         }
+    },
+    
+    /**
+     * Get the authentication status
+     * @returns {Object} - Authentication status object containing token and session info
+     */
+    getAuthStatus: function() {
+        const token = localStorage.getItem('auth_token');
+        const hasCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
         
-        // For authentication errors, log but don't redirect (fail open)
-        if (response.status === 401) {
-          console.warn('DashboardApiUtils: Authentication issue detected (401) - will attempt to recover');
-          
-          // If we're getting a 401 but have a session cookie, try to continue
-          if (document.cookie.includes('connect.sid') || document.cookie.includes('sessionId')) {
-            console.info('DashboardApiUtils: Session cookie found - trying to continue despite 401');
-            // Return a default response to allow the UI to continue showing what it can
-            return { success: false, authError: true, message: "Authentication issue - showing partial data" };
-          }
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      // Return successful response
-      return await response.json();
-    } catch (error) {
-      console.error('DashboardApiUtils request error:', error);
-      throw error;
+        return {
+            hasToken: !!token,
+            hasSessionCookie: hasCookie,
+            isAuthenticated: !!(token || hasCookie)
+        };
     }
-  },
-  
-  /**
-   * Override the standard API Service to use our enhanced auth method
-   * This allows us to drop in this replacement without changing existing code
-   */
-  applyOverrides: function() {
-    // Store the original methods
-    if (!window._originalApiService) {
-      window._originalApiService = {
-        authRequest: ApiService.authRequest
-      };
-      
-      // Override the authRequest method
-      ApiService.authRequest = async function(url, method, data) {
-        console.log('Using enhanced auth request with session support');
-        return DashboardApiUtils.request(url, method, data);
-      };
-      
-      console.log('API Service methods have been overridden with session-enabled versions');
-    }
-  },
-  
-  /**
-   * Restore the original API methods
-   */
-  restoreOriginals: function() {
-    if (window._originalApiService) {
-      ApiService.authRequest = window._originalApiService.authRequest;
-      window._originalApiService = null;
-      console.log('API Service methods have been restored to originals');
-    }
-  }
 };
 
 // Make available globally
 window.DashboardApiUtils = DashboardApiUtils;
-
-// Apply overrides immediately when this script is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  DashboardApiUtils.applyOverrides();
-});

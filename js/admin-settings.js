@@ -291,18 +291,8 @@ function initializeToggles() {
  * Fetch settings from API
  */
 function fetchExistingSettings() {
-    const authToken = localStorage.getItem('auth_token');
-    
-    if (authToken) {
-        fetch('/api/admin/settings', {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch settings');
-            return response.json();
-        })
+    // Use AdminApiUtils for consistent authentication handling
+    AdminApiUtils.request('/api/admin/settings')
         .then(data => {
             if (data.success && data.settings) {
                 applySettingsFromAPI(data.settings);
@@ -313,10 +303,6 @@ function fetchExistingSettings() {
             console.error('Error fetching settings:', error);
             fallbackToPublicSettings();
         });
-    } else {
-        console.log('No auth token found. Please log in to edit settings.');
-        fallbackToPublicSettings();
-    }
 }
 
 // Store QuillJS editor instances for later access
@@ -417,29 +403,22 @@ function saveAllSettings() {
     console.log('Starting to save all settings');
     const settingsData = collectSettingsData();
     
-    fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(settingsData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification();
-            updateHomepageText();
-            // Trigger event for section background alternation
-            window.dispatchEvent(new CustomEvent('sectionsVisibilityChanged'));
-        } else {
-            alert('Error saving settings: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error saving settings:', error);
-        alert('Error saving settings. Please try again.');
-    });
+    // Use AdminApiUtils for consistent authentication handling
+    AdminApiUtils.request('/api/admin/settings', 'PUT', settingsData)
+        .then(data => {
+            if (data.success) {
+                showNotification();
+                updateHomepageText();
+                // Trigger event for section background alternation
+                window.dispatchEvent(new CustomEvent('sectionsVisibilityChanged'));
+            } else {
+                alert('Error saving settings: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving settings:', error);
+            alert('Error saving settings. Please try again.');
+        });
 }
 
 /**
