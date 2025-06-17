@@ -150,16 +150,23 @@ const AuthHandler = {
                     console.error('AuthHandler: Response details:', {
                         status: response.status,
                         statusText: response.statusText,
-                        responseText: responseText.substring(0, 200) // Limiting to avoid huge logs
+                        responseText: responseText.substring(0, 200)
                     });
                     
                     // Check if we have session cookies - if so, we can continue despite JWT failure
-                    // This matches the server-side authenticateTokenCompat behavior
                     const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
                     
-                    if (hasSessionCookie) {
-                        console.log('AuthHandler: JWT validation failed but session cookie exists - proceeding with authentication');
-                        // We'll attempt to continue with session cookies even if JWT fails
+                    // For 500 errors (server issues), be more forgiving and try to continue
+                    if (response.status === 500 && (hasSessionCookie || TokenService.getToken())) {
+                        console.log('AuthHandler: Server error (500) but we have authentication credentials - proceeding cautiously');
+                        // Don't clear user data on server errors, just mark as needing revalidation later
+                        this.authState.lastValidated = null; // Will trigger revalidation next time
+                        return true;
+                    }
+                    
+                    // For 401/403 errors with session cookies, try to continue
+                    if ((response.status === 401 || response.status === 403) && hasSessionCookie) {
+                        console.log('AuthHandler: JWT validation failed but session cookie exists - proceeding with session auth');
                         this.authState.lastValidated = Date.now();
                         window.tokenValidated = true;
                         return true;
@@ -192,6 +199,14 @@ const AuthHandler = {
                 // Check for session cookies as a last fallback before giving up
                 const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
                 
+                // If it's a network error or server error, be more forgiving
+                if (validationError.name === 'TypeError' || validationError.message.includes('500')) {
+                    console.log('AuthHandler: Network/server error during validation - proceeding with cached credentials');
+                    // Don't clear credentials on network/server errors
+                    this.authState.lastValidated = null; // Will retry validation next time
+                    return true;
+                }
+                
                 if (hasSessionCookie) {
                     console.log('AuthHandler: Exception in validation but session cookie exists - attempting to proceed');
                     // We'll attempt to continue with session cookies even after an exception
@@ -203,10 +218,13 @@ const AuthHandler = {
                 // No JWT and no session cookie - authentication has truly failed
                 console.log('AuthHandler: No valid JWT or session cookie - authentication failed');
                 
-                // Clear token and user data
-                console.log('AuthHandler: Clearing token and user data due to validation failure');
-                TokenService.removeToken();
-                UserService.removeUser();
+                // Only clear credentials if we're sure it's an authentication failure, not a server issue
+                if (!validationError.message.includes('500') && !validationError.name === 'TypeError') {
+                    console.log('AuthHandler: Clearing token and user data due to validation failure');
+                    TokenService.removeToken();
+                    UserService.removeUser();
+                }
+                
                 console.log('AuthHandler: Redirecting to login due to validation failure');
                 this.redirectToLogin();
                 return false;

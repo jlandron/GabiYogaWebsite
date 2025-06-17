@@ -47,7 +47,8 @@ function authenticateJWT(req, res, next) {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   logger.debug('JWT Authentication attempt', { 
     hasToken: !!token,
-    tokenLength: token ? token.length : 0
+    tokenLength: token ? token.length : 0,
+    path: req.path
   });
   
   if (!token) {
@@ -57,12 +58,35 @@ function authenticateJWT(req, res, next) {
   
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
-      logger.error('JWT authentication error:', err);
+      logger.error('JWT authentication error:', {
+        error: err.message,
+        stack: err.stack,
+        code: err.code
+      });
+      
+      // Check if it's a database connection error
+      if (err.code === 'ECONNREFUSED' || err.code === 'ER_ACCESS_DENIED_ERROR') {
+        return sendError(res, 'Database connection error', 500);
+      }
+      
       return sendError(res, 'Authentication error', 500);
     }
     
     if (!user) {
-      logger.warn('Invalid JWT token', { info: info?.message || 'No additional info' });
+      logger.warn('Invalid JWT token', { 
+        info: info?.message || 'No additional info',
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+      });
+      
+      // Check if we have session cookies as fallback
+      const hasSessionCookie = req.cookies && (req.cookies['connect.sid'] || req.cookies.sessionId);
+      if (hasSessionCookie && req.session && req.session.userId) {
+        logger.info('JWT invalid but session is valid, attempting session-based auth');
+        // Try to get user from session
+        req.user = { id: req.session.userId, role: req.session.userRole || 'member' };
+        return next();
+      }
+      
       return sendError(res, 'Access denied. Invalid token.', 401);
     }
     
@@ -201,14 +225,24 @@ function authenticateTokenCompat(req, res, next) {
     return next();
   }
   
+  // Check if we have session data
+  if (req.session && req.session.userId) {
+    logger.debug('authenticateTokenCompat: User has session data', {
+      userId: req.session.userId, 
+      userRole: req.session.userRole
+    });
+    req.user = { id: req.session.userId, role: req.session.userRole || 'member' };
+    return next();
+  }
+  
   // If no valid session, try JWT token authentication
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
     // Check if user has session cookie but not authenticated yet
     if (req.cookies && (req.cookies['connect.sid'] || req.cookies.sessionId)) {
-      logger.warn('Session cookie exists but user is not authenticated - allowing access');
-      // Allow request to proceed with session authentication
+      logger.warn('Session cookie exists but user is not authenticated - checking session');
+      // Allow request to proceed for session-based auth to be checked
       return next();
     }
     
@@ -229,7 +263,10 @@ function authenticateTokenCompat(req, res, next) {
     next();
   } catch (error) {
     // Log the JWT error but continue if session might be valid
-    logger.warn('JWT Token verification failed, but proceeding with session auth:', error.message);
+    logger.warn('JWT Token verification failed:', {
+      error: error.message,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+    });
     
     // Check if we have any session data
     if (req.cookies && (req.cookies['connect.sid'] || req.cookies.sessionId)) {

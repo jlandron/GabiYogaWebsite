@@ -59,6 +59,11 @@ function initializePassport(options) {
           profilePicture: user.profile_picture
         });
       } catch (error) {
+        logger.error('LocalStrategy error:', {
+          error: error.message,
+          code: error.code,
+          stack: error.stack
+        });
         return done(error);
       }
     }
@@ -76,6 +81,7 @@ function initializePassport(options) {
       role: payload.role,
       exp: payload.exp
     });
+    
     try {
       // Handle potential format differences between databases
       const userId = payload.id ? payload.id.toString() : null;
@@ -85,8 +91,25 @@ function initializePassport(options) {
         return done(null, false);
       }
       
-      // Find user by ID from JWT payload
-      const user = await AuthOperations.findUserById(userId);
+      // Try to find user by ID from JWT payload
+      let user;
+      try {
+        user = await AuthOperations.findUserById(userId);
+      } catch (dbError) {
+        logger.error('Database error in JWT strategy:', {
+          error: dbError.message,
+          code: dbError.code,
+          userId: userId
+        });
+        
+        // If it's a database connection error, return error
+        if (dbError.code === 'ECONNREFUSED' || dbError.code === 'ER_ACCESS_DENIED_ERROR') {
+          return done(dbError);
+        }
+        
+        // For other database errors, user might not exist
+        return done(null, false);
+      }
       
       if (!user) {
         logger.warn(`JWT validation: User not found for ID ${userId}`);
@@ -97,7 +120,10 @@ function initializePassport(options) {
       const userForAuth = {
         id: user.user_id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        profilePicture: user.profile_picture
       };
       
       logger.debug('JWT validation successful', { 
@@ -107,7 +133,11 @@ function initializePassport(options) {
       
       return done(null, userForAuth);
     } catch (error) {
-      logger.error('JWT validation error:', error);
+      logger.error('JWT validation error:', {
+        error: error.message,
+        stack: error.stack,
+        code: error.code
+      });
       return done(error, false);
     }
   }));
@@ -128,7 +158,20 @@ function initializePassport(options) {
         return done(null, false);
       }
       
-      const user = await AuthOperations.findUserById(userId);
+      let user;
+      try {
+        user = await AuthOperations.findUserById(userId);
+      } catch (dbError) {
+        logger.error('Database error in deserializeUser:', {
+          error: dbError.message,
+          code: dbError.code,
+          userId: userId
+        });
+        
+        // For database errors, return error
+        return done(dbError, false);
+      }
+      
       if (!user) {
         logger.warn(`User deserialize: User not found for ID ${userId}`);
         return done(null, false);
@@ -151,7 +194,10 @@ function initializePassport(options) {
       
       done(null, userObj);
     } catch (error) {
-      logger.error('User deserialize error:', error);
+      logger.error('User deserialize error:', {
+        error: error.message,
+        stack: error.stack
+      });
       done(error, false);
     }
   });
