@@ -3,30 +3,38 @@
  * Handles fetching and displaying user data for the customer dashboard
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Setup listener for messages from parent iframe (for admin dashboard view)
     setupIframeMessaging();
     
-    // Check if user is logged in
-    if (!UserService.isLoggedIn()) {
-        // Check if we're in an iframe (admin view)
-        if (window.self !== window.top) {
-            // We're in an iframe, wait for auth data from parent
-            console.log("Dashboard loaded in iframe, waiting for auth data...");
-            // Send ready message to parent
-            window.parent.postMessage({
-                type: 'IFRAME_READY'
-            }, '*');
-            return;
-        } else {
-            // Regular view, redirect to login
-            window.location.href = 'login.html';
-            return;
-        }
+    // Check if we're in an iframe (admin view)
+    if (window.self !== window.top) {
+        // We're in an iframe, wait for auth data from parent
+        console.log("Dashboard loaded in iframe, waiting for auth data...");
+        // Send ready message to parent
+        window.parent.postMessage({
+            type: 'IFRAME_READY'
+        }, '*');
+        return;
     }
-
-    // Initialize dashboard data and UI
-    initializeDashboard();
+    
+    // Use centralized authentication handler for non-iframe dashboard
+    // This provides consistent authentication across the site
+    const authenticated = await AuthHandler.initSecurePage({
+        onSuccess: () => {
+            // Initialize dashboard data and UI after authentication is confirmed
+            initializeDashboard();
+        },
+        onError: (error) => {
+            console.error('Dashboard authentication error:', error);
+            // AuthHandler will handle redirection as needed
+        }
+    });
+    
+    // If not authenticated, AuthHandler will have redirected already
+    if (!authenticated) {
+        console.log('Dashboard authentication failed or in progress');
+    }
 });
 
 /**
@@ -146,10 +154,8 @@ function showLoadingState() {
             const signOutBtn = document.getElementById('loading-signout');
             if (signOutBtn) {
                 signOutBtn.addEventListener('click', () => {
-                    // Clear user data
-                    UserService.logout();
-                    // Redirect to login page
-                    window.location.href = 'index.html';
+                    // Use centralized logout
+                    AuthHandler.logout();
                 });
             }
         }, 5000); // Show after 5 seconds
@@ -208,8 +214,8 @@ function showError(message) {
     const signOutBtn = document.getElementById('error-signout-btn');
     if (signOutBtn) {
         signOutBtn.addEventListener('click', () => {
-            UserService.logout();
-            window.location.href = 'index.html';
+            // Use centralized AuthHandler for logout
+            AuthHandler.logout();
         });
     }
     
@@ -487,17 +493,18 @@ async function initializeDashboard(isAdminPreview = false) {
         // Show loading spinner
         showLoadingState();
         
-        // Get current user data with timeout
+        // Check if auth token needs refresh before loading data
+        // This ensures we always have a fresh token when fetching dashboard data
+        if (!isAdminPreview) {
+            await AuthHandler.refreshAuthTokenIfNeeded();
+        }
+        
+        // Get current user data with better error handling
         let userData;
         try {
-            userData = await Promise.race([
-                fetchUserData(),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Authentication timeout - your session may have expired")), 10000)
-                )
-            ]);
-        } catch (timeoutErr) {
-            console.error('User data fetch timeout:', timeoutErr);
+            userData = await fetchUserData();
+        } catch (error) {
+            console.error('User data fetch error:', error);
             showError('Your session appears to be invalid or expired. Please sign out and sign back in.');
             return;
         }
@@ -1365,31 +1372,8 @@ function setupEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // Use AuthHandler.logout() to properly clear session on server and client side
-            if (window.AuthHandler && typeof window.AuthHandler.logout === 'function') {
-                // AuthHandler.logout() will handle token removal and redirection
-                window.AuthHandler.logout();
-            } else {
-                // Fallback if AuthHandler is not available
-                // Make server logout request
-                try {
-                    fetch(`${API_BASE_URL}/auth/logout`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${TokenService.getToken()}`,
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'include'
-                    }).catch(err => console.warn('Logout request error:', err));
-                } finally {
-                    // Clear authentication data
-                    UserService.logout();
-                    
-                    // Redirect to homepage
-                    window.location.href = 'index.html';
-                }
-            }
+            // Use centralized logout function
+            AuthHandler.logout();
         });
     }
     

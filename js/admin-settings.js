@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Admin Settings page loaded');
     
-    // Use centralized authentication handler for admin pages
+  // Use centralized authentication handler for admin pages
     const authenticated = await AuthHandler.initAdminPage();
     if (!authenticated) {
         return; // AuthHandler will have already redirected as needed

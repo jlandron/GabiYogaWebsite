@@ -6,10 +6,10 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in and is admin
-    if (!UserService.isLoggedIn() || !UserService.isAdmin()) {
-        window.location.href = 'login.html';
-        return;
+    // Use centralized authentication handler for admin pages
+    const authenticated = await AuthHandler.initAdminPage();
+    if (!authenticated) {
+        return; // AuthHandler will have already redirected as needed
     }
 
     // Initialize the retreats page

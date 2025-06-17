@@ -530,12 +530,11 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Use AuthHandler.logout() to properly clear session on server and client side
+            // Always use AuthHandler's logout to ensure consistency across the site
             if (typeof AuthHandler === 'object' && typeof AuthHandler.logout === 'function') {
-                // Use AuthHandler if available
                 AuthHandler.logout();
             } else {
-                // Fallback to basic logout if AuthHandler isn't available
+                console.warn('AuthHandler not available, falling back to basic logout');
                 // Make server logout request
                 try {
                     fetch(`${API_BASE_URL}/auth/logout`, {

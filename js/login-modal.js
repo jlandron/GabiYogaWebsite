@@ -207,6 +207,17 @@ async function handleLoginSubmit(event) {
             throw new Error('Login failed: Invalid server response');
         }
         
+        // Initialize AuthHandler's validation state with the new token
+        if (window.AuthHandler && typeof window.AuthHandler.validateAuth === 'function') {
+            // Validate the token with the server and establish the auth state
+            await window.AuthHandler.validateAuth({
+                forceValidation: true,
+                onError: (error) => {
+                    throw new Error('Authentication validation failed: ' + error.message);
+                }
+            });
+        }
+        
         // Close modal
         closeLoginModal();
         
@@ -225,11 +236,17 @@ async function handleLoginSubmit(event) {
             } else {
                 // Just close the modal and stay on the current page
                 console.log('User logged in successfully, staying on current page');
+                
+                // Optionally refresh the page to update any auth-dependent UI elements
+                // window.location.reload();
             }
         }
     } catch (error) {
         console.error('Login error:', error);
         showModalError(error.message, 'login');
+        
+        // Clear any token that might have been set during a failed login
+        UserService.logout();
     } finally {
         setModalFormLoading(false, 'login');
     }

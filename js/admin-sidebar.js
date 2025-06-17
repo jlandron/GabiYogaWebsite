@@ -101,13 +101,14 @@ function setupSidebarEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Logout clicked');
+            console.log('Admin logout clicked');
             
-            // Use AuthHandler for proper server-side session invalidation if available
+            // Always try to use AuthHandler for consistent logout behavior across the site
             if (window.AuthHandler && typeof window.AuthHandler.logout === 'function') {
-                // AuthHandler.logout() will handle token removal and redirection
+                // AuthHandler.logout() will handle token removal, server notification, and redirection
                 window.AuthHandler.logout();
             } else {
+                console.warn('AuthHandler not available, falling back to basic logout');
                 // Fallback if AuthHandler is not available
                 // Make server logout request
                 try {

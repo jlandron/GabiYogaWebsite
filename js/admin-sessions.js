@@ -4,12 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Only initialize if we're on the sessions page
-    if (!window.location.pathname.includes('admin-sessions')) {
-        return;
-    }
-
-    // Use centralized authentication handler for admin pages
+  // Use centralized authentication handler for admin pages
     const authenticated = await AuthHandler.initAdminPage();
     if (!authenticated) {
         return; // AuthHandler will have already redirected as needed

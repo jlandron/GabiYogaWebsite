@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!authenticated) {
         return; // AuthHandler will have already redirected as needed
     }
-
     // Initialize the workshops page
     await initializeWorkshopsPage();
 
