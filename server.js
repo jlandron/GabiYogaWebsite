@@ -45,6 +45,7 @@ const newsletterRoutes = require('./api/newsletter'); // Import newsletter route
 const contactRoutes = require('./api/contact'); // Import contact routes
 const scheduleRoutes = require('./api/schedule'); // Import schedule routes
 const classBookingsRoutes = require('./api/class-bookings'); // Import class bookings routes
+const imagesRoutes = require('./api/images'); // Import images API routes
 // Removed mock routes to use real database data
 
 // Create Express app
@@ -175,6 +176,7 @@ app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
 app.use('/api/contact', contactRoutes); // Contact routes
 app.use('/api/schedule', scheduleRoutes); // Schedule routes
 app.use('/api/class-bookings', classBookingsRoutes); // Class bookings routes
+app.use('/api/images', imagesRoutes); // Images API routes for presigned URLs
 
 // User location detection endpoints (public)
 app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));

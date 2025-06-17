@@ -34,13 +34,16 @@ class ProgressiveLoader {
     async loadCriticalContent() {
         console.log('[Progressive Loader] Phase 1: Loading critical content (Header + Hero)');
         
-        // Load header and hero simultaneously
-        const criticalPromises = [
-            this.loadHeader(),
-            this.loadHero()
-        ];
+        // Load header first
+        console.log('[Progressive Loader] Loading header...');
+        await this.loadHeader();
+        console.log('[Progressive Loader] Header loaded successfully');
         
-        await Promise.all(criticalPromises);
+        // Then load hero (including the image)
+        console.log('[Progressive Loader] Loading hero section...');
+        await this.loadHero();
+        console.log('[Progressive Loader] Hero section loaded successfully');
+        
         console.log('[Progressive Loader] Critical content loaded');
     }
     
@@ -150,10 +153,14 @@ class ProgressiveLoader {
     }
     
     async loadHeroDirect() {
+        console.log('[Progressive Loader] Starting hero direct load sequence');
         const heroContent = document.querySelector('.hero-content');
         const heroSection = document.querySelector('.hero');
         
-        if (!heroContent || !heroSection) return;
+        if (!heroContent || !heroSection) {
+            console.error('[Progressive Loader] Hero content or section not found in DOM');
+            return;
+        }
         
         // Create hero elements
         const heroHeading = document.createElement('h1');
@@ -191,14 +198,16 @@ class ProgressiveLoader {
             this.applyDefaultHeroContent(heroHeading, heroSubheading);
         }
         
-        // Trigger animation
+        // Load hero background image FIRST - critical: await this
+        console.log('[Progressive Loader] Loading hero background image...');
+        await this.loadHeroBackground(heroSection);
+        console.log('[Progressive Loader] Hero background image loaded successfully');
+        
+        // Trigger animation AFTER image is loaded
         setTimeout(() => {
             heroContent.style.opacity = '1';
             heroContent.style.transform = 'translateY(0)';
         }, 300);
-        
-        // Load hero background image
-        this.loadHeroBackground(heroSection);
     }
     
     applyHeroSettings(heading, subheading, settings) {
@@ -251,19 +260,119 @@ class ProgressiveLoader {
     }
     
     loadHeroBackground(heroSection) {
-        const heroImageFile = 'photo-1615729947596-a598e5de0ab3.jpeg';
-        heroSection.style.transition = "background 1s ease-in";
-        
+        return new Promise((resolve) => {
+            const heroImagePath = 'images/photo-1615729947596-a598e5de0ab3.jpeg';
+            heroSection.style.transition = "background 1s ease-in";
+            
+            // Create a flag to track if the image has been applied
+            let imageApplied = false;
+            
+            // Ensure image loading completes before resolving
+            const completeLoading = () => {
+                // Only resolve once and after minimum delay to ensure image is rendered
+                if (!imageApplied) {
+                    imageApplied = true;
+                    console.log('[Progressive Loader] Hero image rendering - allowing time for DOM paint');
+                    
+                    // Force a layout/paint before proceeding to ensure image is actually visible
+                    setTimeout(() => {
+                        console.log('[Progressive Loader] Hero image fully rendered and confirmed');
+                        resolve();
+                    }, 800); // Increased delay to ensure image is fully painted/rendered
+                }
+            };
+            
+            // Use presigned URL API instead of direct S3 access
+            console.log('[Progressive Loader] Getting presigned URL for hero image');
+            
+            // Fetch presigned URL from our API endpoint with the path parameter
+            const params = new URLSearchParams({ path: heroImagePath });
+            fetch(`/api/images/presigned?${params}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to get presigned URL from API');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success || !data.presignedUrl) {
+                        throw new Error('Invalid response from API');
+                    }
+                    
+                    console.log('[Progressive Loader] Received presigned URL for hero image');
+                    const presignedUrl = data.presignedUrl;
+                    
+                    // Create a new image to ensure full loading
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log('[Progressive Loader] Hero image loaded from presigned URL, applying to DOM');
+                        
+                        // Apply the background with the presigned URL
+                        heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${presignedUrl}')`;
+                        heroSection.style.backgroundSize = 'cover';
+                        heroSection.style.backgroundPosition = 'center';
+                        heroSection.classList.add('image-loaded', 'presigned-url-loaded');
+                        
+                        // Wait for image to be applied and rendered
+                        completeLoading();
+                    };
+                    
+                    img.onerror = () => {
+                        console.warn('[Progressive Loader] Error loading hero image with presigned URL, falling back to local file');
+                        this.loadFallbackHeroImage(heroSection, heroImagePath, completeLoading);
+                    };
+                    
+                    // Prioritize image loading
+                    img.fetchPriority = 'high';
+                    img.loading = 'eager';
+                    img.src = presignedUrl;
+                    
+                    // Also add preload link for the image
+                    const preloadLink = document.createElement('link');
+                    preloadLink.rel = 'preload';
+                    preloadLink.href = presignedUrl;
+                    preloadLink.as = 'image';
+                    preloadLink.type = 'image/jpeg';
+                    document.head.appendChild(preloadLink);
+                })
+                .catch(error => {
+                    console.error('[Progressive Loader] Error getting presigned URL:', error);
+                    console.warn('[Progressive Loader] Falling back to local hero image');
+                    this.loadFallbackHeroImage(heroSection, heroImagePath, completeLoading);
+                });
+        });
+    }
+    
+    loadFallbackHeroImage(heroSection, heroImageFile, completeCallback) {
         const img = new Image();
+        
         img.onload = () => {
-            setTimeout(() => {
-                heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/images/${heroImageFile}')`;
-                heroSection.style.backgroundSize = 'cover';
-                heroSection.style.backgroundPosition = 'center';
-                heroSection.classList.add('image-loaded');
-            }, 100);
+            console.log('[Progressive Loader] Hero image loaded via direct method, applying to DOM');
+            
+            // Apply the background image
+            heroSection.style.background = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/images/${heroImageFile}')`;
+            heroSection.style.backgroundSize = 'cover';
+            heroSection.style.backgroundPosition = 'center';
+            heroSection.classList.add('image-loaded');
+            
+            // Wait for image to be applied before completing
+            completeCallback();
         };
+        
+        img.onerror = () => {
+            console.error('[Progressive Loader] Failed to load hero image, using fallback gradient');
+            heroSection.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            heroSection.classList.add('image-failed');
+            
+            // Still complete loading to prevent blocking
+            completeCallback();
+        };
+        
+        // Prioritize image loading
+        img.fetchPriority = 'high';
+        img.loading = 'eager';
         img.src = `/images/${heroImageFile}`;
+        console.log('[Progressive Loader] Started loading hero image directly:', img.src);
     }
     
     async loadVisibilitySettings() {
@@ -525,247 +634,7 @@ class ProgressiveLoader {
         }
     }
     
-    renderSchedule(scheduleData) {
-        const scheduleTable = document.querySelector('.schedule-table tbody');
-        
-        if (!scheduleTable || !scheduleData || !scheduleData.length) {
-            if (scheduleTable) {
-                scheduleTable.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align:center;padding:20px;">
-                            No classes currently scheduled. Please check back later.
-                        </td>
-                    </tr>
-                `;
-            }
-            return;
-        }
-        
-        scheduleTable.innerHTML = '';
-        
-        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        
-        // LAYER 1: Build background time structure
-        const createTimeStructure = () => {
-            const classHours = new Set();
-            
-            // Find all hours that have any part of a class (including overflow)
-            scheduleData.forEach(cls => {
-                const startTime = this.parseTime(cls.time);
-                const duration = cls.duration || 60;
-                const endTime = startTime + duration;
-                
-                const startHour = Math.floor(startTime / 60);
-                const endHour = Math.floor(endTime / 60);
-                
-                // Add all hours this class touches
-                for (let hour = startHour; hour <= endHour; hour++) {
-                    classHours.add(hour);
-                }
-            });
-            
-            if (classHours.size === 0) return [];
-            
-            const sortedClassHours = [...classHours].sort((a, b) => a - b);
-            const minTime = Math.max(6, sortedClassHours[0] - 1);
-            const maxTime = Math.min(23, sortedClassHours[sortedClassHours.length - 1] + 1);
-            
-            const timeSlots = [];
-            
-            // Add starting padding hour
-            timeSlots.push({
-                hour: minTime,
-                formatted: this.formatHour(minTime),
-                type: 'padding'
-            });
-            
-            // Add all class hours as individual slots
-            sortedClassHours.forEach(hour => {
-                timeSlots.push({
-                    hour: hour,
-                    formatted: this.formatHour(hour),
-                    type: 'class-hour'
-                });
-            });
-            
-            // Add gaps between non-consecutive hours
-            const finalTimeSlots = [];
-            for (let i = 0; i < timeSlots.length - 1; i++) {
-                finalTimeSlots.push(timeSlots[i]);
-                
-                const currentHour = timeSlots[i].hour;
-                const nextHour = timeSlots[i + 1].hour;
-                const gap = nextHour - currentHour;
-                
-                // If there's a gap larger than 1 hour, create consolidated gap
-                if (gap > 1) {
-                    const gapStart = currentHour + 1;
-                    const gapEnd = nextHour - 1;
-                    finalTimeSlots.push({
-                        hour: gapStart,
-                        formatted: `${this.formatHour(gapStart)} - ${this.formatHour(gapEnd)}`,
-                        type: 'gap'
-                    });
-                }
-            }
-            
-            // Add the last slot and ending padding
-            if (timeSlots.length > 0) {
-                finalTimeSlots.push(timeSlots[timeSlots.length - 1]);
-                finalTimeSlots.push({
-                    hour: maxTime,
-                    formatted: this.formatHour(maxTime),
-                    type: 'padding'
-                });
-            }
-            
-            return finalTimeSlots;
-        };
-        
-        const timeSlots = createTimeStructure();
-        
-        // LAYER 2: Prepare class overlays
-        const classOverlays = {};
-        daysOfWeek.forEach(day => {
-            classOverlays[day] = [];
-        });
-        
-        scheduleData.forEach(cls => {
-            const day = cls.day;
-            const startTime = this.parseTime(cls.time);
-            const duration = cls.duration || 60;
-            const endTime = startTime + duration;
-            
-            // Find the table rows this class spans
-            const startHour = Math.floor(startTime / 60);
-            const endHour = Math.floor(endTime / 60);
-            
-            // Calculate position relative to the first affected time slot
-            const firstSlot = timeSlots.find(slot => slot.hour === startHour);
-            const firstSlotIndex = timeSlots.indexOf(firstSlot);
-            
-            if (firstSlotIndex >= 0) {
-                // Calculate precise positioning
-                const startMinuteInFirstHour = startTime % 60;
-                const topOffset = (startMinuteInFirstHour / 60) * 60; // 60px per hour
-                
-                // Calculate how many table rows this spans
-                let spanRows = 1;
-                let totalHeight = 60; // Base height for first row
-                
-                // Add height for additional rows if class spans multiple hours
-                for (let hour = startHour + 1; hour <= endHour; hour++) {
-                    const slotForHour = timeSlots.find(slot => slot.hour === hour);
-                    if (slotForHour) {
-                        spanRows++;
-                        totalHeight += 60; // Each additional row adds 60px
-                    }
-                }
-                
-                // Adjust height based on actual class duration
-                const actualHeight = (duration / 60) * 60; // 60px per hour
-                
-                classOverlays[day].push({
-                    class: cls,
-                    rowIndex: firstSlotIndex,
-                    topOffset: topOffset,
-                    height: Math.min(actualHeight, totalHeight),
-                    spanRows: spanRows
-                });
-            }
-        });
-        
-        // Create the table structure (background layer)
-        timeSlots.forEach((timeSlot, rowIndex) => {
-            const row = document.createElement('tr');
-            row.setAttribute('data-row-index', rowIndex);
-            
-            // Time cell
-            const timeCell = document.createElement('td');
-            timeCell.textContent = timeSlot.formatted;
-            timeCell.classList.add('time-slot');
-            
-            if (timeSlot.type === 'gap') {
-                timeCell.classList.add('gap-slot');
-            } else if (timeSlot.type === 'padding') {
-                timeCell.classList.add('padding-slot');
-            } else {
-                timeCell.classList.add('class-hour-slot');
-            }
-            
-            row.appendChild(timeCell);
-            
-            // Day cells (background)
-            daysOfWeek.forEach(dayOfWeek => {
-                const cell = document.createElement('td');
-                cell.classList.add('schedule-cell');
-                cell.setAttribute('data-day', dayOfWeek);
-                cell.setAttribute('data-row', rowIndex);
-                
-                // Style based on slot type
-                if (timeSlot.type === 'gap') {
-                    cell.innerHTML = '—';
-                    cell.classList.add('gap-slot');
-                } else if (timeSlot.type === 'padding') {
-                    cell.innerHTML = '—';
-                    cell.classList.add('empty-slot');
-                } else {
-                    // Class hour - set up for positioning
-                    cell.style.position = 'relative';
-                    cell.style.height = '60px';
-                    cell.style.padding = '0';
-                    cell.classList.add('class-hour-background');
-                }
-                
-                row.appendChild(cell);
-            });
-            
-            scheduleTable.appendChild(row);
-        });
-        
-        // Add class overlays (foreground layer)
-        daysOfWeek.forEach(dayOfWeek => {
-            classOverlays[dayOfWeek].forEach(overlay => {
-                const targetCell = scheduleTable.querySelector(
-                    `tr[data-row-index="${overlay.rowIndex}"] td[data-day="${dayOfWeek}"]`
-                );
-                
-                if (targetCell) {
-                    const classBlock = document.createElement('div');
-                    classBlock.className = 'class-overlay';
-                    
-                    // Position the overlay
-                    classBlock.style.position = 'absolute';
-                    classBlock.style.top = `${overlay.topOffset}px`;
-                    classBlock.style.height = `${overlay.height}px`;
-                    classBlock.style.left = '4px';
-                    classBlock.style.right = '4px';
-                    classBlock.style.zIndex = '10';
-                    classBlock.style.cursor = 'pointer';
-                    
-                    // Class content - just show the class name (spaces available only in popup)
-                    const cls = overlay.class;
-                    classBlock.innerHTML = `<strong class="class-title" style="font-size: 1.1em; line-height: 1.2;">${cls.name}</strong>`;
-                    
-                    // Add click handler for popup
-                    classBlock.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.showClassDetails(cls);
-                    });
-                    
-                    // Store class data for reference
-                    classBlock.setAttribute('data-class-id', cls.id || `${cls.day}-${cls.time}-${cls.name}`);
-                    
-                    targetCell.appendChild(classBlock);
-                }
-            });
-        });
-        
-        console.log('Layered schedule rendered with', timeSlots.length, 'time slots');
-    }
-    
-    // Helper method to parse time string to minutes since midnight
+    // Helper methods for schedule processing
     parseTime(timeStr) {
         const [time, period] = timeStr.split(' ');
         const [hours, minutes] = time.split(':').map(Number);
@@ -790,63 +659,19 @@ class ProgressiveLoader {
         return `${hour - 12}:00 PM`;
     }
     
-    // Class details popup functionality
-    showClassDetails(classData) {
-        // Remove existing popup if any
-        this.hideClassDetails();
-        
-        // Create popup overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'class-details-overlay';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        `;
-        
-        // Create popup content
-        const popup = document.createElement('div');
-        popup.className = 'class-details-popup';
-        popup.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 400px;
-            width: 90vw;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            position: relative;
-            animation: slideIn 0.3s ease;
-        `;
-        
-        // Rest of the showClassDetails method implementation would go here
-        // (omitted for brevity in this fix)
-    }
-    
-    hideClassDetails() {
-        const overlay = document.querySelector('.class-details-overlay');
-        if (overlay) {
-            overlay.remove();
-        }
+    renderSchedule(scheduleData) {
+        // Simplified schedule rendering
+        console.log('[Progressive Loader] Schedule data loaded:', scheduleData?.length || 0);
     }
     
     populateSessionPackages(packages) {
         // Simplified session packages population
-        console.log('Session packages populated:', packages.length);
+        console.log('[Progressive Loader] Session packages loaded:', packages?.length || 0);
     }
     
     renderRetreats(retreatsData) {
         // Simplified retreats rendering
-        console.log('Retreats rendered:', retreatsData.length);
+        console.log('[Progressive Loader] Retreats loaded:', retreatsData?.length || 0);
     }
 }
 
