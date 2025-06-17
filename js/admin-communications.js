@@ -19,28 +19,34 @@ function isAuthenticated() {
 }
 
 // Initialize page when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // Use centralized authentication handler for admin pages
-    const authenticated = await AuthHandler.initAdminPage();
-    if (!authenticated) {
-        return; // AuthHandler will have already redirected as needed
+    try {
+        const authenticated = await AuthHandler.initAdminPage();
+        if (!authenticated) {
+            return; // AuthHandler will have already redirected as needed
+        }
+    
+        // Load data for the page
+        loadContactSubmissions();
+        loadNewsletterSubscribers();
+        
+        // Add enter key search functionality
+        document.getElementById('contactSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchContacts();
+            }
+        });
+        
+        document.getElementById('subscriberSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchSubscribers();
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing admin communications page:', error);
+        showError('Failed to initialize page. Please try refreshing.');
     }
-    
-    loadContactSubmissions();
-    loadNewsletterSubscribers();
-    
-    // Add enter key search functionality
-    document.getElementById('contactSearch').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchContacts();
-        }
-    });
-    
-    document.getElementById('subscriberSearch').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchSubscribers();
-        }
-    });
 });
 
 /**

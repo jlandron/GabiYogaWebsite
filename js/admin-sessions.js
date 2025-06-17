@@ -4,7 +4,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Use centralized authentication handler for admin pages
+  try {
+    // Use centralized authentication handler for admin pages
     const authenticated = await AuthHandler.initAdminPage();
     if (!authenticated) {
         return; // AuthHandler will have already redirected as needed
@@ -12,6 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize session management
     initializeSessionsPage();
+  } catch (error) {
+    console.error('Error initializing admin sessions page:', error);
+    showErrorMessage('Failed to initialize page. Please try refreshing or log in again.');
+  }
 });
 
 /**
