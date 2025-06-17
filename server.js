@@ -155,9 +155,19 @@ app.get('/api/settings', asyncHandler(async (req, res) => {
   return sendSuccess(res, { settings }, 'Settings fetched successfully');
 }));
 
-// Create an admin router with authentication middleware
+// Create an admin router with updated authentication middleware that prioritizes sessions
 const adminRouter = express.Router();
-adminRouter.use(authenticateToken);
+adminRouter.use((req, res, next) => {
+  // Log authentication attempt
+  logger.debug('Admin API authentication attempt', {
+    hasSession: req.isAuthenticated && req.isAuthenticated(),
+    hasSessionCookie: !!(req.cookies && req.cookies['connect.sid']),
+    path: req.path
+  });
+  
+  // Use our updated authenticateToken function that prioritizes session auth
+  authenticateToken(req, res, next);
+});
 
 // Register admin routes (all protected by authenticateToken)
 adminRouter.use('/', adminRoutes);

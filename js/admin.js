@@ -39,6 +39,7 @@ const ADMIN_API_ENDPOINTS = {
 const AdminApiService = {
   /**
    * Make authenticated requests
+   * Modified to prioritize session-based authentication and fail open for token issues
    */
   authRequest: async (url, method = 'GET', data = null) => {
     try {
@@ -51,27 +52,29 @@ const AdminApiService = {
         console.log('AdminApiService: Production environment detected');
       }
       
-      // Check if token exists
+      // Check if token exists - will now continue even if token is missing
       const token = TokenService.getToken();
       if (!token) {
-        console.error('No authentication token found');
-        // alert('Your session has expired. Please log in again.');
-        // UserService.logout();
-        // window.location.href = '/login.html';
-        // throw new Error('No authentication token found');
+        console.warn('No JWT token found - proceeding with session authentication only');
       }
       
-      console.log('Token exists, preparing request headers');
-      
+      // Prepare headers - include token if available, but don't require it
       const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       };
+      
+      // Only add Authorization header if we have a token
+      if (token) {
+        console.log('Including JWT token in request headers');
+        headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        console.log('No JWT token available - relying on session cookies');
+      }
 
       const options = {
         method,
         headers,
-        credentials: 'include'  // Need to keep this for server-side session compatibility
+        credentials: 'include'  // Critical for session-based authentication
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -97,12 +100,14 @@ const AdminApiService = {
         console.error(`Request failed with status: ${response.status}`);
         
         if (response.status === 401) {
-          // Handle unauthorized (token expired)
-          // console.error('Authentication failed (401): Token is invalid or expired');
-          // alert('Your session has expired. Please log in again.');
-          // UserService.logout();
-          // window.location.href = '/login.html';
-          // throw new Error('Session expired. Please log in again.');
+          // Handle unauthorized (both token and session expired/invalid)
+          console.warn('Authentication failed (401): Both JWT token and session are invalid');
+          
+          // At this point, the server has rejected both authentication methods
+          console.error('Complete authentication failure - user needs to log in again');
+          
+          // Show error alert but don't redirect - this lets the user decide what to do
+          alert('Your authentication session has expired. Please refresh the page or log in again.');
         }
         
         let errorMessage = `API request failed with status: ${response.status}`;
