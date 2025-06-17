@@ -33,28 +33,20 @@ const API = {
       console.log('API: Reusing in-progress request for:', requestKey);
       return this.pendingRequests[requestKey];
     }
-    
+    const token = window.TokenService.getToken();
+
     // Set up request options
     const options = {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`      
       },
-      credentials: 'include' // Always include credentials to maintain session consistency across environments
     };
     
     // For production environments, ensure we're always validating the token
     const hostname = window.location.hostname;
     if (hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga') {
       console.log('API: Production environment detected, enforcing strict auth');
-    }
-    
-    // Add authorization header if token exists and auth is required
-    if (requiresAuth && window.TokenService && typeof window.TokenService.getToken === 'function') {
-      const token = window.TokenService.getToken();
-      if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
-      }
     }
     
     if (body) {

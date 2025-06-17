@@ -118,7 +118,6 @@ function setupSidebarEventListeners() {
                             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'include'
                     }).catch(err => console.warn('Logout request error:', err));
                 } finally {
                     // Clear authentication data

@@ -114,8 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(requestBody),
-                        credentials: 'include' // Include cookies for auth
+                        body: JSON.stringify(requestBody)
                     });
                     
                     if (!response.ok) {
@@ -285,8 +284,7 @@ function initializeModals() {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(requestBody),
-                        credentials: 'include' // Include cookies for auth
+                        body: JSON.stringify(requestBody)
                     });
                     
                     if (!response.ok) {
@@ -826,8 +824,7 @@ async function handleClassSignupSubmit(event) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(bookingData),
-            credentials: 'include'
+            body: JSON.stringify(bookingData)
         });
         
         const result = await response.json();

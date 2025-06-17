@@ -60,7 +60,7 @@ const AdminApiService = {
       
       // Prepare headers - include token if available, but don't require it
       const headers = {
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
       };
       
       // Only add Authorization header if we have a token
@@ -74,7 +74,6 @@ const AdminApiService = {
       const options = {
         method,
         headers,
-        credentials: 'include'  // Critical for session-based authentication
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {

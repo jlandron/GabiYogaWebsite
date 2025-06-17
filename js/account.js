@@ -180,8 +180,6 @@ const ApiService = {
     const options = {
       method,
       headers
-      // No longer using credentials: 'include' to avoid mixing auth approaches
-      // We're standardizing on JWT tokens in the Authorization header
     };
 
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -315,7 +313,6 @@ const ApiService = {
         headers: {
           'Authorization': `Bearer ${TokenService.getToken()}`
         },
-        credentials: 'include' // Server requires both token and session cookie
       });
       
       const json = await response.json();
@@ -610,9 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${TokenService.getToken()}`,
-                            'Content-Type': 'application/json'
                         },
-                        credentials: 'include'
                     }).catch(err => console.warn('Logout request error:', err));
                 } finally {
                     // Always clear token and redirect regardless of server response
