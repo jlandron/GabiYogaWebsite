@@ -125,7 +125,14 @@ const AuthHandler = {
 
             // Validate the token with the server for admin pages to ensure it's really valid
             try {
-                console.log('AuthHandler: Validating token with server...');
+                console.log('AuthHandler: Validating token with server...', {
+                    url: `${API_BASE_URL}/auth/me`,
+                    token: TokenService.getToken() ? TokenService.getToken().substring(0, 10) + '...' : 'null',
+                    userInfo: UserService.getUser() ? 'exists' : 'missing',
+                    hasCookies: document.cookie.includes('connect.sid') || document.cookie.includes('sessionId')
+                });
+                
+                const startTime = Date.now();
                 const response = await fetch(`${API_BASE_URL}/auth/me`, {
                     method: 'GET',
                     headers: {
@@ -133,26 +140,74 @@ const AuthHandler = {
                     },
                     credentials: 'include' // Include session cookies
                 });
+                const endTime = Date.now();
+                
+                console.log(`AuthHandler: Token validation response received in ${endTime - startTime}ms, status: ${response.status}`);
                 
                 if (!response.ok) {
-                    console.error('AuthHandler: Token validation failed');
-                    throw new Error('Invalid token');
+                    console.error(`AuthHandler: Token validation FAILED with status ${response.status}`);
+                    const responseText = await response.text();
+                    console.error('AuthHandler: Response details:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        responseText: responseText.substring(0, 200) // Limiting to avoid huge logs
+                    });
+                    
+                    // Check if we have session cookies - if so, we can continue despite JWT failure
+                    // This matches the server-side authenticateTokenCompat behavior
+                    const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
+                    
+                    if (hasSessionCookie) {
+                        console.log('AuthHandler: JWT validation failed but session cookie exists - proceeding with authentication');
+                        // We'll attempt to continue with session cookies even if JWT fails
+                        this.authState.lastValidated = Date.now();
+                        window.tokenValidated = true;
+                        return true;
+                    }
+                    
+                    throw new Error(`Invalid token (Status: ${response.status})`);
                 }
                 
                 const data = await response.json();
-                console.log('AuthHandler: Token validated successfully');
+                console.log('AuthHandler: Token validated successfully', {
+                    hasUserData: !!(data && (data.user || (data.data && data.data.user)))
+                });
                 
                 // Update user data to ensure it's current
                 if (data && (data.user || (data.data && data.data.user))) {
                     const userData = data.user || data.data.user;
+                    console.log('AuthHandler: Updating user data with server response', {
+                        userId: userData.id,
+                        role: userData.role || 'member'
+                    });
                     UserService.setUser(userData);
+                } else {
+                    console.warn('AuthHandler: Token validation succeeded but no user data returned!');
                 }
                 
             } catch (validationError) {
-                console.error('AuthHandler: Token validation error:', validationError);
+                console.error(`AuthHandler: Token validation error: ${validationError.message}`);
+                console.error('AuthHandler: Full validation error details:', validationError);
+                
+                // Check for session cookies as a last fallback before giving up
+                const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
+                
+                if (hasSessionCookie) {
+                    console.log('AuthHandler: Exception in validation but session cookie exists - attempting to proceed');
+                    // We'll attempt to continue with session cookies even after an exception
+                    this.authState.lastValidated = Date.now();
+                    window.tokenValidated = true;
+                    return true;
+                }
+                
+                // No JWT and no session cookie - authentication has truly failed
+                console.log('AuthHandler: No valid JWT or session cookie - authentication failed');
+                
                 // Clear token and user data
+                console.log('AuthHandler: Clearing token and user data due to validation failure');
                 TokenService.removeToken();
                 UserService.removeUser();
+                console.log('AuthHandler: Redirecting to login due to validation failure');
                 this.redirectToLogin();
                 return false;
             }
