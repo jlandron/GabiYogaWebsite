@@ -123,8 +123,39 @@ const AuthHandler = {
                 return false;
             }
 
-            // Skip the backend validation call as requested - fail open while logging
-            console.log('AuthHandler: Skipping backend validation as requested - considering token valid');
+            // Validate the token with the server for admin pages to ensure it's really valid
+            try {
+                console.log('AuthHandler: Validating token with server...');
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${TokenService.getToken()}`
+                    },
+                    credentials: 'include' // Include session cookies
+                });
+                
+                if (!response.ok) {
+                    console.error('AuthHandler: Token validation failed');
+                    throw new Error('Invalid token');
+                }
+                
+                const data = await response.json();
+                console.log('AuthHandler: Token validated successfully');
+                
+                // Update user data to ensure it's current
+                if (data && (data.user || (data.data && data.data.user))) {
+                    const userData = data.user || data.data.user;
+                    UserService.setUser(userData);
+                }
+                
+            } catch (validationError) {
+                console.error('AuthHandler: Token validation error:', validationError);
+                // Clear token and user data
+                TokenService.removeToken();
+                UserService.removeUser();
+                this.redirectToLogin();
+                return false;
+            }
             
             // Update validation timestamp
             this.authState.lastValidated = Date.now();
@@ -264,28 +295,37 @@ const AuthHandler = {
      * @returns {boolean} - Whether token has been recently validated
      */
     isRecentlyValidated: function() {
-        // Check for either JWT token or session cookie
+        // Check if we have a timestamp for the last validation
+        const hasValidTimestamp = !!this.authState.lastValidated;
+        
+        // Check if the validation was done recently (within validationTimeout)
+        const isRecent = hasValidTimestamp && 
+            (Date.now() - this.authState.lastValidated < this.authState.validationTimeout);
+        
+        // For admin pages (determined by URL), be more strict
+        const isAdminPage = window.location.pathname.includes('admin-');
+        
+        // For admin pages, require a recent validation
+        if (isAdminPage) {
+            if (isRecent) {
+                console.log('AuthHandler: Token was recently validated, skipping validation');
+                return true;
+            }
+            
+            console.log('AuthHandler: Admin page requires validation, validation will be performed');
+            return false;
+        }
+        
+        // For non-admin pages, we can be more lenient
         const hasJwtToken = !!TokenService.getToken();
         const hasSessionCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
         const hasUserInfo = !!UserService.getUser();
         
-        // As requested, consider authentication valid if we have either token type and user info
         if ((hasJwtToken || hasSessionCookie) && hasUserInfo) {
-            // Check if we've already set lastValidated - if not, set it now
-            if (!this.authState.lastValidated) {
-                this.authState.lastValidated = Date.now();
-                window.tokenValidated = true;
-            }
-            
-            console.log('AuthHandler: User has authentication (token or session) - skipping validation check', {
-                hasJwtToken,
-                hasSessionCookie,
-                hasUserInfo
-            });
-            return true;
+            console.log('AuthHandler: User has authentication credentials - but will validate for admin pages');
+            return false;
         }
         
-        // If no token/session or user, validation is definitely needed
         return false;
     },
 
