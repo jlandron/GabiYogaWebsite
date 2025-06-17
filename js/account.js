@@ -146,8 +146,9 @@ const ApiService = {
 
     const options = {
       method,
-      headers,
-      credentials: 'include'
+      headers
+      // No longer using credentials: 'include' to avoid mixing auth approaches
+      // We're standardizing on JWT tokens in the Authorization header
     };
 
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -165,15 +166,17 @@ const ApiService = {
   },
 
   /**
-   * Make login request - Updated for Passport.js integration
+   * Make login request - Using JWT token approach
    */
   login: async (credentials) => {
+    // For initial login, we still need to include credentials for backward compatibility
+    // as the server may use session authentication during the login process
     const response = await fetch(API_ENDPOINTS.login, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      credentials: 'include', // Include cookies for session-based auth
+      credentials: 'include', // Only needed for login endpoint
       body: JSON.stringify(credentials)
     });
 
@@ -197,16 +200,17 @@ const ApiService = {
   },
 
   /**
-   * Make registration request - Updated for Passport.js integration
+   * Make registration request - Using JWT token approach
    */
   register: async (userData) => {
     try {
+      // For registration, we still need to include credentials for backward compatibility
       const response = await fetch(API_ENDPOINTS.register, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', // Include cookies for session-based auth
+        credentials: 'include', // Only needed for registration endpoint
         body: JSON.stringify(userData)
       });
 
@@ -237,7 +241,7 @@ const ApiService = {
   },
 
   /**
-   * Get current user profile - Updated for Passport.js integration
+   * Get current user profile - Using JWT token approach
    */
   getCurrentUser: async () => {
     try {
@@ -245,8 +249,8 @@ const ApiService = {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${TokenService.getToken()}`
-        },
-        credentials: 'include' // Include cookies for session-based auth
+        }
+        // No longer including credentials to avoid mixing authentication approaches
       });
       
       const json = await response.json();

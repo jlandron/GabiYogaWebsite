@@ -14,18 +14,32 @@ const API = {
    * @param {string} endpoint - API endpoint
    * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
    * @param {Object} body - Request body (for POST and PUT)
+   * @param {boolean} requiresAuth - Whether the request requires authentication
    * @returns {Promise} - Promise with response data
    */
-  async request(endpoint, method = 'GET', body = null) {
+  async request(endpoint, method = 'GET', body = null, requiresAuth = true) {
     const url = `${this.baseUrl}${endpoint}`;
     
     const options = {
       method,
       headers: {
         'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include cookies for session-based auth
+      }
     };
+    
+    // Only for auth endpoints or explicitly non-auth requests, include credentials
+    // This helps with initial login/registration (for backward compatibility)
+    if (endpoint.startsWith('/auth')) {
+      options.credentials = 'include';
+    }
+    
+    // Add authorization header if token exists and auth is required
+    if (requiresAuth && window.TokenService && typeof window.TokenService.getToken === 'function') {
+      const token = window.TokenService.getToken();
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
     
     if (body) {
       options.body = JSON.stringify(body);

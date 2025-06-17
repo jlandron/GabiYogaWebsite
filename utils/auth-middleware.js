@@ -43,12 +43,17 @@ function generateToken(user, secret, expiresIn = '24h') {
  * Middleware to authenticate using JWT strategy with better error handling
  */
 function authenticateJWT(req, res, next) {
-  // Log authentication attempt for debugging
+  // We now consistently use the Authorization header for token-based auth
   const token = req.header('Authorization')?.replace('Bearer ', '');
   logger.debug('JWT Authentication attempt', { 
     hasToken: !!token,
     tokenLength: token ? token.length : 0
   });
+  
+  if (!token) {
+    logger.warn('No JWT token provided');
+    return sendError(res, 'Access denied. No token provided.', 401);
+  }
   
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
@@ -177,6 +182,7 @@ function validateToken(req, res, next) {
  * but uses Passport.js under the hood
  */
 function authenticateTokenCompat(req, res, next) {
+  // Consistently use Authorization header
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
