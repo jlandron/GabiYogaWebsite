@@ -36,20 +36,44 @@ router.post('/login', authenticateLocal, (req, res) => {
     // Generate JWT token
     const token = generateToken(req.user, JWT_SECRET, JWT_EXPIRY);
     
-    // Return user info and token
-    return sendSuccess(res, {
-      message: 'Login successful',
-      user: {
-        id: req.user.id,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        email: req.user.email,
-        role: req.user.role,
-        profilePicture: req.user.profilePicture
-      },
-      token
+    // Establish session (important for session cookie)
+    req.login(req.user, (loginErr) => {
+      if (loginErr) {
+        logger.error('Session login error:', loginErr);
+        return sendError(res, 'Session initialization failed', 500);
+      }
+      
+      // Set a session flag so we know this is an authenticated session
+      req.session.authenticated = true;
+      req.session.userId = req.user.id;
+      
+      // Log session details
+      logger.info('Session established for user', {
+        userId: req.user.id,
+        sessionID: req.sessionID,
+        hasSessionCookie: !!req.headers.cookie?.includes('connect.sid')
+      });
+      
+      // Return user info and token
+      return sendSuccess(res, {
+        message: 'Login successful',
+        user: {
+          id: req.user.id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          email: req.user.email,
+          role: req.user.role,
+          profilePicture: req.user.profilePicture
+        },
+        token,
+        // Add session info for client awareness
+        session: {
+          id: req.sessionID,
+          authenticated: true,
+          expiresIn: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+        }
+      });
     });
-    
   } catch (error) {
     logger.error('Login error:', error);
     
