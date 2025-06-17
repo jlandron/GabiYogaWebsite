@@ -3,6 +3,11 @@
  * Centralizes authentication logic for all secure pages
  */
 
+// Define API_BASE_URL if it's not already defined
+if (typeof API_BASE_URL === 'undefined') {
+    var API_BASE_URL = '/api';
+}
+
 // Use the existing TokenService and UserService from account.js
 const AuthHandler = {
     /**
@@ -41,26 +46,38 @@ const AuthHandler = {
             // Step 3: Validate token with backend
             try {
                 console.log('AuthHandler: Validating token with backend...');
-                // Use a specific endpoint for token validation to minimize payload
-                const response = await fetch(`${API_BASE_URL}/auth/validate`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${TokenService.getToken()}`
-                    },
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Token validation failed: ${response.statusText}`);
+                try {
+                    // Use a specific endpoint for token validation to minimize payload
+                    const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${TokenService.getToken()}`
+                        },
+                        credentials: 'include'
+                    });
+    
+                    if (!response.ok) {
+                        throw new Error(`Token validation failed: ${response.statusText}`);
+                    }
+    
+                    const data = await response.json();
+                    
+                    if (!data.valid) {
+                        throw new Error('Invalid token');
+                    }
+                    
+                    console.log('AuthHandler: Token validated successfully');
+                } catch (networkError) {
+                    // If this is a network error (e.g., offline, server unreachable)
+                    // We'll assume the token is still valid rather than logging the user out
+                    if (networkError.name === 'TypeError' && networkError.message.includes('NetworkError')) {
+                        console.warn('AuthHandler: Network error during validation, continuing with stored token');
+                        // Don't throw error and allow process to continue as if token is valid
+                    } else {
+                        // For non-network errors, rethrow
+                        throw networkError;
+                    }
                 }
-
-                const data = await response.json();
-                
-                if (!data.valid) {
-                    throw new Error('Invalid token');
-                }
-
-                console.log('AuthHandler: Token validated successfully');
                 
                 // Set global flag to prevent redundant validations
                 window.tokenValidated = true;
@@ -79,8 +96,10 @@ const AuthHandler = {
                     onError(error);
                 }
 
-                // Handle invalid token by logging out and redirecting
-                this.handleAuthError(error);
+                // Only handle auth errors (not network errors) by logging out
+                if (!error.message.includes('NetworkError')) {
+                    this.handleAuthError(error);
+                }
                 return false;
             }
         } catch (error) {
