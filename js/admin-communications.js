@@ -66,20 +66,7 @@ async function loadContactSubmissions(page = 1, search = '') {
             search: search
         });
         
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-        const response = await fetch(`/api/admin/contact-submissions?${params}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load contact submissions');
-        }
-        
-        const data = await response.json();
+        const data = await AdminApiUtils.request(`/api/admin/contact-submissions?${params}`, 'GET');
         
         if (data.success) {
             renderContactSubmissions(data.submissions);
@@ -117,20 +104,7 @@ async function loadNewsletterSubscribers(page = 1, search = '') {
             search: search
         });
         
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-        const response = await fetch(`/api/admin/newsletter-subscribers?${params}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load newsletter subscribers');
-        }
-        
-        const data = await response.json();
+        const data = await AdminApiUtils.request(`/api/admin/newsletter-subscribers?${params}`, 'GET');
         
         if (data.success) {
             renderNewsletterSubscribers(data.subscribers);
@@ -261,20 +235,7 @@ async function viewContactDetails(submissionId) {
         document.body.style.overflow = 'hidden';
         
         // Fetch contact details from API
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-        const response = await fetch(`/api/admin/contact-submissions/${submissionId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load contact details');
-        }
-        
-        const data = await response.json();
+        const data = await AdminApiUtils.request(`/api/admin/contact-submissions/${submissionId}`, 'GET');
         
         if (data.success && data.submission) {
             const submission = data.submission;
@@ -343,21 +304,11 @@ async function updateContactStatus() {
     const newStatus = statusSelect.value;
     
     try {
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-        const response = await fetch(`/api/admin/contact-submissions/${currentContactSubmission}/status`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to update contact status');
-        }
-        
-        const data = await response.json();
+        const data = await AdminApiUtils.request(
+            `/api/admin/contact-submissions/${currentContactSubmission}/status`,
+            'PUT',
+            { status: newStatus }
+        );
         
         if (data.success) {
             showSuccess('Contact status updated successfully');
@@ -377,21 +328,11 @@ async function updateContactStatus() {
  */
 async function toggleSubscriberStatus(subscriberId, activate) {
     try {
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('auth_token');
-        const response = await fetch(`/api/admin/newsletter-subscribers/${subscriberId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ active: activate })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to update subscriber status');
-        }
-        
-        const data = await response.json();
+        const data = await AdminApiUtils.request(
+            `/api/admin/newsletter-subscribers/${subscriberId}/status`,
+            'PUT',
+            { active: activate }
+        );
         
         if (data.success) {
             showSuccess(`Subscriber ${activate ? 'activated' : 'deactivated'} successfully`);

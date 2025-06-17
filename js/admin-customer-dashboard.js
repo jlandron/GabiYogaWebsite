@@ -6,7 +6,7 @@
  * communication between the parent admin page and the embedded dashboard.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // Use centralized authentication handler for admin pages
     const authenticated = await AuthHandler.initAdminPage();
     if (!authenticated) {
