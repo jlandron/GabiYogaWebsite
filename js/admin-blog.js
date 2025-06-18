@@ -1057,7 +1057,8 @@ class BlogManager {
                 
                 postData.coverImage = {
                     url: this.featuredImagePreview.src,
-                    alt: this.featuredImageAlt ? this.featuredImageAlt.value : ''
+                    alt: this.featuredImageAlt ? this.featuredImageAlt.value : '',
+                    filePath: this.featuredImageData ? this.featuredImageData.filePath : null // Include file path for generating new URLs
                 };
             }
             
@@ -1537,8 +1538,16 @@ class BlogManager {
             console.log(`Featured image uploaded successfully: ${file.name} -> ${data.url}`);
             
             // Set as featured image using the server URL
+            // Store both URL (for display) and filePath (for storage)
             this.setFeaturedImage(data.url);
             
+            // Save the file path for later submission
+            this.featuredImageData = {
+                url: data.url,
+                filePath: data.filePath, // Store the file path, not just the URL
+                alt: this.featuredImageAlt ? this.featuredImageAlt.value : ''
+            };
+
             this.showNotification('Featured image uploaded successfully!');
             this.hideLoadingOverlay();
         } catch (error) {

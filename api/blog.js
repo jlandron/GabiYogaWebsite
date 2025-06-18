@@ -29,7 +29,13 @@ const ensureFilePathColumn = async () => {
     if (DB_TYPE === 'sqlite') {
       // For SQLite
       const result = await query(`PRAGMA table_info(blog_post_images)`);
-      columnExists = result.some(column => column.name === 'file_path');
+      // Check structure and find column
+      if (Array.isArray(result)) {
+        columnExists = result.some(column => column.name === 'file_path');
+      } else if (result && typeof result === 'object') {
+        // Handle SQLite result format variations
+        columnExists = false; // Default to false, will try to add column
+      }
     } else {
       // For MySQL
       try {
@@ -230,10 +236,16 @@ const BlogOperations = {
           publishedAt: post.published_at,
           createdAt: post.created_at,
           updatedAt: post.updated_at,
-          coverImage: post.cover_image_url ? {
+          coverImage: post.cover_image_path ? {
+            // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
+            url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+            alt: post.cover_image_alt || '',
+            filePath: post.cover_image_path
+          } : (post.cover_image_url ? {
             url: post.cover_image_url,
-            alt: post.cover_image_alt || ''
-          } : null,
+            alt: post.cover_image_alt || '',
+            filePath: null
+          } : null),
           tags,
           images
         };
@@ -275,10 +287,16 @@ const BlogOperations = {
         publishedAt: post.published_at,
         createdAt: post.created_at,
         updatedAt: post.updated_at,
-        coverImage: post.cover_image_url ? {
+        coverImage: post.cover_image_path ? {
+          // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
+          url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+          alt: post.cover_image_alt || '',
+          filePath: post.cover_image_path
+        } : (post.cover_image_url ? {
           url: post.cover_image_url,
-          alt: post.cover_image_alt || ''
-        } : null,
+          alt: post.cover_image_alt || '',
+          filePath: null
+        } : null),
         tags,
         images
       };
@@ -309,10 +327,16 @@ const BlogOperations = {
         publishedAt: post.published_at,
         createdAt: post.created_at,
         updatedAt: post.updated_at,
-        coverImage: post.cover_image_url ? {
+        coverImage: post.cover_image_path ? {
+          // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
+          url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+          alt: post.cover_image_alt || '',
+          filePath: post.cover_image_path
+        } : (post.cover_image_url ? {
           url: post.cover_image_url,
-          alt: post.cover_image_alt || ''
-        } : null,
+          alt: post.cover_image_alt || '',
+          filePath: null
+        } : null),
         tags,
         images
       };
@@ -332,12 +356,22 @@ const BlogOperations = {
       
       const publishedAt = published ? new Date().toISOString() : null;
       
+      // Extract file path from coverImage.url if needed
+      let coverImagePath = null;
+      if (coverImage?.filePath) {
+        // Use filePath if provided (this is the preferred approach)
+        coverImagePath = coverImage.filePath;
+      } else if (coverImage?.url) {
+        // For backward compatibility, extract path from URL
+        coverImagePath = extractFilePath(coverImage.url);
+      }
+
       // Insert post
       const result = await query(`
         INSERT INTO blog_posts (
           title, slug, content, excerpt, author, published, published_at,
-          cover_image_url, cover_image_alt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          cover_image_url, cover_image_alt, cover_image_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         title, 
         slug, 
@@ -347,7 +381,8 @@ const BlogOperations = {
         published ? 1 : 0, 
         publishedAt,
         coverImage?.url || null,
-        coverImage?.alt || null
+        coverImage?.alt || null,
+        coverImagePath
       ]);
       
       const postId = result.lastID;
@@ -431,10 +466,22 @@ const BlogOperations = {
       }
       
       if (coverImage !== undefined) {
+        // Extract file path from coverImage.url if needed
+        let coverImagePath = null;
+        if (coverImage?.filePath) {
+          // Use filePath if provided (this is the preferred approach)
+          coverImagePath = coverImage.filePath;
+        } else if (coverImage?.url) {
+          // For backward compatibility, extract path from URL
+          coverImagePath = extractFilePath(coverImage.url);
+        }
+        
         updateFields.push('cover_image_url = ?');
         updateFields.push('cover_image_alt = ?');
+        updateFields.push('cover_image_path = ?');
         updateValues.push(coverImage?.url || null);
         updateValues.push(coverImage?.alt || null);
+        updateValues.push(coverImagePath);
       }
       
       updateFields.push('updated_at = CURRENT_TIMESTAMP');
