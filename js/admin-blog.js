@@ -413,12 +413,34 @@ class BlogManager {
      * Load content into Quill editor with proper timing
      */
     async loadContentIntoQuill(content) {
-        if (!content || !this.quill) {
+        if (!content) {
+            console.log('No content to load into editor');
             return;
         }
         
+        if (!this.quill) {
+            console.warn('Quill editor not available yet, waiting for initialization');
+            // Wait for quill to be defined - up to 3 seconds
+            for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (this.quill) {
+                    console.log('Quill editor became available after waiting');
+                    break;
+                }
+            }
+            
+            if (!this.quill) {
+                console.error('Quill editor still not available after waiting');
+                // Fallback to textarea
+                if (this.postContent) {
+                    this.postContent.value = content;
+                }
+                return;
+            }
+        }
+        
         try {
-            console.log('Loading content into Quill editor:', content);
+            console.log('Loading content into Quill editor, content length:', content.length);
             
             // Wait for Quill to be fully ready
             await this.waitForQuillReady();
@@ -426,11 +448,13 @@ class BlogManager {
             // Clear existing content first
             this.quill.setText('');
             
-            // Wait a moment for the clear to complete
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Wait a bit longer for the clear to complete
+            await new Promise(resolve => setTimeout(resolve, 200));
             
             // Load content into Quill
             if (content.trim()) {
+                console.log('Setting content in editor, first 50 chars:', content.substring(0, 50));
+                
                 // Check if content is HTML
                 if (content.trim().startsWith('<')) {
                     // Set HTML content directly
@@ -442,6 +466,12 @@ class BlogManager {
                     // Set as plain text
                     this.quill.setText(content);
                 }
+                
+                // Force a format update after content is set
+                setTimeout(() => {
+                    this.quill.update('user');
+                    console.log('Quill editor update forced after content load');
+                }, 100);
             }
             
             console.log('Content loaded successfully into Quill editor');
@@ -462,23 +492,38 @@ class BlogManager {
             throw new Error('Quill editor not initialized');
         }
         
+        console.log('Waiting for Quill editor to be ready...');
+        
         // Check if Quill is ready by testing if we can get/set selection
         let attempts = 0;
-        const maxAttempts = 50; // Wait up to 5 seconds
+        const maxAttempts = 100; // Increased to wait up to 10 seconds
         
         while (attempts < maxAttempts) {
             try {
                 // Try to get selection - if this works, Quill is ready
                 this.quill.getSelection();
+                console.log(`Quill editor ready after ${attempts} attempts`);
+                
+                // Additional check - make sure the root element is accessible
+                if (!this.quill.root || !this.quill.root.innerHTML) {
+                    throw new Error('Quill root not fully initialized');
+                }
+                
+                // Wait a bit more even after checks pass for full initialization
+                await new Promise(resolve => setTimeout(resolve, 50));
                 return; // Success, Quill is ready
             } catch (error) {
                 // Not ready yet, wait a bit more
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
+                
+                if (attempts % 10 === 0) {
+                    console.log(`Still waiting for Quill editor... ${attempts} attempts`);
+                }
             }
         }
         
-        console.warn('Quill editor may not be fully ready after waiting');
+        console.warn('Quill editor may not be fully ready after maximum wait time');
     }
     
     /**
@@ -782,6 +827,8 @@ class BlogManager {
             this.isEditMode = true;
             this.currentPost = post;
             
+            console.log('Editing post:', post.title, 'Content length:', (post.content || '').length);
+            
             // Fill form fields
             if (this.postTitle) this.postTitle.value = post.title || '';
             if (this.postSlug) this.postSlug.value = post.slug || '';
@@ -789,13 +836,9 @@ class BlogManager {
             if (this.postAuthor) this.postAuthor.value = post.author || 'Gabi';
             if (this.postTags) this.postTags.value = post.tags ? post.tags.join(', ') : '';
             
-            // Load content into editor with proper timing
+            // First set the textarea value for backup
             if (this.postContent) {
-                // Set the textarea value first
                 this.postContent.value = post.content || '';
-                
-                // Load content into Quill editor with proper timing
-                await this.loadContentIntoQuill(post.content || '');
             }
             
             // Set featured image if exists with better error handling
@@ -837,6 +880,16 @@ class BlogManager {
             }
             
             this.showEditorPanel();
+            
+            // Important: Load content into Quill editor AFTER showing the editor panel
+            // This ensures the editor is visible in the DOM before attempting to load content
+            if (post.content) {
+                console.log('Loading post content into Quill editor after UI update');
+                // Add a delay to ensure the editor panel is fully visible
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await this.loadContentIntoQuill(post.content);
+            }
+            
             this.hideLoadingOverlay();
         } catch (error) {
             console.error('Error editing post:', error);
@@ -1079,20 +1132,6 @@ class BlogManager {
             .replace(/\s+/g, '-')     // Replace spaces with -
             .replace(/-+/g, '-')      // Replace multiple - with single -
             .trim();                  // Trim whitespace
-    }
-    
-    /**
-     * Update slug field based on the title
-     */
-    updateSlugFromTitle() {
-        if (!this.postTitle || !this.postSlug) return;
-        
-        // Only auto-generate if slug is empty or hasn't been manually edited
-        if (!this.postSlug.value.trim() || 
-            this.postSlug.value.trim() === this.generateSlug(this.currentPost?.title || '')) {
-            
-            this.postSlug.value = this.generateSlug(this.postTitle.value.trim());
-        }
     }
     
     /**
