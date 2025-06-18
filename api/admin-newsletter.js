@@ -7,12 +7,10 @@ const express = require('express');
 const router = express.Router();
 const { sendSuccess, sendError, asyncHandler } = require('../utils/api-response');
 const { authenticateToken } = require('./auth');
-const { BlogOperations } = require('../api/blog'); // Import BlogOperations
 const { NewsletterOperations } = require('../database/data-access');
 const emailService = require('../utils/email-service');
 const logger = require('../utils/logger');
-const http = require('http');
-const https = require('https');
+const { BlogOperations } = require('../api/blog'); // Import BlogOperations directly
 
 // Ensure only admin users can access these endpoints
 router.use(authenticateToken);
@@ -73,7 +71,9 @@ router.post('/send-newsletter', asyncHandler(async (req, res) => {
         });
         
         // Get blog post directly using BlogOperations
+        logger.debug('Using BlogOperations.getPostById directly', { normalizedId });
         const post = await BlogOperations.getPostById(normalizedId);
+        
         if (!post) {
             throw new Error('Blog post not found');
         }
