@@ -7,9 +7,12 @@ const express = require('express');
 const router = express.Router();
 const { sendSuccess, sendError, asyncHandler } = require('../utils/api-response');
 const { authenticateToken } = require('./auth');
+const { BlogOperations } = require('../api/blog'); // Import BlogOperations
 const { NewsletterOperations } = require('../database/data-access');
 const emailService = require('../utils/email-service');
 const logger = require('../utils/logger');
+const http = require('http');
+const https = require('https');
 
 // Ensure only admin users can access these endpoints
 router.use(authenticateToken);
@@ -69,18 +72,11 @@ router.post('/send-newsletter', asyncHandler(async (req, res) => {
             url: `${req.protocol}://${req.get('host')}/api/blog/posts/${normalizedId}`
         });
         
-        // Get blog post
-        const data = await fetch(`${req.protocol}://${req.get('host')}/api/blog/posts/${normalizedId}`);
-        if (!data.ok) {
-            throw new Error(`Could not fetch blog post: ${data.statusText}`);
+        // Get blog post directly using BlogOperations
+        const post = await BlogOperations.getPostById(normalizedId);
+        if (!post) {
+            throw new Error('Blog post not found');
         }
-        
-        const postData = await data.json();
-        if (!postData.success || !postData.post) {
-            throw new Error('Blog post not found or error fetching content');
-        }
-        
-        const post = postData.post;
         
         // Get active subscribers
         const subscribers = await NewsletterOperations.getAllSubscribers();
