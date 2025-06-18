@@ -19,72 +19,81 @@ const AdminApiUtils = {
     request: async function(url, method = 'GET', data = null) {
         console.log(`AdminApiUtils: Making ${method} request to ${url}`);
         
-        try {
-            // Get JWT token if available
-            const token = localStorage.getItem('auth_token');
-            
-            // Configure fetch options
-            const options = {
-                method: method,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json' // Add Content-Type header for proper JSON parsing
-                },
-                credentials: 'include', // Include session cookies with request
-            };
-            
-            // Add body for POST, PUT, PATCH methods
-            if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
-                options.body = JSON.stringify(data);
-            }
-            
-            // Make the request
-            const response = await fetch(url, options);
-            
-            // Check for HTTP errors
-            if (!response.ok) {
-                // Special handling for authentication errors
-                if (response.status === 401) {
-                    console.error('AdminApiUtils: Authentication failed');
-                    
-                    // Let AuthHandler deal with the redirect
-                    if (window.AuthHandler) {
-                        window.AuthHandler.handleAuthError(new Error('Authentication failed'));
+        // Use a promise-based wrapper around XMLHttpRequest for better browser compatibility
+        return new Promise((resolve, reject) => {
+            try {
+                // Get JWT token if available
+                const token = localStorage.getItem('auth_token');
+                
+                // Create XHR object
+                const xhr = new XMLHttpRequest();
+                xhr.open(method, url, true);
+                
+                // Set headers
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.withCredentials = true; // Include session cookies with request
+                
+                // Set up response handler
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        // Success
+                        try {
+                            const responseData = JSON.parse(xhr.responseText);
+                            resolve(responseData);
+                        } catch (e) {
+                            reject(new Error('Invalid JSON response'));
+                        }
                     } else {
-                        // Fallback if AuthHandler is not available
-                        if (confirm('Your session has expired. Please log in again.')) {
-                            window.location.href = '/index.html';
+                        // Error handling
+                        if (xhr.status === 401) {
+                            console.error('AdminApiUtils: Authentication failed');
+                            
+                            // Let AuthHandler deal with the redirect
+                            if (window.AuthHandler) {
+                                window.AuthHandler.handleAuthError(new Error('Authentication failed'));
+                            } else {
+                                // Fallback if AuthHandler is not available
+                                if (confirm('Your session has expired. Please log in again.')) {
+                                    window.location.href = '/index.html';
+                                }
+                            }
+                            
+                            reject(new Error('Authentication failed'));
+                        } else {
+                            // For other errors, try to get error message from response
+                            let errorMessage;
+                            
+                            try {
+                                // Try to parse as JSON
+                                const errorJson = JSON.parse(xhr.responseText);
+                                errorMessage = errorJson.message || errorJson.error || `Error ${xhr.status}: ${xhr.statusText}`;
+                            } catch (e) {
+                                // If parsing fails, use the raw text or status
+                                errorMessage = xhr.responseText || `Error ${xhr.status}: ${xhr.statusText}`;
+                            }
+                            
+                            reject(new Error(errorMessage));
                         }
                     }
-                    
-                    throw new Error('Authentication failed');
+                };
+                
+                // Handle network errors
+                xhr.onerror = function() {
+                    reject(new Error('Network error occurred'));
+                };
+                
+                // Send the request
+                if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+                    xhr.send(JSON.stringify(data));
+                } else {
+                    xhr.send();
                 }
-                
-                // For other errors, try to get error message from response
-                const errorText = await response.text();
-                let errorMessage;
-                
-                try {
-                    // Try to parse as JSON
-                    const errorJson = JSON.parse(errorText);
-                    errorMessage = errorJson.message || errorJson.error || `Error ${response.status}: ${response.statusText}`;
-                } catch (e) {
-                    // If parsing fails, use the raw text or status
-                    errorMessage = errorText || `Error ${response.status}: ${response.statusText}`;
-                }
-                
-                throw new Error(errorMessage);
+            } catch (error) {
+                console.error('AdminApiUtils request error:', error);
+                reject(error);
             }
-            
-            // Parse JSON response
-            const responseData = await response.json();
-            return responseData;
-        } catch (error) {
-            console.error('AdminApiUtils request error:', error);
-            
-            // Re-throw error to be handled by caller
-            throw error;
-        }
+        });
     },
     
     /**
