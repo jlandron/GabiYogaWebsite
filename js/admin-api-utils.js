@@ -27,7 +27,8 @@ const AdminApiUtils = {
             const options = {
                 method: method,
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json' // Add Content-Type header for proper JSON parsing
                 },
                 credentials: 'include', // Include session cookies with request
             };

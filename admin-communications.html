@@ -82,14 +82,17 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h2><i class="fas fa-newspaper"></i> Newsletter Subscribers</h2>
-                        <div class="panel-actions">
-                            <div class="search-container">
-                                <input type="text" id="subscriberSearch" placeholder="Search subscribers..." class="search-input">
-                                <button class="search-btn" onclick="searchSubscribers()">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
+                <div class="panel-actions">
+                    <div class="search-container">
+                        <input type="text" id="subscriberSearch" placeholder="Search subscribers..." class="search-input">
+                        <button class="search-btn" onclick="searchSubscribers()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <button id="send-newsletter-btn" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send Newsletter
+                    </button>
+                </div>
                     </div>
                     <div class="panel-content">
                         <div id="subscribersLoading" class="loading-state">
@@ -142,6 +145,40 @@
                 </select>
                 <button class="btn btn-primary" onclick="updateContactStatus()">Update Status</button>
                 <button class="btn btn-secondary" onclick="closeContactModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter Blog Selection Modal -->
+    <div id="newsletter-blog-modal" class="modal">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="closeNewsletterModal()">&times;</span>
+            <h2>Send Blog Post as Newsletter</h2>
+            <div class="modal-body">
+                <div id="blog-posts-loading" class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i> Loading blog posts...
+                </div>
+                <div class="newsletter-instructions">
+                    <p>Select a blog post to send as a newsletter to all active subscribers:</p>
+                </div>
+                <div class="blog-posts-list" id="newsletter-blog-list">
+                    <!-- Blog posts will be loaded here -->
+                </div>
+                <div class="preview-section">
+                    <h3>Preview</h3>
+                    <div id="newsletter-preview-container" class="newsletter-preview">
+                        <div class="newsletter-placeholder">
+                            <i class="fas fa-newspaper"></i>
+                            <p>Select a blog post to preview the newsletter</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="send-selected-blog" class="btn btn-primary" disabled>
+                    <i class="fas fa-paper-plane"></i> Send to All Active Subscribers
+                </button>
+                <button class="btn btn-secondary" onclick="closeNewsletterModal()">Cancel</button>
             </div>
         </div>
     </div>

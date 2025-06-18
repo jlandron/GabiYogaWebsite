@@ -34,6 +34,7 @@ const adminSettingsRoutes = require('./api/admin-settings');
 const adminPricingRoutes = require('./api/admin-pricing');
 const adminCustomerDashboardRoutes = require('./api/admin-customer-dashboard');
 const adminCommunicationsRoutes = require('./api/admin-communications');
+const adminNewsletterRoutes = require('./api/admin-newsletter');
 const galleryRoutes = require('./api/gallery');
 const blogRoutes = require('./api/blog'); // Import blog routes
 // const stripeRoutes = require('./api/stripe'); // Import Stripe payment routes
@@ -163,6 +164,7 @@ adminRouter.use('/', adminSettingsRoutes);
 adminRouter.use('/', adminPricingRoutes);
 adminRouter.use('/', adminCustomerDashboardRoutes);
 adminRouter.use('/', adminCommunicationsRoutes);
+adminRouter.use('/', adminNewsletterRoutes);
 
 // Register API routes
 app.use('/api/admin', adminRouter);
@@ -278,6 +280,17 @@ const startServer = async () => {
     // Initialize blog tables
     logger.info('Initializing blog database tables...');
     await initializeBlogDatabase();
+    
+    // Fix blog images to ensure they have file_path values
+    logger.info('Checking and fixing blog images...');
+    try {
+      const fixBlogImages = require('./utils/fix-blog-images');
+      const fixResults = await fixBlogImages();
+      logger.info('Blog image check complete:', fixResults);
+    } catch (fixError) {
+      logger.error('Error fixing blog images:', fixError);
+      // Continue with server start despite errors
+    }
 
     // Start server
     app.listen(PORT, () => {
