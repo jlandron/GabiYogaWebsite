@@ -891,4 +891,5 @@ router.post('/images/upload', authenticateToken, upload.single('image'), asyncHa
     }
 }));
 
-module.exports = router;
+// Export both the router and BlogOperations
+module.exports = { router, BlogOperations };

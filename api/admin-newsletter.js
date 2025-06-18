@@ -10,7 +10,8 @@ const { authenticateToken } = require('./auth');
 const { NewsletterOperations } = require('../database/data-access');
 const emailService = require('../utils/email-service');
 const logger = require('../utils/logger');
-const { BlogOperations } = require('../api/blog'); // Import BlogOperations directly
+// Import BlogOperations from the blog module
+const { BlogOperations } = require('./blog');
 
 // Ensure only admin users can access these endpoints
 router.use(authenticateToken);
