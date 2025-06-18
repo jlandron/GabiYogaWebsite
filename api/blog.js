@@ -541,17 +541,20 @@ const BlogOperations = {
   // Get images for a post
   getPostImages: async (postId) => {
     try {
-      const rows = await query('SELECT url, file_path, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
+      const rows = await query('SELECT file_path, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
       
-      // Generate presigned URLs for images with file_path
+      // Generate presigned URLs for all images
       for (const row of rows) {
         if (row.file_path) {
           try {
+            // Always generate URL from file_path
             row.url = await imageStorage.getPresignedUrl(row.file_path);
           } catch (error) {
             logger.error(`Error generating presigned URL for blog image (post ${postId}):`, error);
-            // Keep the original URL if it exists as a fallback
+            // No fallback to URL since we're not storing URLs anymore
           }
+        } else {
+          logger.warn(`Blog image for post ${postId} has no file_path`);
         }
       }
       
@@ -568,13 +571,18 @@ const BlogOperations = {
       if (!images.length) return;
       
       for (const image of images) {
+        // Validate that each image has a file path
+        if (!image.filePath) {
+          logger.warn(`Skipping image without file_path for post ${postId}`);
+          continue;
+        }
+        
         await query(`
-          INSERT INTO blog_post_images (post_id, url, file_path, alt, caption)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO blog_post_images (post_id, file_path, alt, caption)
+          VALUES (?, ?, ?, ?)
         `, [
           postId, 
-          image.url,
-          image.filePath || null, // Store the file_path for generating new presigned URLs later
+          image.filePath,
           image.alt || null, 
           image.caption || null
         ]);
@@ -878,12 +886,12 @@ router.post('/images/upload', authenticateToken, upload.single('image'), asyncHa
         });
         
         return APISuccess(res, {
-            url: presignedUrl, // Use presigned URL for immediate access
+            url: presignedUrl, // Temporary presigned URL for immediate display
             filename: sanitizedFilename,
             mimetype: req.file.mimetype,
             size: req.file.size,
-            filePath: imageInfo.filePath
-        });
+            filePath: imageInfo.filePath // This is what should be stored, not the URL
+        }, 'Image uploaded successfully. Store the filePath, not the URL.');
         
     } catch (error) {
         logger.error('Error uploading blog image:', { error: error.message, stack: error.stack });

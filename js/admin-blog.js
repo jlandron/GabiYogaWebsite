@@ -296,12 +296,12 @@ class BlogManager {
                 if (this.currentPost && this.currentPost.images) {
                     const existingImage = this.currentPost.images.find(img => img.url === result.url);
                     if (!existingImage) {
-                        this.currentPost.images.push({
-                            url: result.url,
-                            filePath: result.filePath || null, // Store file path for generating new presigned URLs later
-                            alt: '',
-                            caption: ''
-                        });
+                    this.currentPost.images.push({
+                        url: result.url, // Temporary URL for display only
+                        filePath: result.filePath, // Essential: Store file path for generating URLs later
+                        alt: '',
+                        caption: ''
+                    });
                         
                         // Show the blog images container if hidden
                         if (this.blogImagesContainer) {
@@ -333,8 +333,8 @@ class BlogManager {
                     const existingImage = this.currentPost.images.find(img => img.url === result.url);
                     if (!existingImage) {
                         this.currentPost.images.push({
-                            url: result.url,
-                            filePath: result.filePath || null, // Store file path for generating new presigned URLs later
+                            url: result.url, // Temporary URL for immediate display only
+                            filePath: result.filePath, // Essential: Store file path for generating new presigned URLs
                             alt: '',
                             caption: ''
                         });
