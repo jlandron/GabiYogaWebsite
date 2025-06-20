@@ -1404,14 +1404,10 @@ class BlogManager {
     
     /**
      * Set the featured image with enhanced error handling
+     * This is a legacy method now used only for compatibility with older code
      */
     async setFeaturedImageWithErrorHandling(imageUrl) {
         return new Promise((resolve, reject) => {
-            if (!this.featuredImagePreview || !this.featuredImagePlaceholder) {
-                reject(new Error('Featured image elements not found'));
-                return;
-            }
-            
             // Make sure we have a valid image URL or data URL
             if (!imageUrl) {
                 reject(new Error('Invalid image URL provided'));
@@ -1420,94 +1416,37 @@ class BlogManager {
             
             console.log('Setting featured image with URL:', imageUrl);
             
-            // Handle blob URLs that are invalid/expired - show placeholder instead
-            if (imageUrl.startsWith('blob:') && !this.isValidBlobUrl(imageUrl)) {
-                console.warn('Invalid or expired blob URL, showing placeholder:', imageUrl);
-                this.showFeaturedImagePlaceholder();
-                resolve(); // Don't reject, just show placeholder
-                return;
-            }
-            
-            // Remove previous error handler before setting new src to prevent recursion
-            this.featuredImagePreview.onerror = null;
-            this.featuredImagePreview.onload = null;
-            
-            // Set up the onload handler
-            this.featuredImagePreview.onload = () => {
-                console.log('Featured image loaded successfully');
-                // Show the preview once image is loaded
-                this.featuredImagePreview.style.display = '';
-                this.featuredImagePlaceholder.style.display = 'none';
+            // This function is no longer needed as we're not using DOM elements for featured image
+            // Instead, find the image in the post's images array
+            if (this.currentPost && this.currentPost.images) {
+                const imageData = this.currentPost.images.find(img => img.url === imageUrl);
                 
-                if (this.removeFeaturedImageBtn) {
-                    this.removeFeaturedImageBtn.style.display = '';
-                }
-                
-                resolve();
-            };
-            
-            // Set up error handler
-            this.featuredImagePreview.onerror = (e) => {
-                console.error('Failed to load image in preview:', imageUrl, e);
-                // Clean up handlers
-                this.featuredImagePreview.onerror = null;
-                this.featuredImagePreview.onload = null;
-                
-                // Show placeholder instead of removing completely
-                this.showFeaturedImagePlaceholder();
-                
-                // For S3 URLs or blob URLs, just resolve with placeholder instead of rejecting
-                // This prevents blocking the UI when images are temporarily unavailable
-                if (imageUrl.startsWith('blob:') || imageUrl.includes('s3.') || imageUrl.includes('amazonaws.com')) {
-                    console.warn('Image failed to load (likely temporary S3/blob issue). Showing placeholder.');
+                if (imageData) {
+                    // Update the cover image for the current post
+                    this.currentPost.coverImage = {
+                        url: imageUrl,
+                        alt: imageData.alt || '',
+                        filePath: imageData.filePath || null
+                    };
+                    
+                    // Re-render images to update the UI
+                    this.renderBlogImages(this.currentPost.images);
                     resolve();
-                } else {
-                    reject(new Error('Failed to load image'));
+                    return;
                 }
-            };
-            
-            // Process different types of URLs appropriately
-            let processedUrl = imageUrl;
-            
-            // Handle blog-specific URLs
-            if (imageUrl.startsWith('/uploads/blog/')) {
-                // For local development, convert relative paths to absolute paths if needed
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    const base = window.location.origin;
-                    processedUrl = `${base}${imageUrl}`;
-                }
-            } else if (imageUrl.includes('/api/gallery/')) {
-                // For gallery images, fetch the actual image data
-                fetch(imageUrl)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Failed to load image data');
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        // Clean up any previous object URL
-                        if (this._previousFeaturedImageObjectUrl) {
-                            URL.revokeObjectURL(this._previousFeaturedImageObjectUrl);
-                        }
-                        
-                        // Create new object URL
-                        const objectUrl = URL.createObjectURL(blob);
-                        
-                        // Store for later cleanup
-                        this._previousFeaturedImageObjectUrl = objectUrl;
-                        
-                        // Set the image source
-                        this.featuredImagePreview.src = objectUrl;
-                    })
-                    .catch(error => {
-                        console.error('Error loading gallery image:', error);
-                        reject(error);
-                    });
-                
-                return; // Skip the default src setting below as we're handling it in the fetch
             }
             
-            // Use the processed URL for the image source
-            this.featuredImagePreview.src = processedUrl;
+            // If we can't find the image in the current post's images, just store the URL
+            if (this.currentPost) {
+                this.currentPost.coverImage = {
+                    url: imageUrl,
+                    alt: '',
+                    filePath: null
+                };
+                resolve();
+            } else {
+                reject(new Error('No current post to set featured image'));
+            }
         });
     }
     
@@ -1550,11 +1489,57 @@ class BlogManager {
      * Set the featured image (legacy method for backward compatibility)
      */
     setFeaturedImage(imageUrl) {
-        this.setFeaturedImageWithErrorHandling(imageUrl)
-            .catch(error => {
-                console.error('Failed to set featured image:', error);
-                this.showNotification('Failed to load image preview. Please try again.', 'error');
-            });
+        // Check if we have a valid URL
+        if (!imageUrl) {
+            console.error('No image URL provided for featured image');
+            this.showNotification('No image URL provided for featured image', 'error');
+            return;
+        }
+        
+        console.log('Setting featured image with URL:', imageUrl);
+        
+        // Find the image in the post's images array to get all metadata
+        if (this.currentPost) {
+            if (this.currentPost.images && this.currentPost.images.length > 0) {
+                const imageData = this.currentPost.images.find(img => img.url === imageUrl);
+                
+                // If found in current images, use that data
+                if (imageData) {
+                    console.log('Found image in post images:', imageData);
+                    this.currentPost.coverImage = {
+                        url: imageUrl,
+                        alt: imageData.alt || '',
+                        filePath: imageData.filePath || null
+                    };
+                } else {
+                    // Just use the URL
+                    console.log('Image not found in post images, using URL only');
+                    this.currentPost.coverImage = {
+                        url: imageUrl,
+                        alt: '',
+                        filePath: null
+                    };
+                }
+            } else {
+                // No images array, create one with this image
+                console.log('No images array, creating coverImage directly');
+                this.currentPost.coverImage = {
+                    url: imageUrl,
+                    alt: '',
+                    filePath: null
+                };
+            }
+            
+            // Re-render images if we have any
+            if (this.currentPost.images && this.currentPost.images.length > 0) {
+                this.renderBlogImages(this.currentPost.images);
+            }
+            
+            this.showNotification('Featured image updated');
+        } else {
+            console.error('No current post to set featured image');
+            this.showNotification('Failed to update featured image: No active post', 'error');
+        }
     }
     
     /**
