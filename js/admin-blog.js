@@ -690,46 +690,97 @@ class BlogManager {
     }
     
     /**
-     * Filter posts by status
+     * Save the current blog post
      */
-    filterPosts() {
-        if (!this.filterSelect || this.posts.length === 0) return;
+    async savePost(publish = false) {
+        if (!this.currentPost) return;
         
-        const filter = this.filterSelect.value;
-        
-        let filteredPosts;
-        
-        switch (filter) {
-            case 'published':
-                filteredPosts = this.posts.filter(post => post.published);
-                break;
-            case 'drafts':
-                filteredPosts = this.posts.filter(post => !post.published);
-                break;
-            default:
-                filteredPosts = [...this.posts];
-                break;
+        try {
+            // Validate required fields
+            if (!this.postTitle.value.trim()) {
+                this.showNotification('Post title is required.', 'error');
+                this.postTitle.focus();
+                return;
+            }
+            
+            this.showLoadingOverlay();
+            
+            // Get form values
+            const postData = {
+                title: this.postTitle.value.trim(),
+                slug: this.postSlug.value.trim() || this.generateSlug(this.postTitle.value.trim()),
+                excerpt: this.postExcerpt.value.trim(),
+                content: this.postContent.value,
+                author: this.postAuthor.value.trim() || 'Gabi',
+                tags: this.postTags.value ? this.postTags.value.split(',').map(tag => tag.trim()) : [],
+                published: publish
+            };
+            
+            // Add featured image if exists in currentPost
+            if (this.currentPost.coverImage) {
+                postData.coverImage = this.currentPost.coverImage;
+            }
+            
+            // Add existing images if any
+            if (this.currentPost.images && this.currentPost.images.length > 0) {
+                postData.images = this.currentPost.images;
+            }
+            
+            // Get authentication token
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                throw new Error('Authentication required. Please log in again.');
+            }
+            
+            let response;
+            
+            if (this.isEditMode && this.currentPost._id) {
+                // Update existing post
+                response = await fetch(`/api/blog/posts/${this.currentPost._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(postData)
+                });
+            } else {
+                // Create new post
+                response = await fetch('/api/blog/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(postData)
+                });
+            }
+            
+            if (!response.ok) {
+                throw new Error(`Failed to save post: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Update current post with returned data
+            this.currentPost = data.post;
+            
+            // Refresh posts list
+            await this.loadPosts();
+            
+            // Show success message
+            const action = this.isEditMode ? 'updated' : 'created';
+            const status = publish ? 'published' : 'saved as draft';
+            this.showNotification(`Post ${action} and ${status} successfully!`);
+            
+            // Go back to posts list
+            this.showBlogPanel();
+        } catch (error) {
+            console.error('Error saving post:', error);
+            this.showNotification(`Error saving post: ${error.message}`, 'error');
+        } finally {
+            this.hideLoadingOverlay();
         }
-        
-        // If search term exists, apply it to filtered posts
-        if (this.searchInput && this.searchInput.value.trim()) {
-            const searchTerm = this.searchInput.value.trim().toLowerCase();
-            filteredPosts = filteredPosts.filter(post => {
-                const title = (post.title || '').toLowerCase();
-                const content = (post.content || '').toLowerCase();
-                const tags = (post.tags || []).join(' ').toLowerCase();
-                
-                return title.includes(searchTerm) || 
-                       content.includes(searchTerm) || 
-                       tags.includes(searchTerm);
-            });
-        }
-        
-        // Temporarily replace posts array for rendering
-        const originalPosts = this.posts;
-        this.posts = filteredPosts;
-        this.renderPosts();
-        this.posts = originalPosts;
     }
     
     /**
@@ -910,15 +961,30 @@ class BlogManager {
             const imgItem = document.createElement('div');
             imgItem.className = 'blog-image-item';
             
+            // Check if this is the featured image
+            if (this.currentPost && this.currentPost.coverImage && 
+                this.currentPost.coverImage.url === image.url) {
+                imgItem.classList.add('featured-image');
+            }
+            
             const imageAlt = image.alt || '';
             const imageCaption = image.caption || '';
             
+            // Create the featured badge (if applicable)
+            const featuredBadge = (this.currentPost && this.currentPost.coverImage && 
+                this.currentPost.coverImage.url === image.url) ? 
+                '<span class="featured-image-badge" title="Featured Image"><i class="fas fa-star"></i></span>' : '';
+            
             imgItem.innerHTML = `
+                ${featuredBadge}
                 <img src="${image.url}" alt="${imageAlt}">
                 ${imageAlt ? `<div class="blog-image-info">${imageAlt}</div>` : ''}
                 <div class="blog-image-actions">
                     <button title="Insert into post" class="insert-image" data-url="${image.url}" data-alt="${imageAlt}">
                         <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured" data-url="${image.url}" data-alt="${imageAlt}">
+                        <i class="fas fa-star"></i>
                     </button>
                     <button title="Edit image details" class="edit-image" data-url="${image.url}" data-alt="${imageAlt}" data-caption="${imageCaption}">
                         <i class="fas fa-pencil-alt"></i>
@@ -951,6 +1017,17 @@ class BlogManager {
                     const alt = insertBtn.dataset.alt || '';
                     this.insertImage(url, alt);
                     this.showNotification('Image inserted into content at cursor position');
+                });
+            }
+            
+            // Set as featured image button
+            const setAsFeaturedBtn = imgItem.querySelector('.set-as-featured');
+            if (setAsFeaturedBtn) {
+                setAsFeaturedBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent bubbling to the image click
+                    const url = setAsFeaturedBtn.dataset.url;
+                    const alt = setAsFeaturedBtn.dataset.alt || '';
+                    this.setImageAsFeatured(url, alt);
                 });
             }
             
@@ -1051,8 +1128,14 @@ class BlogManager {
                 published: publish
             };
             
-            // Add featured image if exists
-            if (this.featuredImagePreview && this.featuredImagePreview.src && 
+            // Add featured image if exists - use currentPost.coverImage (for new UI) or featuredImagePreview (for backward compatibility)
+            if (this.currentPost && this.currentPost.coverImage) {
+                postData.coverImage = {
+                    url: this.currentPost.coverImage.url,
+                    alt: this.currentPost.coverImage.alt || '',
+                    filePath: this.currentPost.coverImage.filePath || null // Include file path for generating new URLs
+                };
+            } else if (this.featuredImagePreview && this.featuredImagePreview.src && 
                 this.featuredImagePreview.style.display !== 'none') {
                 
                 postData.coverImage = {
@@ -1477,20 +1560,44 @@ class BlogManager {
     /**
      * Remove the featured image
      */
+    /**
+     * Set an image as the featured image for the post
+     */
+    setImageAsFeatured(imageUrl, imageAlt = '') {
+        if (!this.currentPost) return;
+        
+        // Find the image in the post's images array to get the file path
+        const imageData = this.currentPost.images.find(img => img.url === imageUrl);
+        if (!imageData) {
+            console.error('Image not found in post images');
+            this.showNotification('Error setting featured image. Image not found.', 'error');
+            return;
+        }
+        
+        // Update the cover image for the current post
+        this.currentPost.coverImage = {
+            url: imageUrl,
+            alt: imageAlt,
+            filePath: imageData.filePath || null // Important: Store the file path
+        };
+        
+        // Re-render images to update the UI
+        this.renderBlogImages(this.currentPost.images);
+        this.showNotification('Featured image updated successfully!');
+    }
+    
+    /**
+     * Remove the featured image assignment from the post
+     */
     removeFeaturedImage() {
-        if (!this.featuredImagePreview || !this.featuredImagePlaceholder) return;
+        if (!this.currentPost) return;
         
-        this.featuredImagePreview.src = '';
-        this.featuredImagePreview.style.display = 'none';
-        this.featuredImagePlaceholder.style.display = '';
+        // Clear the cover image
+        this.currentPost.coverImage = null;
         
-        if (this.removeFeaturedImageBtn) {
-            this.removeFeaturedImageBtn.style.display = 'none';
-        }
-        
-        if (this.featuredImageAlt) {
-            this.featuredImageAlt.value = '';
-        }
+        // Re-render images to update the UI
+        this.renderBlogImages(this.currentPost.images);
+        this.showNotification('Featured image removed.');
     }
     
     /**

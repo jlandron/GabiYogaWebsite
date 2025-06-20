@@ -1,370 +1,109 @@
-/**
- * Blog Image Gallery Styles
- * Controls the appearance of images in the blog post editor
- */
-
-/* Blog Images Gallery Container */
-.blog-images-container {
-    margin-top: 25px;
-    background-color: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.3s ease;
-}
-
-.blog-images-container label {
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-}
-
-.blog-images-container label::after {
-    content: "";
-    flex-grow: 1;
-    height: 1px;
-    background-color: var(--border-color);
-    margin-left: 15px;
-}
-
-.form-hint {
-    color: var(--text-muted);
-    font-size: 0.9em;
-    margin-top: 4px;
-    margin-bottom: 12px;
-}
-
-/* Blog Images Gallery */
+/* Blog Image Gallery Styles */
 .blog-images-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 15px;
-    max-height: 320px;
-    overflow-y: auto;
-    padding: 5px;
-    border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.02);
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
+    margin-top: 10px;
 }
 
-.blog-images-gallery::-webkit-scrollbar {
-    width: 8px;
-}
-
-.blog-images-gallery::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.blog-images-gallery::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-}
-
-/* Empty state */
-.blog-images-gallery:empty::before {
-    content: "No images used in this post yet";
-    display: block;
-    text-align: center;
-    color: var(--text-muted);
-    padding: 30px 0;
-    grid-column: 1 / -1;
-    font-style: italic;
-}
-
-/* Individual Image Item */
 .blog-image-item {
     position: relative;
-    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
     overflow: hidden;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .blog-image-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* Image inside the container */
 .blog-image-item img {
     width: 100%;
-    height: 100%;
+    height: 120px;
     object-fit: cover;
     display: block;
-    transition: all 0.3s ease;
 }
 
-.blog-image-item:hover img {
-    filter: brightness(0.9);
+.blog-image-info {
+    padding: 5px 10px;
+    font-size: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
 }
 
-/* Image actions overlay */
 .blog-image-actions {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 5px 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px 8px 8px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: translateY(5px);
 }
 
 .blog-image-item:hover .blog-image-actions {
     opacity: 1;
-    transform: translateY(0);
 }
 
-/* Buttons in the actions overlay */
 .blog-image-actions button {
-    background-color: rgba(255, 255, 255, 0.2);
+    background: none;
     border: none;
-    color: white;
     cursor: pointer;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #555;
+    padding: 5px;
+    border-radius: 3px;
     transition: all 0.2s;
-    backdrop-filter: blur(2px);
 }
 
 .blog-image-actions button:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.1);
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #000;
 }
 
-.blog-image-actions button.delete-image:hover {
-    background-color: rgba(255, 76, 76, 0.8);
-}
-
-/* Image info tooltip - optional addition to show info on hover */
-.blog-image-info {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    font-size: 0.8em;
-    padding: 4px 8px;
-    border-radius: 0 0 4px 0;
-    opacity: 0;
-    transition: opacity 0.2s;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.blog-image-item:hover .blog-image-info {
-    opacity: 1;
-}
-
-/* Image Gallery in Selection Modal */
-.image-gallery-container {
-    margin-top: 20px;
-    border-top: 1px solid var(--border-color);
-    padding-top: 20px;
-}
-
-.image-gallery-container h3 {
-    font-size: 1rem;
-    margin-bottom: 15px;
-    color: var(--text-dark);
-}
-
-.image-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+.image-gallery-actions {
     margin-top: 15px;
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 5px;
-    background-color: rgba(0, 0, 0, 0.02);
-    border-radius: 6px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
 }
 
-.image-gallery::-webkit-scrollbar {
-    width: 8px;
-}
-
-.image-gallery::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.image-gallery::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-}
-
-.gallery-image-item {
-    position: relative;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 2px solid transparent;
-    cursor: pointer;
-    aspect-ratio: 1;
-    transition: all 0.2s;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.gallery-image-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s;
-}
-
-.gallery-image-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.gallery-image-item:hover img {
-    transform: scale(1.05);
-}
-
-.gallery-image-item.selected {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-color-light), 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.gallery-image-item.selected::after {
-    content: "\f00c";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
+/* Featured image styles */
+.featured-image-badge {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    background: var(--primary-color);
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
+    top: 10px;
+    right: 10px;
+    background-color: #ff9800;
+    color: #fff;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    z-index: 2;
 }
 
-/* Image upload zone */
-.image-upload-container {
-    margin-bottom: 20px;
+.featured-image-badge i {
+    margin-right: 2px;
 }
 
-.image-upload-zone {
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    padding: 30px 20px;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.02);
-    transition: all 0.3s;
-    cursor: pointer;
+.blog-image-item.featured-image {
+    border: 2px solid #ff9800;
 }
 
-.image-upload-zone:hover,
-.image-upload-zone.dragover {
-    background-color: rgba(var(--primary-color-rgb), 0.05);
-    border-color: var(--primary-color);
+.blog-image-actions .set-as-featured {
+    color: #ff9800;
 }
 
-.upload-zone-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-muted);
+.blog-image-actions .set-as-featured:hover {
+    color: #e67e00;
+    background-color: rgba(255, 152, 0, 0.1);
 }
 
-.upload-zone-content i {
-    font-size: 2rem;
-    color: var(--primary-color-light);
-}
-
-/* Featured image container */
-#featured-image-container {
-    position: relative;
-    height: 200px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 15px;
-    background-color: #f5f5f5;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s;
-}
-
-#featured-image-container:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-#featured-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s;
-}
-
-#featured-image-container:hover #featured-image {
-    transform: scale(1.03);
-}
-
-#featured-image-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text-muted);
-    background: linear-gradient(135deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.02) 50%, rgba(0,0,0,0.02) 75%, transparent 75%, transparent);
-    background-size: 20px 20px;
-}
-
-#featured-image-placeholder i {
-    font-size: 32px;
-    margin-bottom: 10px;
-    opacity: 0.7;
-}
-
-/* Loading indication for image gallery */
-.image-gallery-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: var(--text-muted);
-    grid-column: 1 / -1;
-}
-
-.image-gallery-loading i {
-    margin-right: 10px;
-    color: var(--primary-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .blog-images-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    }
-    
-    .image-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
+.blog-image-item.featured-image .set-as-featured {
+    color: #4caf50;
 }

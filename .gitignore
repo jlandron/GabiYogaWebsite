@@ -46,3 +46,4 @@ TODO
 coverage/*
 infrastructure/cdk.out/
 
+cdk.out
