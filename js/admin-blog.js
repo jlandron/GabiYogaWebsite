@@ -892,22 +892,24 @@ class BlogManager {
                 this.postContent.value = post.content || '';
             }
             
-            // Set featured image if exists with better error handling
+            // Set featured image if exists
             if (post.coverImage && post.coverImage.url) {
                 console.log('Post has cover image:', post.coverImage);
                 
-                try {
-                    await this.setFeaturedImageWithErrorHandling(post.coverImage.url);
-                    if (this.featuredImageAlt) {
-                        this.featuredImageAlt.value = post.coverImage.alt || '';
-                    }
-                } catch (imageError) {
-                    console.error('Failed to load cover image:', imageError);
-                    this.showNotification('Featured image could not be loaded', 'warning');
-                    this.removeFeaturedImage();
+                // Just store the coverImage info in currentPost, no DOM manipulation needed
+                this.currentPost.coverImage = post.coverImage;
+                
+                // Let renderBlogImages handle the UI update
+                if (post.images && post.images.length > 0) {
+                    this.renderBlogImages(post.images);
                 }
             } else {
-                this.removeFeaturedImage();
+                this.currentPost.coverImage = null;
+                
+                // Update UI if there are any images
+                if (post.images && post.images.length > 0) {
+                    this.renderBlogImages(post.images);
+                }
             }
             
             // Update UI
@@ -1408,44 +1410,55 @@ class BlogManager {
      */
     async setFeaturedImageWithErrorHandling(imageUrl) {
         return new Promise((resolve, reject) => {
-            // Make sure we have a valid image URL or data URL
-            if (!imageUrl) {
-                reject(new Error('Invalid image URL provided'));
-                return;
-            }
-            
-            console.log('Setting featured image with URL:', imageUrl);
-            
-            // This function is no longer needed as we're not using DOM elements for featured image
-            // Instead, find the image in the post's images array
-            if (this.currentPost && this.currentPost.images) {
-                const imageData = this.currentPost.images.find(img => img.url === imageUrl);
-                
-                if (imageData) {
-                    // Update the cover image for the current post
-                    this.currentPost.coverImage = {
-                        url: imageUrl,
-                        alt: imageData.alt || '',
-                        filePath: imageData.filePath || null
-                    };
-                    
-                    // Re-render images to update the UI
-                    this.renderBlogImages(this.currentPost.images);
-                    resolve();
+            try {
+                // Make sure we have a valid image URL
+                if (!imageUrl) {
+                    reject(new Error('Invalid image URL provided'));
                     return;
                 }
-            }
-            
-            // If we can't find the image in the current post's images, just store the URL
-            if (this.currentPost) {
+                
+                console.log('Setting featured image with URL:', imageUrl);
+                
+                if (!this.currentPost) {
+                    reject(new Error('No current post to set featured image'));
+                    return;
+                }
+                
+                // Find the image in the post's images array if available
+                if (this.currentPost.images && this.currentPost.images.length > 0) {
+                    const imageData = this.currentPost.images.find(img => img.url === imageUrl);
+                    
+                    if (imageData) {
+                        // Update the cover image for the current post
+                        this.currentPost.coverImage = {
+                            url: imageUrl,
+                            alt: imageData.alt || '',
+                            filePath: imageData.filePath || null
+                        };
+                        
+                        // Re-render images to update the UI
+                        this.renderBlogImages(this.currentPost.images);
+                        resolve();
+                        return;
+                    }
+                }
+                
+                // If we can't find the image in the post's images, just store the URL
                 this.currentPost.coverImage = {
                     url: imageUrl,
                     alt: '',
                     filePath: null
                 };
+                
+                // Re-render images if there are any
+                if (this.currentPost.images && this.currentPost.images.length > 0) {
+                    this.renderBlogImages(this.currentPost.images);
+                }
+                
                 resolve();
-            } else {
-                reject(new Error('No current post to set featured image'));
+            } catch (error) {
+                console.error('Error in setFeaturedImageWithErrorHandling:', error);
+                reject(error);
             }
         });
     }

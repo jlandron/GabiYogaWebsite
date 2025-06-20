@@ -588,7 +588,7 @@ const BlogOperations = {
   // Get images for a post
   getPostImages: async (postId) => {
     try {
-      const rows = await query('SELECT file_path, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
+      const rows = await query('SELECT id, file_path, alt, caption FROM blog_post_images WHERE post_id = ?', [postId]);
       
       // Generate presigned URLs for all images
       for (const row of rows) {
@@ -596,6 +596,7 @@ const BlogOperations = {
           try {
             // Always generate URL from file_path
             row.url = await imageStorage.getPresignedUrl(row.file_path);
+            row.filePath = row.file_path; // Add filePath property for consistency with coverImage
           } catch (error) {
             logger.error(`Error generating presigned URL for blog image (post ${postId}):`, error);
             // No fallback to URL since we're not storing URLs anymore
