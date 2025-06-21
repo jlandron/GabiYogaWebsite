@@ -606,7 +606,8 @@ const ClassOperations = {
    */
   createClass: async (classData) => {
     try {
-      const { 
+      // Extract fields from data
+      let { 
         template_id, 
         name, 
         day_of_week, 
@@ -619,7 +620,40 @@ const ClassOperations = {
         active = true 
       } = classData;
       
+      // Validate required fields
+      if (!name || name.trim() === '') {
+        throw new Error('Class name is required');
+      }
+      
+      if (day_of_week === undefined || day_of_week === null || isNaN(day_of_week)) {
+        throw new Error('Valid day of week is required');
+      }
+      
+      if (!start_time || typeof start_time !== 'string') {
+        throw new Error('Valid start time is required');
+      }
+      
+      // Set default values for optional fields
+      instructor = instructor || 'Gabi Jyoti';
+      level = level || 'All Levels';
+      capacity = capacity || 20;
+      description = description || '';
+      
       const datetimeFunc = getDatetimeFunction();
+      
+      // Log class data for debugging
+      console.log('Creating class with data:', {
+        template_id, 
+        name, 
+        day_of_week, 
+        start_time, 
+        duration, 
+        instructor, 
+        level,
+        capacity,
+        description,
+        active
+      });
       
       const result = await db.query(`
         INSERT INTO class_schedules (

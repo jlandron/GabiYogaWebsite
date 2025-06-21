@@ -660,8 +660,94 @@ class ProgressiveLoader {
     }
     
     renderSchedule(scheduleData) {
-        // Simplified schedule rendering
         console.log('[Progressive Loader] Schedule data loaded:', scheduleData?.length || 0);
+        
+        // Get the schedule table body
+        const scheduleTable = document.querySelector('.schedule-table tbody');
+        if (!scheduleTable) {
+            console.error('[Progressive Loader] Schedule table not found');
+            return;
+        }
+        
+        if (!scheduleData || scheduleData.length === 0) {
+            scheduleTable.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align:center;padding:20px;">
+                        No classes scheduled at this time.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Create a structured schedule by time and day
+        const scheduleByTime = {};
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        // Collect all unique times and organize classes by time and day
+        scheduleData.forEach(cls => {
+            if (!scheduleByTime[cls.time]) {
+                scheduleByTime[cls.time] = {
+                    time: cls.time,
+                    days: Array(7).fill(null) // One slot for each day of week
+                };
+            }
+            
+            // Find the day index (0-6) for this class
+            const dayIndex = days.findIndex(day => day === cls.day);
+            if (dayIndex !== -1) {
+                scheduleByTime[cls.time].days[dayIndex] = cls;
+            }
+        });
+        
+        // Sort times
+        const sortedTimes = Object.keys(scheduleByTime).sort((a, b) => {
+            // Parse times (assuming "H:MM AM/PM" format)
+            return this.parseTime(a) - this.parseTime(b);
+        });
+        
+        // Generate HTML rows
+        const rows = sortedTimes.map(time => {
+            const timeSlot = scheduleByTime[time];
+            
+            return `
+                <tr>
+                    <td class="schedule-time">${time}</td>
+                    ${days.map((day, index) => {
+                        const cls = timeSlot.days[index];
+                        if (cls) {
+                            let availabilityClass = '';
+                            let availabilityText = '';
+                            
+                            // Add availability info if present
+                            if (typeof cls.availableSpaces !== 'undefined') {
+                                if (cls.availableSpaces <= 0) {
+                                    availabilityClass = 'class-full';
+                                    availabilityText = 'Full';
+                                } else if (cls.availableSpaces < 5) {
+                                    availabilityClass = 'limited-spots';
+                                    availabilityText = `${cls.availableSpaces} spots left`;
+                                }
+                            }
+                            
+                            return `
+                                <td class="schedule-class ${availabilityClass}">
+                                    <div class="class-name">${cls.name}</div>
+                                    <div class="class-instructor">${cls.instructor}</div>
+                                    <div class="class-level">${cls.level || 'All Levels'}</div>
+                                    ${availabilityText ? `<div class="class-availability">${availabilityText}</div>` : ''}
+                                </td>
+                            `;
+                        } else {
+                            return '<td></td>';
+                        }
+                    }).join('')}
+                </tr>
+            `;
+        }).join('');
+        
+        // Update the table
+        scheduleTable.innerHTML = rows;
     }
     
     populateSessionPackages(packages) {
