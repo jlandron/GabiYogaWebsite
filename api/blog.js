@@ -625,11 +625,14 @@ const BlogOperations = {
           continue;
         }
         
+        // Include the URL field - use image.url if available, otherwise use the filePath itself
+        // This addresses the NOT NULL constraint on the url field in the blog_post_images table
         await query(`
-          INSERT INTO blog_post_images (post_id, file_path, alt, caption)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO blog_post_images (post_id, url, file_path, alt, caption)
+          VALUES (?, ?, ?, ?, ?)
         `, [
           postId, 
+          image.url || image.filePath, // Use image.url if exists, otherwise fall back to filePath
           image.filePath,
           image.alt || null, 
           image.caption || null

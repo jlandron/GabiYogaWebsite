@@ -1064,7 +1064,17 @@ class BlogManager {
         const confirmRemove = window.confirm('Are you sure you want to remove this image from the post?');
         if (!confirmRemove) return;
         
+        // Check if this image was the featured image
+        const wasFeaturedImage = this.currentPost.coverImage && 
+                                this.currentPost.coverImage.url === imageUrl;
+        
+        // Remove the image from the images array
         this.currentPost.images = this.currentPost.images.filter(img => img.url !== imageUrl);
+        
+        // If this was the featured image, clear the featured image
+        if (wasFeaturedImage) {
+            this.currentPost.coverImage = null;
+        }
         
         // Update UI
         this.renderBlogImages(this.currentPost.images);
@@ -1074,7 +1084,11 @@ class BlogManager {
             this.blogImagesContainer.style.display = 'none';
         }
         
-        this.showNotification('Image removed from post.');
+        if (wasFeaturedImage) {
+            this.showNotification('Image removed and featured image cleared.');
+        } else {
+            this.showNotification('Image removed from post.');
+        }
     }
     
     /**
@@ -1405,6 +1419,20 @@ class BlogManager {
     }
     
     /**
+     * Set the featured image
+     * This is a compatibility wrapper for setFeaturedImageWithErrorHandling
+     */
+    setFeaturedImage(imageUrl) {
+        // This function is needed for backward compatibility with older code
+        // and is called from editPost
+        return this.setFeaturedImageWithErrorHandling(imageUrl)
+            .catch(error => {
+                console.error('Error in setFeaturedImage:', error);
+                this.showNotification('Error setting featured image. Please try again.', 'error');
+            });
+    }
+    
+    /**
      * Set the featured image with enhanced error handling
      * This is a legacy method now used only for compatibility with older code
      */
@@ -1477,88 +1505,6 @@ class BlogManager {
     }
     
     /**
-     * Show featured image placeholder with message
-     */
-    showFeaturedImagePlaceholder() {
-        if (this.featuredImagePreview) {
-            this.featuredImagePreview.style.display = 'none';
-        }
-        
-        if (this.featuredImagePlaceholder) {
-            this.featuredImagePlaceholder.style.display = '';
-            // Update placeholder text to indicate there was an image
-            const placeholderP = this.featuredImagePlaceholder.querySelector('p');
-            if (placeholderP) {
-                placeholderP.textContent = 'Featured image (failed to load)';
-            }
-        }
-        
-        if (this.removeFeaturedImageBtn) {
-            this.removeFeaturedImageBtn.style.display = 'none';
-        }
-    }
-    
-    /**
-     * Set the featured image (legacy method for backward compatibility)
-     */
-    setFeaturedImage(imageUrl) {
-        // Check if we have a valid URL
-        if (!imageUrl) {
-            console.error('No image URL provided for featured image');
-            this.showNotification('No image URL provided for featured image', 'error');
-            return;
-        }
-        
-        console.log('Setting featured image with URL:', imageUrl);
-        
-        // Find the image in the post's images array to get all metadata
-        if (this.currentPost) {
-            if (this.currentPost.images && this.currentPost.images.length > 0) {
-                const imageData = this.currentPost.images.find(img => img.url === imageUrl);
-                
-                // If found in current images, use that data
-                if (imageData) {
-                    console.log('Found image in post images:', imageData);
-                    this.currentPost.coverImage = {
-                        url: imageUrl,
-                        alt: imageData.alt || '',
-                        filePath: imageData.filePath || null
-                    };
-                } else {
-                    // Just use the URL
-                    console.log('Image not found in post images, using URL only');
-                    this.currentPost.coverImage = {
-                        url: imageUrl,
-                        alt: '',
-                        filePath: null
-                    };
-                }
-            } else {
-                // No images array, create one with this image
-                console.log('No images array, creating coverImage directly');
-                this.currentPost.coverImage = {
-                    url: imageUrl,
-                    alt: '',
-                    filePath: null
-                };
-            }
-            
-            // Re-render images if we have any
-            if (this.currentPost.images && this.currentPost.images.length > 0) {
-                this.renderBlogImages(this.currentPost.images);
-            }
-            
-            this.showNotification('Featured image updated');
-        } else {
-            console.error('No current post to set featured image');
-            this.showNotification('Failed to update featured image: No active post', 'error');
-        }
-    }
-    
-    /**
-     * Remove the featured image
-     */
-    /**
      * Set an image as the featured image for the post
      */
     setImageAsFeatured(imageUrl, imageAlt = '') {
@@ -1594,7 +1540,30 @@ class BlogManager {
         this.currentPost.coverImage = null;
         
         // Re-render images to update the UI
-        this.renderBlogImages(this.currentPost.images);
+        if (this.currentPost.images && this.currentPost.images.length > 0) {
+            this.renderBlogImages(this.currentPost.images);
+        }
+        
+        // Clear any legacy featured image elements (for backward compatibility)
+        if (this.featuredImagePreview) {
+            this.featuredImagePreview.src = '';
+            this.featuredImagePreview.style.display = 'none';
+        }
+        
+        if (this.featuredImagePlaceholder) {
+            this.featuredImagePlaceholder.style.display = '';
+        }
+        
+        if (this.featuredImageAlt) {
+            this.featuredImageAlt.value = '';
+        }
+        
+        // Remove any stored object URL to prevent memory leaks
+        if (this._previousFeaturedImageObjectUrl) {
+            URL.revokeObjectURL(this._previousFeaturedImageObjectUrl);
+            this._previousFeaturedImageObjectUrl = null;
+        }
+        
         this.showNotification('Featured image removed.');
     }
     
@@ -1641,10 +1610,6 @@ class BlogManager {
             const data = await response.json();
             
             console.log(`Featured image uploaded successfully: ${file.name} -> ${data.url}`);
-            
-            // Set as featured image using the server URL
-            // Store both URL (for display) and filePath (for storage)
-            this.setFeaturedImage(data.url);
             
             // Save the file path for later submission
             this.featuredImageData = {
@@ -1914,50 +1879,43 @@ class BlogManager {
             // For featured images, we need to upload to server to get permanent URL
             if (this.imageInsertCallback === 'featured') {
                 // If it's a gallery URL, fetch the image and upload it to blog storage
-                if (this.selectedImage.url.startsWith('/api/gallery/')) {
-                    const response = await fetch(this.selectedImage.url);
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to load image data');
-                    }
-                    
-                    const blob = await response.blob();
-                    
-                    // Create a File object from the blob for upload
-                    const file = new File([blob], 'featured-image.jpg', { type: blob.type });
-                    
-                    // Upload to server using blog-specific endpoint
-                    const token = localStorage.getItem('auth_token');
-                    if (!token) {
-                        throw new Error('Authentication required. Please log in again.');
-                    }
-                    
-                    const formData = new FormData();
-                    formData.append('image', file);
-                    
-                    const uploadResponse = await fetch('/api/blog/images/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: formData
-                    });
-                    
-                    if (!uploadResponse.ok) {
-                        throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
-                    }
-                    
-                    const uploadData = await uploadResponse.json();
-                    
-                    // Use the permanent URL from server
-                    this.setFeaturedImage(uploadData.url);
-                    
-                    console.log(`Featured image uploaded to permanent storage: ${uploadData.url}`);
-                } else {
-                    // Direct URL, use as-is
-                    this.setFeaturedImage(this.selectedImage.url);
+                const response = await fetch(this.selectedImage.url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load image data');
                 }
                 
+                const blob = await response.blob();
+                
+                // Create a File object from the blob for upload
+                const file = new File([blob], 'featured-image.jpg', { type: blob.type });
+                
+                // Upload to server using blog-specific endpoint
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                const uploadResponse = await fetch('/api/blog/images/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                if (!uploadResponse.ok) {
+                    throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+                }
+                
+                const uploadData = await uploadResponse.json();
+                
+                
+                console.log(`Featured image uploaded to permanent storage: ${uploadData.url}`);
+            
                 // Set alt text if available
                 if (this.featuredImageAlt && this.selectedImage.alt) {
                     this.featuredImageAlt.value = this.selectedImage.alt;
