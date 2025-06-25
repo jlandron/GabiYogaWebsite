@@ -52,15 +52,17 @@ async function loadSessionsData() {
         const sessionsResponse = await AdminApiService.getPrivateSessions();
         const sessions = sessionsResponse.sessions || [];
         
-        // Filter sessions by status
-        const pendingSessions = sessions.filter(session => session.status.toLowerCase() === 'pending');
+        // Filter sessions by status using our shared enum
+        const pendingSessions = sessions.filter(session => 
+            session.status.toLowerCase() === SharedConstants.SessionStatus.PENDING
+        );
         const upcomingSessions = sessions.filter(session => 
-            ['confirmed', 'tentative'].includes(session.status.toLowerCase()) && 
+            [SharedConstants.SessionStatus.CONFIRMED, SharedConstants.SessionStatus.TENTATIVE].includes(session.status.toLowerCase()) && 
             new Date(session.date) >= new Date()
         );
         const pastSessions = sessions.filter(session => 
             new Date(session.date) < new Date() || 
-            ['completed', 'cancelled'].includes(session.status.toLowerCase())
+            [SharedConstants.SessionStatus.COMPLETED, SharedConstants.SessionStatus.CANCELLED].includes(session.status.toLowerCase())
         );
         
         // Render sessions into tables
@@ -403,14 +405,14 @@ async function viewSessionDetails(sessionId) {
         const actionsContainer = document.getElementById('session-modal-actions');
         const status = session.status.toLowerCase();
         
-        if (status === 'pending') {
+        if (status === SharedConstants.SessionStatus.PENDING) {
             actionsContainer.innerHTML = `
                 <button type="button" class="admin-btn admin-btn-secondary" onclick="document.getElementById('session-modal').style.display='none'">Close</button>
                 <button type="button" class="admin-btn admin-btn-secondary" onclick="openRescheduleModal('${session.session_id}')">Suggest Alternative</button>
                 <button type="button" class="admin-btn admin-btn-danger" onclick="cancelSession('${session.session_id}')">Decline Request</button>
                 <button type="button" class="admin-btn admin-btn-primary" onclick="confirmSession('${session.session_id}')">Approve Request</button>
             `;
-        } else if (['confirmed', 'tentative'].includes(status) && new Date(session.date) >= new Date()) {
+        } else if ([SharedConstants.SessionStatus.CONFIRMED, SharedConstants.SessionStatus.TENTATIVE].includes(status) && new Date(session.date) >= new Date()) {
             actionsContainer.innerHTML = `
                 <button type="button" class="admin-btn admin-btn-secondary" onclick="document.getElementById('session-modal').style.display='none'">Close</button>
                 <button type="button" class="admin-btn admin-btn-danger" onclick="cancelSession('${session.session_id}')">Cancel Session</button>
@@ -437,10 +439,11 @@ async function viewSessionDetails(sessionId) {
 async function confirmSession(sessionId) {
     if (confirm('Are you sure you want to approve this session request?')) {
         try {
+            // Match exact case used in database for API call
             await AdminApiService.authRequest(
-                `${API_ENDPOINTS.privateSessionById(sessionId)}/status`, 
+                `/api/private-sessions/${sessionId}/status`, 
                 'PUT',
-                { status: 'Confirmed' }
+                { status: SharedConstants.SessionStatus.CONFIRMED }
             );
             
             showSuccessMessage('Session has been confirmed successfully!');
@@ -490,13 +493,13 @@ async function handleRescheduleSubmit(e) {
     try {
         // Update session with new date/time
         await AdminApiService.authRequest(
-            API_ENDPOINTS.privateSessionById(sessionId),
+            `/api/private-sessions/${sessionId}`,
             'PUT',
             {
                 date,
                 start_time: time,
                 admin_notes: notes,
-                status: 'Tentative' // Change status to tentative until client confirms
+                status: SharedConstants.SessionStatus.TENTATIVE // Change status to tentative until client confirms
             }
         );
         
@@ -520,10 +523,11 @@ async function handleRescheduleSubmit(e) {
 async function cancelSession(sessionId) {
     if (confirm('Are you sure you want to cancel this session? This action cannot be undone.')) {
         try {
+            // Match exact case used in database for API call
             await AdminApiService.authRequest(
-                `${API_ENDPOINTS.privateSessionById(sessionId)}/status`, 
+                `/api/private-sessions/${sessionId}/status`, 
                 'PUT',
-                { status: 'Cancelled' }
+                { status: SharedConstants.SessionStatus.CANCELLED }
             );
             
             showSuccessMessage('Session has been cancelled successfully.');
@@ -813,13 +817,13 @@ async function loadSessionsForCalendar(year, month) {
             if (dayElement) {
                 const sessionsContainer = dayElement.querySelector('.calendar-day-sessions');
                 if (sessionsContainer) {
-                    // Determine status color
+                    // Determine status color using shared constants
                     let statusClass = '';
-                    if (session.status.toLowerCase() === 'confirmed') {
+                    if (session.status.toLowerCase() === SharedConstants.SessionStatus.CONFIRMED) {
                         statusClass = 'green';
-                    } else if (session.status.toLowerCase() === 'pending') {
+                    } else if (session.status.toLowerCase() === SharedConstants.SessionStatus.PENDING) {
                         statusClass = 'yellow';
-                    } else if (session.status.toLowerCase() === 'cancelled') {
+                    } else if (session.status.toLowerCase() === SharedConstants.SessionStatus.CANCELLED) {
                         statusClass = 'red';
                     }
                     
@@ -964,13 +968,13 @@ async function loadDateSessions(dateString) {
         }
         
         sessionsContainer.innerHTML = dateSessions.map(session => {
-            // Determine status class
+            // Determine status class using shared constants
             let statusClass = '';
-            if (session.status.toLowerCase() === 'confirmed') {
+            if (session.status.toLowerCase() === SharedConstants.SessionStatus.CONFIRMED) {
                 statusClass = 'green';
-            } else if (session.status.toLowerCase() === 'pending') {
+            } else if (session.status.toLowerCase() === SharedConstants.SessionStatus.PENDING) {
                 statusClass = 'yellow';
-            } else if (session.status.toLowerCase() === 'cancelled') {
+            } else if (session.status.toLowerCase() === SharedConstants.SessionStatus.CANCELLED) {
                 statusClass = 'red';
             }
             
@@ -1171,6 +1175,25 @@ async function handleAvailabilitySubmit(e) {
 /**
  * Show success message
  */
+/**
+ * Get color class for session status display
+ */
+function getStatusColor(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower === SharedConstants.SessionStatus.CONFIRMED) {
+        return 'green';
+    } else if (statusLower === SharedConstants.SessionStatus.PENDING) {
+        return 'yellow';
+    } else if (statusLower === SharedConstants.SessionStatus.CANCELLED) {
+        return 'red';
+    } else if (statusLower === SharedConstants.SessionStatus.COMPLETED) {
+        return 'blue';
+    } else if (statusLower === SharedConstants.SessionStatus.TENTATIVE) {
+        return 'orange';
+    }
+    return '';
+}
+
 function showSuccessMessage(message) {
     const successDiv = document.createElement('div');
     successDiv.className = 'admin-success-message';
