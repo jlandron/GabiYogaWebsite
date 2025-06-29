@@ -176,40 +176,40 @@ const initializeRoutes = () => {
   app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
   app.get('/api/get-region-recommendation', asyncHandler(userLocationApi.handleGetRegionRecommendation));
   
+  // Add custom middleware to make user available to templates
+  app.use((req, res, next) => {
+    res.locals.user = req.user;
+    next();
+  });
+
+  // Fallback route for SPA with environment variable injection
+  // This should be after API routes but before error handlers
+  app.get('*', (req, res) => {
+    // Read the index.html file and inject environment variables
+    const fs = require('fs');
+    const indexPath = path.join(__dirname, 'index.html');
+    
+    fs.readFile(indexPath, 'utf8', (err, html) => {
+      if (err) {
+        logger.error('Error reading index.html', { error: err.message });
+        return res.status(500).send('Internal Server Error');
+      }
+      
+      // Inject environment variables into the HTML
+      const modifiedHtml = html.replace(
+        'window.NODE_ENV = window.NODE_ENV || \'production\';',
+        `window.NODE_ENV = '${process.env.NODE_ENV || 'production'}';`
+      ).replace(
+        'window.GLOBAL_CLOUDFRONT_URL = window.GLOBAL_CLOUDFRONT_URL || \'\';',
+        `window.GLOBAL_CLOUDFRONT_URL = '${process.env.GLOBAL_CLOUDFRONT_URL || ''}';`
+      );
+      
+      res.send(modifiedHtml);
+    });
+  });
+  
   routesInitialized = true;
 };
-
-// Add custom middleware to make user available to templates
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  next();
-});
-
-// Fallback route for SPA with environment variable injection
-// This should be after API routes but before error handlers
-app.get('*', (req, res) => {
-  // Read the index.html file and inject environment variables
-  const fs = require('fs');
-  const indexPath = path.join(__dirname, 'index.html');
-  
-  fs.readFile(indexPath, 'utf8', (err, html) => {
-    if (err) {
-      logger.error('Error reading index.html', { error: err.message });
-      return res.status(500).send('Internal Server Error');
-    }
-    
-    // Inject environment variables into the HTML
-    const modifiedHtml = html.replace(
-      'window.NODE_ENV = window.NODE_ENV || \'production\';',
-      `window.NODE_ENV = '${process.env.NODE_ENV || 'production'}';`
-    ).replace(
-      'window.GLOBAL_CLOUDFRONT_URL = window.GLOBAL_CLOUDFRONT_URL || \'\';',
-      `window.GLOBAL_CLOUDFRONT_URL = '${process.env.GLOBAL_CLOUDFRONT_URL || ''}';`
-    );
-    
-    res.send(modifiedHtml);
-  });
-});
 
 // Log all unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
