@@ -682,7 +682,8 @@ class ProgressiveLoader {
         
         // Create a structured schedule by time and day
         const scheduleByTime = {};
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        // Match the HTML table column order: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
         // Collect all unique times and organize classes by time and day
         scheduleData.forEach(cls => {
