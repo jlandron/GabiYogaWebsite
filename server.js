@@ -90,83 +90,94 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is healthy' });
 });
 
-// Authentication middleware is imported from auth.js
+// Session and Passport middleware will be initialized here by startServer function
 
-// API Routes
-// Use auth router for authentication endpoints (will be replaced with new auth routes)
-app.use('/api/auth', authRouter);
+// Placeholder for routes - these will be set up after session initialization
+let routesInitialized = false;
 
-// Public API endpoints for homepage data
-
-// Public API endpoint for featured retreats (for homepage)
-app.get('/api/retreats/featured', asyncHandler(async (req, res) => {
-  const retreats = await RetreatOperations.getFeaturedRetreats();
-  return sendSuccess(res, { retreats }, 'Featured retreats fetched successfully');
-}));
-
-// Public API endpoint for all retreats
-app.get('/api/retreats', asyncHandler(async (req, res) => {
-  const retreats = await RetreatOperations.getPublishedRetreats();
-  return sendSuccess(res, { retreats }, 'Retreats fetched successfully');
-}));
-
-// Public API endpoint for workshops
-app.get('/api/workshops', asyncHandler(async (req, res) => {
-  const workshops = await WorkshopOperations.getUpcomingWorkshops();
-  return sendSuccess(res, { workshops }, 'Workshops fetched successfully');
-}));
-
-// Public API endpoint for website settings (for homepage)
-app.get('/api/website-settings', asyncHandler(async (req, res) => {
-  const settings = await WebsiteSettingsOperations.getSettings();
-  return sendSuccess(res, { settings }, 'Website settings fetched successfully');
-}));
-
-// Public API endpoint for section visibility settings
-app.get('/api/settings', asyncHandler(async (req, res) => {
-  const settings = await WebsiteSettingsOperations.getSettings();
-  return sendSuccess(res, { settings }, 'Settings fetched successfully');
-}));
-
-// Create an admin router with updated authentication middleware that prioritizes sessions
-const adminRouter = express.Router();
-adminRouter.use((req, res, next) => {
-  // Log authentication attempt
-  logger.debug('Admin API authentication attempt', {
-    hasSession: req.isAuthenticated && req.isAuthenticated(),
-    hasSessionCookie: !!(req.cookies && req.cookies['connect.sid']),
-    path: req.path
-  });
+const initializeRoutes = () => {
+  if (routesInitialized) return;
   
-  // Use our updated authenticateToken function that prioritizes session auth
-  authenticateToken(req, res, next);
-});
+  // Authentication middleware is imported from auth.js
 
-// Register admin routes (all protected by authenticateToken)
-adminRouter.use('/', adminRoutes);
-adminRouter.use('/', adminSettingsRoutes);
-adminRouter.use('/', adminPricingRoutes);
-adminRouter.use('/', adminCustomerDashboardRoutes);
-adminRouter.use('/', adminCommunicationsRoutes);
-adminRouter.use('/', adminNewsletterRoutes);
+  // API Routes
+  // Use auth router for authentication endpoints (will be replaced with new auth routes)
+  app.use('/api/auth', authRouter);
 
-// Register API routes
-app.use('/api/admin', adminRouter);
-app.use('/api', adminPricingRoutes); // For public pricing endpoint
-app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
-app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
-// app.use('/api/stripe', stripeRoutes); // Stripe payment routes
-app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
-app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
-app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
-app.use('/api/contact', contactRoutes); // Contact routes
-app.use('/api/schedule', scheduleRoutes); // Schedule routes
-app.use('/api/class-bookings', classBookingsRoutes); // Class bookings routes
-app.use('/api/images', imagesRoutes); // Images API routes for presigned URLs
+  // Public API endpoints for homepage data
 
-// User location detection endpoints (public)
-app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
-app.get('/api/get-region-recommendation', asyncHandler(userLocationApi.handleGetRegionRecommendation));
+  // Public API endpoint for featured retreats (for homepage)
+  app.get('/api/retreats/featured', asyncHandler(async (req, res) => {
+    const retreats = await RetreatOperations.getFeaturedRetreats();
+    return sendSuccess(res, { retreats }, 'Featured retreats fetched successfully');
+  }));
+
+  // Public API endpoint for all retreats
+  app.get('/api/retreats', asyncHandler(async (req, res) => {
+    const retreats = await RetreatOperations.getPublishedRetreats();
+    return sendSuccess(res, { retreats }, 'Retreats fetched successfully');
+  }));
+
+  // Public API endpoint for workshops
+  app.get('/api/workshops', asyncHandler(async (req, res) => {
+    const workshops = await WorkshopOperations.getUpcomingWorkshops();
+    return sendSuccess(res, { workshops }, 'Workshops fetched successfully');
+  }));
+
+  // Public API endpoint for website settings (for homepage)
+  app.get('/api/website-settings', asyncHandler(async (req, res) => {
+    const settings = await WebsiteSettingsOperations.getSettings();
+    return sendSuccess(res, { settings }, 'Website settings fetched successfully');
+  }));
+
+  // Public API endpoint for section visibility settings
+  app.get('/api/settings', asyncHandler(async (req, res) => {
+    const settings = await WebsiteSettingsOperations.getSettings();
+    return sendSuccess(res, { settings }, 'Settings fetched successfully');
+  }));
+
+  // Create an admin router with updated authentication middleware that prioritizes sessions
+  const adminRouter = express.Router();
+  adminRouter.use((req, res, next) => {
+    // Log authentication attempt
+    logger.debug('Admin API authentication attempt', {
+      hasSession: req.isAuthenticated && req.isAuthenticated(),
+      hasSessionCookie: !!(req.cookies && req.cookies['connect.sid']),
+      path: req.path
+    });
+    
+    // Use our updated authenticateToken function that prioritizes session auth
+    authenticateToken(req, res, next);
+  });
+
+  // Register admin routes (all protected by authenticateToken)
+  adminRouter.use('/', adminRoutes);
+  adminRouter.use('/', adminSettingsRoutes);
+  adminRouter.use('/', adminPricingRoutes);
+  adminRouter.use('/', adminCustomerDashboardRoutes);
+  adminRouter.use('/', adminCommunicationsRoutes);
+  adminRouter.use('/', adminNewsletterRoutes);
+
+  // Register API routes
+  app.use('/api/admin', adminRouter);
+  app.use('/api', adminPricingRoutes); // For public pricing endpoint
+  app.use('/api/gallery', galleryRoutes); // Gallery routes for both public and admin
+  app.use('/api/blog', blogRoutes); // Blog routes for both public and admin
+  // app.use('/api/stripe', stripeRoutes); // Stripe payment routes
+  app.use('/api/private-sessions', privateSessionsRoutes); // Private sessions routes
+  app.use('/api', dashboardRoutes); // Dashboard routes for authenticated users
+  app.use('/api/newsletter', newsletterRoutes); // Newsletter routes
+  app.use('/api/contact', contactRoutes); // Contact routes
+  app.use('/api/schedule', scheduleRoutes); // Schedule routes
+  app.use('/api/class-bookings', classBookingsRoutes); // Class bookings routes
+  app.use('/api/images', imagesRoutes); // Images API routes for presigned URLs
+
+  // User location detection endpoints (public)
+  app.get('/api/get-user-location', asyncHandler(userLocationApi.handleGetUserLocation));
+  app.get('/api/get-region-recommendation', asyncHandler(userLocationApi.handleGetRegionRecommendation));
+  
+  routesInitialized = true;
+};
 
 // Add custom middleware to make user available to templates
 app.use((req, res, next) => {
@@ -255,6 +266,10 @@ const startServer = async () => {
     const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
     app.use(passportInstance.initialize());
     app.use(passportInstance.session());
+    
+    // Now initialize routes after session and passport are set up
+    logger.info('Initializing routes...');
+    initializeRoutes();
     
     // Initialize core database tables
     logger.info('Initializing core database tables...');
