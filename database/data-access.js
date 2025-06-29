@@ -606,6 +606,8 @@ const ClassOperations = {
    */
   createClass: async (classData) => {
     try {
+      console.log('ClassOperations.createClass called with data:', JSON.stringify(classData, null, 2));
+      
       // Extract fields from data
       let { 
         template_id, 
@@ -620,29 +622,47 @@ const ClassOperations = {
         active = true 
       } = classData;
       
-      // Validate required fields
+      // Validate required fields with detailed error messages
       if (!name || name.trim() === '') {
+        console.error('Validation failed: Class name is required');
         throw new Error('Class name is required');
       }
       
       if (day_of_week === undefined || day_of_week === null || isNaN(day_of_week)) {
-        throw new Error('Valid day of week is required');
+        console.error('Validation failed: day_of_week is invalid:', day_of_week, typeof day_of_week);
+        throw new Error(`Valid day of week is required. Received: ${day_of_week} (${typeof day_of_week})`);
       }
       
       if (!start_time || typeof start_time !== 'string') {
-        throw new Error('Valid start time is required');
+        console.error('Validation failed: start_time is invalid:', start_time, typeof start_time);
+        throw new Error(`Valid start time is required. Received: ${start_time} (${typeof start_time})`);
+      }
+      
+      if (!duration || isNaN(duration)) {
+        console.error('Validation failed: duration is invalid:', duration, typeof duration);
+        throw new Error(`Valid duration is required. Received: ${duration} (${typeof duration})`);
+      }
+      
+      if (!capacity || isNaN(capacity)) {
+        console.error('Validation failed: capacity is invalid:', capacity, typeof capacity);
+        throw new Error(`Valid capacity is required. Received: ${capacity} (${typeof capacity})`);
       }
       
       // Set default values for optional fields
       instructor = instructor || 'Gabi Jyoti';
       level = level || 'All Levels';
-      capacity = capacity || 20;
+      capacity = parseInt(capacity) || 20;
       description = description || '';
+      duration = parseInt(duration);
+      day_of_week = parseInt(day_of_week);
+      
+      // Convert template_id to null if it's empty or undefined
+      template_id = template_id && template_id !== '' ? parseInt(template_id) : null;
       
       const datetimeFunc = getDatetimeFunction();
       
-      // Log class data for debugging
-      console.log('Creating class with data:', {
+      // Log final processed data for debugging
+      console.log('Creating class with processed data:', {
         template_id, 
         name, 
         day_of_week, 
@@ -655,6 +675,7 @@ const ClassOperations = {
         active
       });
       
+      console.log('Executing INSERT query...');
       const result = await db.query(`
         INSERT INTO class_schedules (
           template_id,
@@ -672,9 +693,23 @@ const ClassOperations = {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${datetimeFunc}, ${datetimeFunc})
       `, [template_id, name, day_of_week, start_time, duration, instructor, level, capacity, description, active ? 1 : 0]);
       
-      return await ClassOperations.getClassById(result.lastID);
+      console.log('INSERT query completed. Result:', result);
+      console.log('New class ID:', result.lastID);
+      
+      const newClass = await ClassOperations.getClassById(result.lastID);
+      console.log('Retrieved created class:', newClass);
+      
+      return newClass;
     } catch (error) {
-      console.error('Error creating class:', error);
+      console.error('Error in ClassOperations.createClass - Full error details:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno,
+        sqlState: error.sqlState,
+        sqlMessage: error.sqlMessage,
+        sql: error.sql,
+        stack: error.stack
+      });
       throw error;
     }
   },

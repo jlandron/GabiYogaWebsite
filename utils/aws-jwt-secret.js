@@ -11,9 +11,9 @@ const logger = require('./logger');
 /**
  * Fetches JWT_SECRET from AWS Secrets Manager
  * Falls back to environment variable if AWS is not available
- * @returns JWT secret
+ * @returns Promise<string> JWT secret
  */
-function getJWTSecret() {
+async function getJWTSecret() {
   const secretName = process.env.JWT_SECRET_NAME || 'gabi-yoga-jwt-secret';
   const region = process.env.AWS_REGION || 'us-west-2';
   
@@ -30,7 +30,7 @@ function getJWTSecret() {
       SecretId: secretName
     };
     
-    const result = secretsManager.getSecretValue(params).promise();
+    const result = await secretsManager.getSecretValue(params).promise();
     
     if (!result.SecretString) {
       throw new Error('Secret value is empty');
@@ -72,7 +72,7 @@ function getJWTSecret() {
  * Creates it if it doesn't exist
  * @param {string} secret - The JWT secret to store
  */
-function ensureJWTSecretInAWS(secret) {
+async function ensureJWTSecretInAWS(secret) {
   const secretName = process.env.JWT_SECRET_NAME || 'gabi-yoga-jwt-secret';
   const region = process.env.AWS_REGION || 'us-west-2';
   
@@ -81,7 +81,7 @@ function ensureJWTSecretInAWS(secret) {
     
     // Check if secret exists
     try {
-      secretsManager.getSecretValue({ SecretId: secretName }).promise();
+      await secretsManager.getSecretValue({ SecretId: secretName }).promise();
       logger.info('JWT_SECRET already exists in AWS Secrets Manager');
       return;
     } catch (error) {
@@ -93,7 +93,7 @@ function ensureJWTSecretInAWS(secret) {
     // Create the secret
     logger.info(`Creating JWT_SECRET in AWS Secrets Manager: ${secretName}`);
     
-    secretsManager.createSecret({
+    await secretsManager.createSecret({
       Name: secretName,
       Description: 'JWT Secret for Yoga App Authentication',
       SecretString: JSON.stringify({
@@ -138,10 +138,10 @@ function generateSecureJWTSecret() {
  * This function should be called at server startup
  * @returns {Promise<string>} JWT secret
  */
-function initializeJWTSecret() {
+async function initializeJWTSecret() {
   try {
     // Try to get existing secret from AWS
-    const secret = getJWTSecret();
+    const secret = await getJWTSecret();
     
     // Validate secret strength
     if (secret.length < 32) {
@@ -170,7 +170,7 @@ function initializeJWTSecret() {
     
     // Try to store it in AWS for future use
     try {
-      ensureJWTSecretInAWS(tempSecret);
+      await ensureJWTSecretInAWS(tempSecret);
     } catch (awsError) {
       logger.warn('Could not store temporary secret in AWS:', awsError.message);
     }

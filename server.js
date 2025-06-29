@@ -54,11 +54,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // JWT secret will be loaded asynchronously from AWS Secrets Manager
-// Load JWT secret from AWS Secrets Manager
 // Import the JWT Secret loader
 const { initializeJWTSecret } = require('./utils/aws-jwt-secret');
-logger.info('Fetching JWT secret from AWS Secrets Manager...');
-const JWT_SECRET = initializeJWTSecret();
+
+// JWT_SECRET will be initialized in startServer function
+let JWT_SECRET = null;
 
 // Middleware
 app.use(cors());
@@ -67,23 +67,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));  // Increased fr
 app.use(express.static(path.join(__dirname)));
 app.use(cookieParser());
 
-// Session setup for Passport
-app.use(session({
-  secret: JWT_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', 
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    path: '/', // Ensure cookie is sent for all paths
-    httpOnly: true // Cannot be accessed by JavaScript (more secure)
-  }
-}));
-
-// Initialize Passport
-const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
-app.use(passportInstance.initialize());
-app.use(passportInstance.session());
+// Session and Passport will be initialized in startServer function after JWT_SECRET is loaded
 
 // Serve files from uploads directory (for image storage)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
@@ -241,6 +225,9 @@ app.use(errorHandler);    // Handle all other errors
 // Initialize database and start server
 const startServer = async () => {
   try {
+    // Initialize JWT secret first
+    logger.info('Fetching JWT secret from AWS Secrets Manager...');
+    JWT_SECRET = await initializeJWTSecret();
     
     if (!JWT_SECRET) {
       logger.error('Failed to obtain JWT_SECRET from AWS Secrets Manager or environment');
@@ -251,12 +238,7 @@ const startServer = async () => {
     app.set('jwtSecret', JWT_SECRET);
     logger.info('JWT secret stored in app settings');
     
-    // Re-initialize Passport with the loaded JWT_SECRET
-    const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
-    app.use(passportInstance.initialize());
-    app.use(passportInstance.session());
-    
-    // Update session middleware with the new JWT_SECRET
+    // Re-initialize session middleware with the loaded JWT_SECRET
     app.use(session({
       secret: JWT_SECRET,
       resave: false,
@@ -268,6 +250,11 @@ const startServer = async () => {
         httpOnly: true // Cannot be accessed by JavaScript (more secure)
       }
     }));
+    
+    // Re-initialize Passport with the loaded JWT_SECRET
+    const passportInstance = initializePassport({ jwtSecret: JWT_SECRET });
+    app.use(passportInstance.initialize());
+    app.use(passportInstance.session());
     
     // Initialize core database tables
     logger.info('Initializing core database tables...');
