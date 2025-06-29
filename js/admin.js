@@ -59,9 +59,7 @@ const AdminApiService = {
       }
       
       // Prepare headers - include token if available, but don't require it
-      const headers = {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      };
+      const headers = {};
       
       // Only add Authorization header if we have a token
       if (token) {
@@ -78,7 +76,9 @@ const AdminApiService = {
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(data);
+        console.log('Added Content-Type header and JSON body for', method, 'request');
       }
 
       console.log(`Sending ${method} request to ${url}`);
