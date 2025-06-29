@@ -318,7 +318,7 @@ router.get('/classes', requireAdmin, async (req, res) => {
 router.post('/classes', requireAdmin, async (req, res) => {
   try {
     logger.info('Admin create class endpoint called');
-    logger.debug('Request body:', JSON.stringify(req.body, null, 2));
+    logger.info('Request body received:', JSON.stringify(req.body, null, 2));
     logger.debug('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
     
     const classInfo = await ClassOperations.createClass(req.body);
@@ -337,7 +337,8 @@ router.post('/classes', requireAdmin, async (req, res) => {
       errno: error.errno,
       sqlState: error.sqlState,
       sqlMessage: error.sqlMessage,
-      sql: error.sql
+      sql: error.sql,
+      requestBody: req.body
     });
     return res.status(500).json({
       success: false,

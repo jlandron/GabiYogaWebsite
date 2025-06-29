@@ -540,24 +540,47 @@ async function saveClass(form) {
         // Get form field values directly from elements
         const classId = document.getElementById('class-id').value;
         
+        // Log each form field value as we collect it
+        const classNameValue = document.getElementById('class-name').value;
+        console.log('Class name from form:', `"${classNameValue}"`, 'Length:', classNameValue.length);
+        
+        const classDayValue = document.getElementById('class-day').value;
+        console.log('Class day from form:', classDayValue);
+        
+        const classTimeValue = document.getElementById('class-time').value;
+        console.log('Class time from form:', classTimeValue);
+        
+        const classDurationValue = document.getElementById('class-duration').value;
+        console.log('Class duration from form:', classDurationValue);
+        
+        const classInstructorValue = document.getElementById('class-instructor').value;
+        console.log('Class instructor from form:', `"${classInstructorValue}"`);
+        
+        const classLevelValue = document.getElementById('class-level').value;
+        console.log('Class level from form:', classLevelValue);
+        
+        const classCapacityValue = document.getElementById('class-capacity').value;
+        console.log('Class capacity from form:', classCapacityValue);
+        
         // Convert template_id to null if empty string
         let templateId = document.getElementById('class-template').value;
         templateId = templateId && templateId.trim() !== '' ? templateId : null;
+        console.log('Template ID from form:', templateId);
         
         const classData = {
             template_id: templateId,
-            name: document.getElementById('class-name').value,
-            day_of_week: parseInt(document.getElementById('class-day').value),
-            start_time: document.getElementById('class-time').value + ':00', // Add seconds to match expected format
-            duration: parseInt(document.getElementById('class-duration').value),
-            instructor: document.getElementById('class-instructor').value,
-            level: document.getElementById('class-level').value,
-            capacity: parseInt(document.getElementById('class-capacity').value),
+            name: classNameValue,
+            day_of_week: parseInt(classDayValue),
+            start_time: classTimeValue + ':00', // Add seconds to match expected format
+            duration: parseInt(classDurationValue),
+            instructor: classInstructorValue,
+            level: classLevelValue,
+            capacity: parseInt(classCapacityValue),
             description: document.getElementById('class-description').value,
             active: document.getElementById('class-active').checked
         };
         
-        console.log('Saving class data:', classData); // Debug log
+        console.log('Final class data object being sent to backend:', JSON.stringify(classData, null, 2));
         
         if (classId) {
             // Update existing class
