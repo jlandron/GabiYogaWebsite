@@ -207,6 +207,10 @@ const initializeRoutes = () => {
       res.send(modifiedHtml);
     });
   });
+
+  // Error handling and not found middleware (must come after all routes)
+  app.use(notFoundHandler); // Handle 404 for unknown API routes
+  app.use(errorHandler);    // Handle all other errors
   
   routesInitialized = true;
 };
@@ -228,10 +232,6 @@ process.on('uncaughtException', (error) => {
   // Give logger time to flush logs before exiting
   setTimeout(() => process.exit(1), 1000);
 });
-
-// Error handling and not found middleware (must come after all routes)
-app.use(notFoundHandler); // Handle 404 for unknown API routes
-app.use(errorHandler);    // Handle all other errors
 
 // Initialize database and start server
 const startServer = async () => {
