@@ -33,20 +33,35 @@ const requireAdmin = (req, res, next) => {
  */
 router.get('/stats', requireAdmin, async (req, res) => {
   try {
+    console.log('Admin stats endpoint called');
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const activeMembers = await MemberOperations.countActiveMembers();
     const weeklyBookings = await BookingOperations.countWeeklyBookings();
     const upcomingSessions = await PrivateSessionOperations.countUpcomingSessions();
     const monthlyRevenue = await WorkshopOperations.calculateMonthlyRevenue();
     
-    return res.json({
-      success: true,
+    const stats = {
       activeMembers,
       weeklyBookings,
       upcomingSessions,
       monthlyRevenue
+    };
+    
+    console.log('Dashboard stats fetched successfully:', stats);
+    return res.json({
+      success: true,
+      ...stats
     });
   } catch (error) {
-    console.error('Error getting admin stats:', error);
+    console.error('Error getting admin stats - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch dashboard statistics',
@@ -61,14 +76,25 @@ router.get('/stats', requireAdmin, async (req, res) => {
  */
 router.get('/class-templates', requireAdmin, async (req, res) => {
   try {
+    console.log('Admin class templates endpoint called');
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const templates = await ClassOperations.getClassTemplates();
     
+    console.log('Class templates fetched successfully:', templates?.length || 0, 'templates');
     return res.json({
       success: true,
       templates
     });
   } catch (error) {
-    console.error('Error fetching class templates:', error);
+    console.error('Error fetching class templates - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch class templates',
@@ -84,21 +110,35 @@ router.get('/class-templates', requireAdmin, async (req, res) => {
 router.get('/class-templates/:id', requireAdmin, async (req, res) => {
   try {
     const templateId = req.params.id;
+    console.log('Admin get class template endpoint called');
+    console.log('Template ID:', templateId);
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const template = await ClassOperations.getClassTemplateById(templateId);
     
     if (!template) {
+      console.log('Class template not found for ID:', templateId);
       return res.status(404).json({
         success: false,
         message: 'Class template not found'
       });
     }
     
+    console.log('Class template fetched successfully:', template);
     return res.json({
       success: true,
       template
     });
   } catch (error) {
-    console.error('Error fetching class template:', error);
+    console.error('Error fetching class template - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      templateId: req.params.id
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch class template',
@@ -113,15 +153,28 @@ router.get('/class-templates/:id', requireAdmin, async (req, res) => {
  */
 router.post('/class-templates', requireAdmin, async (req, res) => {
   try {
+    console.log('Admin create class template endpoint called');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const template = await ClassOperations.createClassTemplate(req.body);
     
+    console.log('Class template created successfully:', template);
     return res.status(201).json({
       success: true,
       message: 'Class template created successfully',
       template
     });
   } catch (error) {
-    console.error('Error creating class template:', error);
+    console.error('Error creating class template - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      requestBody: req.body
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to create class template',
@@ -137,22 +190,38 @@ router.post('/class-templates', requireAdmin, async (req, res) => {
 router.put('/class-templates/:id', requireAdmin, async (req, res) => {
   try {
     const templateId = req.params.id;
+    console.log('Admin update class template endpoint called');
+    console.log('Template ID:', templateId);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const template = await ClassOperations.updateClassTemplate(templateId, req.body);
     
     if (!template) {
+      console.log('Class template not found for update, ID:', templateId);
       return res.status(404).json({
         success: false,
         message: 'Class template not found'
       });
     }
     
+    console.log('Class template updated successfully:', template);
     return res.json({
       success: true,
       message: 'Class template updated successfully',
       template
     });
   } catch (error) {
-    console.error('Error updating class template:', error);
+    console.error('Error updating class template - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      templateId: req.params.id,
+      requestBody: req.body
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to update class template',
@@ -168,21 +237,35 @@ router.put('/class-templates/:id', requireAdmin, async (req, res) => {
 router.delete('/class-templates/:id', requireAdmin, async (req, res) => {
   try {
     const templateId = req.params.id;
+    console.log('Admin delete class template endpoint called');
+    console.log('Template ID:', templateId);
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const deleted = await ClassOperations.deleteClassTemplate(templateId);
     
     if (!deleted) {
+      console.log('Class template not found for deletion, ID:', templateId);
       return res.status(404).json({
         success: false,
         message: 'Class template not found'
       });
     }
     
+    console.log('Class template deleted successfully, ID:', templateId);
     return res.json({
       success: true,
       message: 'Class template deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting class template:', error);
+    console.error('Error deleting class template - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      templateId: req.params.id
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to delete class template',
@@ -270,22 +353,38 @@ router.post('/classes', requireAdmin, async (req, res) => {
 router.put('/classes/:id', requireAdmin, async (req, res) => {
   try {
     const classId = req.params.id;
+    console.log('Admin update class endpoint called');
+    console.log('Class ID:', classId);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const classInfo = await ClassOperations.updateClass(classId, req.body);
     
     if (!classInfo) {
+      console.log('Class not found for update, ID:', classId);
       return res.status(404).json({
         success: false,
         message: 'Class not found'
       });
     }
     
+    console.log('Class updated successfully:', classInfo);
     return res.json({
       success: true,
       message: 'Class updated successfully',
       class: classInfo
     });
   } catch (error) {
-    console.error('Error updating class:', error);
+    console.error('Error updating class - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      classId: req.params.id,
+      requestBody: req.body
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to update class',
@@ -301,21 +400,35 @@ router.put('/classes/:id', requireAdmin, async (req, res) => {
 router.delete('/classes/:id', requireAdmin, async (req, res) => {
   try {
     const classId = req.params.id;
+    console.log('Admin delete class endpoint called');
+    console.log('Class ID:', classId);
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const deleted = await ClassOperations.deleteClass(classId);
     
     if (!deleted) {
+      console.log('Class not found for deletion, ID:', classId);
       return res.status(404).json({
         success: false,
         message: 'Class not found'
       });
     }
     
+    console.log('Class deleted successfully, ID:', classId);
     return res.json({
       success: true,
       message: 'Class deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting class:', error);
+    console.error('Error deleting class - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage,
+      classId: req.params.id
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to delete class',
@@ -330,14 +443,25 @@ router.delete('/classes/:id', requireAdmin, async (req, res) => {
  */
 router.get('/members', requireAdmin, async (req, res) => {
   try {
+    console.log('Admin members endpoint called');
+    console.log('User:', req.user ? { user_id: req.user.user_id, role: req.user.role } : 'No user');
+    
     const members = await MemberOperations.getAllMembers();
     
+    console.log('Members fetched successfully:', members?.length || 0, 'members');
     return res.json({
       success: true,
       members
     });
   } catch (error) {
-    console.error('Error fetching members:', error);
+    console.error('Error fetching members - Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    });
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch members',
