@@ -7,6 +7,8 @@
  * It handles both JWT token authentication and session cookie authentication,
  * preferring session cookies when available for longer session persistence.
  */
+const logger = require('../utils/logger');
+
 
 const AdminApiUtils = {
     /**
@@ -18,10 +20,10 @@ const AdminApiUtils = {
      */
     request: async function(url, method = 'GET', data = null) {
         const requestId = Math.random().toString(36).substr(2, 9);
-        console.log(`[${requestId}] AdminApiUtils: Starting ${method} request to ${url}`);
+        logger.info(`[${requestId}] AdminApiUtils: Starting ${method} request to ${url}`);
         
         if (data) {
-            console.log(`[${requestId}] AdminApiUtils: Request data:`, JSON.stringify(data, null, 2));
+            logger.info(`[${requestId}] AdminApiUtils: Request data:`, JSON.stringify(data, null, 2));
         }
         
         // Use a promise-based wrapper around XMLHttpRequest for better browser compatibility
@@ -29,11 +31,11 @@ const AdminApiUtils = {
             try {
                 // Get JWT token if available
                 const token = localStorage.getItem('auth_token');
-                console.log(`[${requestId}] AdminApiUtils: Auth token available:`, !!token);
+                logger.info(`[${requestId}] AdminApiUtils: Auth token available:`, !!token);
                 
                 // Check session cookie status
                 const hasCookie = document.cookie.includes('connect.sid') || document.cookie.includes('sessionId');
-                console.log(`[${requestId}] AdminApiUtils: Session cookie available:`, hasCookie);
+                logger.info(`[${requestId}] AdminApiUtils: Session cookie available:`, hasCookie);
                 
                 // Create XHR object
                 const xhr = new XMLHttpRequest();
@@ -44,17 +46,17 @@ const AdminApiUtils = {
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.withCredentials = true; // Include session cookies with request
                 
-                console.log(`[${requestId}] AdminApiUtils: Request headers set, credentials included`);
+                logger.info(`[${requestId}] AdminApiUtils: Request headers set, credentials included`);
                 
                 // Set up response handler
                 xhr.onload = function() {
-                    console.log(`[${requestId}] AdminApiUtils: Response received - Status: ${xhr.status}`);
+                    logger.info(`[${requestId}] AdminApiUtils: Response received - Status: ${xhr.status}`);
                     
                     if (xhr.status >= 200 && xhr.status < 300) {
                         // Success
                         try {
                             const responseData = JSON.parse(xhr.responseText);
-                            console.log(`[${requestId}] AdminApiUtils: Request successful:`, responseData);
+                            logger.info(`[${requestId}] AdminApiUtils: Request successful:`, responseData);
                             resolve(responseData);
                         } catch (e) {
                             console.error(`[${requestId}] AdminApiUtils: Failed to parse JSON response:`, xhr.responseText);
@@ -107,10 +109,10 @@ const AdminApiUtils = {
                 
                 // Send the request
                 if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
-                    console.log(`[${requestId}] AdminApiUtils: Sending request with data`);
+                    logger.info(`[${requestId}] AdminApiUtils: Sending request with data`);
                     xhr.send(JSON.stringify(data));
                 } else {
-                    console.log(`[${requestId}] AdminApiUtils: Sending request without data`);
+                    logger.info(`[${requestId}] AdminApiUtils: Sending request without data`);
                     xhr.send();
                 }
             } catch (error) {

@@ -237,15 +237,11 @@ const BlogOperations = {
           createdAt: post.created_at,
           updatedAt: post.updated_at,
           coverImage: post.cover_image_path ? {
-            // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
-            url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+            // Generate URL from file_path
+            url: await imageStorage.getPresignedUrl(post.cover_image_path),
             alt: post.cover_image_alt || '',
             filePath: post.cover_image_path
-          } : (post.cover_image_url ? {
-            url: post.cover_image_url,
-            alt: post.cover_image_alt || '',
-            filePath: null
-          } : null),
+          } : null,
           tags,
           images
         };
@@ -288,15 +284,11 @@ const BlogOperations = {
         createdAt: post.created_at,
         updatedAt: post.updated_at,
         coverImage: post.cover_image_path ? {
-          // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
-          url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+          // Generate URL from file_path
+          url: await imageStorage.getPresignedUrl(post.cover_image_path),
           alt: post.cover_image_alt || '',
           filePath: post.cover_image_path
-        } : (post.cover_image_url ? {
-          url: post.cover_image_url,
-          alt: post.cover_image_alt || '',
-          filePath: null
-        } : null),
+        } : null,
         tags,
         images
       };
@@ -328,15 +320,11 @@ const BlogOperations = {
         createdAt: post.created_at,
         updatedAt: post.updated_at,
         coverImage: post.cover_image_path ? {
-          // Generate URL from file_path if available, otherwise fall back to stored URL for backward compatibility
-          url: post.cover_image_path ? await imageStorage.getPresignedUrl(post.cover_image_path) : post.cover_image_url,
+          // Generate URL from file_path
+          url: await imageStorage.getPresignedUrl(post.cover_image_path),
           alt: post.cover_image_alt || '',
           filePath: post.cover_image_path
-        } : (post.cover_image_url ? {
-          url: post.cover_image_url,
-          alt: post.cover_image_alt || '',
-          filePath: null
-        } : null),
+        } : null,
         tags,
         images
       };
@@ -370,8 +358,8 @@ const BlogOperations = {
       const result = await query(`
         INSERT INTO blog_posts (
           title, slug, content, excerpt, author, published, published_at,
-          cover_image_url, cover_image_alt, cover_image_path
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          cover_image_alt, cover_image_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         title, 
         slug, 
@@ -380,7 +368,6 @@ const BlogOperations = {
         author || 'Gabi', 
         published ? 1 : 0, 
         publishedAt,
-        coverImage?.url || null,
         coverImage?.alt || null,
         coverImagePath
       ]);
@@ -476,10 +463,8 @@ const BlogOperations = {
           coverImagePath = extractFilePath(coverImage.url);
         }
         
-        updateFields.push('cover_image_url = ?');
         updateFields.push('cover_image_alt = ?');
         updateFields.push('cover_image_path = ?');
-        updateValues.push(coverImage?.url || null);
         updateValues.push(coverImage?.alt || null);
         updateValues.push(coverImagePath);
       }

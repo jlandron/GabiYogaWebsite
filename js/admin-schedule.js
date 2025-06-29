@@ -4,6 +4,7 @@
  * This file handles the schedule management functionality in the admin portal.
  * It ensures that changes made here are reflected on the homepage's Weekly Schedule.
  */
+const logger = require('../utils/logger');
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize the schedule builder after confirmed authentication
@@ -427,22 +428,22 @@ async function openClassModal(classData = null) {
         // Remove any existing event listeners from the form
         form.onsubmit = (e) => {
             e.preventDefault();
-            console.log("Form submission prevented, using direct button click instead");
+            logger.info("Form submission prevented, using direct button click instead");
         };
         
         // Add direct click handler to save button
         if (saveButton) {
-            console.log("Found save button, adding direct click handler");
+            logger.info("Found save button, adding direct click handler");
             saveButton.onclick = async (e) => {
                 e.preventDefault();
-                console.log('Save button clicked!');
+                logger.info('Save button clicked!');
                 
                 // Verify all form elements have values before submitting
                 const classNameValue = document.getElementById('class-name').value;
                 const classTimeValue = document.getElementById('class-time').value;
                 
-                console.log('Class Name:', classNameValue);
-                console.log('Class Time:', classTimeValue);
+                logger.info('Class Name:', classNameValue);
+                logger.info('Class Time:', classTimeValue);
                 
                 if (!classNameValue || !classTimeValue) {
                     showErrorMessage('Please fill out all required fields');
@@ -535,37 +536,37 @@ async function loadTemplateOptions() {
  */
 async function saveClass(form) {
     try {
-        console.log('Form submission starting'); // Debug log
+        logger.info('Form submission starting'); // Debug log
         
         // Get form field values directly from elements
         const classId = document.getElementById('class-id').value;
         
         // Log each form field value as we collect it
         const classNameValue = document.getElementById('class-name').value;
-        console.log('Class name from form:', `"${classNameValue}"`, 'Length:', classNameValue.length);
+        logger.info('Class name from form:', `"${classNameValue}"`, 'Length:', classNameValue.length);
         
         const classDayValue = document.getElementById('class-day').value;
-        console.log('Class day from form:', classDayValue);
+        logger.info('Class day from form:', classDayValue);
         
         const classTimeValue = document.getElementById('class-time').value;
-        console.log('Class time from form:', classTimeValue);
+        logger.info('Class time from form:', classTimeValue);
         
         const classDurationValue = document.getElementById('class-duration').value;
-        console.log('Class duration from form:', classDurationValue);
+        logger.info('Class duration from form:', classDurationValue);
         
         const classInstructorValue = document.getElementById('class-instructor').value;
-        console.log('Class instructor from form:', `"${classInstructorValue}"`);
+        logger.info('Class instructor from form:', `"${classInstructorValue}"`);
         
         const classLevelValue = document.getElementById('class-level').value;
-        console.log('Class level from form:', classLevelValue);
+        logger.info('Class level from form:', classLevelValue);
         
         const classCapacityValue = document.getElementById('class-capacity').value;
-        console.log('Class capacity from form:', classCapacityValue);
+        logger.info('Class capacity from form:', classCapacityValue);
         
         // Convert template_id to null if empty string
         let templateId = document.getElementById('class-template').value;
         templateId = templateId && templateId.trim() !== '' ? templateId : null;
-        console.log('Template ID from form:', templateId);
+        logger.info('Template ID from form:', templateId);
         
         const classData = {
             template_id: templateId,
@@ -580,13 +581,13 @@ async function saveClass(form) {
             active: document.getElementById('class-active').checked
         };
         
-        console.log('Final class data object being sent to backend:', JSON.stringify(classData, null, 2));
+        logger.info('Final class data object being sent to backend:', JSON.stringify(classData, null, 2));
         
         if (classId) {
             // Update existing class
             try {
                 const result = await AdminApiService.updateClass(classId, classData);
-                console.log('Update result:', result);
+                logger.info('Update result:', result);
                 showSuccessMessage('Class updated successfully');
             } catch (error) {
                 console.error('Error updating class:', error);
@@ -597,7 +598,7 @@ async function saveClass(form) {
             // Create new class
             try {
                 const result = await AdminApiService.createClass(classData);
-                console.log('Create result:', result);
+                logger.info('Create result:', result);
                 showSuccessMessage('Class created successfully');
             } catch (error) {
                 console.error('Error creating class:', error);
@@ -890,12 +891,12 @@ async function loadWeeklySchedule() {
             </div>
         `;
         
-        console.log('Attempting to fetch classes from API');
+        logger.info('Attempting to fetch classes from API');
         // Use AdminApiService to fetch all classes
         let classes;
         try {
             classes = await AdminApiService.getClasses();
-            console.log(`Successfully fetched ${classes.length} classes`);
+            logger.info(`Successfully fetched ${classes.length} classes`);
         } catch (error) {
             console.error('Error loading weekly schedule:', error);
             calendarBody.innerHTML = `
@@ -1325,7 +1326,7 @@ function setupBookingsModalEventHandlers() {
  */
 function viewCustomerProfile(userId) {
     // This could open a customer profile modal or navigate to a customer page
-    console.log('View customer profile:', userId);
+    logger.info('View customer profile:', userId);
     showSuccessMessage(`Customer profile view for user ${userId} - Feature coming soon!`);
 }
 

@@ -2,6 +2,7 @@
  * Gabi Jyoti Yoga - Admin Dashboard JavaScript
  * Handles admin functionality and database interactions
  */
+const logger = require('../utils/logger');
 
 // Use API_BASE_URL from account.js which loads before this script
 // Additional admin-specific endpoints (extending the ones from account.js)
@@ -43,13 +44,13 @@ const AdminApiService = {
    */
   authRequest: async (url, method = 'GET', data = null) => {
     try {
-      console.log(`Preparing ${method} request to ${url}`);
+      logger.info(`Preparing ${method} request to ${url}`);
       
       // Detect environment
       const hostname = window.location.hostname;
       const isProduction = hostname === 'www.gabi.yoga' || hostname === 'gabi.yoga';
       if (isProduction) {
-        console.log('AdminApiService: Production environment detected');
+        logger.info('AdminApiService: Production environment detected');
       }
       
       // Check if token exists - will now continue even if token is missing
@@ -63,10 +64,10 @@ const AdminApiService = {
       
       // Only add Authorization header if we have a token
       if (token) {
-        console.log('Including JWT token in request headers');
+        logger.info('Including JWT token in request headers');
         headers['Authorization'] = `Bearer ${token}`;
       } else {
-        console.log('No JWT token available - relying on session cookies');
+        logger.info('No JWT token available - relying on session cookies');
       }
 
       const options = {
@@ -78,12 +79,12 @@ const AdminApiService = {
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(data);
-        console.log('Added Content-Type header and JSON body for', method, 'request');
+        logger.info('Added Content-Type header and JSON body for', method, 'request');
       }
 
-      console.log(`Sending ${method} request to ${url}`);
+      logger.info(`Sending ${method} request to ${url}`);
       // Log the request details for debugging
-      console.log('Request options:', {
+      logger.info('Request options:', {
         method: options.method,
         headers: {
           ...options.headers,
@@ -122,7 +123,7 @@ const AdminApiService = {
         throw new Error(errorMessage);
       }
       
-      console.log(`Request to ${url} completed successfully`);
+      logger.info(`Request to ${url} completed successfully`);
       return await response.json();
     } catch (error) {
       console.error('API request error:', error);
@@ -1097,7 +1098,7 @@ function getSessionActionButtons(session) {
  * View item details (placeholder function for now)
  */
 function viewItem(itemType, id) {
-  console.log(`View ${itemType} with ID: ${id}`);
+  logger.info(`View ${itemType} with ID: ${id}`);
   alert(`View ${itemType} details (ID: ${id}) - This functionality will be implemented soon.`);
 }
 
@@ -1105,7 +1106,7 @@ function viewItem(itemType, id) {
  * Edit item (placeholder function for now)
  */
 function editItem(itemType, id) {
-  console.log(`Edit ${itemType} with ID: ${id}`);
+  logger.info(`Edit ${itemType} with ID: ${id}`);
   alert(`Edit ${itemType} (ID: ${id}) - This functionality will be implemented soon.`);
 }
 
@@ -1113,7 +1114,7 @@ function editItem(itemType, id) {
  * Delete item (placeholder function for now)
  */
 function deleteItem(itemType, id) {
-  console.log(`Delete ${itemType} with ID: ${id}`);
+  logger.info(`Delete ${itemType} with ID: ${id}`);
   if (confirm(`Are you sure you want to delete this ${itemType}? This action cannot be undone.`)) {
     alert(`Delete ${itemType} (ID: ${id}) - This functionality will be implemented soon.`);
   }
@@ -1123,7 +1124,7 @@ function deleteItem(itemType, id) {
  * Message a member (placeholder function for now)
  */
 function messageMember(id) {
-  console.log(`Message member with ID: ${id}`);
+  logger.info(`Message member with ID: ${id}`);
   alert(`Send message to member (ID: ${id}) - This functionality will be implemented soon.`);
 }
 
@@ -1156,7 +1157,7 @@ function getStatusColor(status) {
 function confirmSession(id) {
   // If we're not on the sessions page, use the placeholder
   if (!window.location.pathname.includes('admin-sessions')) {
-    console.log(`Confirm session with ID: ${id}`);
+    logger.info(`Confirm session with ID: ${id}`);
     if (confirm(`Are you sure you want to confirm this private session?`)) {
       alert(`Confirm session (ID: ${id}) - This functionality will be implemented soon.`);
     }
@@ -1170,7 +1171,7 @@ function confirmSession(id) {
 function rescheduleSession(id) {
   // If we're not on the sessions page, use the placeholder
   if (!window.location.pathname.includes('admin-sessions')) {
-    console.log(`Reschedule session with ID: ${id}`);
+    logger.info(`Reschedule session with ID: ${id}`);
     alert(`Reschedule session (ID: ${id}) - This functionality will be implemented soon.`);
   }
 }
@@ -1451,7 +1452,7 @@ function showSuccessMessage(message) {
  * Use a class template (placeholder function for now)
  */
 function useTemplate(id) {
-  console.log(`Use template with ID: ${id}`);
+  logger.info(`Use template with ID: ${id}`);
   alert(`Use template (ID: ${id}) - This functionality will be implemented soon.`);
 }
 
@@ -1459,7 +1460,7 @@ function useTemplate(id) {
  * Edit a class template (placeholder function for now)
  */
 function editTemplate(id) {
-  console.log(`Edit template with ID: ${id}`);
+  logger.info(`Edit template with ID: ${id}`);
   alert(`Edit template (ID: ${id}) - This functionality will be implemented soon.`);
 }
 
@@ -1467,7 +1468,7 @@ function editTemplate(id) {
  * Delete a class template (placeholder function for now)
  */
 function deleteTemplate(id) {
-  console.log(`Delete template with ID: ${id}`);
+  logger.info(`Delete template with ID: ${id}`);
   if (confirm(`Are you sure you want to delete this class template? This action cannot be undone.`)) {
     alert(`Delete template (ID: ${id}) - This functionality will be implemented soon.`);
   }
