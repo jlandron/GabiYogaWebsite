@@ -117,10 +117,15 @@ function serveHomepage() {
     <header class="header">
         <nav class="nav-container">
             <a href="/dev" class="logo">Gabi Yoga</a>
-            <ul class="nav-links">
-                <li><a href="/dev" class="active">Home</a></li>
-                <li><a href="/dev/blog-page">Blog</a></li>
-            </ul>
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="/dev" class="active">Home</a></li>
+                    <li><a href="/dev/blog-page">Blog</a></li>
+                </ul>
+                <div id="auth-buttons" class="auth-buttons">
+                    <button class="btn btn-outline" onclick="showLoginForm()">Login / Register</button>
+                </div>
+            </div>
         </nav>
     </header>
 
@@ -235,6 +240,9 @@ function serveHomepage() {
         </div>
     </footer>
 
+    <!-- Auth Script -->
+    <script src="/dev/static-assets/auth.js"></script>
+    
     <script>
         // Fixed API URL to avoid any syntax issues
         const API_BASE_URL = window.location.origin + '/dev';
@@ -549,7 +557,7 @@ function serveHomepage() {
                                 post.excerpt +
                             '</div>' +
                             '<div style="text-align: center;">' +
-                                '<a href="/dev/blog-page" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">' +
+                                '<a href="/dev/blog-page/' + post.slug + '" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">' +
                                     'Read Full Article' +
                                 '</a>' +
                             '</div>' +
@@ -944,18 +952,20 @@ function serveStaticAsset(requestPath) {
   // In a real implementation, you'd serve from S3 or CloudFront
   const mimeType = getMimeType(requestPath);
   
-  // Serve the styles.css file
-  if (requestPath === '/static-assets/styles.css') {
+  // Serve static files
+  if (requestPath === '/static-assets/styles.css' || requestPath === '/static-assets/auth.js') {
     const fs = require('fs');
     const path = require('path');
     try {
-      // Read the CSS file from the current directory
-      const cssContent = fs.readFileSync(path.join(__dirname, 'styles.css'), 'utf8');
-      return createResponse(200, cssContent, {
-        'Content-Type': 'text/css'
+      // Get the filename from the path
+      const filename = requestPath.split('/').pop();
+      // Read the file from the current directory
+      const content = fs.readFileSync(path.join(__dirname, filename), 'utf8');
+      return createResponse(200, content, {
+        'Content-Type': getMimeType(filename)
       });
     } catch (error) {
-      console.error('Error loading CSS file:', error);
+      console.error('Error loading static file:', error);
     }
   }
   

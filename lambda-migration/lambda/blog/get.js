@@ -34,32 +34,43 @@ exports.handler = async (event, context) => {
         }
 
         // Generate presigned URL for cover image
-        if (typeof post.coverImage === 'string') {
-            // Convert path to S3 key
-            post.coverImage = {
-                s3Key: post.coverImage
-            };
-        }
-        
+        let coverImage = null;
         if (post.coverImage) {
             try {
-                post.coverImage.url = await s3.getSignedUrlPromise('getObject', {
+                // Clean the S3 key (remove leading slash if present)
+                const s3Key = post.coverImage.startsWith('/') ? post.coverImage.substring(1) : post.coverImage;
+                
+                const presignedUrl = await s3.getSignedUrlPromise('getObject', {
                     Bucket: process.env.ASSETS_BUCKET,
-                    Key: post.coverImage,
+                    Key: s3Key, // ✅ Use the cleaned string key
                     Expires: 3600 // 1 hour
                 });
+                
+                coverImage = {
+                    s3Key: s3Key,
+                    url: presignedUrl
+                };
             } catch (s3Error) {
                 logWithContext('warn', 'Failed to generate presigned URL for cover image', {
                     requestId: context.awsRequestId,
-                    s3Key: post.coverImage.s3Key,
+                    s3Key: post.coverImage, // Log the original key
                     error: s3Error.message
                 });
-                // Fall back to original URL if exists
-                post.coverImage.url = post.coverImage.url || null;
+                // Fall back to null or original path
+                coverImage = {
+                    s3Key: post.coverImage,
+                    url: null
+                };
             }
         }
 
-        return createSuccessResponse({ post });
+        // Create response object without modifying the original post
+        const responsePost = {
+            ...post,
+            coverImage
+        };
+
+        return createSuccessResponse({ post: responsePost });
         
     } catch (error) {
         console.error('Error getting blog post:', error);

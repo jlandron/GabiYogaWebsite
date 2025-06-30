@@ -268,7 +268,7 @@ export class LambdaApiStack extends cdk.Stack {
       ...commonProps,
       functionName: `${commonProps.environment.STAGE === 'prod' ? 'GabiYoga-prod' : 'GabiYoga-dev'}-${id}`,
       code: lambda.Code.fromAsset('../lambda', {
-        exclude: ['node_modules', '.git', '*.md', 'tests', '__tests__'],
+        exclude: ['.git', '*.md', 'tests', '__tests__'],
       }),
       handler: handlerPath.replace('.js', '.handler'),
     });

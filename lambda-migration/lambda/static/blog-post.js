@@ -58,7 +58,7 @@ function serveBlogPostPage(slug) {
         </div>
 
         <!-- Blog Post Content -->
-        <article id="blog-content" style="display: none;">
+        <article id="blog-content" class="blog-post" style="display: none;">
             <!-- Content will be dynamically loaded here -->
         </article>
     </main>
@@ -108,30 +108,32 @@ function serveBlogPostPage(slug) {
                             metaDescription.setAttribute('content', post.excerpt);
                         }
                         
-                        // Generate HTML content
-                        let postHTML = '<header class="blog-header">' +
-                            '<div class="blog-category">' + (post.category || 'Wellness') + '</div>' +
-                            '<h1 class="blog-title">' + post.title + '</h1>' +
-                            '<div class="blog-meta">' +
-                                '<div class="blog-meta-item">' +
-                                    '<span>📅 ' + formattedDate + '</span>' +
-                                '</div>' +
-                                '<div class="blog-meta-item">' +
-                                    '<span>⏱️ ' + (post.readTime || 3) + ' min read</span>' +
-                                '</div>' +
-                                '<div class="blog-meta-item">' +
-                                    '<span>👤 ' + (post.author ? post.author.firstName + ' ' + post.author.lastName : 'Gabi Yoga') + '</span>' +
-                                '</div>' +
+                        // Generate HTML content with hero image section
+                        let postHTML = '';
+                        
+                        // Add hero image section
+                        postHTML += '<div class="blog-post-hero' + (!post.coverImage.url ? ' no-image' : '') + '">';
+                        if (post.coverImage.url) {
+                            postHTML += '<img src="' + post.coverImage.url + '" alt="' + post.title + '">';
+                        }
+                        postHTML += '</div>';
+                        
+                        // Add content wrapper
+                        postHTML += '<div class="blog-post-content-wrapper">';
+                        
+                        // Add header
+                        postHTML += '<header class="blog-post-header">' +
+                            '<div class="blog-post-category">' + (post.category || 'Wellness') + '</div>' +
+                            '<h1 class="blog-post-title">' + post.title + '</h1>' +
+                            '<div class="blog-post-meta">' +
+                                '<span>📅 ' + formattedDate + '</span>' +
+                                '<span>⏱️ ' + (post.readTime || 3) + ' min read</span>' +
+                                '<span>👤 ' + (post.author ? post.author.firstName + ' ' + post.author.lastName : 'Gabi Yoga') + '</span>' +
                             '</div>' +
                         '</header>';
                         
-                        // Add cover image if available
-                        if (post.coverImage.url) {
-                            postHTML += '<img src="' + post.coverImage.url + '" alt="' + post.title + '" class="blog-cover">';
-                        }
-                        
                         // Add content (for now, we'll just use the excerpt as placeholder since we don't have full content)
-                        postHTML += '<div class="blog-content">' +
+                        postHTML += '<div class="blog-post-content">' +
                             '<p>' + post.excerpt + '</p>' +
                             
                             '<!-- Placeholder content - in a real app, this would be the full blog post content -->' +
@@ -166,6 +168,9 @@ function serveBlogPostPage(slug) {
                                 '<div class="blog-author-bio">Yoga instructor and wellness expert with over 10 years of experience teaching mindfulness and movement practices.</div>' +
                             '</div>' +
                         '</div>';
+                        
+                        // Close content wrapper
+                        postHTML += '</div>';
                         
                         // Add back to blog button
                         postHTML += '<a href="/dev/blog-page" class="back-to-blog">Back to Blog</a>';

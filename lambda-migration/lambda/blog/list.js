@@ -100,27 +100,33 @@ exports.handler = async (event, context) => {
     const startIndex = (page - 1) * limit;
     const paginatedPosts = posts.slice(startIndex, startIndex + limit);
 
-    // Transform posts for response (remove sensitive data)
     const transformedPosts = await Promise.all(paginatedPosts.map(async post => {
       // Generate presigned URL for cover image if path exists
       let coverImage = null;
       if (post.coverImage) {
         try {
+          // Clean the S3 key (remove leading slash if present)
+          const s3Key = post.coverImage.startsWith('/') ? post.coverImage.substring(1) : post.coverImage;
+          
+          const presignedUrl = await s3.getSignedUrlPromise('getObject', {
+            Bucket: process.env.ASSETS_BUCKET,
+            Key: s3Key, // Use the cleaned key
+            Expires: 3600 // 1 hour
+          });
+          
           coverImage = {
-            url: await s3.getSignedUrlPromise('getObject', {
-              Bucket: process.env.ASSETS_BUCKET,
-              Key: post.coverImage,
-              Expires: 3600 // 1 hour
-            })
+            url: presignedUrl
           };
         } catch (s3Error) {
           logWithContext('warn', 'Failed to generate presigned URL for cover image', {
             requestId,
-            s3Key: coverImage.s3Key,
+            s3Key: post.coverImage, // Log the original key
             error: s3Error.message
           });
-          // Keep original URL if exists
-          coverImage.url = coverImage.url || null;
+          // Fallback to original path or null
+          coverImage = {
+            url: null
+          };
         }
       }
 
