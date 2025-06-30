@@ -9,6 +9,8 @@ const {
   logWithContext,
   dynamoUtils
 } = require('../shared/public-utils');
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
 
 exports.handler = async (event, context) => {
   // Set up request ID for tracking
@@ -99,27 +101,51 @@ exports.handler = async (event, context) => {
     const paginatedPosts = posts.slice(startIndex, startIndex + limit);
 
     // Transform posts for response (remove sensitive data)
-    const transformedPosts = paginatedPosts.map(post => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt || (post.content ? post.content.substring(0, 200) + '...' : ''),
-      coverImage: post.coverImage,
-      category: post.category || 'General',
-      tags: post.tags || [],
-      publishedAt: post.publishedAt,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      author: post.author ? {
-        id: post.author.id,
-        firstName: post.author.firstName,
-        lastName: post.author.lastName
-      } : {
-        firstName: 'Gabi',
-        lastName: 'Yoga'
-      },
-      readTime: calculateReadTime(post.content || ''),
-      status: publishedOnly ? 'published' : post.status
+    const transformedPosts = await Promise.all(paginatedPosts.map(async post => {
+      // Generate presigned URL for cover image if path exists
+      let coverImage = null;
+      if (post.coverImage) {
+        try {
+          coverImage = {
+            url: await s3.getSignedUrlPromise('getObject', {
+              Bucket: process.env.ASSETS_BUCKET,
+              Key: post.coverImage,
+              Expires: 3600 // 1 hour
+            })
+          };
+        } catch (s3Error) {
+          logWithContext('warn', 'Failed to generate presigned URL for cover image', {
+            requestId,
+            s3Key: coverImage.s3Key,
+            error: s3Error.message
+          });
+          // Keep original URL if exists
+          coverImage.url = coverImage.url || null;
+        }
+      }
+
+      return {
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt || (post.content ? post.content.substring(0, 200) + '...' : ''),
+        coverImage,
+        category: post.category || 'General',
+        tags: post.tags || [],
+        publishedAt: post.publishedAt,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        author: post.author ? {
+          id: post.author.id,
+          firstName: post.author.firstName,
+          lastName: post.author.lastName
+        } : {
+          firstName: 'Gabi',
+          lastName: 'Yoga'
+        },
+        readTime: calculateReadTime(post.content || ''),
+        status: publishedOnly ? 'published' : post.status
+      };
     }));
 
     // Calculate pagination info

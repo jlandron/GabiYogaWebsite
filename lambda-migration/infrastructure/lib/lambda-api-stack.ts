@@ -108,6 +108,9 @@ export class LambdaApiStack extends cdk.Stack {
     const adminUsers = this.createLambdaFunction('AdminUsers', 'admin/users.js', commonLambdaProps);
     const adminSettings = this.createLambdaFunction('AdminSettings', 'admin/settings.js', commonLambdaProps);
 
+    // Public Settings Lambda Function (for GET requests)
+    const settingsGet = this.createLambdaFunction('SettingsGet', 'settings/get.js', commonLambdaProps);
+
     // Gallery Lambda Functions
     const galleryList = this.createLambdaFunction('GalleryList', 'gallery/list.js', commonLambdaProps);
     const galleryUpload = this.createLambdaFunction('GalleryUpload', 'gallery/upload.js', commonLambdaProps);
@@ -209,6 +212,13 @@ export class LambdaApiStack extends cdk.Stack {
     const paymentResource = this.apiGateway.root.addResource('payment');
     paymentResource.addResource('intent').addMethod('POST', new apigateway.LambdaIntegration(paymentIntent));
     paymentResource.addResource('webhook').addMethod('POST', new apigateway.LambdaIntegration(paymentWebhook));
+
+    // Public Settings Resource (for GET requests)
+    const settingsResource = this.apiGateway.root.addResource('settings');
+    settingsResource.addMethod('GET', new apigateway.LambdaIntegration(settingsGet));
+    // Support for getting specific settings by key
+    const settingsItemResource = settingsResource.addResource('{key}');
+    settingsItemResource.addMethod('GET', new apigateway.LambdaIntegration(settingsGet));
 
     // Static Website Routes - serve homepage and assets
     // Root path for homepage

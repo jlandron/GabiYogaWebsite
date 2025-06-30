@@ -69,6 +69,12 @@ export class LambdaDbStack extends cdk.Stack {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
+    this.blogPostsTable.addGlobalSecondaryIndex({
+      indexName: 'SlugIndex',
+      partitionKey: { name: 'slug', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // Classes Table
     this.classesTable = new dynamodb.Table(this, 'ClassesTable', {
       ...commonTableProps,

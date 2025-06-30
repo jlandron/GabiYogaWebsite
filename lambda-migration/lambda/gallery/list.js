@@ -39,6 +39,7 @@ exports.handler = async (event, context) => {
     try {
       const AWS = require('aws-sdk');
       const dynamoDb = new AWS.DynamoDB.DocumentClient();
+      const s3 = new AWS.S3();
       
       // Build filter expression
       let filterExpression = '#status = :active';
@@ -81,22 +82,48 @@ exports.handler = async (event, context) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      // Transform images for response
-      const transformedImages = images.map(image => ({
-        id: image.id,
-        title: image.title,
-        description: image.description,
-        imageUrl: image.imageUrl,
-        thumbnailUrl: image.thumbnailUrl || image.imageUrl,
-        altText: image.altText || image.title,
-        category: image.category || 'general',
-        tags: image.tags || [],
-        featured: image.featured || false,
-        displayOrder: image.displayOrder || 0,
-        dimensions: image.dimensions || { width: 0, height: 0 },
-        fileSize: image.fileSize || 0,
-        uploadedAt: image.createdAt,
-        updatedAt: image.updatedAt
+      // Transform images for response - generate presigned URLs
+      const transformedImages = await Promise.all(images.map(async (image) => {
+        let imageUrl = image.imageUrl; // Fallback for old format
+        let thumbnailUrl = image.thumbnailUrl || image.imageUrl;
+        
+        // Generate presigned URLs for S3 keys
+        if (image.s3Key && image.s3Bucket) {
+          try {
+            imageUrl = await s3.getSignedUrlPromise('getObject', {
+              Bucket: image.s3Bucket,
+              Key: image.s3Key,
+              Expires: 3600 // 1 hour
+            });
+            thumbnailUrl = imageUrl; // Use same URL for thumbnail for now
+          } catch (s3Error) {
+            logWithContext('warn', 'Failed to generate presigned URL', { 
+              requestId, 
+              s3Key: image.s3Key,
+              error: s3Error.message 
+            });
+            // Fall back to placeholder or original URL
+            imageUrl = image.imageUrl;
+            thumbnailUrl = imageUrl;
+          }
+        }
+        
+        return {
+          id: image.id,
+          title: image.title,
+          description: image.description,
+          imageUrl,
+          thumbnailUrl,
+          altText: image.altText || image.title,
+          category: image.category || 'general',
+          tags: image.tags || [],
+          featured: image.featured || false,
+          displayOrder: image.displayOrder || 0,
+          dimensions: image.dimensions || { width: 0, height: 0 },
+          fileSize: image.fileSize || 0,
+          uploadedAt: image.createdAt,
+          updatedAt: image.updatedAt
+        };
       }));
 
       // Calculate pagination info
