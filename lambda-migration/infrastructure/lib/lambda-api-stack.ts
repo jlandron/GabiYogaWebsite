@@ -123,6 +123,13 @@ export class LambdaApiStack extends cdk.Stack {
     const paymentIntent = this.createLambdaFunction('PaymentIntent', 'payment/intent.js', commonLambdaProps);
     const paymentWebhook = this.createLambdaFunction('PaymentWebhook', 'payment/webhook.js', commonLambdaProps);
 
+    // Static Website Lambda Function
+    const staticWebsite = this.createLambdaFunction('StaticWebsite', 'static/website.js', {
+      ...commonLambdaProps,
+      memorySize: 512, // More memory for file serving
+      timeout: cdk.Duration.seconds(10), // Shorter timeout for static content
+    });
+
     // Grant permissions to all Lambda functions
     this.lambdaFunctions.forEach(func => {
       // Grant DynamoDB permissions
@@ -202,6 +209,31 @@ export class LambdaApiStack extends cdk.Stack {
     const paymentResource = this.apiGateway.root.addResource('payment');
     paymentResource.addResource('intent').addMethod('POST', new apigateway.LambdaIntegration(paymentIntent));
     paymentResource.addResource('webhook').addMethod('POST', new apigateway.LambdaIntegration(paymentWebhook));
+
+    // Static Website Routes - serve homepage and assets
+    // Root path for homepage
+    this.apiGateway.root.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite));
+    
+    // Static asset routes with proxy integration
+    const assetsProxy = this.apiGateway.root.addResource('{proxy+}');
+    assetsProxy.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite, {
+      proxy: true,
+      requestTemplates: {
+        'application/json': JSON.stringify({
+          path: '$context.path',
+          httpMethod: '$context.httpMethod',
+          headers: '$input.params().header',
+          queryStringParameters: '$input.params().querystring',
+          pathParameters: '$input.params().path',
+          body: '$input.body'
+        })
+      }
+    }), {
+      requestParameters: {
+        'method.request.path.proxy': true
+      }
+    });
+
 
     // Tags
     cdk.Tags.of(this.apiGateway).add('Service', 'GabiYogaLambda');
