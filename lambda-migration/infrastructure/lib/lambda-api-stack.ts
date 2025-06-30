@@ -174,9 +174,12 @@ export class LambdaApiStack extends cdk.Stack {
     // API Gateway Resources and Methods
     const authResource = this.apiGateway.root.addResource('auth');
     authResource.addMethod('POST', new apigateway.LambdaIntegration(authLogin), { 
-      requestParameters: { 'method.request.header.Content-Type': true } 
+      requestParameters: { 'method.request.header.Content-Type': true },
+      authorizationType: apigateway.AuthorizationType.NONE
     });
-    authResource.addResource('register').addMethod('POST', new apigateway.LambdaIntegration(authRegister));
+    authResource.addResource('register').addMethod('POST', new apigateway.LambdaIntegration(authRegister), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     authResource.addResource('refresh').addMethod('POST', new apigateway.LambdaIntegration(authRefresh));
     authResource.addResource('logout').addMethod('POST', new apigateway.LambdaIntegration(authLogout));
     authResource.addResource('forgot').addMethod('POST', new apigateway.LambdaIntegration(authForgot));
