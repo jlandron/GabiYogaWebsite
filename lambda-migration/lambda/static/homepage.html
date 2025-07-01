@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabi Yoga - Find Your Inner Peace Through Yoga & Meditation</title>
+    <meta name="description" content="Join Gabi Yoga for transformative yoga classes, workshops, retreats and private sessions. Discover inner peace and wellness through mindful practice.">
+    <meta name="keywords" content="yoga, yoga classes, yoga studio, meditation, wellness, retreats, workshops, private yoga sessions, Gabi Yoga">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://gabi.yoga/">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gabi.yoga/">
+    <meta property="og:title" content="Gabi Yoga - Find Your Inner Peace">
+    <meta property="og:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
+    <meta property="og:image" content="https://gabi.yoga/images/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://gabi.yoga/">
+    <meta property="twitter:title" content="Gabi Yoga - Find Your Inner Peace">
+    <meta property="twitter:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
+    <meta property="twitter:image" content="https://gabi.yoga/images/twitter-image.jpg">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/dev/static/styles.css">
+    <link rel="stylesheet" href="/dev/static/gallery.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/dev" class="logo">Gabi Yoga</a>
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="/dev" class="active">Home</a></li>
+                    <li><a href="/dev/blog-page">Blog</a></li>
+                </ul>
+                <div id="auth-buttons" class="auth-buttons">
+                    <button class="btn btn-outline" onclick="showLoginForm()">Login</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Gabi Yoga</h1>
+            <p>Find Your Inner Peace Through Yoga & Meditation</p>
+            <div id="hero-cta">
+                <a href="#gallery" class="btn">Explore Our Journey</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Me Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <h2>About Me</h2>
+            <div class="about-content">
+                <div class="about-image">
+                    <img id="profile-image" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Yoga Instructor" style="width: 100%; max-width: 400px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1);">
+                </div>
+                <div class="about-text">
+                    <div id="about-loading" class="loading">
+                        <p>Loading biography...</p>
+                    </div>
+                    <div id="about-content" style="display: none;">
+                        <!-- Biography content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Class Schedule Section -->
+    <section id="classes" class="section">
+        <div class="container">
+            <h2>Upcoming Classes</h2>
+            <div id="classes-loading" class="loading">
+                <p>Loading class schedule...</p>
+            </div>
+            <div id="classes-content" style="display: none;">
+                <!-- Class schedule will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Blog Post Section -->
+    <section id="latest-blog" class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2>Latest From The Blog</h2>
+            <div id="blog-loading" class="loading">
+                <p>📝 Loading latest blog post...</p>
+            </div>
+            <div id="blog-content" style="display: none;">
+                <!-- Latest blog post will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery-section">
+        <div class="container">
+            <h1 class="gallery-title">Gallery</h1>
+            <div class="gallery-subtitle"></div>
+            
+            <div class="loading" id="gallery-loading">
+                <p>Loading beautiful moments...</p>
+            </div>
+            
+            <div class="gallery-carousel" id="gallery-carousel" style="display: none;">
+                <div class="carousel-container" id="carousel-container">
+                    <!-- Left preview -->
+                    <div class="carousel-preview carousel-preview-left" id="carousel-preview-left">
+                        <img src="" alt="">
+                    </div>
+                    
+                    <!-- Main carousel -->
+                    <div class="carousel-main">
+                        <div class="carousel-track" id="carousel-track">
+                            <!-- Featured images will be loaded here -->
+                        </div>
+                        <button class="carousel-nav carousel-prev" id="carousel-prev">‹</button>
+                        <button class="carousel-nav carousel-next" id="carousel-next">›</button>
+                    </div>
+                    
+                    <!-- Right preview -->
+                    <div class="carousel-preview carousel-preview-right" id="carousel-preview-right">
+                        <img src="" alt="">
+                    </div>
+                </div>
+                <div class="carousel-footer">
+                    <div class="carousel-indicators" id="carousel-indicators">
+                        <!-- Indicators will be loaded here -->
+                    </div>
+                    <a href="#" class="view-all-btn" id="view-all-btn">View All Photos</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Modal -->
+    <div id="gallery-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <div class="masonry-grid" id="masonry-grid">
+                <!-- All images will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Gabi Yoga. Powered by AWS Lambda Serverless Architecture</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/dev/static/auth.js"></script>
+    <script src="/dev/static/class-modal.js"></script>
+    <script src="/dev/static/frontend.js"></script>
+</body>
+</html>

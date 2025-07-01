@@ -11,7 +11,8 @@ exports.handler = async (event) => {
             headers: {
                 'Content-Type': 'text/html',
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': true
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
             },
             body: htmlContent
         };
@@ -23,7 +24,7 @@ exports.handler = async (event) => {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ error: 'Internal server error' })
+            body: JSON.stringify({ error: 'Error serving admin dashboard' })
         };
     }
 };

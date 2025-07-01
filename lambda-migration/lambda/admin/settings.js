@@ -3,12 +3,17 @@
  * Handles CRUD operations for application settings
  */
 
+const AWS = require('aws-sdk');
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
 const { 
   createSuccessResponse, 
   createErrorResponse,
   logWithContext,
-  dynamoUtils
-} = require('../shared/public-utils');
+  dynamoUtils,
+  getUserFromToken,
+  isAdmin
+} = require('../shared/utils');
 
 exports.handler = async (event, context) => {
   const requestId = context.awsRequestId;
@@ -23,6 +28,12 @@ exports.handler = async (event, context) => {
     // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
       return createSuccessResponse({}, 200);
+    }
+
+    // Verify admin role
+    const user = await getUserFromToken(event);
+    if (!user || !isAdmin(user)) {
+      return createErrorResponse('Unauthorized - Admin access required', 403);
     }
 
     const method = event.httpMethod;
@@ -121,9 +132,6 @@ async function handleGetSettings(requestId, settingKey) {
     }
     
     // Otherwise, get all settings
-    const AWS = require('aws-sdk');
-    const dynamoDb = new AWS.DynamoDB.DocumentClient();
-    
     const result = await dynamoDb.scan({
       TableName: tableName,
       ProjectionExpression: 'id, #k, #v, description, category, createdAt, updatedAt',
@@ -180,9 +188,6 @@ async function handleDeleteSetting(requestId, settingKey) {
     }
 
     // Delete the setting
-    const AWS = require('aws-sdk');
-    const dynamoDb = new AWS.DynamoDB.DocumentClient();
-    
     await dynamoDb.delete({
       TableName: tableName,
       Key: { id: settingKey }

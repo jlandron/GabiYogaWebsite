@@ -1,5 +1,11 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const { 
+    getUserFromToken, 
+    isAdmin, 
+    createSuccessResponse, 
+    createErrorResponse 
+} = require('../shared/utils');
 
 const getUsers = async () => {
     const params = {
@@ -60,6 +66,17 @@ exports.handler = async (event) => {
     console.log('Event:', JSON.stringify(event, null, 2));
     
     try {
+        // Handle CORS preflight
+        if (event.httpMethod === 'OPTIONS') {
+            return createSuccessResponse({}, 200);
+        }
+
+        // Verify admin role
+        const user = await getUserFromToken(event);
+        if (!user || !isAdmin(user)) {
+            return createErrorResponse('Unauthorized - Admin access required', 403);
+        }
+
         // Fetch all dashboard data in parallel
         const [totalUsers, recentUsers, blogStats, recentBookings] = await Promise.all([
             getUsers(),
@@ -94,28 +111,9 @@ exports.handler = async (event) => {
             }
         };
 
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            },
-            body: JSON.stringify(dashboardData)
-        };
+        return createSuccessResponse(dashboardData);
     } catch (error) {
         console.error('Dashboard Error:', error);
-        return {
-            statusCode: 500,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                message: 'Error fetching dashboard data',
-                error: error.message
-            })
-        };
+        return createErrorResponse('Error fetching dashboard data', 500);
     }
 };

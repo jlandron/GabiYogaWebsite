@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const { getUserFromToken, isAdmin, createErrorResponse } = require('../shared/utils');
 
 const CORS_HEADERS = {
     'Content-Type': 'application/json',
@@ -120,6 +121,12 @@ exports.handler = async (event) => {
                 headers: CORS_HEADERS,
                 body: ''
             };
+        }
+
+        // Verify admin role
+        const user = await getUserFromToken(event);
+        if (!user || !isAdmin(user)) {
+            return createErrorResponse('Unauthorized - Admin access required', 403);
         }
 
         let response;

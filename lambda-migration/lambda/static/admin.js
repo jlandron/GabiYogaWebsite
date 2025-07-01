@@ -16,22 +16,22 @@ function getAuthHeaders() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         
-        const response = await fetch('/dev/admin/verify', {
+        const response = await fetch('/dev/auth/verify-token', {
             method: 'GET',
             headers: getAuthHeaders()
         });
         
         if (!response.ok) {
-            console.error('Admin verification failed:', await response.text());
-            window.location.href = '/dev/';
+            console.error('Token verification failed:', await response.text());
+            window.location.href = '/dev/login.html';
             return;
         }
 
         const data = await response.json();
-        console.log('Admin verify response:', data);
+        console.log('Token verification response:', data);
         
-        if (!data.isAdmin) {
-            console.error('Access denied:', data);
+        if (!data.user || data.user.role !== 'admin') {
+            console.error('Access denied: User is not admin', data);
             window.location.href = '/dev/';
             return;
         }
