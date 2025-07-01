@@ -30,13 +30,15 @@ exports.handler = async (event, context) => {
     const settingKey = pathParameters.key;
 
     switch (method) {
+      case 'GET':
+        return await handleGetSettings(requestId, settingKey);
       case 'POST':
       case 'PUT':
         return await handleUpdateSettings(requestId, event);
       case 'DELETE':
         return await handleDeleteSetting(requestId, settingKey);
       default:
-        return createErrorResponse(`Method ${method} not allowed. Use /settings for GET operations.`, 405);
+        return createErrorResponse(`Method ${method} not allowed`, 405);
     }
 
   } catch (error) {
@@ -95,6 +97,64 @@ async function handleUpdateSettings(requestId, event) {
 
   } catch (error) {
     logWithContext('error', 'Error updating setting', { 
+      requestId, 
+      error: error.message 
+    });
+    throw error;
+  }
+}
+
+/**
+ * Handle GET requests for settings
+ */
+async function handleGetSettings(requestId, settingKey) {
+  try {
+    const tableName = process.env.SETTINGS_TABLE;
+    
+    // If key provided, get specific setting
+    if (settingKey) {
+      const setting = await dynamoUtils.getItem(tableName, { id: settingKey });
+      if (!setting) {
+        return createErrorResponse(`Setting '${settingKey}' not found`, 404);
+      }
+      return createSuccessResponse({ setting });
+    }
+    
+    // Otherwise, get all settings
+    const AWS = require('aws-sdk');
+    const dynamoDb = new AWS.DynamoDB.DocumentClient();
+    
+    const result = await dynamoDb.scan({
+      TableName: tableName,
+      ProjectionExpression: 'id, #k, #v, description, category, createdAt, updatedAt',
+      ExpressionAttributeNames: {
+        '#k': 'key',
+        '#v': 'value'
+      }
+    }).promise();
+
+    // Group settings by category
+    const settingsByCategory = result.Items.reduce((acc, setting) => {
+      const category = setting.category || 'general';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(setting);
+      return acc;
+    }, {});
+
+    logWithContext('info', 'Settings retrieved successfully', { 
+      requestId,
+      count: result.Items.length
+    });
+
+    return createSuccessResponse({
+      settings: settingsByCategory,
+      count: result.Items.length
+    });
+
+  } catch (error) {
+    logWithContext('error', 'Error retrieving settings', { 
       requestId, 
       error: error.message 
     });

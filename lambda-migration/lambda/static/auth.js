@@ -23,7 +23,7 @@ function showLoginForm() {
           </div>
           <div class="auth-error" id="login-error"></div>
           <div class="auth-actions">
-            <button type="submit" class="btn">Login</button>
+            <button type="submit" class="btn" id="login-btn"><span>Login</span></button>
             <button type="button" class="btn btn-outline" onclick="showRegisterForm()">Register</button>
           </div>
         </form>
@@ -142,7 +142,7 @@ function showRegisterForm() {
           <div class="auth-error" id="register-error"></div>
           <div class="auth-actions">
             <button type="button" class="btn btn-outline" onclick="showLoginForm()">Back to Login</button>
-            <button type="submit" class="btn">Register</button>
+            <button type="submit" class="btn" id="register-btn"><span>Register</span></button>
           </div>
         </form>
       </div>
@@ -165,15 +165,21 @@ async function handleLogin(event) {
   const email = event.target.email.value;
   const password = event.target.password.value;
   const errorEl = document.getElementById('login-error');
+  const loginBtn = document.getElementById('login-btn');
+  
+  // Add loading state
+  loginBtn.classList.add('btn-loading');
+  loginBtn.innerHTML = '<span>Logging in...</span><div class="loading-spinner"></div>';
+  loginBtn.disabled = true;
   
   try {
+    console.log('Attempting login...');
     const response = await fetch('/dev/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include',
       mode: 'cors',
       body: JSON.stringify({ email, password })
     });
@@ -181,12 +187,16 @@ async function handleLogin(event) {
     const data = await response.json();
     
     if (data.success) {
-      // Store token
+      // Store token and user data
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       
       // Update UI
       currentUser = data.user;
       updateAuthUI();
+      
+      // Log success
+      console.log('Login successful:', data.user);
       
       // Close modal
       closeAuthModal();
@@ -199,6 +209,11 @@ async function handleLogin(event) {
   } catch (error) {
     console.error('Login error:', error);
     errorEl.textContent = 'An error occurred. Please try again.';
+  } finally {
+    // Remove loading state
+    loginBtn.classList.remove('btn-loading');
+    loginBtn.innerHTML = '<span>Login</span>';
+    loginBtn.disabled = false;
   }
 }
 
@@ -210,15 +225,21 @@ async function handleRegister(event) {
   const email = event.target.email.value;
   const password = event.target.password.value;
   const errorEl = document.getElementById('register-error');
+  const registerBtn = document.getElementById('register-btn');
+  
+  // Add loading state
+  registerBtn.classList.add('btn-loading');
+  registerBtn.innerHTML = '<span>Registering...</span><div class="loading-spinner"></div>';
+  registerBtn.disabled = true;
   
   try {
+    console.log('Attempting registration...');
     const response = await fetch('/dev/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include',
       mode: 'cors',
       body: JSON.stringify({ name, email, password })
     });
@@ -240,6 +261,11 @@ async function handleRegister(event) {
   } catch (error) {
     console.error('Registration error:', error);
     errorEl.textContent = 'An error occurred. Please try again.';
+  } finally {
+    // Remove loading state
+    registerBtn.classList.remove('btn-loading');
+    registerBtn.innerHTML = '<span>Register</span>';
+    registerBtn.disabled = false;
   }
 }
 
@@ -262,6 +288,7 @@ function updateAuthUI() {
 // Handle logout
 async function handleLogout() {
   try {
+    console.log('Logging out...');
     const response = await fetch('/dev/auth/logout', {
       method: 'POST',
       headers: {
@@ -269,16 +296,18 @@ async function handleLogout() {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include',
       mode: 'cors'
     });
     
     const data = await response.json();
+    console.log('Logout response:', data);
     
     if (data.success) {
-      // Clear token and user
+      // Clear auth data
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       currentUser = null;
+      console.log('Auth data cleared');
       
       // Update UI
       updateAuthUI();
@@ -297,6 +326,7 @@ async function checkAuthStatus() {
   if (!token) return;
   
   try {
+    console.log('Verifying auth token...');
     const response = await fetch('/dev/auth/verify-token', {
       method: 'GET',
       headers: {
@@ -304,18 +334,23 @@ async function checkAuthStatus() {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include',
       mode: 'cors'
     });
     
     const data = await response.json();
+    console.log('Token verification response:', data);
     
     if (data.success) {
-      currentUser = data.user;
+      // Load stored user data
+      const storedUser = localStorage.getItem('user');
+      currentUser = storedUser ? JSON.parse(storedUser) : data.user;
+      console.log('Current user:', currentUser);
       updateAuthUI();
     } else {
       // Token invalid, clear it
+      console.error('Token invalid, clearing auth data');
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   } catch (error) {
     console.error('Auth check error:', error);

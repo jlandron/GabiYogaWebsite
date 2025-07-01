@@ -2,7 +2,7 @@
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/index.html';
+        window.location.href = '/dev/login.html';
         return;
     }
     return {
@@ -16,19 +16,22 @@ function getAuthHeaders() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         
-        const response = await fetch('/dev/auth/verify-token', {
+        const response = await fetch('/dev/admin/verify', {
             method: 'GET',
-            headers: getAuthHeaders(),
-            credentials: 'include'
+            headers: getAuthHeaders()
         });
         
         if (!response.ok) {
-            window.location.href = '/dev/login.html';
+            console.error('Admin verification failed:', await response.text());
+            window.location.href = '/dev/';
             return;
         }
 
         const data = await response.json();
-        if (data.role !== 'admin') {
+        console.log('Admin verify response:', data);
+        
+        if (!data.isAdmin) {
+            console.error('Access denied:', data);
             window.location.href = '/dev/';
             return;
         }

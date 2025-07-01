@@ -34,7 +34,7 @@ function serveBlogPage() {
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="blog-hero">
         <div class="hero-content">
             <h1>Wellness & Mindfulness Blog</h1>
             <p>Discover insights on yoga, wellness, and mindful living through thoughtful articles</p>

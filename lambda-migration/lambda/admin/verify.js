@@ -16,8 +16,8 @@ exports.handler = async (event) => {
 
     // Get JWT secret and verify token
     const jwtSecret = await getJWTSecret();
-    const user = await verifyToken(token, jwtSecret);
-    if (!user) {
+    const decoded = verifyToken(token, jwtSecret);
+    if (!decoded) {
       return {
         statusCode: 401,
         body: JSON.stringify({ 
@@ -27,7 +27,9 @@ exports.handler = async (event) => {
       };
     }
     
-    if (!isAdmin(user)) {
+    // Check if user has admin role
+    if (!decoded.role || decoded.role !== 'admin') {
+      console.log('Non-admin user attempted access:', decoded);
       return {
         statusCode: 403,
         body: JSON.stringify({ 
@@ -43,9 +45,9 @@ exports.handler = async (event) => {
         message: 'Admin access verified',
         isAdmin: true,
         user: {
-          id: user.sub,
-          email: user.email,
-          name: user.name
+          id: decoded.id,
+          email: decoded.email,
+          role: decoded.role
         }
       })
     };

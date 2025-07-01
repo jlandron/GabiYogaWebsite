@@ -786,7 +786,8 @@ function serveHomepage() {
                         
                         classesHTML += 
                             '<div class="calendar-class ' + categoryClass + ' ' + isFullClass + '" ' +
-                                 'onclick="openClassModal(' + classItem.id + ')" ' +
+                                 'data-class-id="' + classItem.id + '" ' +
+                                 'onclick="openClassModal(' + JSON.stringify(classItem) + ')" ' +
                                  'title="' + classItem.title + ' - ' + classItem.startTime + '">' +
                                 classItem.startTime + ' ' + classItem.title +
                             '</div>';
@@ -841,8 +842,7 @@ function serveHomepage() {
         }
         
         // Open class detail modal
-        function openClassModal(classId) {
-            const classItem = allClasses.find(c => c.id === classId);
+        function openClassModal(classItem) {
             if (!classItem) return;
             
             // Populate modal content
