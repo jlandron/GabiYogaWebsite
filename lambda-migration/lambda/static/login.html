@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gabi Yoga</title>
+    <link rel="stylesheet" href="/dev/static/styles.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/dev" class="logo">Gabi Yoga</a>
+            <ul class="nav-links">
+                <li><a href="/dev">Home</a></li>
+                <li><a href="/dev/blog-page">Blog</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="auth-modal-content" style="margin: 4rem auto; max-width: 400px;">
+            <div class="auth-modal-header">
+                <h2>Login</h2>
+            </div>
+            <div class="auth-modal-body">
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="auth-error" id="login-error"></div>
+                    <div class="auth-actions">
+                        <button type="submit" class="btn">Login</button>
+                        <button type="button" class="btn btn-outline" onclick="showRegisterForm()">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="/dev/static/auth.js"></script>
+</body>
+</html>

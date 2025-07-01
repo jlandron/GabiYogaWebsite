@@ -1,0 +1,126 @@
+service: gabi-yoga-website
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: us-east-1
+  profile: gabi
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, 'dev'}
+    STAGE: ${opt:stage, 'dev'}
+    AWS_PROFILE: gabi
+    IS_OFFLINE: ${env:IS_OFFLINE, 'false'}
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    # Handle static files
+    staticDir: lambda/static
+    # Serve static files
+    resourceRoutes:
+      - path: /{proxy+}
+        directory: lambda/static
+      - path: /
+        directory: lambda/static
+        file: index.html
+
+functions:
+
+  # Auth functions
+  login:
+    handler: lambda/auth/login.handler
+    events:
+      - http:
+          path: /auth/login
+          method: post
+          cors: true
+  
+  register:
+    handler: lambda/auth/register.handler
+    events:
+      - http:
+          path: /auth/register
+          method: post
+          cors: true
+
+  # Blog functions  
+  listBlogs:
+    handler: lambda/blog/list.handler
+    events:
+      - http:
+          path: /blog
+          method: get
+          cors: true
+
+  getBlog:
+    handler: lambda/blog/get.handler
+    events:
+      - http:
+          path: /blog/{id}
+          method: get
+          cors: true
+
+  createBlog:
+    handler: lambda/blog/create.handler
+    events:
+      - http:
+          path: /blog
+          method: post
+          cors: true
+
+  # Booking functions
+  listBookings:
+    handler: lambda/booking/list-bookings.handler
+    events:
+      - http:
+          path: /bookings
+          method: get
+          cors: true
+
+  book:
+    handler: lambda/booking/book.handler
+    events:
+      - http:
+          path: /book
+          method: post
+          cors: true
+
+  # Gallery functions
+  listGallery:
+    handler: lambda/gallery/list.handler
+    events:
+      - http:
+          path: /gallery
+          method: get
+          cors: true
+
+  # Settings functions
+  getSettings:
+    handler: lambda/settings/get.handler
+    events:
+      - http:
+          path: /settings
+          method: get
+          cors: true
+
+
+resources:
+  Resources:
+    GabiYogaTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: type
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: type
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST

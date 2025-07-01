@@ -42,8 +42,8 @@ uploads/images/*
 
 # Project-specific
 TODO
-.env
 coverage/*
 infrastructure/cdk.out/
 
 cdk.out
+lambda-migration/infrastructure/lib/*.js

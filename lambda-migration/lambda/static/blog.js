@@ -20,7 +20,7 @@ function serveBlogPage() {
     <meta name="description" content="Discover insights on yoga, wellness, and mindful living through our thoughtful blog posts and articles.">
     
     <!-- Centralized CSS -->
-    <link rel="stylesheet" href="/dev/static-assets/styles.css">
+    <link rel="stylesheet" href="/dev/static/styles.css">
 </head>
 <body>
    <header class="header">

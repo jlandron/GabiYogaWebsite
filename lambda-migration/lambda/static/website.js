@@ -46,14 +46,6 @@ exports.handler = async (event, context) => {
       return serveBlogPostPage(slug);
     }
     
-    // Serve static assets
-    if (requestPath.startsWith('/css/') || 
-        requestPath.startsWith('/js/') || 
-        requestPath.startsWith('/images/') ||
-        requestPath.startsWith('/fonts/') ||
-        requestPath.startsWith('/static-assets/')) {
-      return serveStaticAsset(requestPath);
-    }
     
     // 404 for other paths
     return createResponse(404, 'Page not found', {
@@ -109,9 +101,8 @@ function serveHomepage() {
     <meta property="twitter:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
     <meta property="twitter:image" content="https://gabi.yoga/images/twitter-image.jpg">
     
-    
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/dev/static-assets/styles.css">
+    <link rel="stylesheet" href="/dev/static/styles.css">
 </head>
 <body>
     <header class="header">
@@ -123,7 +114,7 @@ function serveHomepage() {
                     <li><a href="/dev/blog-page">Blog</a></li>
                 </ul>
                 <div id="auth-buttons" class="auth-buttons">
-                    <button class="btn btn-outline" onclick="showLoginForm()">Login / Register</button>
+                    <button class="btn btn-outline" onclick="showLoginForm()">Login</button>
                 </div>
             </div>
         </nav>
@@ -134,7 +125,9 @@ function serveHomepage() {
         <div class="hero-content">
             <h1>Gabi Yoga</h1>
             <p>Find Your Inner Peace Through Yoga & Meditation</p>
-            <a href="#gallery" class="btn">Explore Our Journey</a>
+            <div id="hero-cta">
+                <a href="#gallery" class="btn">Explore Our Journey</a>
+            </div>
         </div>
     </section>
 
@@ -241,14 +234,12 @@ function serveHomepage() {
     </footer>
 
     <!-- Auth Script -->
-    <script src="/dev/static-assets/auth.js"></script>
+    <script src="/dev/static/auth.js"></script>
     
     <script>
-        // Fixed API URL to avoid any syntax issues
         const API_BASE_URL = window.location.origin + '/dev';
-        console.log("API Base URL:", API_BASE_URL);
-        
         // Gallery state
+        let isTransitioning = false;
         let allImages = [];
         let featuredImages = [];
         let currentSlide = 0;
@@ -300,27 +291,28 @@ function serveHomepage() {
         }
         
         // Initialize carousel with featured images
-        function initializeCarousel() {
+       function initializeCarousel() {
             const carouselTrack = document.getElementById('carousel-track');
             const carouselIndicators = document.getElementById('carousel-indicators');
             
             // Create carousel slides
-            carouselTrack.innerHTML = featuredImages.map((image, index) => 
-                '<div class="carousel-slide">' +
+                       carouselTrack.innerHTML = featuredImages.map(function(image, index) {
+                return '<div class="carousel-slide" data-index="' + index + '">' +
                     '<img src="' + image.imageUrl + '" alt="' + (image.altText || image.title) + '" loading="' + (index === 0 ? 'eager' : 'lazy') + '">' +
-                '</div>'
-            ).join('');
+                '</div>';
+            }).join('');
             
             // Create indicators
-            carouselIndicators.innerHTML = featuredImages.map((_, index) => 
-                '<div class="carousel-indicator ' + (index === 0 ? 'active' : '') + '" data-slide="' + index + '"></div>'
-            ).join('');
+            carouselIndicators.innerHTML = featuredImages.map(function(_, index) {
+                return '<div class="carousel-indicator ' + (index === 0 ? 'active' : '') + '" data-slide="' + index + '"></div>';
+            }).join('');
             
             // Setup carousel navigation
             setupCarouselNavigation();
             setupSidePreviewHandlers();
             
-            // Initialize the side previews
+            // Initialize 3D positioning and side previews
+            updateCarousel3D();
             updateSidePreviews();
         }
         
@@ -332,24 +324,27 @@ function serveHomepage() {
             
             // Previous slide
             prevBtn.addEventListener('click', () => {
+                if (isTransitioning) return;
                 pauseAutoRotate();
                 currentSlide = (currentSlide - 1 + featuredImages.length) % featuredImages.length;
-                updateCarousel();
+                updateCarousel3D();
             });
             
             // Next slide
             nextBtn.addEventListener('click', () => {
+                if (isTransitioning) return;
                 pauseAutoRotate();
                 currentSlide = (currentSlide + 1) % featuredImages.length;
-                updateCarousel();
+                updateCarousel3D();
             });
             
             // Indicator clicks
             indicators.forEach((indicator, index) => {
                 indicator.addEventListener('click', () => {
+                    if (isTransitioning || index === currentSlide) return;
                     pauseAutoRotate();
                     currentSlide = index;
-                    updateCarousel();
+                    updateCarousel3D();
                 });
             });
             
@@ -357,14 +352,46 @@ function serveHomepage() {
             startAutoRotate();
         }
         
-        // Update carousel position and indicators
-        function updateCarousel() {
-            const carouselTrack = document.getElementById('carousel-track');
+        // Update carousel position and indicators with 3D animation
+        function updateCarousel3D() {
+            if (isTransitioning) return;
+            
+            isTransitioning = true;
+            const slides = document.querySelectorAll('.carousel-slide');
             const indicators = document.querySelectorAll('.carousel-indicator');
             
-            // Move track
-            const translateX = -currentSlide * 100;
-            carouselTrack.style.transform = 'translateX(' + translateX + '%)';
+            slides.forEach((slide, index) => {
+                const diff = index - currentSlide;
+                let transform = '';
+                let opacity = 1;
+                let zIndex = 1;
+                
+                if (diff === 0) {
+                    // Current slide - center position
+                    transform = 'translateZ(0) rotateY(0deg) scale(1)';
+                    opacity = 1;
+                    zIndex = 10;
+                } else if (diff === 1 || (diff === -(featuredImages.length - 1))) {
+                    // Next slide - right side
+                    transform = 'translateX(100%) translateZ(-200px) rotateY(-45deg) scale(0.8)';
+                    opacity = 0;
+                    zIndex = 5;
+                } else if (diff === -1 || (diff === (featuredImages.length - 1))) {
+                    // Previous slide - left side
+                    transform = 'translateX(-100%) translateZ(-200px) rotateY(45deg) scale(0.8)';
+                    opacity = 0;
+                    zIndex = 5;
+                } else {
+                    // Hidden slides
+                    transform = 'translateZ(-400px) scale(0.5)';
+                    opacity = 0;
+                    zIndex = 1;
+                }
+                
+                slide.style.transform = transform;
+                slide.style.opacity = opacity;
+                slide.style.zIndex = zIndex;
+            });
             
             // Update indicators
             indicators.forEach((indicator, index) => {
@@ -373,7 +400,13 @@ function serveHomepage() {
             
             // Update side previews
             updateSidePreviews();
+            
+            // Reset transition flag after animation completes
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 800);
         }
+
         
         // Update side preview images
         function updateSidePreviews() {
@@ -388,14 +421,27 @@ function serveHomepage() {
             
             // Update left preview (previous image)
             const leftImg = leftPreview.querySelector('img');
-            leftImg.src = featuredImages[prevIndex].imageUrl;
-            leftImg.alt = featuredImages[prevIndex].altText || featuredImages[prevIndex].title;
+            if (leftImg.src !== featuredImages[prevIndex].imageUrl) {
+                leftImg.style.opacity = '0';
+                setTimeout(() => {
+                    leftImg.src = featuredImages[prevIndex].imageUrl;
+                    leftImg.alt = featuredImages[prevIndex].altText || featuredImages[prevIndex].title;
+                    leftImg.style.opacity = '1';
+                }, 200);
+            }
             
             // Update right preview (next image)
             const rightImg = rightPreview.querySelector('img');
-            rightImg.src = featuredImages[nextIndex].imageUrl;
-            rightImg.alt = featuredImages[nextIndex].altText || featuredImages[nextIndex].title;
+            if (rightImg.src !== featuredImages[nextIndex].imageUrl) {
+                rightImg.style.opacity = '0';
+                setTimeout(() => {
+                    rightImg.src = featuredImages[nextIndex].imageUrl;
+                    rightImg.alt = featuredImages[nextIndex].altText || featuredImages[nextIndex].title;
+                    rightImg.style.opacity = '1';
+                }, 200);
+            }
         }
+
         
         // Auto-rotation functions
         function startAutoRotate() {
@@ -403,38 +449,74 @@ function serveHomepage() {
                 clearInterval(autoRotateInterval);
             }
             autoRotateInterval = setInterval(() => {
-                if (!isPaused) {
+                if (!isPaused && !isTransitioning) {
                     currentSlide = (currentSlide + 1) % featuredImages.length;
-                    updateCarousel();
+                    updateCarousel3D();
                 }
             }, 5000);
         }
-        
+
         function pauseAutoRotate() {
             isPaused = true;
-            // Resume auto-rotation after 10 seconds of user inactivity
             setTimeout(() => {
                 isPaused = false;
             }, 10000);
         }
-        
+
         // Setup side preview click handlers
         function setupSidePreviewHandlers() {
             const leftPreview = document.getElementById('carousel-preview-left');
             const rightPreview = document.getElementById('carousel-preview-right');
             
             leftPreview.addEventListener('click', () => {
+                if (isTransitioning) return;
                 pauseAutoRotate();
                 currentSlide = (currentSlide - 1 + featuredImages.length) % featuredImages.length;
-                updateCarousel();
+                updateCarousel3D();
             });
             
             rightPreview.addEventListener('click', () => {
+                if (isTransitioning) return;
                 pauseAutoRotate();
                 currentSlide = (currentSlide + 1) % featuredImages.length;
-                updateCarousel();
+                updateCarousel3D();
             });
         }
+
+        // Touch/swipe support for mobile carousel
+        let startX = 0;
+        let startY = 0;
+        
+        document.getElementById('carousel-container').addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        
+        document.getElementById('carousel-container').addEventListener('touchend', (e) => {
+            if (!startX || !startY || isTransitioning) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            
+            const diffX = startX - endX;
+            const diffY = startY - endY;
+            
+            // Only handle horizontal swipes
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                pauseAutoRotate();
+                if (diffX > 0) {
+                    // Swipe left - next slide
+                    currentSlide = (currentSlide + 1) % featuredImages.length;
+                } else {
+                    // Swipe right - previous slide
+                    currentSlide = (currentSlide - 1 + featuredImages.length) % featuredImages.length;
+                }
+                updateCarousel3D();
+            }
+            
+            startX = 0;
+            startY = 0;
+        });
         
         // Setup modal gallery with masonry layout
         function setupModalGallery() {
@@ -879,19 +961,63 @@ function serveHomepage() {
             }
         });
         
+        // Check user role and update navigation
+        async function checkUserRole() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                // First verify if the token is valid and get user info
+                const authResponse = await fetch(API_BASE_URL + '/auth/verify-token', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                const authData = await authResponse.json();
+                if (!authData.success) {
+                    return;
+                }
+
+                // Add user portal link for all logged-in users
+                const navLinks = document.querySelector('.nav-links');
+                if (!navLinks.innerHTML.includes('My Account')) {
+                    navLinks.innerHTML += '<li><a href="/dev/user.html">My Account</a></li>';
+                }
+
+                // If user is admin, add admin navigation
+                if (authData.user.role === 'admin') {
+                    if (!navLinks.innerHTML.includes('Admin')) {
+                        navLinks.innerHTML += '<li><a href="/dev/admin.html">Admin</a></li>';
+                    }
+                }
+
+                // Update hero CTA for logged-in users
+                const heroCta = document.getElementById('hero-cta');
+                heroCta.innerHTML = '<a href="/dev/user.html" class="btn">My Account</a>';
+
+            } catch (error) {
+                console.error('Error checking user role:', error);
+            }
+        }
+
         // Load all content when page loads
         document.addEventListener('DOMContentLoaded', () => {
             loadGallery();
             loadAboutMe();
             loadClassSchedule();
             loadLatestBlog();
+            checkUserRole();
         });
         
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                
                 e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
+                const target = document.querySelector(href);
                 if (target) {
                     target.scrollIntoView({
                         behavior: 'smooth',
@@ -901,40 +1027,11 @@ function serveHomepage() {
             });
         });
         
-        // Touch/swipe support for mobile carousel
-        let startX = 0;
-        let startY = 0;
-        
-        document.getElementById('carousel-container').addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        });
-        
-        document.getElementById('carousel-container').addEventListener('touchend', (e) => {
-            if (!startX || !startY) return;
-            
-            const endX = e.changedTouches[0].clientX;
-            const endY = e.changedTouches[0].clientY;
-            
-            const diffX = startX - endX;
-            const diffY = startY - endY;
-            
-            // Only handle horizontal swipes
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                pauseAutoRotate();
-                if (diffX > 0) {
-                    // Swipe left - next slide
-                    currentSlide = (currentSlide + 1) % featuredImages.length;
-                } else {
-                    // Swipe right - previous slide
-                    currentSlide = (currentSlide - 1 + featuredImages.length) % featuredImages.length;
-                }
-                updateCarousel();
-            }
-            
-            startX = 0;
-            startY = 0;
-        });
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/dev';
+        }
     </script>
 </body>
 </html>`;
@@ -942,60 +1039,4 @@ function serveHomepage() {
   return createResponse(200, homepage, {
     'Content-Type': 'text/html; charset=utf-8'
   });
-}
-
-
-/**
- * Serve static assets (placeholder - in production, use CloudFront/S3)
- */
-function serveStaticAsset(requestPath) {
-  // In a real implementation, you'd serve from S3 or CloudFront
-  const mimeType = getMimeType(requestPath);
-  
-  // Serve static files
-  if (requestPath === '/static-assets/styles.css' || requestPath === '/static-assets/auth.js') {
-    const fs = require('fs');
-    const path = require('path');
-    try {
-      // Get the filename from the path
-      const filename = requestPath.split('/').pop();
-      // Read the file from the current directory
-      const content = fs.readFileSync(path.join(__dirname, filename), 'utf8');
-      return createResponse(200, content, {
-        'Content-Type': getMimeType(filename)
-      });
-    } catch (error) {
-      console.error('Error loading static file:', error);
-    }
-  }
-  
-  return createResponse(404, 'Static asset not found: ' + requestPath, {
-    'Content-Type': mimeType
-  });
-}
-
-/**
- * Simple MIME type detection
- */
-function getMimeType(path) {
-  const ext = path.split('.').pop().toLowerCase();
-  
-  const mimeTypes = {
-    'html': 'text/html',
-    'css': 'text/css',
-    'js': 'application/javascript',
-    'json': 'application/json',
-    'png': 'image/png',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'gif': 'image/gif',
-    'svg': 'image/svg+xml',
-    'ico': 'image/x-icon',
-    'woff': 'font/woff',
-    'woff2': 'font/woff2',
-    'ttf': 'font/ttf',
-    'otf': 'font/otf'
-  };
-  
-  return mimeTypes[ext] || 'application/octet-stream';
 }

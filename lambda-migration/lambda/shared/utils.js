@@ -114,7 +114,8 @@ function createResponse(statusCode, body, headers = {}) {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
     'Access-Control-Allow-Methods': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token'
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token, Accept',
+    'Access-Control-Allow-Credentials': 'true'
   };
 
   return {
@@ -323,6 +324,13 @@ async function getUserFromToken(event) {
   }
 }
 
+/**
+ * Check if user has admin role
+ */
+function isAdmin(user) {
+  return user && user.role === 'admin';
+}
+
 module.exports = {
   getSecret,
   getJWTSecret,
@@ -340,5 +348,6 @@ module.exports = {
   isValidEmail,
   isValidPassword,
   extractAuthToken,
-  getUserFromToken
+  getUserFromToken,
+  isAdmin
 };

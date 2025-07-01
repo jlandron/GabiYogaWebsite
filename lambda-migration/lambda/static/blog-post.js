@@ -23,7 +23,7 @@ function serveBlogPostPage(slug) {
     <meta name="description" content="Read this insightful article from Gabi Yoga on wellness and mindful living.">
     
     <!-- Centralized CSS -->
-    <link rel="stylesheet" href="/dev/static-assets/styles.css">
+    <link rel="stylesheet" href="/dev/static/styles.css">
 </head>
 <body>
     <header class="header">

@@ -57,7 +57,7 @@ exports.handler = async (event, context) => {
       'EmailIndex', // GSI name from our CDK stack
       'email = :email',
       {
-        ':email': email
+        ':email': email.toLowerCase()
       }
     );
 

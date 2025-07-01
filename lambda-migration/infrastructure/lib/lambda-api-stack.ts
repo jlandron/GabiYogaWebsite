@@ -91,6 +91,7 @@ export class LambdaApiStack extends cdk.Stack {
     const authLogout = this.createLambdaFunction('AuthLogout', 'auth/logout.js', commonLambdaProps);
     const authForgot = this.createLambdaFunction('AuthForgot', 'auth/forgot.js', commonLambdaProps);
     const authVerify = this.createLambdaFunction('AuthVerify', 'auth/verify.js', commonLambdaProps);
+    const authVerifyToken = this.createLambdaFunction('AuthVerifyToken', 'auth/verify-token.js', commonLambdaProps);
 
     // Blog Lambda Functions
     const blogList = this.createLambdaFunction('BlogList', 'blog/list.js', commonLambdaProps);
@@ -126,11 +127,30 @@ export class LambdaApiStack extends cdk.Stack {
     const paymentIntent = this.createLambdaFunction('PaymentIntent', 'payment/intent.js', commonLambdaProps);
     const paymentWebhook = this.createLambdaFunction('PaymentWebhook', 'payment/webhook.js', commonLambdaProps);
 
-    // Static Website Lambda Function
+    // Static Website Lambda Functions
     const staticWebsite = this.createLambdaFunction('StaticWebsite', 'static/website.js', {
       ...commonLambdaProps,
       memorySize: 512, // More memory for file serving
       timeout: cdk.Duration.seconds(10), // Shorter timeout for static content
+    });
+
+    const staticFiles = this.createLambdaFunction('StaticFiles', 'static/serve-static.js', {
+      ...commonLambdaProps,
+      memorySize: 512, // More memory for file serving
+      timeout: cdk.Duration.seconds(10),
+    });
+
+    // Dashboard Lambda Functions
+    const adminDashboardPage = this.createLambdaFunction('AdminDashboardPage', 'admin/serve-dashboard.js', {
+      ...commonLambdaProps,
+      memorySize: 512, // More memory for file serving
+      timeout: cdk.Duration.seconds(10),
+    });
+
+    const userDashboardPage = this.createLambdaFunction('UserDashboardPage', 'user/serve-dashboard.js', {
+      ...commonLambdaProps,
+      memorySize: 512, // More memory for file serving
+      timeout: cdk.Duration.seconds(10),
     });
 
     // Grant permissions to all Lambda functions
@@ -162,8 +182,8 @@ export class LambdaApiStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: stage === 'prod' ? ['https://gabi.yoga', 'https://www.gabi.yoga'] : apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'Authorization', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token'],
-        allowCredentials: false,
+        allowHeaders: ['Content-Type', 'Authorization', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token', 'Accept'],
+        allowCredentials: true,
       },
       deployOptions: {
         stageName: stage,
@@ -173,23 +193,42 @@ export class LambdaApiStack extends cdk.Stack {
 
     // API Gateway Resources and Methods
     const authResource = this.apiGateway.root.addResource('auth');
-    authResource.addMethod('POST', new apigateway.LambdaIntegration(authLogin), { 
+    
+    // Login endpoint
+    const loginResource = authResource.addResource('login');
+    loginResource.addMethod('POST', new apigateway.LambdaIntegration(authLogin), { 
       requestParameters: { 'method.request.header.Content-Type': true },
       authorizationType: apigateway.AuthorizationType.NONE
     });
-    authResource.addResource('register').addMethod('POST', new apigateway.LambdaIntegration(authRegister), {
+
+    // Register endpoint
+    const registerResource = authResource.addResource('register');
+    registerResource.addMethod('POST', new apigateway.LambdaIntegration(authRegister), {
       authorizationType: apigateway.AuthorizationType.NONE
     });
+
+    // Other auth endpoints
     authResource.addResource('refresh').addMethod('POST', new apigateway.LambdaIntegration(authRefresh));
     authResource.addResource('logout').addMethod('POST', new apigateway.LambdaIntegration(authLogout));
-    authResource.addResource('forgot').addMethod('POST', new apigateway.LambdaIntegration(authForgot));
-    authResource.addResource('verify').addMethod('GET', new apigateway.LambdaIntegration(authVerify));
+    authResource.addResource('forgot').addMethod('POST', new apigateway.LambdaIntegration(authForgot), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    authResource.addResource('verify').addMethod('GET', new apigateway.LambdaIntegration(authVerify), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    authResource.addResource('verify-token').addMethod('GET', new apigateway.LambdaIntegration(authVerifyToken), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
 
     const blogResource = this.apiGateway.root.addResource('blog');
-    blogResource.addMethod('GET', new apigateway.LambdaIntegration(blogList));
+    blogResource.addMethod('GET', new apigateway.LambdaIntegration(blogList), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     blogResource.addMethod('POST', new apigateway.LambdaIntegration(blogCreate));
     const blogItemResource = blogResource.addResource('{id}');
-    blogItemResource.addMethod('GET', new apigateway.LambdaIntegration(blogGet));
+    blogItemResource.addMethod('GET', new apigateway.LambdaIntegration(blogGet), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     blogItemResource.addMethod('PUT', new apigateway.LambdaIntegration(blogUpdate));
     blogItemResource.addMethod('DELETE', new apigateway.LambdaIntegration(blogDelete));
     blogItemResource.addResource('publish').addMethod('POST', new apigateway.LambdaIntegration(blogPublish));
@@ -226,22 +265,54 @@ export class LambdaApiStack extends cdk.Stack {
     // Static Website Routes - serve homepage and assets
     // Root path for homepage
     this.apiGateway.root.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite));
+
+    // Dashboard Routes
+    const adminDashboardResource = this.apiGateway.root.addResource('admin.html');
+    adminDashboardResource.addMethod('GET', new apigateway.LambdaIntegration(adminDashboardPage), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+
+    const userDashboardResource = this.apiGateway.root.addResource('user.html');
+    userDashboardResource.addMethod('GET', new apigateway.LambdaIntegration(userDashboardPage), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     
-    // Static asset routes with proxy integration
-    const assetsProxy = this.apiGateway.root.addResource('{proxy+}');
-    assetsProxy.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite, {
+    // Static files route with proxy integration (no auth required)
+    const staticResource = this.apiGateway.root.addResource('static');
+    const staticProxy = staticResource.addResource('{proxy+}');
+    staticProxy.addMethod('GET', new apigateway.LambdaIntegration(staticFiles, {
       proxy: true,
-      requestTemplates: {
-        'application/json': JSON.stringify({
-          path: '$context.path',
-          httpMethod: '$context.httpMethod',
-          headers: '$input.params().header',
-          queryStringParameters: '$input.params().querystring',
-          pathParameters: '$input.params().path',
-          body: '$input.body'
-        })
+      requestParameters: {
+        'integration.request.path.proxy': 'method.request.path.proxy'
       }
     }), {
+      authorizationType: apigateway.AuthorizationType.NONE,
+      requestParameters: {
+        'method.request.path.proxy': true
+      }
+    });
+
+    // Blog page routes (no auth required)
+    const blogPageResource = this.apiGateway.root.addResource('blog-page');
+    blogPageResource.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // Individual blog post pages (no auth required)
+    const blogPostResource = blogPageResource.addResource('{id}');
+    blogPostResource.addMethod('GET', new apigateway.LambdaIntegration(staticWebsite), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+
+    // Login page (no auth required)
+    const loginPageResource = this.apiGateway.root.addResource('login.html');
+    loginPageResource.addMethod('GET', new apigateway.LambdaIntegration(staticFiles, {
+      proxy: true,
+      requestParameters: {
+        'integration.request.path.proxy': 'method.request.path.proxy'
+      }
+    }), {
+      authorizationType: apigateway.AuthorizationType.NONE,
       requestParameters: {
         'method.request.path.proxy': true
       }
