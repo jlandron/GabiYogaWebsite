@@ -108,6 +108,7 @@ export class LambdaApiStack extends cdk.Stack {
     });
     const adminUsers = this.createLambdaFunction('AdminUsers', 'admin/users.js', commonLambdaProps);
     const adminSettings = this.createLambdaFunction('AdminSettings', 'admin/settings.js', commonLambdaProps);
+    const adminMakeAdmin = this.createLambdaFunction('AdminMakeAdmin', 'admin/make-admin.js', commonLambdaProps);
 
     // Public Settings Lambda Function (for GET requests)
     const settingsGet = this.createLambdaFunction('SettingsGet', 'settings/get.js', commonLambdaProps);
@@ -233,9 +234,17 @@ export class LambdaApiStack extends cdk.Stack {
     blogItemResource.addMethod('DELETE', new apigateway.LambdaIntegration(blogDelete));
     blogItemResource.addResource('publish').addMethod('POST', new apigateway.LambdaIntegration(blogPublish));
 
+    // Admin routes
     const adminResource = this.apiGateway.root.addResource('admin');
     adminResource.addResource('dashboard').addMethod('GET', new apigateway.LambdaIntegration(adminDashboard));
-    adminResource.addResource('users').addMethod('GET', new apigateway.LambdaIntegration(adminUsers));
+    
+    // Users management
+    const adminUsersResource = adminResource.addResource('users');
+    adminUsersResource.addMethod('GET', new apigateway.LambdaIntegration(adminUsers));
+    const adminUserResource = adminUsersResource.addResource('{userId}');
+    adminUserResource.addResource('make-admin').addMethod('PUT', new apigateway.LambdaIntegration(adminMakeAdmin));
+    
+    // Settings management
     adminResource.addResource('settings').addMethod('PUT', new apigateway.LambdaIntegration(adminSettings));
 
     const galleryResource = this.apiGateway.root.addResource('gallery');

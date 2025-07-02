@@ -6,27 +6,30 @@ exports.handler = async (event, context) => {
     console.log('Event:', JSON.stringify(event, null, 2));
     
     try {
-        const slug = event.pathParameters?.id;
-        if (!slug) {
-            return createErrorResponse('Blog slug is required', 400);
+        const idOrSlug = event.pathParameters?.id;
+        if (!idOrSlug) {
+            return createErrorResponse('Blog ID or slug is required', 400);
         }
 
-        // Query the blog post using the SlugIndex
-        const posts = await dynamoUtils.queryItems(
-            process.env.BLOG_POSTS_TABLE,
-            'SlugIndex',
-            '#slug = :slug',
-            { ':slug': slug },
-            { '#slug': 'slug' }
-        );
+        // Try to get the post by ID first
+        let post = await dynamoUtils.getItem(process.env.BLOG_POSTS_TABLE, { id: idOrSlug });
+
+        // If not found by ID, try the slug index
+        if (!post) {
+            const posts = await dynamoUtils.queryItems(
+                process.env.BLOG_POSTS_TABLE,
+                'SlugIndex',
+                '#slug = :slug',
+                { ':slug': idOrSlug },
+                { '#slug': 'slug' }
+            );
+            post = posts?.[0];
+        }
 
         // Check if we found a post
-        if (!posts || posts.length === 0) {
+        if (!post) {
             return createErrorResponse('Blog post not found', 404);
         }
-
-        // Since slug should be unique, we only need the first post
-        const post = posts[0];
 
         // Only return published posts
         if (post.status !== 'published') {

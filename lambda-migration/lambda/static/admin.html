@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabi Yoga Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Gabi Yoga Admin</h1>
+            <nav class="nav-links">
+                <a href="#" data-section="dashboard" class="active">Dashboard</a>
+                <a href="#" data-section="blogs">Blog Posts</a>
+                <a href="#" data-section="settings">Settings</a>
+                <a href="#" data-section="users">Users</a>
+                <a href="/dev/" target="_blank" id="view-site">View Site</a>
+                <button id="logoutBtn">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="admin-section active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Blog Posts</h3>
+                    <p id="blog-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Users</h3>
+                    <p id="user-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Classes</h3>
+                    <p id="class-count">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Posts Section -->
+        <section id="blogs-section" class="admin-section">
+            <div class="section-header">
+                <h2>Blog Posts</h2>
+                <button id="new-blog-btn" class="primary-btn">New Blog Post</button>
+            </div>
+            <div id="blog-editor-container" style="display: none;"></div>
+            <div class="blog-list"></div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="admin-section">
+            <h2>Settings</h2>
+            <div class="settings-container">
+                <div class="about-section">
+                    <h3>About Content</h3>
+                    <textarea id="about-content" rows="10"></textarea>
+                </div>
+                <div class="schedule-section">
+                    <h3>Class Schedule</h3>
+                    <div id="schedule-editor"></div>
+                </div>
+                <div class="gallery-section">
+                    <h3>Gallery</h3>
+                    <div id="gallery-manager"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users-section" class="admin-section">
+            <h2>Users</h2>
+            <div class="users-list"></div>
+        </section>
+    </main>
+
+    <!-- Notification -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <!-- Load dependencies first -->
+    <script src="blog-editor.js"></script>
+    <script src="schedule-editor.js"></script>
+    <script src="gallery-manager.js"></script>
+    <!-- Load main admin script last -->
+    <script defer src="admin.js"></script>
+</body>
+</html>

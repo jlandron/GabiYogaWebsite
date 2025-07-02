@@ -6,9 +6,8 @@ function getAuthHeaders() {
         return;
     }
     return {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
     };
 }
 
@@ -154,7 +153,8 @@ async function loadUpcomingClasses() {
         
         // Update registered classes list
         const classList = document.querySelector('.class-list');
-        classList.innerHTML = bookings.map(booking => `
+        const bookingsList = Array.isArray(bookings) ? bookings : [];
+        classList.innerHTML = bookingsList.map(booking => `
             <div class="class-item">
                 <div class="class-info">
                     <h3>${booking.className}</h3>
@@ -183,7 +183,8 @@ async function loadClassHistory() {
         const history = await response.json();
         
         const historyList = document.querySelector('.history-list');
-        historyList.innerHTML = history.map(booking => `
+        const historyItems = Array.isArray(history) ? history : [];
+        historyList.innerHTML = historyItems.map(booking => `
             <div class="class-item">
                 <div class="class-info">
                     <h3>${booking.className}</h3>

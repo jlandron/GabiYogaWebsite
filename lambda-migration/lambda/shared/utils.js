@@ -293,10 +293,14 @@ function isValidPassword(password) {
  */
 function extractAuthToken(event) {
   const authHeader = event.headers?.Authorization || event.headers?.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+  if (!authHeader) return null;
+  
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return null;
   }
-  return null;
+  
+  return parts[1];
 }
 
 /**

@@ -23,12 +23,135 @@ const TABLE_PREFIX = 'GabiYoga';
 // Table names
 const BLOG_POSTS_TABLE = `${TABLE_PREFIX}-${STAGE}-BlogPosts`;
 const SETTINGS_TABLE = `${TABLE_PREFIX}-${STAGE}-Settings`;
+const USERS_TABLE = `${TABLE_PREFIX}-${STAGE}-Users`;
 
 console.log('🌱 Seeding Development Data');
 console.log('=' .repeat(50));
 console.log(`Blog Posts Table: ${BLOG_POSTS_TABLE}`);
 console.log(`Settings Table: ${SETTINGS_TABLE}`);
+console.log(`Users Table: ${USERS_TABLE}`);
 console.log('');
+
+// Generate hashed passwords
+const bcrypt = require('bcryptjs');
+const SALT_ROUNDS = 10;
+
+const passwords = {
+  admin: bcrypt.hashSync('admin123', SALT_ROUNDS),
+  student: bcrypt.hashSync('student123', SALT_ROUNDS),
+  member: bcrypt.hashSync('member123', SALT_ROUNDS)
+};
+
+/**
+ * Sample users data
+ */
+const users = [
+  {
+    id: uuidv4(),
+    email: 'admin@gabi.yoga',
+    firstName: 'Gabi',
+    lastName: 'Admin',
+    role: 'admin',
+    hashedPassword: passwords.admin,
+    createdAt: '2025-06-01T00:00:00Z',
+    updatedAt: '2025-06-01T00:00:00Z',
+    lastLogin: '2025-06-30T15:30:00Z',
+    status: 'active',
+    preferences: {
+      notifications: {
+        email: true,
+        sms: false
+      },
+      theme: 'light'
+    },
+    bookingHistory: [
+      {
+        classId: 'class123',
+        className: 'Vinyasa Flow',
+        date: '2025-06-28',
+        time: '09:00',
+        status: 'completed'
+      },
+      {
+        classId: 'class456',
+        className: 'Yin Yoga',
+        date: '2025-06-30',
+        time: '17:00',
+        status: 'upcoming'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    email: 'student@example.com',
+    firstName: 'Sarah',
+    lastName: 'Student',
+    role: 'user',
+    hashedPassword: passwords.student,
+    createdAt: '2025-06-15T00:00:00Z',
+    updatedAt: '2025-06-15T00:00:00Z',
+    lastLogin: '2025-06-29T10:15:00Z',
+    status: 'active',
+    preferences: {
+      notifications: {
+        email: true,
+        sms: true
+      },
+      theme: 'dark'
+    },
+    bookingHistory: [
+      {
+        classId: 'class789',
+        className: 'Beginner Yoga',
+        date: '2025-06-25',
+        time: '18:00',
+        status: 'completed'
+      },
+      {
+        classId: 'class101',
+        className: 'Meditation',
+        date: '2025-07-02',
+        time: '08:00',
+        status: 'upcoming'
+      }
+    ]
+  },
+  {
+    id: uuidv4(),
+    email: 'member@example.com',
+    firstName: 'Mike',
+    lastName: 'Member',
+    role: 'user',
+    hashedPassword: passwords.member,
+    createdAt: '2025-06-20T00:00:00Z',
+    updatedAt: '2025-06-20T00:00:00Z',
+    lastLogin: '2025-06-30T09:45:00Z',
+    status: 'active',
+    preferences: {
+      notifications: {
+        email: true,
+        sms: false
+      },
+      theme: 'light'
+    },
+    bookingHistory: [
+      {
+        classId: 'class202',
+        className: 'Power Yoga',
+        date: '2025-06-29',
+        time: '07:00',
+        status: 'completed'
+      },
+      {
+        classId: 'class303',
+        className: 'Restorative Yoga',
+        date: '2025-07-01',
+        time: '19:00',
+        status: 'upcoming'
+      }
+    ]
+  }
+];
 
 /**
  * Sample blog posts data
@@ -508,6 +631,29 @@ async function seedSettings() {
 }
 
 /**
+ * Seed users
+ */
+async function seedUsers() {
+  console.log('👥 Seeding users...');
+  
+  try {
+    for (const user of users) {
+      await dynamoDb.put({
+        TableName: USERS_TABLE,
+        Item: user
+      }).promise();
+      
+      console.log(`   ✅ Added: "${user.firstName} ${user.lastName} (${user.role})"`);
+    }
+    
+    console.log(`   👥 ${users.length} users added successfully!\n`);
+  } catch (error) {
+    console.error('   ❌ Error seeding users:', error.message);
+    throw error;
+  }
+}
+
+/**
  * Main seeding function
  */
 async function main() {
@@ -515,6 +661,7 @@ async function main() {
     console.log('🚀 Starting data seeding process...\n');
     
     // Seed all data
+    await seedUsers();
     await seedBlogPosts();
     await seedSettings();
     
@@ -523,6 +670,20 @@ async function main() {
     console.log('🔗 Test your APIs:');
     console.log('   Blog List: curl https://j5enu5t3ik.execute-api.us-east-1.amazonaws.com/dev/blog');
     console.log('   Settings: curl https://j5enu5t3ik.execute-api.us-east-1.amazonaws.com/dev/admin/settings');
+    console.log('   Users: curl https://j5enu5t3ik.execute-api.us-east-1.amazonaws.com/dev/admin/users');
+    console.log('');
+    console.log('🔑 Test User Credentials:');
+    console.log('   Admin:');
+    console.log('     Email: admin@gabi.yoga');
+    console.log('     Password: admin123');
+    console.log('');
+    console.log('   Student:');
+    console.log('     Email: student@example.com');
+    console.log('     Password: student123');
+    console.log('');
+    console.log('   Member:');
+    console.log('     Email: member@example.com');
+    console.log('     Password: member123');
     console.log('');
     
   } catch (error) {
@@ -548,4 +709,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main, seedBlogPosts, seedSettings };
+module.exports = { main, seedUsers, seedBlogPosts, seedSettings };
