@@ -172,27 +172,21 @@ async function handleDeleteClass(event) {
         return createErrorResponse('Class not found', 404);
     }
 
-    // Check for existing bookings
-    const bookings = await dynamodb.query({
-        TableName: process.env.BOOKINGS_TABLE,
-        IndexName: 'ClassIndex',
-        KeyConditionExpression: 'classId = :classId',
-        ExpressionAttributeValues: {
-            ':classId': classId
-        }
-    }).promise();
+    // Note: Skip booking check for now as the ClassIndex doesn't exist yet
+    // We'll implement proper booking checks when we build the booking system
 
-    if (bookings.Items && bookings.Items.length > 0) {
-        return createErrorResponse('Cannot delete class with existing bookings', 400);
+    try {
+        await dynamodb.delete({
+            TableName: process.env.CLASSES_TABLE,
+            Key: { id: classId }
+        }).promise();
+        
+        return createSuccessResponse({
+            message: 'Class deleted successfully',
+            classId
+        });
+    } catch (error) {
+        console.error('Error deleting class:', error);
+        return createErrorResponse(`Failed to delete class: ${error.message}`, 500);
     }
-
-    await dynamodb.delete({
-        TableName: process.env.CLASSES_TABLE,
-        Key: { id: classId }
-    }).promise();
-
-    return createSuccessResponse({
-        message: 'Class deleted successfully',
-        classId
-    });
 }

@@ -109,6 +109,7 @@ export class LambdaApiStack extends cdk.Stack {
     const adminUsers = this.createLambdaFunction('AdminUsers', 'admin/users.js', commonLambdaProps);
     const adminSettings = this.createLambdaFunction('AdminSettings', 'admin/settings.js', commonLambdaProps);
     const adminMakeAdmin = this.createLambdaFunction('AdminMakeAdmin', 'admin/make-admin.js', commonLambdaProps);
+    const adminClasses = this.createLambdaFunction('AdminClasses', 'admin/classes.js', commonLambdaProps);
 
     // Public Settings Lambda Function (for GET requests)
     const settingsGet = this.createLambdaFunction('SettingsGet', 'settings/get.js', commonLambdaProps);
@@ -117,6 +118,7 @@ export class LambdaApiStack extends cdk.Stack {
     const galleryList = this.createLambdaFunction('GalleryList', 'gallery/list.js', commonLambdaProps);
     const galleryUpload = this.createLambdaFunction('GalleryUpload', 'gallery/upload.js', commonLambdaProps);
     const gallerySave = this.createLambdaFunction('GallerySave', 'gallery/save.js', commonLambdaProps);
+    const galleryUpdate = this.createLambdaFunction('GalleryUpdate', 'gallery/update.js', commonLambdaProps);
     const galleryDelete = this.createLambdaFunction('GalleryDelete', 'gallery/delete.js', commonLambdaProps);
 
     // Booking Lambda Functions
@@ -246,12 +248,25 @@ export class LambdaApiStack extends cdk.Stack {
     
     // Settings management
     adminResource.addResource('settings').addMethod('PUT', new apigateway.LambdaIntegration(adminSettings));
+    
+    // Classes management
+    const adminClassesResource = adminResource.addResource('classes');
+    adminClassesResource.addMethod('GET', new apigateway.LambdaIntegration(adminClasses));
+    adminClassesResource.addMethod('POST', new apigateway.LambdaIntegration(adminClasses));
+    const adminClassResource = adminClassesResource.addResource('{id}');
+    adminClassResource.addMethod('GET', new apigateway.LambdaIntegration(adminClasses));
+    adminClassResource.addMethod('PUT', new apigateway.LambdaIntegration(adminClasses));
+    adminClassResource.addMethod('DELETE', new apigateway.LambdaIntegration(adminClasses));
 
     const galleryResource = this.apiGateway.root.addResource('gallery');
     galleryResource.addMethod('GET', new apigateway.LambdaIntegration(galleryList));
     galleryResource.addMethod('POST', new apigateway.LambdaIntegration(gallerySave));
     galleryResource.addResource('upload').addMethod('POST', new apigateway.LambdaIntegration(galleryUpload));
-    galleryResource.addResource('{id}').addMethod('DELETE', new apigateway.LambdaIntegration(galleryDelete));
+    
+    // Create gallery item resource with both DELETE and PUT methods
+    const galleryItemResource = galleryResource.addResource('{id}');
+    galleryItemResource.addMethod('DELETE', new apigateway.LambdaIntegration(galleryDelete));
+    galleryItemResource.addMethod('PUT', new apigateway.LambdaIntegration(galleryUpdate));
 
     const classesResource = this.apiGateway.root.addResource('classes');
     classesResource.addMethod('GET', new apigateway.LambdaIntegration(bookingClasses));

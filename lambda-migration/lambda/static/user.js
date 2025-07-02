@@ -296,7 +296,7 @@ async function handleLogout() {
             method: 'POST',
             headers: getAuthHeaders()
         });
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev/index.html';
     } catch (error) {
         console.error('Logout error:', error);
     }

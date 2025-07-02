@@ -2,11 +2,12 @@
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev/index.html';
         return null;
     }
+    
     return {
-        'Authorization': 'Bearer ' + token,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     };
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (!response.ok) {
             console.error('Token verification failed:', await response.text());
-            window.location.href = '/dev/login.html';
+            window.location.href = '/dev/index.html';
             return;
         }
 
@@ -40,17 +41,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
     } catch (error) {
         console.error('Authentication error:', error);
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev/index.html';
     }
 });
 
 // Setup Event Listeners
 function setupEventListeners() {
-    // Navigation
-    document.querySelectorAll('[data-section]').forEach(element => {
+    // Navigation - handle sidebar nav clicks with proper target determination
+    document.querySelectorAll('.sidebar-nav a').forEach(element => {
         element.addEventListener('click', (e) => {
             e.preventDefault();
-            navigateToSection(e.target.dataset.section);
+            // Make sure we get the section from the clicked element even if we clicked on an icon or span
+            const clickedElement = e.target;
+            let sectionId;
+            
+            if (clickedElement.dataset.section) {
+                sectionId = clickedElement.dataset.section;
+            } else if (clickedElement.closest('[data-section]')) {
+                sectionId = clickedElement.closest('[data-section]').dataset.section;
+            }
+            
+            if (sectionId) {
+                navigateToSection(sectionId);
+            }
         });
     });
 
@@ -58,7 +71,7 @@ function setupEventListeners() {
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
     // New blog button
-    document.getElementById('new-blog-btn').addEventListener('click', () => {
+    document.getElementById('new-blog-btn')?.addEventListener('click', () => {
         showBlogEditor();
     });
 }
@@ -73,8 +86,8 @@ function navigateToSection(sectionId) {
     // Show selected section
     document.getElementById(`${sectionId}-section`).classList.add('active');
 
-    // Update navigation active state
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    // Update navigation active state in sidebar
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.section === sectionId) {
             link.classList.add('active');
@@ -88,6 +101,12 @@ function navigateToSection(sectionId) {
             break;
         case 'blogs':
             loadBlogPosts();
+            break;
+        case 'schedule':
+            loadSchedule();
+            break;
+        case 'gallery':
+            loadGallery();
             break;
         case 'settings':
             loadSettings();
@@ -282,10 +301,10 @@ async function loadSettings() {
             headers: getAuthHeaders()
         });
         const data = await response.json();
-        const settings = data.settings;
+        const settings = data.settings || {};
 
         // Load about content
-        const aboutContent = settings.general?.find(s => s.key === 'about')?.value || '';
+        const aboutContent = settings.about || '';
         const aboutEditor = document.getElementById('about-content');
         aboutEditor.value = aboutContent;
         
@@ -300,21 +319,95 @@ async function loadSettings() {
             }
         });
 
-        // Initialize schedule editor if ScheduleEditor is defined
-        if (typeof ScheduleEditor !== 'undefined' && !scheduleEditor) {
+        // Add version checks and script loading verification
+        if (typeof window.ScheduleEditor === 'undefined') {
+            console.warn('ScheduleEditor class not found, attempting to load script');
+            
+            // Create script tag dynamically
+            const scriptElement = document.createElement('script');
+            scriptElement.src = 'static/schedule-editor.js'; // Fix the path to use static directory
+            scriptElement.onload = function() {
+                console.log('ScheduleEditor script loaded successfully');
+                initializeScheduleEditor();
+            };
+            scriptElement.onerror = function() {
+                console.error('Failed to load ScheduleEditor script');
+                showFailMessage('schedule-editor');
+            };
+            document.head.appendChild(scriptElement);
+        } else {
+            initializeScheduleEditor();
+        }
+
+        // Helper function to initialize the schedule editor
+        function initializeScheduleEditor() {
             const scheduleContainer = document.getElementById('schedule-editor');
             if (scheduleContainer) {
-                scheduleEditor = new ScheduleEditor(scheduleContainer);
+                try {
+                    if (!scheduleEditor) {
+                        console.log('Initializing schedule editor');
+                        scheduleEditor = new ScheduleEditor(scheduleContainer);
+                        
+                        // Add listeners for schedule changes
+                        scheduleContainer.addEventListener('schedule-updated', function(e) {
+                            showNotification('Class schedule updated', 'success');
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error initializing ScheduleEditor:', error);
+                    showFailMessage('schedule-editor');
+                }
             } else {
                 console.error('Schedule editor container not found');
             }
         }
+
+        // Helper function to show fail message
+        function showFailMessage(componentId) {
+            const container = document.getElementById(componentId);
+            if (container) {
+                container.innerHTML = '<p>Component loading failed. Please refresh the page.</p>';
+            }
+        }
         
-        // Initialize gallery manager if GalleryManager is defined
-        if (typeof GalleryManager !== 'undefined' && !galleryManager) {
+        // Add version checks and script loading verification for gallery manager
+        if (typeof window.GalleryManager === 'undefined') {
+            console.warn('GalleryManager class not found, attempting to load script');
+            
+            // Create script tag dynamically
+            const scriptElement = document.createElement('script');
+            scriptElement.src = 'static/gallery-manager.js'; // Fix the path to use static directory
+            scriptElement.onload = function() {
+                console.log('GalleryManager script loaded successfully');
+                initializeGalleryManager();
+            };
+            scriptElement.onerror = function() {
+                console.error('Failed to load GalleryManager script');
+                showFailMessage('gallery-manager');
+            };
+            document.head.appendChild(scriptElement);
+        } else {
+            initializeGalleryManager();
+        }
+
+        // Helper function to initialize the gallery manager
+        function initializeGalleryManager() {
             const galleryContainer = document.getElementById('gallery-manager');
             if (galleryContainer) {
-                galleryManager = new GalleryManager(galleryContainer);
+                try {
+                    if (!galleryManager) {
+                        console.log('Initializing gallery manager');
+                        galleryManager = new GalleryManager(galleryContainer);
+                        
+                        // Add listeners for gallery changes
+                        galleryContainer.addEventListener('gallery-updated', function(e) {
+                            showNotification('Gallery updated', 'success');
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error initializing GalleryManager:', error);
+                    showFailMessage('gallery-manager');
+                }
             } else {
                 console.error('Gallery manager container not found');
             }
@@ -437,6 +530,118 @@ async function deleteUser(userId) {
     }
 }
 
+// Schedule Management
+async function loadSchedule() {
+    try {
+        console.log('Loading schedule editor in dedicated page');
+        
+        const scheduleContainer = document.getElementById('schedule-editor');
+        if (!scheduleContainer) {
+            console.error('Schedule editor container not found');
+            return;
+        }
+        
+        // Check if ScheduleEditor class is loaded
+        if (typeof window.ScheduleEditor === 'undefined') {
+            console.warn('ScheduleEditor class not found, attempting to load script');
+            
+            // Create script tag dynamically
+            const scriptElement = document.createElement('script');
+            scriptElement.src = 'static/schedule-editor.js';
+            scriptElement.onload = function() {
+                console.log('ScheduleEditor script loaded successfully');
+                initializeScheduleEditor();
+            };
+            scriptElement.onerror = function() {
+                console.error('Failed to load ScheduleEditor script');
+                scheduleContainer.innerHTML = '<p>Failed to load schedule editor. Please refresh the page and try again.</p>';
+            };
+            document.head.appendChild(scriptElement);
+        } else {
+            initializeScheduleEditor();
+        }
+        
+        function initializeScheduleEditor() {
+            try {
+                if (!scheduleEditor) {
+                    console.log('Initializing schedule editor');
+                    scheduleEditor = new ScheduleEditor(scheduleContainer);
+                    
+                    // Add listeners for schedule changes
+                    scheduleContainer.addEventListener('schedule-updated', function(e) {
+                        showNotification('Class schedule updated', 'success');
+                    });
+                } else {
+                    // Refresh schedule data if editor already exists
+                    scheduleEditor.loadSchedule();
+                }
+            } catch (error) {
+                console.error('Error initializing ScheduleEditor:', error);
+                scheduleContainer.innerHTML = '<p>Error initializing schedule editor. Please refresh the page and try again.</p>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+        showNotification('Error loading schedule', 'error');
+    }
+}
+
+// Gallery Management
+async function loadGallery() {
+    try {
+        console.log('Loading gallery manager in dedicated page');
+        
+        const galleryContainer = document.getElementById('gallery-manager');
+        if (!galleryContainer) {
+            console.error('Gallery manager container not found');
+            return;
+        }
+        
+        // Check if GalleryManager class is loaded
+        if (typeof window.GalleryManager === 'undefined') {
+            console.warn('GalleryManager class not found, attempting to load script');
+            
+            // Create script tag dynamically
+            const scriptElement = document.createElement('script');
+            scriptElement.src = 'static/gallery-manager.js';
+            scriptElement.onload = function() {
+                console.log('GalleryManager script loaded successfully');
+                initializeGalleryManager();
+            };
+            scriptElement.onerror = function() {
+                console.error('Failed to load GalleryManager script');
+                galleryContainer.innerHTML = '<p>Failed to load gallery manager. Please refresh the page and try again.</p>';
+            };
+            document.head.appendChild(scriptElement);
+        } else {
+            initializeGalleryManager();
+        }
+        
+        function initializeGalleryManager() {
+            try {
+                if (!galleryManager) {
+                    console.log('Initializing gallery manager');
+                    galleryManager = new GalleryManager(galleryContainer);
+                    
+                    // Add listeners for gallery changes
+                    galleryContainer.addEventListener('gallery-updated', function(e) {
+                        showNotification('Gallery updated', 'success');
+                    });
+                } else {
+                    // Refresh gallery data if manager already exists
+                    galleryManager.loadGallery();
+                }
+            } catch (error) {
+                console.error('Error initializing GalleryManager:', error);
+                galleryContainer.innerHTML = '<p>Error initializing gallery manager. Please refresh the page and try again.</p>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading gallery:', error);
+        showNotification('Error loading gallery', 'error');
+    }
+}
+
 // Handle Logout
 async function handleLogout() {
     try {
@@ -444,7 +649,7 @@ async function handleLogout() {
             method: 'POST',
             headers: getAuthHeaders()
         });
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev/index.html';
     } catch (error) {
         console.error('Logout error:', error);
     }

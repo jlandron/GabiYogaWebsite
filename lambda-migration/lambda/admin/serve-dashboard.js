@@ -4,7 +4,7 @@ const path = require('path');
 exports.handler = async (event) => {
     try {
         // Read the HTML file
-        const htmlContent = await fs.readFile(path.join(__dirname, '../static/admin-dashboard.html'), 'utf8');
+        const htmlContent = await fs.readFile(path.join(__dirname, '../static/admin.html'), 'utf8');
         
         return {
             statusCode: 200,
