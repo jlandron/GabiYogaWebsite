@@ -139,21 +139,34 @@ class BlogEditor {
                 credentials: 'include'
             });
 
-            if (!response.ok) throw new Error('Failed to load blog post');
+        if (!response.ok) throw new Error('Failed to load blog post');
 
-            const blog = await response.json();
-            this.currentBlogId = blogId;
+        const responseData = await response.json();
+        
+        // Check if we have a success response with a post field
+        if (!responseData.success || !responseData.post) {
+            throw new Error('Invalid blog post data structure');
+        }
+        
+        const blog = responseData.post;
+        this.currentBlogId = blogId;
+        
+        this.container.querySelector('.title-input').value = blog.title;
+        this.container.querySelector('.category-input').value = blog.category || '';
+        this.container.querySelector('.tags-input').value = blog.tags?.join(', ') || '';
             
-            this.container.querySelector('.title-input').value = blog.title;
-            this.container.querySelector('.category-input').value = blog.category || '';
-            this.container.querySelector('.tags-input').value = blog.tags?.join(', ') || '';
+        if (blog.coverImage) {
+            const preview = this.container.querySelector('.cover-preview');
+            // Check if coverImage is an object with a URL property (from presigned URL)
+            const imageUrl = typeof blog.coverImage === 'object' && blog.coverImage.url 
+                ? blog.coverImage.url 
+                : blog.coverImage;
             
-            if (blog.coverImage) {
-                const preview = this.container.querySelector('.cover-preview');
-                preview.innerHTML = `<img src="${blog.coverImage}" alt="Cover Image">`;
-                preview.classList.add('has-image');
-                this.coverImageUrl = blog.coverImage;
-            }
+            preview.innerHTML = `<img src="${imageUrl}" alt="Cover Image">`;
+            preview.classList.add('has-image');
+            // Store the coverImage data structure as is
+            this.coverImageUrl = blog.coverImage;
+        }
 
             // Set content in Quill editor
             this.quill.root.innerHTML = blog.content;

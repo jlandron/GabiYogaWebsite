@@ -335,6 +335,36 @@ function isAdmin(user) {
   return user && user.role === 'admin';
 }
 
+/**
+ * Check if the request is from an admin user
+ */
+async function isAdminUser(headers) {
+  if (!headers) return false;
+  
+  const authHeader = headers.Authorization || headers.authorization;
+  if (!authHeader) return false;
+  
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return false;
+  }
+  
+  const token = parts[1];
+  
+  try {
+    const jwtSecret = await getJWTSecret();
+    const decoded = verifyToken(token, jwtSecret);
+    if (!decoded) {
+      return false;
+    }
+
+    return decoded.role === 'admin';
+  } catch (error) {
+    console.error('Error checking admin user:', error);
+    return false;
+  }
+}
+
 module.exports = {
   getSecret,
   getJWTSecret,
@@ -353,5 +383,6 @@ module.exports = {
   isValidPassword,
   extractAuthToken,
   getUserFromToken,
-  isAdmin
+  isAdmin,
+  isAdminUser
 };

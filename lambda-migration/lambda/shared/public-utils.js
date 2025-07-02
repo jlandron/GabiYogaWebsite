@@ -4,6 +4,8 @@
  */
 
 const AWS = require('aws-sdk');
+// Import isAdminUser from the main utils file
+const { isAdminUser } = require('./utils');
 
 // Initialize AWS services
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -138,5 +140,6 @@ module.exports = {
   createSuccessResponse,
   createErrorResponse,
   logWithContext,
-  dynamoUtils
+  dynamoUtils,
+  isAdminUser
 };

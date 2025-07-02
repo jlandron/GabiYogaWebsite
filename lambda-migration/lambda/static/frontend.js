@@ -15,12 +15,54 @@ let calendarClasses = {};
 
 // Load all content when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
     loadGallery();
     loadAboutMe();
     loadClassSchedule();
     loadLatestBlog();
     checkUserRole();
 });
+
+// Global settings object
+let siteSettings = {};
+
+// Load site settings from API
+async function loadSettings() {
+    try {
+        console.log('Loading settings from:', API_BASE_URL + '/settings');
+        const response = await fetch(API_BASE_URL + '/settings');
+        const data = await response.json();
+        
+        if (data.success) {
+            siteSettings = data.categorized || {};
+            
+            // Update page title and meta description
+            if (siteSettings.general && siteSettings.general.site_title) {
+                document.title = siteSettings.general.site_title;
+            }
+            
+            // Update hero section with dynamic content
+            if (siteSettings.homepage) {
+                const heroTitle = document.querySelector('.hero-content h1');
+                const heroSubtitle = document.querySelector('.hero-content p');
+                
+                if (heroTitle && siteSettings.homepage.hero_title) {
+                    heroTitle.textContent = siteSettings.homepage.hero_title;
+                }
+                
+                if (heroSubtitle && siteSettings.homepage.hero_subtitle) {
+                    heroSubtitle.textContent = siteSettings.homepage.hero_subtitle;
+                }
+            }
+            
+            console.log('✅ Loaded site settings');
+        } else {
+            throw new Error('Invalid settings response');
+        }
+    } catch (error) {
+        console.error('❌ Error loading site settings:', error);
+    }
+}
 
 // Load gallery images from Lambda API
 async function loadGallery() {
@@ -354,6 +396,30 @@ async function loadAboutMe() {
             // Find biography setting
             const biography = data.rawSettings.find(setting => setting.key === 'about_biography' || setting.id === 'about_biography');
             
+            // Find profile image setting
+            const profileImage = data.rawSettings.find(setting => setting.id === 'about_profile_image');
+            
+            // Update profile image if available
+            if (profileImage && profileImage.value) {
+                const profileImageElement = document.getElementById('profile-image');
+                if (profileImageElement) {
+                    // Use presignedUrl if available, otherwise use the relative path
+                    if (profileImage.presignedUrl) {
+                        profileImageElement.src = profileImage.presignedUrl;
+                    } else if (profileImage.value.startsWith('http')) {
+                        profileImageElement.src = profileImage.value;
+                    } else {
+                        // For relative paths, add the API base URL
+                        profileImageElement.src = API_BASE_URL + profileImage.value;
+                    }
+                    
+                    // Update the alt text
+                    profileImageElement.alt = "Gabi Yoga Profile";
+                    
+                    console.log('✅ Updated profile image with:', profileImage.presignedUrl || profileImage.value);
+                }
+            }
+            
             if (biography) {
                 aboutContent.innerHTML = 
                     '<div style="white-space: pre-line; line-height: 1.8; font-size: 1.1rem; color: #555;">' +
@@ -481,101 +547,133 @@ function createCalendarView() {
     const calendarHTML = 
         '<div class="calendar-container">' +
             '<div class="calendar-header">' +
-                '<div class="calendar-date-range" id="calendar-date-range"></div>' +
-                '<div class="calendar-subtitle">This week and next 2 weeks</div>' +
+                '<h1 class="calendar-title">Class Schedule</h1>' +
+                '<div class="calendar-date-range" id="calendar-date-range">' +
+                    '<!-- Date range will be populated here -->' +
+                '</div>' +
+                '<div class="calendar-navigation">' +
+                    '<button class="nav-btn" id="prev-month">← Previous</button>' +
+                    '<button class="nav-btn" id="next-month">Next →</button>' +
+                '</div>' +
             '</div>' +
-            '<div class="calendar-grid" id="calendar-grid">' +
-                '<!-- Calendar will be populated here -->' +
+            '<div class="calendar-grid-container">' +
+                '<div class="calendar-grid" id="calendar-grid">' +
+                    '<!-- Calendar will be populated here -->' +
+                '</div>' +
             '</div>' +
         '</div>';
     
     classesContent.innerHTML = calendarHTML;
     
-    // Render the calendar
-    renderCalendar();
+    // Initialize calendar
+    initializeCalendar();
     
     // Add class detail modal
     addClassModal();
 }
 
-// Render 3-week calendar view (this week + next 2 weeks)
+// Initialize calendar and set up event listeners
+function initializeCalendar() {
+    renderCalendar();
+    setupEventListeners();
+}
+
+// Set up event listeners for calendar navigation
+function setupEventListeners() {
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+}
+
+// Render calendar view with 4 weeks of classes
 function renderCalendar() {
-    const dateRangeEl = document.getElementById('calendar-date-range');
-    const calendarGrid = document.getElementById('calendar-grid');
+    const grid = document.getElementById('calendar-grid');
+    const dateRange = document.getElementById('calendar-date-range');
     
-    // Get today's date
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    // Calculate the start of the 4-week period
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startOfWeek = new Date(startOfMonth);
+    startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay()); // Go to Sunday
     
-    // Find the start of this week (Sunday)
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endDate = new Date(startOfWeek);
+    endDate.setDate(startOfWeek.getDate() + 27); // 4 weeks = 28 days
     
-    // Calculate the end date (3 weeks from start of this week)
-    const endOfThreeWeeks = new Date(startOfWeek);
-    endOfThreeWeeks.setDate(startOfWeek.getDate() + 20); // 3 weeks = 21 days, so 20 days from start
+    // Update date range display
+    dateRange.textContent = formatDateRange(startOfWeek) + ' - ' + formatDateRange(endDate);
     
-    // Set date range display
-    dateRangeEl.textContent = startOfWeek.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric'
-    }) + ' - ' + endOfThreeWeeks.toLocaleDateString('en-US', {
-        month: 'short',
+    // Clear existing content
+    grid.innerHTML = '';
+    
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'calendar-day-header';
+        headerDiv.textContent = day;
+        grid.appendChild(headerDiv);
+    });
+    
+    // Generate 28 days (4 weeks)
+    for (let i = 0; i < 28; i++) {
+        const currentDay = new Date(startOfWeek);
+        currentDay.setDate(startOfWeek.getDate() + i);
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        
+        // Check if it's today
+        const today = new Date();
+        if (currentDay.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('today');
+        }
+        
+        // Check if it's in a different month
+        if (currentDay.getMonth() !== currentDate.getMonth()) {
+            dayDiv.classList.add('other-month');
+        }
+        
+        // Add date number
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'calendar-date';
+        dateDiv.textContent = currentDay.getDate();
+        dayDiv.appendChild(dateDiv);
+        
+        // Add classes for this day
+        const classesDiv = document.createElement('div');
+        classesDiv.className = 'calendar-classes';
+        
+        const dayStr = currentDay.toISOString().split('T')[0];
+        const dayClasses = calendarClasses[dayStr] || [];
+        
+        dayClasses.forEach(classItem => {
+            const classDiv = document.createElement('div');
+            const categoryClass = classItem.category ? classItem.category.toLowerCase() : 'general';
+            const isFullClass = classItem.isFullyBooked ? 'full' : '';
+            
+            classDiv.className = `calendar-class ${categoryClass} ${isFullClass}`;
+            classDiv.textContent = `${classItem.startTime} ${classItem.title}`;
+            classDiv.addEventListener('click', () => openClassModal(classItem.id));
+            classesDiv.appendChild(classDiv);
+        });
+        
+        dayDiv.appendChild(classesDiv);
+        grid.appendChild(dayDiv);
+    }
+}
+
+// Format date for display in the calendar header
+function formatDateRange(date) {
+    return date.toLocaleDateString('en-US', { 
+        month: 'short', 
         day: 'numeric',
         year: 'numeric'
     });
-    
-    // Create calendar grid
-    let calendarHTML = '';
-    
-    // Day headers
-    const dayHeaders = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    dayHeaders.forEach(day => {
-        calendarHTML += '<div class="calendar-day-header">' + day + '</div>';
-    });
-    
-    // Generate exactly 3 weeks (21 days)
-    for (let weekNum = 0; weekNum < 3; weekNum++) {
-        for (let dayNum = 0; dayNum < 7; dayNum++) {
-            const currentDay = new Date(startOfWeek);
-            currentDay.setDate(startOfWeek.getDate() + (weekNum * 7) + dayNum);
-            
-            const dayStr = currentDay.toISOString().split('T')[0];
-            const isToday = dayStr === todayStr;
-            const dayClasses = calendarClasses[dayStr] || [];
-            
-            let dayClass = 'calendar-day';
-            if (isToday) dayClass += ' today';
-            
-            let classesHTML = '';
-            dayClasses.slice(0, 4).forEach(classItem => {
-                const categoryClass = classItem.category ? classItem.category.toLowerCase() : 'general';
-                const isFullClass = classItem.isFullyBooked ? 'full' : '';
-                
-                classesHTML += 
-                    '<div class="calendar-class ' + categoryClass + ' ' + isFullClass + '" ' +
-                         'data-class-id="' + classItem.id + '" ' +
-                         'onclick="openClassModal(\'' + classItem.id + '\')" ' +
-                         'title="' + classItem.title + ' - ' + classItem.startTime + '">' +
-                        classItem.startTime + ' ' + classItem.title +
-                    '</div>';
-            });
-            
-            if (dayClasses.length > 4) {
-                classesHTML += '<div class="calendar-class" style="background: #6c757d;">+' + (dayClasses.length - 4) + ' more</div>';
-            }
-            
-            calendarHTML += 
-                '<div class="' + dayClass + '">' +
-                    '<div class="calendar-date">' + currentDay.getDate() + '</div>' +
-                    '<div class="calendar-classes">' +
-                        classesHTML +
-                    '</div>' +
-                '</div>';
-        }
-    }
-    
-    calendarGrid.innerHTML = calendarHTML;
 }
 
 // Check user role and update navigation

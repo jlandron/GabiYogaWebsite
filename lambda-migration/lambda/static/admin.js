@@ -6,8 +6,12 @@ function getAuthHeaders() {
         return null;
     }
     
+    // Clean the token to ensure it doesn't have any problematic characters
+    const cleanToken = token.trim();
+    console.log('Using auth token:', cleanToken);
+    
     return {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${cleanToken}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     };
@@ -109,7 +113,10 @@ function navigateToSection(sectionId) {
             loadGallery();
             break;
         case 'settings':
-            loadSettings();
+            // Settings are now managed by the SettingsManager class
+            if (!window.settingsManager) {
+                window.settingsManager = new SettingsManager(document.getElementById('settings-section'));
+            }
             break;
         case 'users':
             loadUsers();
@@ -250,11 +257,12 @@ async function editBlog(id) {
         }
         
         const data = await response.json();
-        if (!data.success) {
+        if (!data.success || !data.post) {
             throw new Error(data.message || 'Failed to load blog post');
         }
         
-        showBlogEditor(data);
+        // Pass the blog data to the editor
+        showBlogEditor({ id });
     } catch (error) {
         console.error('Error loading blog post:', error);
         showNotification('Error loading blog post', 'error');
@@ -294,128 +302,689 @@ async function publishBlog(id) {
 // Settings Management
 let scheduleEditor = null;
 let galleryManager = null;
+let allSettings = {};
+let modifiedSettings = {};
 
+/**
+ * Load all settings from the API and populate the settings forms
+ */
 async function loadSettings() {
     try {
+        // First, add click events to the settings tabs
+        setupSettingsTabs();
+        
+        // Use the public settings endpoint to load settings
         const response = await fetch('/dev/settings', {
             headers: getAuthHeaders()
         });
         const data = await response.json();
-        const settings = data.settings || {};
-
-        // Load about content
-        const aboutContent = settings.about || '';
-        const aboutEditor = document.getElementById('about-content');
-        aboutEditor.value = aboutContent;
         
-        // Save about content when changed
-        aboutEditor.addEventListener('change', async () => {
-            try {
-                await updateSetting('about', aboutEditor.value, 'general', 'Main about section content');
-                showNotification('About content saved successfully');
-            } catch (error) {
-                console.error('Error saving about content:', error);
-                showNotification('Error saving about content', 'error');
-            }
-        });
-
-        // Add version checks and script loading verification
-        if (typeof window.ScheduleEditor === 'undefined') {
-            console.warn('ScheduleEditor class not found, attempting to load script');
+        // Store settings for future reference
+        if (data.rawSettings) {
+            // Clear any existing modified settings
+            modifiedSettings = {};
             
-            // Create script tag dynamically
-            const scriptElement = document.createElement('script');
-            scriptElement.src = 'static/schedule-editor.js'; // Fix the path to use static directory
-            scriptElement.onload = function() {
-                console.log('ScheduleEditor script loaded successfully');
-                initializeScheduleEditor();
-            };
-            scriptElement.onerror = function() {
-                console.error('Failed to load ScheduleEditor script');
-                showFailMessage('schedule-editor');
-            };
-            document.head.appendChild(scriptElement);
-        } else {
-            initializeScheduleEditor();
-        }
-
-        // Helper function to initialize the schedule editor
-        function initializeScheduleEditor() {
-            const scheduleContainer = document.getElementById('schedule-editor');
-            if (scheduleContainer) {
-                try {
-                    if (!scheduleEditor) {
-                        console.log('Initializing schedule editor');
-                        scheduleEditor = new ScheduleEditor(scheduleContainer);
-                        
-                        // Add listeners for schedule changes
-                        scheduleContainer.addEventListener('schedule-updated', function(e) {
-                            showNotification('Class schedule updated', 'success');
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error initializing ScheduleEditor:', error);
-                    showFailMessage('schedule-editor');
+            // Group settings by category
+            const settingsByCategory = {};
+            data.rawSettings.forEach(setting => {
+                const category = setting.category || 'general';
+                if (!settingsByCategory[category]) {
+                    settingsByCategory[category] = [];
                 }
-            } else {
-                console.error('Schedule editor container not found');
-            }
-        }
-
-        // Helper function to show fail message
-        function showFailMessage(componentId) {
-            const container = document.getElementById(componentId);
-            if (container) {
-                container.innerHTML = '<p>Component loading failed. Please refresh the page.</p>';
-            }
-        }
-        
-        // Add version checks and script loading verification for gallery manager
-        if (typeof window.GalleryManager === 'undefined') {
-            console.warn('GalleryManager class not found, attempting to load script');
+                settingsByCategory[category].push(setting);
+            });
             
-            // Create script tag dynamically
-            const scriptElement = document.createElement('script');
-            scriptElement.src = 'static/gallery-manager.js'; // Fix the path to use static directory
-            scriptElement.onload = function() {
-                console.log('GalleryManager script loaded successfully');
-                initializeGalleryManager();
-            };
-            scriptElement.onerror = function() {
-                console.error('Failed to load GalleryManager script');
-                showFailMessage('gallery-manager');
-            };
-            document.head.appendChild(scriptElement);
+            allSettings = settingsByCategory;
+            
+            // Populate each settings panel
+            populateGeneralSettings(allSettings.general || []);
+            populateHomepageSettings(allSettings.homepage || []);
+            populateContentSettings(allSettings.content || []);
+            populateContactSettings(allSettings.contact || []);
+            populateSocialSettings(allSettings.social || []);
+            
+            // Add save buttons to each panel with event listeners
+            addSaveButtons();
+            
+            console.log('Settings loaded successfully:', allSettings);
         } else {
-            initializeGalleryManager();
+            console.error('No settings found in response');
+            showNotification('Failed to load settings', 'error');
         }
 
-        // Helper function to initialize the gallery manager
-        function initializeGalleryManager() {
-            const galleryContainer = document.getElementById('gallery-manager');
-            if (galleryContainer) {
-                try {
-                    if (!galleryManager) {
-                        console.log('Initializing gallery manager');
-                        galleryManager = new GalleryManager(galleryContainer);
-                        
-                        // Add listeners for gallery changes
-                        galleryContainer.addEventListener('gallery-updated', function(e) {
-                            showNotification('Gallery updated', 'success');
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error initializing GalleryManager:', error);
-                    showFailMessage('gallery-manager');
-                }
-            } else {
-                console.error('Gallery manager container not found');
-            }
-        }
     } catch (error) {
         console.error('Error loading settings:', error);
         showNotification('Error loading settings', 'error');
     }
+}
+
+/**
+ * Setup tabs for switching between settings categories
+ */
+function setupSettingsTabs() {
+    const tabButtons = document.querySelectorAll('.settings-tabs .tab-button');
+    const panels = document.querySelectorAll('.settings-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.getAttribute('data-category');
+            
+            // Update active tab button
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Update active panel
+            panels.forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${category}-settings`).classList.add('active');
+        });
+    });
+}
+
+/**
+ * Add save buttons to each settings panel
+ */
+function addSaveButtons() {
+    const categories = ['general', 'homepage', 'content', 'contact', 'social'];
+    
+    categories.forEach(category => {
+        const form = document.getElementById(`${category}-settings-form`);
+        if (!form) return;
+        
+        // Check if a save button already exists
+        if (form.querySelector('.form-actions')) return;
+        
+        // Create form actions container
+        const formActions = document.createElement('div');
+        formActions.className = 'form-actions';
+        
+        // Create save button
+        const saveButton = document.createElement('button');
+        saveButton.className = 'save-settings-btn';
+        saveButton.type = 'button';
+        saveButton.textContent = 'Save Changes';
+        saveButton.addEventListener('click', () => saveSettingsForCategory(category));
+        
+        // Add button to form
+        formActions.appendChild(saveButton);
+        form.appendChild(formActions);
+    });
+}
+
+/**
+ * Save all modified settings for a specific category
+ */
+async function saveSettingsForCategory(category) {
+    try {
+        // Filter modified settings for this category
+        const settingsToSave = Object.keys(modifiedSettings)
+            .filter(key => modifiedSettings[key].category === category);
+        
+        if (settingsToSave.length === 0) {
+            showNotification('No changes to save', 'success');
+            return;
+        }
+        
+        // Save each modified setting
+        let successCount = 0;
+        for (const key of settingsToSave) {
+            const setting = modifiedSettings[key];
+            await updateSetting(key, setting.value, setting.category, setting.description);
+            successCount++;
+            
+            // Remove visual indicator and from modified settings
+            const input = document.getElementById(`setting-${key}`);
+            if (input) input.classList.remove('setting-modified');
+        }
+        
+        // Clear modified settings for this category
+        settingsToSave.forEach(key => delete modifiedSettings[key]);
+        
+        showNotification(`${successCount} setting(s) saved successfully`, 'success');
+    } catch (error) {
+        console.error(`Error saving ${category} settings:`, error);
+        showNotification(`Error saving ${category} settings`, 'error');
+    }
+}
+
+/**
+ * Populate general settings form
+ */
+function populateGeneralSettings(settings) {
+    const form = document.getElementById('general-settings-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Clear existing content
+    
+    // Find general settings
+    const generalSettings = settings.filter(setting => setting.id !== undefined);
+    
+    if (generalSettings.length === 0) {
+        form.innerHTML = '<p>No general settings found. Add settings through the API.</p>';
+        return;
+    }
+    
+    // Add each setting as a form field
+    generalSettings.forEach(setting => {
+        const formGroup = createFormField(
+            setting.id, 
+            setting.key || setting.id, 
+            setting.value, 
+            setting.description, 
+            'general'
+        );
+        form.appendChild(formGroup);
+    });
+}
+
+/**
+ * Populate homepage settings form
+ */
+function populateHomepageSettings(settings) {
+    const form = document.getElementById('homepage-settings-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Clear existing content
+    
+    // Find homepage settings
+    const homepageSettings = settings.filter(setting => setting.id !== undefined);
+    
+    if (homepageSettings.length === 0) {
+        form.innerHTML = '<p>No homepage settings found. Add settings through the API.</p>';
+        return;
+    }
+    
+    // Add each setting as a form field
+    homepageSettings.forEach(setting => {
+        const formGroup = createFormField(
+            setting.id, 
+            setting.key || setting.id, 
+            setting.value, 
+            setting.description, 
+            'homepage'
+        );
+        form.appendChild(formGroup);
+    });
+}
+
+/**
+ * Populate content settings form
+ */
+function populateContentSettings(settings) {
+    const form = document.getElementById('content-settings-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Clear existing content
+    
+    // Find content settings
+    const contentSettings = settings.filter(setting => setting.id !== undefined);
+    
+    if (contentSettings.length === 0) {
+        form.innerHTML = '<p>No content settings found. Add settings through the API.</p>';
+        return;
+    }
+    
+    // Add each setting as a form field
+    contentSettings.forEach(setting => {
+        const formGroup = createFormField(
+            setting.id, 
+            setting.key || setting.id, 
+            setting.value, 
+            setting.description, 
+            'content',
+            isJsonContent(setting.id, setting.value)
+        );
+        form.appendChild(formGroup);
+    });
+}
+
+/**
+ * Populate contact settings form
+ */
+function populateContactSettings(settings) {
+    const form = document.getElementById('contact-settings-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Clear existing content
+    
+    // Find contact settings
+    const contactSettings = settings.filter(setting => setting.id !== undefined);
+    
+    if (contactSettings.length === 0) {
+        form.innerHTML = '<p>No contact settings found. Add settings through the API.</p>';
+        return;
+    }
+    
+    // Add each setting as a form field
+    contactSettings.forEach(setting => {
+        const formGroup = createFormField(
+            setting.id, 
+            setting.key || setting.id, 
+            setting.value, 
+            setting.description, 
+            'contact',
+            false,
+            setting.id.includes('email') ? 'email' : 
+              setting.id.includes('phone') ? 'tel' : 'text'
+        );
+        form.appendChild(formGroup);
+    });
+}
+
+/**
+ * Populate social settings form
+ */
+function populateSocialSettings(settings) {
+    const form = document.getElementById('social-settings-form');
+    if (!form) return;
+    
+    form.innerHTML = ''; // Clear existing content
+    
+    // Find social settings
+    const socialSettings = settings.filter(setting => setting.id !== undefined);
+    
+    if (socialSettings.length === 0) {
+        form.innerHTML = '<p>No social media settings found. Add settings through the API.</p>';
+        return;
+    }
+    
+    // Add each setting as a form field
+    socialSettings.forEach(setting => {
+        const formGroup = createFormField(
+            setting.id, 
+            setting.key || setting.id, 
+            setting.value, 
+            setting.description, 
+            'social',
+            false,
+            'url'  // Social settings are typically URLs
+        );
+        form.appendChild(formGroup);
+    });
+}
+
+/**
+ * Check if a setting value looks like JSON content
+ */
+function isJsonContent(id, value) {
+    // Check for known JSON fields
+    if (id === 'about_certifications') return true;
+    
+    // Try to detect JSON content by checking if it starts with [ or { and is not just a simple string
+    if (typeof value === 'string' && value.trim().length > 0) {
+        const firstChar = value.trim()[0];
+        const lastChar = value.trim()[value.trim().length - 1];
+        
+        if (
+            (firstChar === '{' && lastChar === '}') || 
+            (firstChar === '[' && lastChar === ']')
+        ) {
+            try {
+                JSON.parse(value);
+                return true;
+            } catch (e) {
+                // Not valid JSON
+                return false;
+            }
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Create a form field for a setting
+ */
+function createFormField(id, label, value, description, category, isJson = false, inputType = 'text') {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+    
+    // Create label
+    const labelEl = document.createElement('label');
+    labelEl.textContent = formatLabel(label);
+    labelEl.setAttribute('for', `setting-${id}`);
+    formGroup.appendChild(labelEl);
+    
+    // Add description if available
+    if (description) {
+        const descEl = document.createElement('small');
+        descEl.textContent = description;
+        formGroup.appendChild(descEl);
+    }
+
+    // Special handling for profile image
+    if (id === 'about_profile_image') {
+        return createProfileImageField(id, value, description, category);
+    }
+    
+    // Special handling for certifications
+    if (id === 'about_certifications') {
+        return createCertificationsField(id, value, description, category);
+    }
+    
+    // For large text content or JSON, use textarea
+    if (isJson || (typeof value === 'string' && value.length > 100)) {
+        const textarea = document.createElement('textarea');
+        textarea.id = `setting-${id}`;
+        
+        if (isJson) {
+            textarea.classList.add('json-editor');
+            // Format JSON for readability
+            try {
+                textarea.value = JSON.stringify(JSON.parse(value), null, 2);
+            } catch (e) {
+                textarea.value = value;
+            }
+        } else {
+            // For regular long text
+            textarea.value = value;
+            if (value.length > 200) {
+                textarea.classList.add('large-textarea');
+            }
+        }
+        
+        // Add change event listener
+        textarea.addEventListener('change', (e) => handleSettingChange(id, e.target.value, category, description, isJson));
+        
+        formGroup.appendChild(textarea);
+    } else {
+        // Use input field for regular values
+        const input = document.createElement('input');
+        input.type = inputType;
+        input.id = `setting-${id}`;
+        input.value = value;
+        
+        // Add change event listener
+        input.addEventListener('change', (e) => handleSettingChange(id, e.target.value, category, description, false));
+        
+        formGroup.appendChild(input);
+    }
+    
+    return formGroup;
+}
+
+/**
+ * Create profile image field with preview and upload functionality
+ */
+function createProfileImageField(id, value, description, category) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group';
+    
+    // Create container for image preview and upload controls
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'profile-image-container';
+    
+    // Create image preview
+    const imagePreview = document.createElement('div');
+    imagePreview.className = 'image-preview';
+    
+    // Create image element if the path is available
+    if (value && value.trim() !== '') {
+        const img = document.createElement('img');
+        img.src = value.startsWith('http') ? value : '/dev' + value;
+        img.alt = 'Profile Image';
+        img.className = 'profile-image';
+        imagePreview.appendChild(img);
+    } else {
+        // Show placeholder if no image
+        imagePreview.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
+    }
+    
+    // Create file input and label for image upload
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = `file-${id}`;
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none'; // Hide the actual input
+    
+    const uploadButton = document.createElement('label');
+    uploadButton.htmlFor = `file-${id}`;
+    uploadButton.className = 'upload-button';
+    uploadButton.innerHTML = '<i class="icon">📤</i> Upload New Image';
+    
+    // Create hidden input to store the actual value (S3 path)
+    const valueInput = document.createElement('input');
+    valueInput.type = 'hidden';
+    valueInput.id = `setting-${id}`;
+    valueInput.value = value || '';
+    
+    // Add file change event listener
+    fileInput.addEventListener('change', async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            
+            // Show loading state
+            imagePreview.innerHTML = '<div class="loading-indicator">Uploading...</div>';
+            
+            try {
+                // Upload the file to S3 and get the path
+                const newPath = await uploadImageToS3(file);
+                
+                // Update the preview with the new image
+                imagePreview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = '/dev' + newPath;
+                img.alt = 'Profile Image';
+                img.className = 'profile-image';
+                imagePreview.appendChild(img);
+                
+                // Update the hidden input value
+                valueInput.value = newPath;
+                
+                // Mark as modified
+                handleSettingChange(id, newPath, category, description, false);
+                
+                showNotification('Image uploaded successfully', 'success');
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                
+                // Restore previous image or placeholder
+                if (value && value.trim() !== '') {
+                    imagePreview.innerHTML = `<img src="${value.startsWith('http') ? value : '/dev' + value}" alt="Profile Image" class="profile-image">`;
+                } else {
+                    imagePreview.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
+                }
+                
+                showNotification('Error uploading image', 'error');
+            }
+        }
+    });
+    
+    // Add elements to containers
+    imageContainer.appendChild(imagePreview);
+    imageContainer.appendChild(uploadButton);
+    imageContainer.appendChild(fileInput);
+    imageContainer.appendChild(valueInput);
+    
+    formGroup.appendChild(imageContainer);
+    
+    return formGroup;
+}
+
+/**
+ * Create certifications field with structured UI
+ */
+function createCertificationsField(id, value, description, category) {
+    const formGroup = document.createElement('div');
+    formGroup.className = 'form-group certifications-group';
+    
+    // Parse certifications from JSON
+    let certifications = [];
+    try {
+        certifications = JSON.parse(value) || [];
+    } catch (e) {
+        console.warn('Error parsing certifications:', e);
+        certifications = [];
+    }
+    
+    // Create container for certifications
+    const certificationsContainer = document.createElement('div');
+    certificationsContainer.className = 'certifications-container';
+    
+    // Create hidden input to store the actual JSON value
+    const jsonInput = document.createElement('input');
+    jsonInput.type = 'hidden';
+    jsonInput.id = `setting-${id}`;
+    jsonInput.value = value;
+    
+    // Function to update the hidden JSON value
+    function updateJsonValue() {
+        const updatedCertifications = [];
+        
+        // Get all certification items
+        const items = certificationsContainer.querySelectorAll('.certification-item');
+        items.forEach(item => {
+            const titleInput = item.querySelector('[data-field="title"]');
+            const orgInput = item.querySelector('[data-field="organization"]');
+            const yearInput = item.querySelector('[data-field="year"]');
+            const descInput = item.querySelector('[data-field="description"]');
+            
+            if (titleInput && orgInput && yearInput && descInput) {
+                updatedCertifications.push({
+                    title: titleInput.value,
+                    organization: orgInput.value,
+                    year: yearInput.value,
+                    description: descInput.value
+                });
+            }
+        });
+        
+        // Update the hidden input and mark as modified
+        const newValue = JSON.stringify(updatedCertifications);
+        jsonInput.value = newValue;
+        handleSettingChange(id, newValue, category, description, true);
+    }
+    
+    // Function to create a certification item
+    function createCertificationItem(cert = { title: '', organization: '', year: '', description: '' }) {
+        const item = document.createElement('div');
+        item.className = 'certification-item';
+        
+        // Create fields
+        item.innerHTML = `
+            <div class="cert-field">
+                <label>Title</label>
+                <input type="text" data-field="title" value="${cert.title}" placeholder="Certification Title">
+            </div>
+            <div class="cert-field">
+                <label>Organization</label>
+                <input type="text" data-field="organization" value="${cert.organization}" placeholder="Issuing Organization">
+            </div>
+            <div class="cert-field">
+                <label>Year</label>
+                <input type="text" data-field="year" value="${cert.year}" placeholder="Year">
+            </div>
+            <div class="cert-field">
+                <label>Description</label>
+                <textarea data-field="description" placeholder="Description">${cert.description}</textarea>
+            </div>
+            <button type="button" class="remove-cert">Remove</button>
+        `;
+        
+        // Add change listeners to all inputs
+        item.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('change', updateJsonValue);
+        });
+        
+        // Add remove button functionality
+        item.querySelector('.remove-cert').addEventListener('click', () => {
+            item.remove();
+            updateJsonValue();
+        });
+        
+        return item;
+    }
+    
+    // Add existing certifications
+    certifications.forEach(cert => {
+        certificationsContainer.appendChild(createCertificationItem(cert));
+    });
+    
+    // Create button to add new certification
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'add-certification';
+    addButton.innerHTML = '+ Add Certification';
+    addButton.addEventListener('click', () => {
+        certificationsContainer.appendChild(createCertificationItem());
+        updateJsonValue();
+    });
+    
+    // Add elements to form group
+    formGroup.appendChild(certificationsContainer);
+    formGroup.appendChild(addButton);
+    formGroup.appendChild(jsonInput);
+    
+    return formGroup;
+}
+
+/**
+ * Upload an image file to S3 and return the path
+ */
+async function uploadImageToS3(file) {
+    // Create form data
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', 'profile'); // Indicate this is a profile image
+    
+    // Upload to gallery endpoint which handles S3 uploads
+    const response = await fetch('/dev/gallery/upload', {
+        method: 'POST',
+        headers: {
+            'Authorization': getAuthHeaders().Authorization
+        },
+        body: formData
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to upload image');
+    }
+    
+    const data = await response.json();
+    
+    // Return the path to the uploaded image
+    return data.imagePath || data.path;
+}
+
+/**
+ * Format a setting label to be more readable
+ */
+function formatLabel(key) {
+    // Remove any prefix like "contact_" or "social_"
+    const cleanKey = key.includes('_') ? key.split('_').slice(1).join('_') : key;
+    
+    // Replace underscores with spaces and capitalize each word
+    return cleanKey
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+/**
+ * Handle setting change and mark as modified
+ */
+function handleSettingChange(key, value, category, description, isJson) {
+    const input = document.getElementById(`setting-${key}`);
+    
+    // Try to parse JSON if needed
+    if (isJson) {
+        try {
+            const parsedValue = JSON.parse(value);
+            // Re-stringify to ensure proper formatting
+            value = JSON.stringify(parsedValue);
+        } catch (e) {
+            console.warn(`Invalid JSON for ${key}:`, e);
+            showNotification(`Warning: Invalid JSON for ${formatLabel(key)}`, 'error');
+        }
+    }
+    
+    // Mark as modified
+    input.classList.add('setting-modified');
+    
+    // Add to modified settings
+    modifiedSettings[key] = {
+        value: value,
+        category: category,
+        description: description || ''
+    };
 }
 
 // Update a setting

@@ -19,7 +19,32 @@ exports.handler = async (event) => {
             return createSuccessResponse({}, 200);
         }
 
-        // Verify admin role
+        // Check if this is a direct image URL request (no auth required)
+        const queryParams = event.queryStringParameters || {};
+        if (event.httpMethod === 'GET' && queryParams.key) {
+            // Generate a presigned URL for an existing image
+            try {
+                const bucket = process.env.ASSETS_BUCKET;
+                const s3Key = queryParams.key;
+                
+                // Generate the presigned URL
+                const presignedUrl = await s3.getSignedUrlPromise('getObject', {
+                    Bucket: bucket,
+                    Key: s3Key,
+                    Expires: 3600 // 1 hour
+                });
+                
+                return createSuccessResponse({ 
+                    url: presignedUrl,
+                    key: s3Key 
+                });
+            } catch (error) {
+                console.error('Error generating presigned URL:', error);
+                return createErrorResponse('Error generating image URL', 500);
+            }
+        } 
+        
+        // For upload operations, verify admin role
         const user = await getUserFromToken(event);
         if (!user || !isAdmin(user)) {
             return createErrorResponse('Unauthorized - Admin access required', 403);

@@ -1,4 +1,4 @@
-const { dynamoUtils, createSuccessResponse, createErrorResponse, logWithContext } = require('../shared/public-utils');
+const { dynamoUtils, createSuccessResponse, createErrorResponse, logWithContext, isAdminUser } = require('../shared/public-utils');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
@@ -31,8 +31,11 @@ exports.handler = async (event, context) => {
             return createErrorResponse('Blog post not found', 404);
         }
 
-        // Only return published posts
-        if (post.status !== 'published') {
+        // Check if this is an admin request
+        const isAdmin = await isAdminUser(event.headers);
+
+        // Only return published posts to non-admin users
+        if (post.status !== 'published' && !isAdmin) {
             return createErrorResponse('Blog post not found', 404);
         }
 

@@ -124,12 +124,59 @@
         <!-- Settings Section -->
         <section id="settings-section" class="admin-section">
             <h2>Settings</h2>
+            
             <div class="settings-container">
-                <div class="about-section">
-                    <h3>About Content</h3>
-                    <textarea id="about-content" rows="10"></textarea>
+                <!-- Settings Navigation Tabs -->
+                <div class="settings-tabs">
+                    <button class="tab-button active" data-category="general">General</button>
+                    <button class="tab-button" data-category="homepage">Homepage</button>
+                    <button class="tab-button" data-category="content">Content</button>
+                    <button class="tab-button" data-category="contact">Contact</button>
+                    <button class="tab-button" data-category="social">Social</button>
                 </div>
-                <!-- Other settings can be added here -->
+                
+                <!-- Settings Content -->
+                <div class="settings-content">
+                    <!-- General Settings -->
+                    <div class="settings-panel active" id="general-settings">
+                        <h3>General Settings</h3>
+                        <div class="settings-form" id="general-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Homepage Settings -->
+                    <div class="settings-panel" id="homepage-settings">
+                        <h3>Homepage Settings</h3>
+                        <div class="settings-form" id="homepage-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Content Settings -->
+                    <div class="settings-panel" id="content-settings">
+                        <h3>Content Settings</h3>
+                        <div class="settings-form" id="content-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Settings -->
+                    <div class="settings-panel" id="contact-settings">
+                        <h3>Contact Settings</h3>
+                        <div class="settings-form" id="contact-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Social Settings -->
+                    <div class="settings-panel" id="social-settings">
+                        <h3>Social Media Settings</h3>
+                        <div class="settings-form" id="social-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -147,6 +194,7 @@
     <script src="/dev/static/blog-editor.js"></script>
     <script src="/dev/static/schedule-editor.js"></script>
     <script src="/dev/static/gallery-manager.js"></script>
+    <script src="/dev/static/settings.js"></script>
     <!-- Load main admin script last -->
     <script src="/dev/static/admin.js"></script>
 </body>

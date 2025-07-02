@@ -78,10 +78,31 @@ async function handleUpdateSettings(requestId, event) {
 
     const timestamp = new Date().toISOString();
     
+    // Special handling for profile image to ensure we store the correct S3 path
+    let value = body.value;
+    if (body.key === 'about_profile_image' && typeof value === 'string') {
+      // If the value is already a full S3 path (starts with 'gallery/'), use it directly
+      // Otherwise, ensure the path is properly formatted
+      if (!value.startsWith('gallery/') && value.includes('/')) {
+        // Extract just the filename from the path
+        const filename = value.split('/').pop();
+        
+        // If this is a UUID-based filename, assume it's an S3 path
+        if (/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.test(filename)) {
+          value = `gallery/${filename}`;
+          logWithContext('info', 'Converted profile image path to S3 format', { 
+            requestId, 
+            originalPath: body.value,
+            s3Path: value
+          });
+        }
+      }
+    }
+    
     const setting = {
       id: body.key,  // Use key as id for DynamoDB
       key: body.key,
-      value: body.value,
+      value: value,  // Use potentially modified value
       description: body.description || null,
       category: body.category || 'general',
       updatedAt: timestamp,
