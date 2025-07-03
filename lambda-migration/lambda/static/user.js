@@ -1,3 +1,10 @@
+// Global state for bookings data
+let allUserBookings = [];
+let bookingFilterOptions = {
+    months: [],
+    categories: []
+};
+
 // Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -37,15 +44,86 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Initialize dashboard
-        loadDashboardData();
+        // Initialize dashboard - fetch all bookings first
+        await fetchAllBookings();
         setupEventListeners();
         loadUserProfile();
+        loadDashboardData();
     } catch (error) {
         console.error('Authentication error:', error);
         window.location.href = '/dev/login.html';
     }
 });
+
+// Fetch all user bookings in one request
+async function fetchAllBookings() {
+    try {
+        const response = await fetch('/dev/bookings', {
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch bookings data');
+        }
+        
+        const data = await response.json();
+        
+        // Store in global state
+        allUserBookings = data.bookings || [];
+        bookingFilterOptions = data.filterOptions || {
+            months: [],
+            categories: []
+        };
+        
+        console.log(`Loaded ${allUserBookings.length} bookings`);
+        
+        // Initialize filter dropdowns with available options
+        updateFilterDropdowns();
+        
+        return allUserBookings;
+    } catch (error) {
+        console.error('Error fetching all bookings:', error);
+        return [];
+    }
+}
+
+// Update filter dropdowns with available options
+function updateFilterDropdowns() {
+    // Month filter dropdown
+    const monthFilter = document.getElementById('month-filter');
+    if (monthFilter) {
+        // Clear existing options, keeping the "All Months" option
+        monthFilter.innerHTML = '<option value="">All Months</option>';
+        
+        // Add month options from the filter options
+        bookingFilterOptions.months.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            // Format month for display (YYYY-MM -> Month YYYY)
+            const [year, monthNum] = month.split('-');
+            const monthName = new Date(year, parseInt(monthNum) - 1, 1).toLocaleString('default', { month: 'long' });
+            option.textContent = `${monthName} ${year}`;
+            monthFilter.appendChild(option);
+        });
+    }
+    
+    // Class type filter dropdown
+    const typeFilter = document.getElementById('type-filter');
+    if (typeFilter) {
+        // Clear existing options, keeping the "All Types" option
+        typeFilter.innerHTML = '<option value="">All Types</option>';
+        
+        // Add class type options from the filter options
+        bookingFilterOptions.categories.forEach(category => {
+            if (category) {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                typeFilter.appendChild(option);
+            }
+        });
+    }
+}
 
 // Setup Event Listeners
 function setupEventListeners() {
@@ -103,28 +181,51 @@ function navigateToSection(sectionId) {
     }
 }
 
-// Load Dashboard Data
-async function loadDashboardData() {
-    try {
-        // Load upcoming classes count
-        const upcomingResponse = await fetch('/dev/bookings?type=upcoming', {
-            headers: getAuthHeaders()
-        });
-        const upcomingData = await upcomingResponse.json();
-        const upcomingBookings = upcomingData.bookings || [];
-        document.getElementById('upcoming-count').textContent = upcomingBookings.length;
+// Filter bookings by type
+function filterBookings(type = 'all', month = '', classType = '') {
+    if (!allUserBookings || allUserBookings.length === 0) {
+        return [];
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    return allUserBookings.filter(booking => {
+        // Filter by past/upcoming
+        if (type === 'upcoming' && booking.date < today) {
+            return false;
+        }
+        if (type === 'past' && booking.date >= today) {
+            return false;
+        }
+        
+        // Filter by month
+        if (month && !booking.date.startsWith(month)) {
+            return false;
+        }
+        
+        // Filter by class type
+        if (classType && booking.category !== classType) {
+            return false;
+        }
+        
+        return true;
+    });
+}
 
-        // Load attended classes count
-        const historyResponse = await fetch('/dev/bookings?type=past', {
-            headers: getAuthHeaders()
-        });
-        const historyData = await historyResponse.json();
-        const pastBookings = historyData.bookings || [];
+// Load Dashboard Data
+function loadDashboardData() {
+    try {
+        // Filter bookings for upcoming/past sections
+        const upcomingBookings = filterBookings('upcoming');
+        const pastBookings = filterBookings('past');
+        
+        // Update dashboard counters
+        document.getElementById('upcoming-count').textContent = upcomingBookings.length;
         document.getElementById('attended-count').textContent = pastBookings.length;
 
         // Load next class
         if (upcomingBookings.length > 0) {
-            const nextClass = upcomingBookings[0];
+            const nextClass = upcomingBookings[0]; // First upcoming class (they're already sorted)
             document.getElementById('next-class').innerHTML = `
                 <h4>${nextClass.className}</h4>
                 <p>${formatDate(nextClass.date)} at ${nextClass.time}</p>
@@ -144,27 +245,22 @@ async function loadDashboardData() {
 // Load Upcoming Classes
 async function loadUpcomingClasses() {
     try {
-        // Load available classes
+        // Filter bookings for upcoming classes
+        const upcomingBookings = filterBookings('upcoming');
+        
+        // Load available classes (we still need to fetch these)
         const classesResponse = await fetch('/dev/classes', {
             headers: getAuthHeaders()
         });
         const classesData = await classesResponse.json();
-        const classes = classesData.classes || []; // Extract classes array from response
-        
-        // Load user's bookings
-        const bookingsResponse = await fetch('/dev/bookings?type=upcoming', {
-            headers: getAuthHeaders()
-        });
-        const bookingsData = await bookingsResponse.json();
-        const bookings = bookingsData.bookings || []; // Extract bookings array from response
+        const classes = classesData.classes || [];
         
         // Update calendar
-        updateCalendar(classes, bookings);
+        updateCalendar(classes, upcomingBookings);
         
         // Update registered classes list
         const classList = document.querySelector('.class-list');
-        const bookingsList = Array.isArray(bookings) ? bookings : [];
-        classList.innerHTML = bookingsList.map(booking => `
+        classList.innerHTML = upcomingBookings.map(booking => `
             <div class="class-item">
                 <div class="class-info">
                     <h3>${booking.className}</h3>
@@ -176,22 +272,23 @@ async function loadUpcomingClasses() {
                 </div>
             </div>
         `).join('');
+        
+        if (upcomingBookings.length === 0) {
+            classList.innerHTML = '<div class="empty-state">No upcoming classes. Book a class from the calendar above.</div>';
+        }
     } catch (error) {
         console.error('Error loading upcoming classes:', error);
     }
 }
 
 // Load Class History
-async function loadClassHistory() {
+function loadClassHistory() {
     try {
         const monthFilter = document.getElementById('month-filter').value;
         const typeFilter = document.getElementById('type-filter').value;
         
-        const response = await fetch(`/dev/bookings?type=past&month=${monthFilter}&classType=${typeFilter}`, {
-            headers: getAuthHeaders()
-        });
-        const historyData = await response.json();
-        const historyBookings = historyData.bookings || [];
+        // Filter bookings using client-side filtering
+        const historyBookings = filterBookings('past', monthFilter, typeFilter);
         
         const historyList = document.querySelector('.history-list');
         historyList.innerHTML = historyBookings.map(booking => `
@@ -203,6 +300,10 @@ async function loadClassHistory() {
                 </div>
             </div>
         `).join('');
+        
+        if (historyBookings.length === 0) {
+            historyList.innerHTML = '<div class="empty-state">No past classes found for the selected filters.</div>';
+        }
     } catch (error) {
         console.error('Error loading class history:', error);
     }
@@ -223,8 +324,8 @@ async function loadUserProfile() {
         
         // Handle preferences object
         document.getElementById('yogaPreferences').value = '';
-        document.getElementById('newsletter').checked = profile.preferences.newsletter || false;
-        document.getElementById('notifications').checked = profile.preferences.notifications || false;
+        document.getElementById('newsletter').checked = profile.preferences?.newsletter || false;
+        document.getElementById('notifications').checked = profile.preferences?.notifications || false;
         
     } catch (error) {
         console.error('Error loading user profile:', error);
@@ -470,6 +571,12 @@ function formatDateRange(date) {
     });
 }
 
+// Format date for display (more detailed)
+function formatDate(dateString) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+}
+
 // Add class detail modal to the page
 function addClassModal() {
     if (document.getElementById('class-modal')) {
@@ -663,6 +770,9 @@ async function bookClass(classId) {
         
         // Close modal and refresh data
         closeClassModal();
+        
+        // Re-fetch all bookings to update our data
+        await fetchAllBookings();
         loadUpcomingClasses();
         loadDashboardData();
         
@@ -688,6 +798,8 @@ async function cancelBooking(bookingId) {
         });
         
         if (response.ok) {
+            // Re-fetch all bookings to update our data
+            await fetchAllBookings();
             loadUpcomingClasses();
             loadDashboardData();
         } else {
@@ -702,13 +814,8 @@ async function cancelBooking(bookingId) {
 // Cancel booking from modal
 async function cancelBookingFromModal(classId) {
     try {
-        // Find the booking for this class
-        const bookingsResponse = await fetch('/dev/bookings?type=upcoming', {
-            headers: getAuthHeaders()
-        });
-        const bookings = await bookingsResponse.json();
-        
-        const booking = bookings.find(b => b.classId === classId);
+        // Find the booking for this class in our cached data
+        const booking = allUserBookings.find(b => b.classId === classId);
         if (!booking) {
             throw new Error('Could not find your booking for this class');
         }
@@ -734,6 +841,9 @@ async function cancelBookingFromModal(classId) {
         // Show success message and refresh data
         alert('Your booking has been cancelled');
         closeClassModal();
+        
+        // Re-fetch all bookings to update our data
+        await fetchAllBookings();
         loadUpcomingClasses();
         loadDashboardData();
         
@@ -754,8 +864,9 @@ async function handleLogout() {
         await fetch('/dev/auth/logout', {
             method: 'POST',
             headers: getAuthHeaders()
-        });
-        window.location.href = '/dev/index.html';
+        });    
+        localStorage.removeItem('token');
+        window.location.href = '/dev';
     } catch (error) {
         console.error('Logout error:', error);
     }

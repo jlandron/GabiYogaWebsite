@@ -118,7 +118,7 @@ exports.handler = async (event, context) => {
         date: classItem.scheduleDate,
         time: classItem.startTime,
         instructor: classItem.instructor || 'Gabi',
-        bookingDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         waitlistPosition: currentBookings - maxParticipants + 1
       };
 
@@ -150,7 +150,7 @@ exports.handler = async (event, context) => {
       location: classItem.location || 'Main Studio',
       category: classItem.category || 'general',
       level: classItem.level || 'All Levels',
-      bookingDate: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       // If this was a paid class, we would include payment info here
       price: classItem.price || 0,
       paidStatus: classItem.price > 0 ? 'pending' : 'free'

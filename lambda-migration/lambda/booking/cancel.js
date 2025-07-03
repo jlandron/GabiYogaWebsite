@@ -80,20 +80,25 @@ exports.handler = async (event, context) => {
     // If the booking is confirmed, handle waitlist processing
     if (booking.status === 'confirmed') {
       // Check if there are waitlisted users who can now book the class
-      const waitlistedResult = await dynamoUtils.queryItems(
-        process.env.BOOKINGS_TABLE,
-        'ClassBookingsIndex',
-        'classId = :classId AND #status = :status',
-        {
+      // Due to GSI key schema requiring createdAt, we need to use a different approach
+      const waitlistParams = {
+        TableName: process.env.BOOKINGS_TABLE,
+        IndexName: 'ClassBookingsIndex',
+        KeyConditionExpression: 'classId = :classId',
+        FilterExpression: '#status = :status',
+        ExpressionAttributeValues: {
           ':classId': booking.classId,
           ':status': 'waitlisted'
         },
-        {
+        ExpressionAttributeNames: {
           '#status': 'status'
         }
-      );
+      };
+      
+      const waitlistResponse = await dynamoDb.query(waitlistParams).promise();
+      const waitlistedBookings = waitlistResponse.Items || [];
 
-      const waitlistedBookings = waitlistedResult || [];
+      // Waitlisted bookings are already retrieved above
       if (waitlistedBookings.length > 0) {
         // Sort waitlist by position
         waitlistedBookings.sort((a, b) => a.waitlistPosition - b.waitlistPosition);

@@ -6,6 +6,12 @@ window.ScheduleEditor = class ScheduleEditor {
         this.isLoading = false;
         this.currentMonth = new Date().getMonth();
         this.currentYear = new Date().getFullYear();
+        
+        // Initialize the enhanced class modal functionality
+        if (typeof initAdminClassModal === 'function') {
+            initAdminClassModal();
+        }
+        
         this.setupEditor();
     }
 
@@ -41,46 +47,119 @@ window.ScheduleEditor = class ScheduleEditor {
                 </div>
                 <div class="calendar-body"></div>
             </div>
-            <div class="modal" style="display: none;">
+            <div class="modal class-modal" style="display: none;">
                 <div class="modal-content">
                     <h3>Add/Edit Class</h3>
-                    <div class="form-group">
-                        <label for="class-name">Class Name</label>
-                        <input type="text" id="class-name" required>
+                    <div class="form-tabs">
+                        <button class="tab-btn active" data-tab="basic">Basic Info</button>
+                        <button class="tab-btn" data-tab="details">Details</button>
+                        <button class="tab-btn" data-tab="advanced">Advanced</button>
                     </div>
-                    <div class="form-group">
-                        <label for="class-date">Date</label>
-                        <input type="date" id="class-date" required>
+                    
+                    <div class="tab-content" id="basic-tab">
+                        <div class="form-group">
+                            <label for="class-name">Class Title</label>
+                            <input type="text" id="class-name" placeholder="Enter class title" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class-date">Date</label>
+                                <input type="date" id="class-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-time">Start Time</label>
+                                <input type="time" id="class-time" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class-duration">Duration (minutes)</label>
+                                <input type="number" id="class-duration" min="15" step="15" value="60" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-end-time">End Time (auto-calculated)</label>
+                                <input type="time" id="class-end-time" disabled>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class-capacity">Max Participants</label>
+                                <input type="number" id="class-capacity" min="1" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-price">Price ($)</label>
+                                <input type="number" id="class-price" min="0" value="25" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-description">Description</label>
+                            <textarea id="class-description" rows="3" placeholder="Describe the class"></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="class-time">Time</label>
-                        <input type="time" id="class-time" required>
+                    
+                    <div class="tab-content" id="details-tab" style="display:none">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class-category">Category</label>
+                                <select id="class-category">
+                                    <option value="general">General</option>
+                                    <option value="beginners">Beginners</option>
+                                    <option value="vinyasa">Vinyasa Flow</option>
+                                    <option value="hatha">Hatha</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="specialized">Specialized</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="prenatal">Prenatal</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="class-level">Level</label>
+                                <select id="class-level">
+                                    <option value="all-levels">All Levels</option>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="class-location">Location</label>
+                                <input type="text" id="class-location" value="Main Studio" placeholder="Class location">
+                            </div>
+                            <div class="form-group">
+                                <label for="class-status">Status</label>
+                                <select id="class-status">
+                                    <option value="active">Active</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-instructor">Instructor</label>
+                            <input type="text" id="class-instructor" value="Gabi" placeholder="Instructor name">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="class-duration">Duration (minutes)</label>
-                        <input type="number" id="class-duration" min="15" step="15" value="60" required>
+                    
+                    <div class="tab-content" id="advanced-tab" style="display:none">
+                        <div class="form-group">
+                            <label for="class-requirements">Requirements (one per line)</label>
+                            <textarea id="class-requirements" rows="3" placeholder="Any special requirements for this class"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-bring">What to Bring (one per line)</label>
+                            <textarea id="class-bring" rows="3" placeholder="What participants should bring"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-cancellation">Cancellation Policy</label>
+                            <input type="text" id="class-cancellation" value="Cancel up to 2 hours before class" placeholder="Cancellation policy">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="class-capacity">Capacity</label>
-                        <input type="number" id="class-capacity" min="1" value="10" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="class-description">Description</label>
-                        <textarea id="class-description" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="class-category">Category</label>
-                        <select id="class-category">
-                            <option value="general">General</option>
-                            <option value="beginners">Beginners</option>
-                            <option value="advanced">Advanced</option>
-                            <option value="specialized">Specialized</option>
-                            <option value="workshop">Workshop</option>
-                        </select>
-                    </div>
+                    
                     <div class="modal-actions">
                         <button class="cancel-btn">Cancel</button>
-                        <button class="primary-btn save-class-btn">Save</button>
+                        <button class="primary-btn save-class-btn">Save Class</button>
                     </div>
                 </div>
             </div>
@@ -112,6 +191,36 @@ window.ScheduleEditor = class ScheduleEditor {
         modal.querySelector('.save-class-btn').addEventListener('click', () => {
             this.saveClass();
         });
+        
+        // Setup tab navigation in modal
+        modal.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active tab button
+                modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Show the correct tab content
+                const tabId = button.dataset.tab + '-tab';
+                modal.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+                modal.querySelector(`#${tabId}`).style.display = 'block';
+            });
+        });
+        
+        // Add event listener to calculate end time based on start time and duration
+        const startTimeInput = modal.querySelector('#class-time');
+        const durationInput = modal.querySelector('#class-duration');
+        const endTimeInput = modal.querySelector('#class-end-time');
+        
+        [startTimeInput, durationInput].forEach(input => {
+            input.addEventListener('change', () => {
+                this.calculateEndTime();
+            });
+        });
+        
+        // Initialize admin class modal if available
+        if (typeof window.classModalHelpers !== 'undefined') {
+            console.log('Using enhanced class modal functionality');
+        }
 
         // Set default date in modal to today
         const today = new Date();
@@ -422,10 +531,19 @@ window.ScheduleEditor = class ScheduleEditor {
         const nameInput = modal.querySelector('#class-name');
         const dateInput = modal.querySelector('#class-date');
         const timeInput = modal.querySelector('#class-time');
+        const endTimeInput = modal.querySelector('#class-end-time');
         const durationInput = modal.querySelector('#class-duration');
         const capacityInput = modal.querySelector('#class-capacity');
         const descriptionInput = modal.querySelector('#class-description');
         const categoryInput = modal.querySelector('#class-category');
+        const levelInput = modal.querySelector('#class-level');
+        const locationInput = modal.querySelector('#class-location');
+        const statusInput = modal.querySelector('#class-status');
+        const instructorInput = modal.querySelector('#class-instructor');
+        const priceInput = modal.querySelector('#class-price');
+        const requirementsInput = modal.querySelector('#class-requirements');
+        const bringInput = modal.querySelector('#class-bring');
+        const cancellationInput = modal.querySelector('#class-cancellation');
 
         if (classData) {
             nameInput.value = classData.title || '';
@@ -440,13 +558,31 @@ window.ScheduleEditor = class ScheduleEditor {
                 const endMinutes = endParts[0] * 60 + endParts[1];
                 const duration = endMinutes - startMinutes;
                 durationInput.value = duration > 0 ? duration : 60;
+                endTimeInput.value = classData.endTime;
             } else {
                 durationInput.value = classData.duration || 60;
+                this.calculateEndTime();
             }
             
             capacityInput.value = classData.maxParticipants || 10;
             descriptionInput.value = classData.description || '';
             categoryInput.value = classData.category || 'general';
+            levelInput.value = classData.level || 'all-levels';
+            locationInput.value = classData.location || 'Main Studio';
+            statusInput.value = classData.status || 'active';
+            instructorInput.value = classData.instructor || 'Gabi';
+            priceInput.value = classData.price || 25;
+            
+            // Handle array fields
+            if (classData.requirements && Array.isArray(classData.requirements)) {
+                requirementsInput.value = classData.requirements.join('\n');
+            }
+            
+            if (classData.whatToBring && Array.isArray(classData.whatToBring)) {
+                bringInput.value = classData.whatToBring.join('\n');
+            }
+            
+            cancellationInput.value = classData.cancellationPolicy || 'Cancel up to 2 hours before class';
             
             modal.dataset.editId = classData.id;
         } else {
@@ -454,13 +590,57 @@ window.ScheduleEditor = class ScheduleEditor {
             // Keep date as is (current value or today)
             timeInput.value = '09:00';
             durationInput.value = '60';
+            this.calculateEndTime();
             capacityInput.value = '10';
             descriptionInput.value = '';
             categoryInput.value = 'general';
+            levelInput.value = 'all-levels';
+            locationInput.value = 'Main Studio';
+            statusInput.value = 'active';
+            instructorInput.value = 'Gabi';
+            priceInput.value = '25';
+            requirementsInput.value = '';
+            bringInput.value = '';
+            cancellationInput.value = 'Cancel up to 2 hours before class';
+            
             delete modal.dataset.editId;
         }
+        
+        // Switch to first tab
+        modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        modal.querySelector('.tab-btn[data-tab="basic"]').classList.add('active');
+        modal.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+        modal.querySelector('#basic-tab').style.display = 'block';
 
         modal.style.display = 'flex';
+    }
+    
+    // Calculate and display end time based on start time and duration
+    calculateEndTime() {
+        const modal = this.container.querySelector('.modal');
+        const timeInput = modal.querySelector('#class-time');
+        const durationInput = modal.querySelector('#class-duration');
+        const endTimeInput = modal.querySelector('#class-end-time');
+        
+        if (!timeInput.value) return;
+        
+        // Use the helper function if available
+        if (window.classModalHelpers && window.classModalHelpers.calculateEndTime) {
+            endTimeInput.value = window.classModalHelpers.calculateEndTime(
+                timeInput.value, 
+                durationInput.value
+            );
+            return;
+        }
+        
+        // Fallback implementation if helper is not available
+        const [hours, minutes] = timeInput.value.split(':').map(Number);
+        const duration = parseInt(durationInput.value) || 60;
+        const endMinutes = hours * 60 + minutes + duration;
+        const endHours = Math.floor(endMinutes / 60) % 24; // Handle wrap around midnight
+        const endMins = endMinutes % 60;
+        
+        endTimeInput.value = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
     }
 
     async saveClass() {
@@ -468,10 +648,19 @@ window.ScheduleEditor = class ScheduleEditor {
         const nameInput = modal.querySelector('#class-name');
         const dateInput = modal.querySelector('#class-date');
         const timeInput = modal.querySelector('#class-time');
+        const endTimeInput = modal.querySelector('#class-end-time');
         const durationInput = modal.querySelector('#class-duration');
         const capacityInput = modal.querySelector('#class-capacity');
         const descriptionInput = modal.querySelector('#class-description');
         const categoryInput = modal.querySelector('#class-category');
+        const levelInput = modal.querySelector('#class-level');
+        const locationInput = modal.querySelector('#class-location');
+        const statusInput = modal.querySelector('#class-status');
+        const instructorInput = modal.querySelector('#class-instructor');
+        const priceInput = modal.querySelector('#class-price');
+        const requirementsInput = modal.querySelector('#class-requirements');
+        const bringInput = modal.querySelector('#class-bring');
+        const cancellationInput = modal.querySelector('#class-cancellation');
 
         // Input validation
         if (!nameInput.value.trim()) {
@@ -489,18 +678,31 @@ window.ScheduleEditor = class ScheduleEditor {
             return;
         }
 
-        // Calculate end time based on duration
-        const duration = parseInt(durationInput.value) || 60;
-        const [hours, minutes] = timeInput.value.split(':').map(Number);
-        const endMinutes = hours * 60 + minutes + duration;
-        const endHours = Math.floor(endMinutes / 60);
-        const endMins = endMinutes % 60;
-        const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
-
         // Extract day of week from selected date
-        const selectedDate = new Date(dateInput.value);
-        const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const dayOfWeek = daysOfWeek[selectedDate.getDay()];
+        let dayOfWeek;
+        if (window.classModalHelpers && window.classModalHelpers.extractDayOfWeek) {
+            dayOfWeek = window.classModalHelpers.extractDayOfWeek(dateInput.value);
+        } else {
+            const selectedDate = new Date(dateInput.value);
+            const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            dayOfWeek = daysOfWeek[selectedDate.getDay()];
+        }
+        
+        // Parse requirements and what to bring as arrays
+        let requirements, whatToBring;
+        
+        if (window.classModalHelpers && window.classModalHelpers.parseListItems) {
+            requirements = window.classModalHelpers.parseListItems(requirementsInput.value);
+            whatToBring = window.classModalHelpers.parseListItems(bringInput.value);
+        } else {
+            requirements = requirementsInput.value.trim() 
+                ? requirementsInput.value.split('\n').filter(line => line.trim().length > 0) 
+                : [];
+                
+            whatToBring = bringInput.value.trim() 
+                ? bringInput.value.split('\n').filter(line => line.trim().length > 0) 
+                : [];
+        }
         
         const classData = {
             title: nameInput.value,
@@ -508,15 +710,19 @@ window.ScheduleEditor = class ScheduleEditor {
             date: dateInput.value, // Ensure compatibility with different API formats
             day: dayOfWeek,
             startTime: timeInput.value,
-            endTime: endTime,
+            endTime: endTimeInput.value,
             maxParticipants: parseInt(capacityInput.value) || 10,
             description: descriptionInput.value || `${nameInput.value} class`,
-            price: 25, // Default price
+            price: parseFloat(priceInput.value) || 25,
             category: categoryInput.value,
-            level: 'all-levels',
-            duration: duration,
-            location: 'Main Studio',
-            status: 'active'
+            level: levelInput.value,
+            duration: parseInt(durationInput.value) || 60,
+            location: locationInput.value || 'Main Studio',
+            status: statusInput.value,
+            instructor: instructorInput.value || 'Gabi',
+            requirements: requirements,
+            whatToBring: whatToBring,
+            cancellationPolicy: cancellationInput.value || 'Cancel up to 2 hours before class'
         };
 
         try {

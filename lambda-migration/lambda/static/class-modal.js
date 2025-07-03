@@ -1,5 +1,7 @@
 // Class modal state
 let currentBookingClass = null;
+let isAdminMode = false; // Flag to determine if we're in admin mode
+
 
 // Add class detail modal to the page
 function addClassModal() {
@@ -33,6 +35,78 @@ function addClassModal() {
         '</div>';
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Initialize admin class modal functionality - This is a separate function that gets called from admin pages
+function initAdminClassModal() {
+    isAdminMode = true;
+    console.log('Admin class modal functionality initialized');
+    
+    // If we're in the admin interface, the modal is managed by schedule-editor.js
+    // This function serves as a bridge between the two systems
+    
+    // Allow external scripts to use the formatDate function
+    window.formatClassDate = formatDate;
+    
+    // Add event listeners for the admin modal
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.querySelector('.class-modal');
+        if (modal) {
+            // Setup tab navigation
+            setupTabNavigation(modal);
+            
+            // Setup end time calculation
+            setupEndTimeCalculation(modal);
+        }
+    });
+}
+
+// Setup tab navigation within the modal
+function setupTabNavigation(modal) {
+    const tabButtons = modal.querySelectorAll('.form-tabs .tab-btn');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            
+            // Update active tab
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Show appropriate tab content
+            modal.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            modal.querySelector(`#${targetTab}-tab`).style.display = 'block';
+        });
+    });
+}
+
+// Setup automatic end time calculation
+function setupEndTimeCalculation(modal) {
+    const timeInput = modal.querySelector('#class-time');
+    const durationInput = modal.querySelector('#class-duration');
+    const endTimeInput = modal.querySelector('#class-end-time');
+    
+    if (timeInput && durationInput && endTimeInput) {
+        const calculateEndTime = () => {
+            if (!timeInput.value) return;
+            
+            const [hours, minutes] = timeInput.value.split(':').map(Number);
+            const duration = parseInt(durationInput.value) || 60;
+            const endMinutes = hours * 60 + minutes + duration;
+            const endHours = Math.floor(endMinutes / 60) % 24;
+            const endMins = endMinutes % 60;
+            
+            endTimeInput.value = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+        };
+        
+        timeInput.addEventListener('change', calculateEndTime);
+        durationInput.addEventListener('change', calculateEndTime);
+        
+        // Initial calculation
+        calculateEndTime();
+    }
 }
 
 // Open class detail modal
@@ -205,6 +279,43 @@ async function bookClass() {
 function formatDate(dateString) {
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
+}
+
+// Parse list of items for requirements or what to bring
+function parseListItems(text) {
+    if (!text) return [];
+    return text.split('\n')
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+}
+
+// Extract day of week from date
+function extractDayOfWeek(dateString) {
+    const date = new Date(dateString);
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[date.getDay()];
+}
+
+// Calculate end time from start time and duration
+function calculateEndTime(startTime, duration) {
+    if (!startTime) return '';
+    
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endMinutes = hours * 60 + minutes + (parseInt(duration) || 60);
+    const endHours = Math.floor(endMinutes / 60) % 24;
+    const endMins = endMinutes % 60;
+    
+    return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+}
+
+// Global function to expose to admin scripts
+if (typeof window !== 'undefined') {
+    window.classModalHelpers = {
+        formatDate,
+        parseListItems,
+        extractDayOfWeek,
+        calculateEndTime
+    };
 }
 
 // Close modal when clicking outside

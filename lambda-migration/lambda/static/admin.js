@@ -758,14 +758,43 @@ function createProfileImageField(id, value, description, category) {
     
     // Create image element if the path is available
     if (value && value.trim() !== '') {
-        const img = document.createElement('img');
-        img.src = value.startsWith('http') ? value : '/dev' + value;
-        img.alt = 'Profile Image';
-        img.className = 'profile-image';
-        imagePreview.appendChild(img);
+        try {
+            // Get a presigned URL for the image to display in the preview
+            const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(value)}`);
+            
+            if (imageUrlResponse.ok) {
+                const imageUrlData = await imageUrlResponse.json();
+                const imageUrl = imageUrlData.url;
+                
+                // Create image element
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = "Profile Image";
+                img.className = "profile-image";
+                imagePreview.appendChild(img);
+                imagePreview.classList.add('has-image');
+            } else {
+                // Create placeholder if failed to get image URL
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.textContent = 'Error loading image';
+                imagePreview.appendChild(placeholder);
+            }
+        } catch (error) {
+            console.error('Error loading profile image:', error);
+            
+            // Create placeholder on error
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-placeholder';
+            placeholder.textContent = 'Error loading image';
+            imagePreview.appendChild(placeholder);
+        }
     } else {
-        // Show placeholder if no image
-        imagePreview.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
+        // Create placeholder if no image
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-placeholder';
+        placeholder.textContent = 'No image uploaded';
+        imagePreview.appendChild(placeholder);
     }
     
     // Create file input and label for image upload
@@ -775,10 +804,11 @@ function createProfileImageField(id, value, description, category) {
     fileInput.accept = 'image/*';
     fileInput.style.display = 'none'; // Hide the actual input
     
-    const uploadButton = document.createElement('label');
-    uploadButton.htmlFor = `file-${id}`;
+    const uploadButton = document.createElement('button');
+    uploadButton.type = 'button';
     uploadButton.className = 'upload-button';
     uploadButton.innerHTML = '<i class="icon">📤</i> Upload New Image';
+    uploadButton.onclick = () => fileInput.click();
     
     // Create hidden input to store the actual value (S3 path)
     const valueInput = document.createElement('input');
@@ -791,36 +821,86 @@ function createProfileImageField(id, value, description, category) {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             
-            // Show loading state
-            imagePreview.innerHTML = '<div class="loading-indicator">Uploading...</div>';
+            // Create loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-indicator';
+            loadingDiv.textContent = 'Uploading...';
+            
+            // Clear preview and show loading
+            imagePreview.innerHTML = '';
+            imagePreview.appendChild(loadingDiv);
             
             try {
-                // Upload the file to S3 and get the path
-                const newPath = await uploadImageToS3(file);
+                // 1. Upload the file to S3 and get the path
+                const s3Key = await handleImageUpload(file);
                 
-                // Update the preview with the new image
-                imagePreview.innerHTML = '';
+                // 2. Get a presigned URL for the image to display in the preview
+                const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(s3Key)}`);
+
+                if (!imageUrlResponse.ok) {
+                    throw new Error('Failed to get image URL');
+                }
+                
+                const imageUrlData = await imageUrlResponse.json();
+                const imageUrl = imageUrlData.url;
+                
+                // 3. Update the preview with the new image
                 const img = document.createElement('img');
-                img.src = '/dev' + newPath;
-                img.alt = 'Profile Image';
-                img.className = 'profile-image';
-                imagePreview.appendChild(img);
+                img.src = imageUrl;
+                img.alt = "Profile Image";
+                img.className = "profile-image";
                 
-                // Update the hidden input value
-                valueInput.value = newPath;
+                // Clear previous content and add new image
+                imagePreview.innerHTML = '';
+                imagePreview.appendChild(img);
+                imagePreview.classList.add('has-image');
+                
+                // 4. Update the hidden input value with the S3 key
+                valueInput.value = s3Key;
                 
                 // Mark as modified
-                handleSettingChange(id, newPath, category, description, false);
+                handleSettingChange(id, s3Key, category, description, false);
                 
-                showNotification('Image uploaded successfully', 'success');
+                showNotification('Profile image uploaded successfully', 'success');
             } catch (error) {
                 console.error('Error uploading image:', error);
                 
-                // Restore previous image or placeholder
-                if (value && value.trim() !== '') {
-                    imagePreview.innerHTML = `<img src="${value.startsWith('http') ? value : '/dev' + value}" alt="Profile Image" class="profile-image">`;
-                } else {
-                    imagePreview.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
+                // Handle error by restoring previous state or showing placeholder
+                try {
+                    imagePreview.innerHTML = '';
+                    
+                    if (value && value.trim() !== '') {
+                        // Try to get a presigned URL again for the old value
+                        const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(value)}`);
+                        if (imageUrlResponse.ok) {
+                            const imageUrlData = await imageUrlResponse.json();
+                            const imageUrl = imageUrlData.url;
+                            
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = "Profile Image";
+                            img.className = "profile-image";
+                            imagePreview.appendChild(img);
+                            imagePreview.classList.add('has-image');
+                        } else {
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'image-placeholder';
+                            placeholder.textContent = 'Error loading image';
+                            imagePreview.appendChild(placeholder);
+                        }
+                    } else {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'image-placeholder';
+                        placeholder.textContent = 'No image uploaded';
+                        imagePreview.appendChild(placeholder);
+                    }
+                } catch (restoreError) {
+                    console.error('Error restoring image preview:', restoreError);
+                    imagePreview.innerHTML = '';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'image-placeholder';
+                    placeholder.textContent = 'Error loading image';
+                    imagePreview.appendChild(placeholder);
                 }
                 
                 showNotification('Error uploading image', 'error');
@@ -959,29 +1039,45 @@ function createCertificationsField(id, value, description, category) {
 /**
  * Upload an image file to S3 and return the path
  */
-async function uploadImageToS3(file) {
-    // Create form data
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('type', 'profile'); // Indicate this is a profile image
-    
-    // Upload to gallery endpoint which handles S3 uploads
-    const response = await fetch('/dev/gallery/upload', {
-        method: 'POST',
-        headers: {
-            'Authorization': getAuthHeaders().Authorization
-        },
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Failed to upload image');
+async function handleImageUpload(file) {
+    try {
+        // 1. Get headers for authentication
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        // 2. Request a presigned URL from the server
+        const presignedResponse = await fetch('/dev/gallery/upload', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+
+        if (!presignedResponse.ok) throw new Error('Failed to get upload URL');
+
+        const presignedData = await presignedResponse.json();
+        console.log('Received presigned URL data for content image:', presignedData);
+
+        // 3. Upload the file directly to S3 using the presigned URL
+        const uploadResponse = await fetch(presignedData.uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+
+        if (!uploadResponse.ok) throw new Error('S3 upload failed');
+
+        // Return the S3 key (not the URL) to be stored
+        return presignedData.s3Key;
+    } catch (error) {
+        console.error('Image upload failed:', error);
+        showNotification('Failed to upload image', 'error');
+        throw error;
     }
-    
-    const data = await response.json();
-    
-    // Return the path to the uploaded image
-    return data.imagePath || data.path;
 }
 
 /**
@@ -1256,8 +1352,9 @@ async function handleLogout() {
         await fetch('/dev/auth/logout', {
             method: 'POST',
             headers: getAuthHeaders()
-        });
-        window.location.href = '/dev/index.html';
+        });    
+        localStorage.removeItem('token');
+        window.location.href = '/dev';
     } catch (error) {
         console.error('Logout error:', error);
     }

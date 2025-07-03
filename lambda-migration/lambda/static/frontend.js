@@ -804,8 +804,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Logout function
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = '/dev';
+// Handle Logout
+async function handleLogout() {
+    try {
+        await fetch('/dev/auth/logout', {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });    
+        localStorage.removeItem('token');
+        window.location.href = '/dev';
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
 }
