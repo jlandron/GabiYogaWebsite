@@ -59,7 +59,7 @@ exports.handler = async (event, context) => {
             slug,
             content: body.content,
             excerpt: body.excerpt || body.content.substring(0, 200) + '...',
-            coverImage: body.Item.coverImage || existingPost.Item.coverImage,
+            coverImage: body.coverImage || existingPost.Item.coverImage,
             category: body.category || existingPost.Item.category,
             tags: body.tags || existingPost.Item.tags,
             updatedAt: timestamp

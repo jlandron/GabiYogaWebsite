@@ -159,7 +159,8 @@ let currentBlogEditor = null;
 
 async function loadBlogPosts() {
     try {
-        const response = await fetch('/dev/blog', {
+        // Fetch all blogs (including drafts) by setting published=false
+        const response = await fetch('/dev/blog?published=false', {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -264,16 +265,21 @@ function hideBlogEditor() {
     const blogList = document.querySelector('.blog-list');
     const newBlogBtn = document.getElementById('new-blog-btn');
 
+    // Hide editor container
+    editorContainer.style.display = 'none';
+    
+    // Clear editor instance
+    if (currentBlogEditor) {
+        // Don't call hide() as it would cause recursion
+        currentBlogEditor = null;
+    }
+
     // Show blog list and new blog button
     blogList.style.display = 'grid';
     newBlogBtn.style.display = 'block';
-
-    // Hide and clear editor container
-    editorContainer.style.display = 'none';
-    if (currentBlogEditor) {
-        currentBlogEditor.hide();
-        currentBlogEditor = null;
-    }
+    
+    // No need to explicitly call loadBlogPosts here
+    // It will be called by the 'blogUpdated' event
 }
 
 async function editBlog(id) {

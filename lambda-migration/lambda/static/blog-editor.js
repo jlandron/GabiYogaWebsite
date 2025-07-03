@@ -389,7 +389,7 @@ class BlogEditor {
         this.container.querySelector('.draft-btn').textContent = 'Save as Draft';
         this.container.querySelector('.publish-btn').textContent = 'Publish';
         
-        // Trigger blog list reload
+        // Trigger blog list reload - don't call hideBlogEditor directly to avoid recursion
         window.dispatchEvent(new CustomEvent('blogUpdated'));
     }
 }
