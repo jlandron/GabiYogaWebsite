@@ -7,7 +7,8 @@ const {
   createSuccessResponse, 
   createErrorResponse,
   logWithContext,
-  dynamoUtils
+  dynamoUtils,
+  getUserFromToken
 } = require('../shared/public-utils');
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -22,9 +23,13 @@ exports.handler = async (event, context) => {
     if (event.httpMethod === 'OPTIONS') {
       return createSuccessResponse({}, 200);
     }
-
-    // Check if user is authenticated
-    const userId = event.requestContext?.authorizer?.claims?.sub;
+  
+    // Get user from token
+    const user = await getUserFromToken(event);
+    if (!user) {
+        return createErrorResponse('Unauthorized', 401);
+    }
+    const userId = user.id;
     if (!userId) {
       logWithContext('error', 'Unauthorized booking cancellation request', { requestId });
       return createErrorResponse('Unauthorized. Please log in to cancel a booking.', 401);
@@ -77,7 +82,7 @@ exports.handler = async (event, context) => {
       // Check if there are waitlisted users who can now book the class
       const waitlistedResult = await dynamoUtils.queryItems(
         process.env.BOOKINGS_TABLE,
-        'ClassIndex',
+        'ClassBookingsIndex',
         'classId = :classId AND #status = :status',
         {
           ':classId': booking.classId,

@@ -288,7 +288,14 @@ export class LambdaApiStack extends cdk.Stack {
 
     const classesResource = this.apiGateway.root.addResource('classes');
     classesResource.addMethod('GET', new apigateway.LambdaIntegration(bookingClasses));
-    classesResource.addResource('{id}').addResource('book').addMethod('POST', new apigateway.LambdaIntegration(bookingBook));
+    
+    // Individual class resource - GET method for class details has no auth requirement
+    const classIdResource = classesResource.addResource('{id}');
+    classIdResource.addMethod('GET', new apigateway.LambdaIntegration(bookingClasses), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    // Book endpoint still requires authentication
+    classIdResource.addResource('book').addMethod('POST', new apigateway.LambdaIntegration(bookingBook));
 
     const bookingsResource = this.apiGateway.root.addResource('bookings');
     bookingsResource.addMethod('GET', new apigateway.LambdaIntegration(bookingList));

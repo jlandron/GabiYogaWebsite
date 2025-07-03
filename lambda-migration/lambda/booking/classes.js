@@ -7,7 +7,8 @@ const {
   createSuccessResponse, 
   createErrorResponse,
   logWithContext,
-  dynamoUtils
+  dynamoUtils,
+  getUserFromToken
 } = require('../shared/public-utils');
 
 exports.handler = async (event, context) => {
@@ -19,6 +20,11 @@ exports.handler = async (event, context) => {
     // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
       return createSuccessResponse({}, 200);
+    }
+
+    // Check if this is a request for a single class by ID
+    if (event.pathParameters && event.pathParameters.id) {
+      return await handleGetClassById(event, requestId);
     }
 
     // Parse query parameters
@@ -175,23 +181,105 @@ exports.handler = async (event, context) => {
 };
 
 /**
+ * Handle request for a single class by ID
+ */
+async function handleGetClassById(event, requestId) {
+  try {
+    // Get class ID from path parameters
+    const classId = event.pathParameters.id;
+    
+    logWithContext('info', 'Fetching single class by ID', { requestId, classId });
+
+    // Public endpoint - no authentication required
+    
+    // Get class details
+    const AWS = require('aws-sdk');
+    const dynamoDb = new AWS.DynamoDB.DocumentClient();
+    
+    const classResult = await dynamoDb.get({
+      TableName: process.env.CLASSES_TABLE,
+      Key: { id: classId }
+    }).promise();
+    
+    const classItem = classResult.Item;
+    if (!classItem) {
+      logWithContext('error', 'Class not found', { requestId, classId });
+      return createErrorResponse('Class not found', 404);
+    }
+    
+    // Get bookings for this class
+    const bookings = await getClassBookings(classId);
+    const availableSpots = Math.max((classItem.maxParticipants || 20) - bookings.length, 0);
+    
+    // Format class details for response
+    const formattedClass = {
+      id: classItem.id,
+      title: classItem.title,
+      description: classItem.description,
+      instructor: classItem.instructor || 'Gabi',
+      category: classItem.category || 'general',
+      level: classItem.level || 'All Levels',
+      duration: classItem.duration || 60,
+      price: classItem.price || 25,
+      scheduleDate: classItem.scheduleDate,
+      startTime: classItem.startTime,
+      endTime: classItem.endTime,
+      location: classItem.location || 'Main Studio',
+      maxParticipants: classItem.maxParticipants || 20,
+      currentBookings: bookings.length,
+      availableSpots,
+      isFullyBooked: availableSpots === 0,
+      requirements: classItem.requirements || [],
+      whatToBring: classItem.whatToBring || [],
+      cancellationPolicy: classItem.cancellationPolicy || 'Cancel up to 2 hours before class',
+      createdAt: classItem.createdAt,
+      updatedAt: classItem.updatedAt
+    };
+    
+    logWithContext('info', 'Successfully retrieved class by ID', { requestId, classId });
+    
+    return createSuccessResponse({
+      success: true,
+      classItem: formattedClass
+    });
+    
+  } catch (error) {
+    logWithContext('error', 'Error getting class by ID', {
+      requestId,
+      error: error.message,
+      stack: error.stack
+    });
+    
+    return createErrorResponse('An error occurred while retrieving the class', 500);
+  }
+}
+
+/**
  * Get current bookings for a specific class
  */
 async function getClassBookings(classId) {
   try {
-    const bookings = await dynamoUtils.queryItems(
-      process.env.BOOKINGS_TABLE,
-      'ClassIndex',
-      'classId = :classId AND #status = :status',
-      {
+    // Only use the partition key in the key condition expression
+    // Move the status condition to a filter expression
+    const AWS = require('aws-sdk');
+    const dynamoDb = new AWS.DynamoDB.DocumentClient();
+    
+    const params = {
+      TableName: process.env.BOOKINGS_TABLE,
+      IndexName: 'ClassBookingsIndex',
+      KeyConditionExpression: 'classId = :classId',
+      FilterExpression: '#status = :status',
+      ExpressionAttributeValues: {
         ':classId': classId,
         ':status': 'confirmed'
       },
-      {
+      ExpressionAttributeNames: {
         '#status': 'status'
       }
-    );
-    return bookings || [];
+    };
+    
+    const result = await dynamoDb.query(params).promise();
+    return result.Items || [];
   } catch (error) {
     console.error('Error getting class bookings:', error);
     return [];

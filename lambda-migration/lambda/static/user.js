@@ -2,12 +2,18 @@
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/login.html';
-        return;
+        window.location.href = '/dev/index.html';
+        return null;
     }
+    
+    // Clean the token to ensure it doesn't have any problematic characters
+    const cleanToken = token.trim();
+    console.log('Using auth token:', cleanToken);
+    
     return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${cleanToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
     };
 }
 
@@ -210,11 +216,16 @@ async function loadUserProfile() {
         });
         const profile = await response.json();
         
-        document.getElementById('name').value = profile.name || '';
+        document.getElementById('firstName').value = profile.firstName || '';
+        document.getElementById('lastName').value = profile.lastName || '';
         document.getElementById('email').value = profile.email || '';
-        document.getElementById('phone').value = profile.phone || '';
-        document.getElementById('preferences').value = profile.preferences || '';
-        document.getElementById('notifications').checked = profile.notifications || false;
+        document.getElementById('phoneNumber').value = profile.phoneNumber || '';
+        
+        // Handle preferences object
+        document.getElementById('yogaPreferences').value = '';
+        document.getElementById('newsletter').checked = profile.preferences.newsletter || false;
+        document.getElementById('notifications').checked = profile.preferences.notifications || false;
+        
     } catch (error) {
         console.error('Error loading user profile:', error);
     }
@@ -224,10 +235,13 @@ async function loadUserProfile() {
 async function saveProfile() {
     try {
         const profile = {
-            name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            preferences: document.getElementById('preferences').value,
-            notifications: document.getElementById('notifications').checked
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            preferences: {
+                newsletter: document.getElementById('newsletter').checked,
+                notifications: document.getElementById('notifications').checked
+            }
         };
         
         const response = await fetch('/dev/auth/profile', {

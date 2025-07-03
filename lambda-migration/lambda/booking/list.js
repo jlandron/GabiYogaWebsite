@@ -7,7 +7,7 @@ const {
   createSuccessResponse, 
   createErrorResponse,
   logWithContext,
-  dynamoUtils
+  getUserFromToken
 } = require('../shared/public-utils');
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -23,8 +23,13 @@ exports.handler = async (event, context) => {
       return createSuccessResponse({}, 200);
     }
 
-    // Check if user is authenticated
-    const userId = event.requestContext?.authorizer?.claims?.sub;
+    // Get user from token
+    const user = await getUserFromToken(event);
+    if (!user) {
+        return createErrorResponse('Unauthorized', 401);
+    }
+    const userId = user.id;
+
     if (!userId) {
       logWithContext('error', 'Unauthorized bookings list request', { requestId });
       return createErrorResponse('Unauthorized. Please log in to view your bookings.', 401);
@@ -60,7 +65,7 @@ exports.handler = async (event, context) => {
 
     // Add month filter
     if (month) {
-      filterExpression += ' AND begins_with(date, :month)';
+      filterExpression += ' AND begins_with(#eventDate, :month)';
       expressionAttributeValues[':month'] = month;
     }
 
@@ -69,18 +74,20 @@ exports.handler = async (event, context) => {
 
     // Filter by past or upcoming
     if (type === 'upcoming') {
-      filterExpression += ' AND date >= :today';
+      filterExpression += ' AND #eventDate >= :today';
       expressionAttributeValues[':today'] = today;
     } else if (type === 'past') {
-      filterExpression += ' AND date < :today';
+      filterExpression += ' AND #eventDate < :today';
       expressionAttributeValues[':today'] = today;
     }
 
-    // Prepare the scan params
+    // Prepare the query params
+    // We need to include the createdAt sort key in the KeyConditionExpression
     const queryParams1 = {
       TableName: process.env.BOOKINGS_TABLE,
-      IndexName: 'UserIndex', // Assuming we have a GSI for userId
+      IndexName: 'UserBookingsIndex', // GSI for userId
       KeyConditionExpression: 'userId = :userId',
+      // Move all filtering to FilterExpression
       FilterExpression: filterExpression.includes(' AND ') ? 
         filterExpression.split('userId = :userId AND ')[1] : undefined,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -89,8 +96,17 @@ exports.handler = async (event, context) => {
 
     // If there's a status filter, add ExpressionAttributeNames
     if (queryParams.status) {
-      queryParams1.ExpressionAttributeNames = { '#status': 'status' };
+      if (!queryParams1.ExpressionAttributeNames) {
+        queryParams1.ExpressionAttributeNames = {};
+      }
+      queryParams1.ExpressionAttributeNames['#status'] = 'status';
     }
+    
+    // Add date to ExpressionAttributeNames since it's a reserved keyword
+    if (!queryParams1.ExpressionAttributeNames) {
+      queryParams1.ExpressionAttributeNames = {};
+    }
+    queryParams1.ExpressionAttributeNames['#eventDate'] = 'date';
 
     // Execute the query
     const result = await dynamoDb.query(queryParams1).promise();

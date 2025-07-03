@@ -248,6 +248,24 @@ Rules:
 
 ### 📝 Recent Updates:
 
+**2025-07-02 (PM):** Created shared image utility and fixed blog cover image issues:
+- Created new `lambda/shared/image-utils.js` module for consistent image handling across the application
+- Fixed critical issue where presigned S3 URLs were being stored in DynamoDB (URLs expire, causing broken images)
+- Refactored blog create/update Lambda functions to use the shared image utility
+- Improved blog editor image upload experience with better feedback and error handling
+- Added proper S3 key extraction from presigned URLs to ensure only permanent paths are stored
+- Enhanced response handling in blog editor to display better error messages
+- Added URL-to-S3-path conversion to prevent storing temporary URLs in the database
+- Ensured proper handling of object references and base64-encoded images
+
+**2025-07-02 (Late PM):** Fixed blog editing and cover image functionality:
+- Fixed critical import issue in blog Lambda functions (create.js and update.js) by replacing validateToken with getUserFromToken
+- Fixed bug in blog-editor.js where clicking on cover image caused "this.container.querySelector(...) is null" errors
+- Added comprehensive error handling in blog editor setup for DOM element queries
+- Improved null/undefined checking for coverImage handling to prevent JS errors
+- Enhanced blog editor robustness when loading existing blogs with and without cover images
+- Fixed issue where canceling a blog edit broke the blog list reload functionality
+
 **2025-07-02 (PM):** Implemented User Portal Enhancements:
 - Exposed class calendar in the user portal (same as homepage calendar)
 - Implemented booking flow for classes from both homepage and user portal
@@ -266,7 +284,7 @@ Rules:
 - Fixed "match is not a function" error in the blog update/create Lambda functions
 - Enhanced image uploading in blog editor with better error handling
 - Added clickable blog titles that navigate to the published blog post
-- Fixed blog URL format to use query parameters (`?slug=` instead of path-based routing)
+- Fixed blog URL format to NOT use query parameters (path-based routing instead of `?slug=`)
 - Improved cover image selection/upload experience with proper null/undefined checks
 - Added status indicators for blog posts in admin list
 - Fixed the cancel button to reload blog list when closing editor

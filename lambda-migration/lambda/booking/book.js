@@ -7,7 +7,8 @@ const {
   createSuccessResponse, 
   createErrorResponse,
   logWithContext,
-  dynamoUtils
+  dynamoUtils,
+  getUserFromToken
 } = require('../shared/public-utils');
 const { v4: uuidv4 } = require('uuid');
 const AWS = require('aws-sdk');
@@ -24,8 +25,13 @@ exports.handler = async (event, context) => {
       return createSuccessResponse({}, 200);
     }
 
-    // Check if user is authenticated
-    const userId = event.requestContext?.authorizer?.claims?.sub;
+    // Get user from token
+    const user = await getUserFromToken(event);
+    if (!user) {
+        return createErrorResponse('Unauthorized', 401);
+    }
+    const userId = user.id;
+
     if (!userId) {
       logWithContext('error', 'Unauthorized booking request', { requestId });
       return createErrorResponse('Unauthorized. Please log in to book a class.', 401);
@@ -57,16 +63,20 @@ exports.handler = async (event, context) => {
       return createErrorResponse('Cannot book a class that has already started', 400);
     }
 
-    // Check for existing booking by this user
-    const existingBookings = await dynamoUtils.queryItems(
-      process.env.BOOKINGS_TABLE,
-      'UserClassIndex',
-      'userId = :userId AND classId = :classId',
-      {
+    // Check for existing booking by this user - use direct DB query
+    const userBookingsParams = {
+      TableName: process.env.BOOKINGS_TABLE,
+      IndexName: 'UserBookingsIndex',
+      KeyConditionExpression: 'userId = :userId',
+      FilterExpression: 'classId = :classId',
+      ExpressionAttributeValues: {
         ':userId': userId,
         ':classId': classId
       }
-    );
+    };
+    
+    const existingBookingsResult = await dynamoDb.query(userBookingsParams).promise();
+    const existingBookings = existingBookingsResult.Items || [];
 
     if (existingBookings && existingBookings.length > 0) {
       logWithContext('error', 'User already has a booking for this class', { 
@@ -75,19 +85,23 @@ exports.handler = async (event, context) => {
       return createErrorResponse('You already have a booking for this class', 409);
     }
 
-    // Check class availability
-    const bookings = await dynamoUtils.queryItems(
-      process.env.BOOKINGS_TABLE,
-      'ClassIndex',
-      'classId = :classId AND #status = :status',
-      {
+    // Check class availability - use direct DB query to avoid KeyConditionExpression issues
+    const classBookingsParams = {
+      TableName: process.env.BOOKINGS_TABLE,
+      IndexName: 'ClassBookingsIndex',
+      KeyConditionExpression: 'classId = :classId',
+      FilterExpression: '#status = :status',
+      ExpressionAttributeValues: {
         ':classId': classId,
         ':status': 'confirmed'
       },
-      {
+      ExpressionAttributeNames: {
         '#status': 'status'
       }
-    );
+    };
+    
+    const bookingsResult = await dynamoDb.query(classBookingsParams).promise();
+    const bookings = bookingsResult.Items || [];
 
     const currentBookings = bookings ? bookings.length : 0;
     const maxParticipants = classItem.maxParticipants || 20;
