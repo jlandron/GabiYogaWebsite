@@ -159,8 +159,8 @@ function serveBlogPage() {
                         year: 'numeric'
                     });
                     
-                    return '<a href="/dev/blog-page/' + post.slug + '" class="blog-card' + (!post.coverImage ? ' no-image' : '') + '">' +
-                            (post.coverImage ? 
+                    return '<a href="/dev/blog-page/' + post.slug + '" class="blog-card' + (!post.coverImage || !post.coverImage.url ? ' no-image' : '') + '">' +
+                            (post.coverImage && post.coverImage.url ?
                             '<div class="blog-card-image" style="background-image: url(' + post.coverImage.url + ')">' +
                                 '<div class="blog-card-category">' + category + '</div>' +
                             '</div>' : '') +
@@ -210,7 +210,7 @@ function serveBlogPage() {
                     // Hide loading
                     blogLoading.style.display = 'none';
                     
-                    console.log('✅ Loaded', posts.length, 'blog posts');
+                    console.log('✅ Loaded', allPosts.length, 'blog posts');
                 } else {
                     // No posts found
                     blogLoading.style.display = 'none';

@@ -43,6 +43,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize dashboard
         loadDashboardData();
         setupEventListeners();
+        
+        // Listen for blog updates
+        window.addEventListener('blogUpdated', () => {
+            console.log('Blog updated event received, reloading blog posts');
+            loadBlogPosts();
+        });
     } catch (error) {
         console.error('Authentication error:', error);
         window.location.href = '/dev/index.html';
@@ -163,8 +169,11 @@ async function loadBlogPosts() {
         blogList.innerHTML = blogs.map(blog => `
             <div class="blog-item">
                 <div class="blog-info">
-                    <h3>${blog.title}</h3>
+                    <h3 class="blog-title" data-id="${blog.id}" data-slug="${blog.slug || ''}">
+                        ${blog.title}
+                    </h3>
                     <p class="blog-meta">
+                        <span class="status ${blog.status}">${blog.status}</span>
                         <span class="date">${new Date(blog.updatedAt).toLocaleDateString()}</span>
                     </p>
                 </div>
@@ -177,10 +186,34 @@ async function loadBlogPosts() {
                 </div>
             </div>
         `).join('');
+        
+        // Add click listeners to blog titles
+        document.querySelectorAll('.blog-title').forEach(title => {
+            title.addEventListener('click', () => {
+                const id = title.getAttribute('data-id');
+                const slug = title.getAttribute('data-slug');
+                viewBlogPost(id, slug);
+            });
+        });
     } catch (error) {
         console.error('Error loading blog posts:', error);
         showNotification('Error loading blog posts', 'error');
     }
+}
+
+// Function to navigate to blog post on frontend
+function viewBlogPost(id, slug) {
+    let url;
+    if (slug) {
+        // Use the correct blog URL format
+        url = `/dev/blog-page/${slug}`;
+    } else if (id) {
+        url = `/dev/blog-page.html?id=${id}`;
+    } else {
+        url = '/dev/blog-page.html';
+    }
+    
+    window.open(url, '_blank');
 }
 
 function showBlogEditor(blogData = null) {

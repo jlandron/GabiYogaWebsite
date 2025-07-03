@@ -111,12 +111,12 @@ function serveBlogPostPage(slug) {
                         // Generate HTML content with hero image section
                         let postHTML = '';
                         
-                        // Add hero image section
-                        postHTML += '<div class="blog-post-hero' + (!post.coverImage.url ? ' no-image' : '') + '">';
-                        if (post.coverImage.url) {
+                        // Add hero image section only if cover image exists
+                        if (post.coverImage && post.coverImage.url) {
+                            postHTML += '<div class="blog-post-hero">';
                             postHTML += '<img src="' + post.coverImage.url + '" alt="' + post.title + '">';
+                            postHTML += '</div>';
                         }
-                        postHTML += '</div>';
                         
                         // Add content wrapper
                         postHTML += '<div class="blog-post-content-wrapper">';

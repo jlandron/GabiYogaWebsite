@@ -4,8 +4,8 @@
  */
 
 const AWS = require('aws-sdk');
-// Import isAdminUser from the main utils file
-const { isAdminUser } = require('./utils');
+// Import functions from the main utils file
+const { isAdminUser, getUserFromToken } = require('./utils');
 
 // Initialize AWS services
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -135,11 +135,27 @@ const dynamoUtils = {
   }
 };
 
+/**
+ * Validate token and return user if valid
+ */
+async function validateToken(authHeader) {
+  if (!authHeader) return null;
+  
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    return null;
+  }
+  
+  return getUserFromToken({ headers: { Authorization: authHeader } });
+}
+
 module.exports = {
   createResponse,
   createSuccessResponse,
   createErrorResponse,
   logWithContext,
   dynamoUtils,
-  isAdminUser
+  isAdminUser,
+  validateToken,
+  getUserFromToken  // Export the getUserFromToken function
 };

@@ -105,18 +105,20 @@ async function loadDashboardData() {
             headers: getAuthHeaders()
         });
         const upcomingData = await upcomingResponse.json();
-        document.getElementById('upcoming-count').textContent = upcomingData.length;
+        const upcomingBookings = upcomingData.bookings || [];
+        document.getElementById('upcoming-count').textContent = upcomingBookings.length;
 
         // Load attended classes count
         const historyResponse = await fetch('/dev/bookings?type=past', {
             headers: getAuthHeaders()
         });
         const historyData = await historyResponse.json();
-        document.getElementById('attended-count').textContent = historyData.length;
+        const pastBookings = historyData.bookings || [];
+        document.getElementById('attended-count').textContent = pastBookings.length;
 
         // Load next class
-        if (upcomingData.length > 0) {
-            const nextClass = upcomingData[0];
+        if (upcomingBookings.length > 0) {
+            const nextClass = upcomingBookings[0];
             document.getElementById('next-class').innerHTML = `
                 <h4>${nextClass.className}</h4>
                 <p>${formatDate(nextClass.date)} at ${nextClass.time}</p>
@@ -140,13 +142,15 @@ async function loadUpcomingClasses() {
         const classesResponse = await fetch('/dev/classes', {
             headers: getAuthHeaders()
         });
-        const classes = await classesResponse.json();
+        const classesData = await classesResponse.json();
+        const classes = classesData.classes || []; // Extract classes array from response
         
         // Load user's bookings
         const bookingsResponse = await fetch('/dev/bookings?type=upcoming', {
             headers: getAuthHeaders()
         });
-        const bookings = await bookingsResponse.json();
+        const bookingsData = await bookingsResponse.json();
+        const bookings = bookingsData.bookings || []; // Extract bookings array from response
         
         // Update calendar
         updateCalendar(classes, bookings);
@@ -180,11 +184,11 @@ async function loadClassHistory() {
         const response = await fetch(`/dev/bookings?type=past&month=${monthFilter}&classType=${typeFilter}`, {
             headers: getAuthHeaders()
         });
-        const history = await response.json();
+        const historyData = await response.json();
+        const historyBookings = historyData.bookings || [];
         
         const historyList = document.querySelector('.history-list');
-        const historyItems = Array.isArray(history) ? history : [];
-        historyList.innerHTML = historyItems.map(booking => `
+        historyList.innerHTML = historyBookings.map(booking => `
             <div class="class-item">
                 <div class="class-info">
                     <h3>${booking.className}</h3>
@@ -243,32 +247,423 @@ async function saveProfile() {
     }
 }
 
+// Delete User Account
+async function deleteAccount() {
+    // First confirmation
+    if (!confirm('Are you sure you want to delete your account? This action CANNOT be undone.')) {
+        return;
+    }
+    
+    // Second confirmation with explanation of consequences
+    if (!confirm('FINAL WARNING: Deleting your account will remove all your personal data, bookings, and history. You will NOT be able to recover this information. Continue?')) {
+        return;
+    }
+    
+    try {
+        const deleteBtn = document.getElementById('delete-account');
+        const originalText = deleteBtn.textContent;
+        deleteBtn.textContent = 'Processing...';
+        deleteBtn.disabled = true;
+        
+        const response = await fetch('/dev/auth/account', {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete account');
+        }
+        
+        // Success - clear token and redirect to home
+        localStorage.removeItem('token');
+        alert('Your account has been successfully deleted.');
+        window.location.href = '/dev/';
+        
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('Failed to delete account: ' + (error.message || 'Please try again'));
+        
+        // Reset button
+        const deleteBtn = document.getElementById('delete-account');
+        deleteBtn.textContent = originalText;
+        deleteBtn.disabled = false;
+    }
+}
+
 // Calendar Functions
 function updateCalendar(classes, bookings) {
-    // TODO: Implement calendar view with available classes and bookings
     const calendar = document.querySelector('.class-calendar');
-    calendar.innerHTML = '<p>Calendar implementation coming soon...</p>';
+    
+    // Create calendar structure (similar to homepage)
+    const calendarHTML = 
+        '<div class="calendar-container">' +
+            '<div class="calendar-header">' +
+                '<div class="calendar-navigation">' +
+                    '<button class="nav-btn" id="prev-month">←</button>' +
+                    '<div class="calendar-date-range" id="calendar-date-range">' +
+                        '<!-- Date range will be populated here -->' +
+                    '</div>' +
+                    '<button class="nav-btn" id="next-month">→</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="calendar-grid-container">' +
+                '<div class="calendar-grid" id="calendar-grid">' +
+                    '<!-- Calendar will be populated here -->' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    
+    calendar.innerHTML = calendarHTML;
+    
+    // Initialize calendar
+    initializeCalendar(classes, bookings);
+    
+    // Add class detail modal
+    addClassModal();
+}
+
+// Initialize calendar and set up event listeners
+function initializeCalendar(classes, bookings) {
+    // Group classes by date
+    const calendarClasses = {};
+    classes.forEach(classItem => {
+        const dateKey = classItem.scheduleDate;
+        if (!calendarClasses[dateKey]) {
+            calendarClasses[dateKey] = [];
+        }
+        calendarClasses[dateKey].push(classItem);
+    });
+    
+    // Set current date
+    const currentDate = new Date();
+    
+    // Setup navigation event listeners
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar(currentDate, calendarClasses, bookings);
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar(currentDate, calendarClasses, bookings);
+    });
+    
+    // Initial render
+    renderCalendar(currentDate, calendarClasses, bookings);
+}
+
+// Render calendar with classes
+function renderCalendar(currentDate, calendarClasses, bookings) {
+    const grid = document.getElementById('calendar-grid');
+    const dateRange = document.getElementById('calendar-date-range');
+    
+    // Calculate the start of the 4-week period
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startOfWeek = new Date(startOfMonth);
+    startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay()); // Go to Sunday
+    
+    const endDate = new Date(startOfWeek);
+    endDate.setDate(startOfWeek.getDate() + 27); // 4 weeks = 28 days
+    
+    // Update date range display
+    dateRange.textContent = formatDateRange(startOfWeek) + ' - ' + formatDateRange(endDate);
+    
+    // Clear existing content
+    grid.innerHTML = '';
+    
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'calendar-day-header';
+        headerDiv.textContent = day;
+        grid.appendChild(headerDiv);
+    });
+    
+    // Convert bookings to map for quick lookup
+    const bookedClassIds = new Map();
+    if (bookings && Array.isArray(bookings)) {
+        bookings.forEach(booking => {
+            bookedClassIds.set(booking.classId, booking);
+        });
+    }
+    
+    // Generate 28 days (4 weeks)
+    for (let i = 0; i < 28; i++) {
+        const currentDay = new Date(startOfWeek);
+        currentDay.setDate(startOfWeek.getDate() + i);
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        
+        // Check if it's today
+        const today = new Date();
+        if (currentDay.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('today');
+        }
+        
+        // Check if it's in a different month
+        if (currentDay.getMonth() !== currentDate.getMonth()) {
+            dayDiv.classList.add('other-month');
+        }
+        
+        // Add date number
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'calendar-date';
+        dateDiv.textContent = currentDay.getDate();
+        dayDiv.appendChild(dateDiv);
+        
+        // Add classes for this day
+        const classesDiv = document.createElement('div');
+        classesDiv.className = 'calendar-classes';
+        
+        const dayStr = currentDay.toISOString().split('T')[0];
+        const dayClasses = calendarClasses[dayStr] || [];
+        
+        dayClasses.forEach(classItem => {
+            const classDiv = document.createElement('div');
+            const categoryClass = classItem.category ? classItem.category.toLowerCase() : 'general';
+            const isFullClass = classItem.isFullyBooked ? 'full' : '';
+            
+            // Check if user is already booked
+            const isBooked = bookedClassIds.has(classItem.id);
+            const bookedClass = isBooked ? 'booked' : '';
+            
+            classDiv.className = `calendar-class ${categoryClass} ${isFullClass} ${bookedClass}`;
+            
+            // Add a booked indicator for classes the user is already registered for
+            let displayText = `${classItem.startTime} ${classItem.title}`;
+            if (isBooked) {
+                displayText = `✓ ${displayText}`;
+            }
+            
+            classDiv.textContent = displayText;
+            classDiv.addEventListener('click', () => openClassModal(classItem.id, isBooked));
+            classesDiv.appendChild(classDiv);
+        });
+        
+        dayDiv.appendChild(classesDiv);
+        grid.appendChild(dayDiv);
+    }
+}
+
+// Format date for display in the calendar header
+function formatDateRange(date) {
+    return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+// Add class detail modal to the page
+function addClassModal() {
+    if (document.getElementById('class-modal')) {
+        // Modal already exists
+        return;
+    }
+    
+    const modalHTML = 
+        '<div id="class-modal" class="class-modal">' +
+            '<div class="class-modal-content">' +
+                '<div class="class-modal-header">' +
+                    '<button class="class-modal-close" onclick="closeClassModal()">&times;</button>' +
+                    '<h2 class="class-modal-title" id="class-modal-title"></h2>' +
+                    '<div id="class-modal-category"></div>' +
+                '</div>' +
+                '<div class="class-modal-body">' +
+                    '<div class="class-modal-details" id="class-modal-details"></div>' +
+                    '<div id="class-modal-description"></div>' +
+                    '<div class="class-modal-availability" id="class-modal-availability"></div>' +
+                    '<div class="class-modal-actions">' +
+                        '<button class="class-modal-btn class-modal-btn-primary" id="class-modal-book-btn">' +
+                            'Book This Class' +
+                        '</button>' +
+                        '<button class="class-modal-btn class-modal-btn-secondary" onclick="closeClassModal()">' +
+                            'Close' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add event listeners
+    document.getElementById('class-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('class-modal')) {
+            closeClassModal();
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('class-modal').style.display === 'block') {
+            closeClassModal();
+        }
+    });
+}
+
+// Open class detail modal - enhanced to show booking status
+function openClassModal(classId, isBooked = false) {
+    // Find class by ID from the allClasses array
+    fetch('/dev/classes/' + classId, {
+        headers: getAuthHeaders()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.classItem) {
+            const classItem = data.classItem;
+            
+            // Make sure modal exists
+            if (!document.getElementById('class-modal')) {
+                addClassModal();
+            }
+            
+            // Populate modal content
+            document.getElementById('class-modal-title').textContent = classItem.title;
+            document.getElementById('class-modal-category').textContent = classItem.category || 'General';
+            document.getElementById('class-modal-description').innerHTML = 
+                '<p style="margin-top: 1rem; line-height: 1.6; color: #666;">' + 
+                    (classItem.description || 'No description available.') + 
+                '</p>';
+            
+            // Class details
+            const detailsHTML = 
+                '<div class="class-modal-detail">' +
+                    '<span>📅</span>' +
+                    '<span>' + new Date(classItem.scheduleDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }) + '</span>' +
+                '</div>' +
+                '<div class="class-modal-detail">' +
+                    '<span>🕐</span>' +
+                    '<span>' + classItem.startTime + (classItem.endTime ? ' - ' + classItem.endTime : '') + '</span>' +
+                '</div>' +
+                '<div class="class-modal-detail">' +
+                    '<span>⏱️</span>' +
+                    '<span>' + classItem.duration + ' minutes</span>' +
+                '</div>' +
+                '<div class="class-modal-detail">' +
+                    '<span>👩‍🏫</span>' +
+                    '<span>' + classItem.instructor + '</span>' +
+                '</div>' +
+                (classItem.location ? 
+                '<div class="class-modal-detail">' +
+                    '<span>📍</span>' +
+                    '<span>' + classItem.location + '</span>' +
+                '</div>' : '') +
+                (classItem.level ? 
+                '<div class="class-modal-detail">' +
+                    '<span>🎯</span>' +
+                    '<span>' + classItem.level + '</span>' +
+                '</div>' : '') +
+                (classItem.price ? 
+                '<div class="class-modal-detail">' +
+                    '<span>💰</span>' +
+                    '<span>$' + classItem.price + '</span>' +
+                '</div>' : '');
+            
+            document.getElementById('class-modal-details').innerHTML = detailsHTML;
+            
+            // Availability
+            const availabilityEl = document.getElementById('class-modal-availability');
+            const bookBtn = document.getElementById('class-modal-book-btn');
+            
+            if (isBooked) {
+                // User is already booked for this class
+                availabilityEl.className = 'class-modal-availability booked';
+                availabilityEl.innerHTML = 
+                    '<div class="class-modal-availability-text">You are booked for this class</div>' +
+                    '<div class="class-modal-spots">' + classItem.currentBookings + '/' + classItem.maxParticipants + ' spots taken</div>';
+                bookBtn.textContent = 'Cancel Booking';
+                bookBtn.onclick = () => cancelBookingFromModal(classId);
+                bookBtn.disabled = false;
+            } else if (classItem.isFullyBooked) {
+                availabilityEl.className = 'class-modal-availability full';
+                availabilityEl.innerHTML = 
+                    '<div class="class-modal-availability-text">Class is Full</div>' +
+                    '<div class="class-modal-spots">' + classItem.currentBookings + '/' + classItem.maxParticipants + ' spots taken</div>';
+                bookBtn.textContent = 'Join Waitlist';
+                bookBtn.onclick = () => bookClass(classId);
+                bookBtn.disabled = false;
+            } else {
+                availabilityEl.className = 'class-modal-availability';
+                availabilityEl.innerHTML = 
+                    '<div class="class-modal-availability-text">' + classItem.availableSpots + ' Spots Available</div>' +
+                    '<div class="class-modal-spots">' + classItem.currentBookings + '/' + classItem.maxParticipants + ' spots taken</div>';
+                bookBtn.textContent = 'Book This Class';
+                bookBtn.onclick = () => bookClass(classId);
+                bookBtn.disabled = false;
+            }
+            
+            // Show modal
+            document.getElementById('class-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching class details:', error);
+        alert('Failed to load class details. Please try again.');
+    });
+}
+
+// Close class modal
+function closeClassModal() {
+    document.getElementById('class-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 // Booking Functions
 async function bookClass(classId) {
     try {
+        // Show booking in progress
+        const bookBtn = document.getElementById('class-modal-book-btn');
+        const originalText = bookBtn.textContent;
+        bookBtn.textContent = 'Processing...';
+        bookBtn.disabled = true;
+        
         const response = await fetch(`/dev/classes/${classId}/book`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
         
-        if (response.ok) {
-            loadUpcomingClasses();
-        } else {
-            throw new Error('Failed to book class');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to book class');
         }
+        
+        const result = await response.json();
+        
+        // Show success message
+        let message;
+        if (result.booking.status === 'waitlisted') {
+            message = `You've been added to the waitlist. Your position: #${result.booking.waitlistPosition}`;
+        } else {
+            message = 'Class booked successfully!';
+        }
+        
+        alert(message);
+        
+        // Close modal and refresh data
+        closeClassModal();
+        loadUpcomingClasses();
+        loadDashboardData();
+        
     } catch (error) {
         console.error('Error booking class:', error);
-        alert('Failed to book class. Please try again.');
+        alert('Failed to book class: ' + (error.message || 'Please try again.'));
+        
+        // Reset button
+        const bookBtn = document.getElementById('class-modal-book-btn');
+        bookBtn.textContent = 'Book This Class';
+        bookBtn.disabled = false;
     }
 }
 
+// Cancel booking from class list
 async function cancelBooking(bookingId) {
     if (!confirm('Are you sure you want to cancel this class?')) return;
     
@@ -280,12 +675,62 @@ async function cancelBooking(bookingId) {
         
         if (response.ok) {
             loadUpcomingClasses();
+            loadDashboardData();
         } else {
             throw new Error('Failed to cancel booking');
         }
     } catch (error) {
         console.error('Error canceling booking:', error);
         alert('Failed to cancel class. Please try again.');
+    }
+}
+
+// Cancel booking from modal
+async function cancelBookingFromModal(classId) {
+    try {
+        // Find the booking for this class
+        const bookingsResponse = await fetch('/dev/bookings?type=upcoming', {
+            headers: getAuthHeaders()
+        });
+        const bookings = await bookingsResponse.json();
+        
+        const booking = bookings.find(b => b.classId === classId);
+        if (!booking) {
+            throw new Error('Could not find your booking for this class');
+        }
+        
+        // Confirm cancellation
+        if (!confirm('Are you sure you want to cancel this class?')) return;
+        
+        // Show cancellation in progress
+        const bookBtn = document.getElementById('class-modal-book-btn');
+        bookBtn.textContent = 'Cancelling...';
+        bookBtn.disabled = true;
+        
+        // Cancel the booking
+        const response = await fetch(`/dev/bookings/${booking.id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to cancel booking');
+        }
+        
+        // Show success message and refresh data
+        alert('Your booking has been cancelled');
+        closeClassModal();
+        loadUpcomingClasses();
+        loadDashboardData();
+        
+    } catch (error) {
+        console.error('Error canceling booking:', error);
+        alert('Failed to cancel class: ' + error.message);
+        
+        // Reset button
+        const bookBtn = document.getElementById('class-modal-book-btn');
+        bookBtn.textContent = 'Cancel Booking';
+        bookBtn.disabled = false;
     }
 }
 

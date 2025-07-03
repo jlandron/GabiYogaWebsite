@@ -92,6 +92,8 @@ export class LambdaApiStack extends cdk.Stack {
     const authForgot = this.createLambdaFunction('AuthForgot', 'auth/forgot.js', commonLambdaProps);
     const authVerify = this.createLambdaFunction('AuthVerify', 'auth/verify.js', commonLambdaProps);
     const authVerifyToken = this.createLambdaFunction('AuthVerifyToken', 'auth/verify-token.js', commonLambdaProps);
+    const authProfile = this.createLambdaFunction('AuthProfile', 'auth/profile.js', commonLambdaProps);
+    const authAccount = this.createLambdaFunction('AuthAccount', 'auth/account.js', commonLambdaProps);
 
     // Blog Lambda Functions
     const blogList = this.createLambdaFunction('BlogList', 'blog/list.js', commonLambdaProps);
@@ -124,7 +126,8 @@ export class LambdaApiStack extends cdk.Stack {
     // Booking Lambda Functions
     const bookingClasses = this.createLambdaFunction('BookingClasses', 'booking/classes.js', commonLambdaProps);
     const bookingBook = this.createLambdaFunction('BookingBook', 'booking/book.js', commonLambdaProps);
-    const bookingList = this.createLambdaFunction('BookingList', 'booking/list-bookings.js', commonLambdaProps);
+    const bookingList = this.createLambdaFunction('BookingList', 'booking/list.js', commonLambdaProps);
+    const bookingCancel = this.createLambdaFunction('BookingCancel', 'booking/cancel.js', commonLambdaProps);
 
     // Payment Lambda Functions
     const paymentIntent = this.createLambdaFunction('PaymentIntent', 'payment/intent.js', commonLambdaProps);
@@ -222,6 +225,15 @@ export class LambdaApiStack extends cdk.Stack {
     authResource.addResource('verify-token').addMethod('GET', new apigateway.LambdaIntegration(authVerifyToken), {
       authorizationType: apigateway.AuthorizationType.NONE
     });
+    
+    // User profile management
+    const profileResource = authResource.addResource('profile');
+    profileResource.addMethod('GET', new apigateway.LambdaIntegration(authProfile));
+    profileResource.addMethod('PUT', new apigateway.LambdaIntegration(authProfile));
+    
+    // Account management (for deletion)
+    const accountResource = authResource.addResource('account');
+    accountResource.addMethod('DELETE', new apigateway.LambdaIntegration(authAccount));
 
     const blogResource = this.apiGateway.root.addResource('blog');
     blogResource.addMethod('GET', new apigateway.LambdaIntegration(blogList), {
@@ -261,7 +273,13 @@ export class LambdaApiStack extends cdk.Stack {
     const galleryResource = this.apiGateway.root.addResource('gallery');
     galleryResource.addMethod('GET', new apigateway.LambdaIntegration(galleryList));
     galleryResource.addMethod('POST', new apigateway.LambdaIntegration(gallerySave));
-    galleryResource.addResource('upload').addMethod('POST', new apigateway.LambdaIntegration(galleryUpload));
+    
+    // Gallery upload resource with both POST (auth required) and GET (no auth required)
+    const galleryUploadResource = galleryResource.addResource('upload');
+    galleryUploadResource.addMethod('POST', new apigateway.LambdaIntegration(galleryUpload));
+    galleryUploadResource.addMethod('GET', new apigateway.LambdaIntegration(galleryUpload), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     
     // Create gallery item resource with both DELETE and PUT methods
     const galleryItemResource = galleryResource.addResource('{id}');
@@ -274,6 +292,10 @@ export class LambdaApiStack extends cdk.Stack {
 
     const bookingsResource = this.apiGateway.root.addResource('bookings');
     bookingsResource.addMethod('GET', new apigateway.LambdaIntegration(bookingList));
+    
+    // Add route for cancelling bookings
+    const bookingItemResource = bookingsResource.addResource('{id}');
+    bookingItemResource.addMethod('DELETE', new apigateway.LambdaIntegration(bookingCancel));
 
     const paymentResource = this.apiGateway.root.addResource('payment');
     paymentResource.addResource('intent').addMethod('POST', new apigateway.LambdaIntegration(paymentIntent));

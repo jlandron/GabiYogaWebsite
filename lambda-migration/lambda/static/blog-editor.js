@@ -12,7 +12,7 @@ class BlogEditor {
                 <div class="cover-image-section">
                     <div class="cover-preview">
                         <span>Click to add cover image</span>
-                        <input type="file" accept="image/*" style="display: none;">
+                        <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
                     </div>
                 </div>
                 <div class="meta-section">
@@ -28,71 +28,107 @@ class BlogEditor {
             </div>
         `;
 
-        // Initialize Quill
-        this.quill = new Quill('#blog-content-editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'header': 1 }, { 'header': 2 }],
-                    ['blockquote', 'code-block'],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    [{ 'script': 'sub' }, { 'script': 'super' }],
-                    [{ 'indent': '-1' }, { 'indent': '+1' }],
-                    ['link', 'image'],
-                    [{ 'align': [] }],
-                    ['clean']
-                ]
+        try {
+            // Initialize Quill
+            this.quill = new Quill('#blog-content-editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'header': 1 }, { 'header': 2 }],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'script': 'sub' }, { 'script': 'super' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        ['link'],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Setup event listeners with error handling
+            const coverPreview = this.container.querySelector('.cover-preview');
+            if (coverPreview) {
+                coverPreview.addEventListener('click', () => {
+                    const fileInput = this.container.querySelector('#cover-image-input');
+                    if (fileInput) {
+                        fileInput.click();
+                    }
+                });
             }
-        });
 
-        // Setup event listeners
-        this.container.querySelector('.cover-preview').addEventListener('click', () => {
-            this.container.querySelector('input[type="file"]').click();
-        });
+            const fileInput = this.container.querySelector('#cover-image-input');
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        this.handleCoverImageUpload(e.target.files[0]);
+                    }
+                });
+            }
 
-        this.container.querySelector('input[type="file"]').addEventListener('change', (e) => {
-            this.handleCoverImageUpload(e.target.files[0]);
-        });
+            const cancelBtn = this.container.querySelector('.cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    this.hide();
+                    // Trigger blog reload when canceling
+                    window.dispatchEvent(new CustomEvent('blogUpdated'));
+                });
+            }
 
-        this.container.querySelector('.cancel-btn').addEventListener('click', () => {
-            this.hide();
-        });
+            const draftBtn = this.container.querySelector('.draft-btn');
+            if (draftBtn) {
+                draftBtn.addEventListener('click', () => {
+                    this.saveBlog(false);
+                });
+            }
 
-        this.container.querySelector('.draft-btn').addEventListener('click', () => {
-            this.saveBlog(false);
-        });
-
-        this.container.querySelector('.publish-btn').addEventListener('click', () => {
-            this.saveBlog(true);
-        });
+            const publishBtn = this.container.querySelector('.publish-btn');
+            if (publishBtn) {
+                publishBtn.addEventListener('click', () => {
+                    this.saveBlog(true);
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up blog editor:', error);
+            showNotification('Error setting up blog editor', 'error');
+        }
     }
 
     async handleImageUpload(file) {
         try {
-            const formData = new FormData();
-            formData.append('image', file);
-
+            // 1. Get headers for authentication
             const headers = getAuthHeaders();
             if (!headers) return;
-            delete headers['Content-Type']; // Let browser set correct content-type for FormData
 
-            const response = await fetch('/dev/gallery/upload', {
+            // 2. Request a presigned URL from the server
+            const presignedResponse = await fetch('/dev/gallery/upload', {
                 method: 'POST',
                 headers,
-                body: formData,
-                credentials: 'include'
+                body: JSON.stringify({
+                    filename: file.name,
+                    contentType: file.type
+                })
             });
 
-            if (!response.ok) throw new Error('Upload failed');
+            if (!presignedResponse.ok) throw new Error('Failed to get upload URL');
 
-            const data = await response.json();
-            
-            // Insert the image into the editor
-            const range = this.quill.getSelection();
-            this.quill.insertEmbed(range.index, 'image', data.url);
-            
-            return data.url;
+            const presignedData = await presignedResponse.json();
+            console.log('Received presigned URL data for content image:', presignedData);
+
+            // 3. Upload the file directly to S3 using the presigned URL
+            const uploadResponse = await fetch(presignedData.uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: {
+                    'Content-Type': file.type
+                }
+            });
+
+            if (!uploadResponse.ok) throw new Error('S3 upload failed');
+    
+            // Return the S3 key (not the URL) to be stored
+            return presignedData.s3Key;
         } catch (error) {
             console.error('Image upload failed:', error);
             showNotification('Failed to upload image', 'error');
@@ -102,30 +138,86 @@ class BlogEditor {
 
     async handleCoverImageUpload(file) {
         try {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const headers = getAuthHeaders();
-            if (!headers) return;
-            delete headers['Content-Type']; // Let browser set correct content-type for FormData
-
-            const response = await fetch('/dev/gallery/upload', {
-                method: 'POST',
-                headers,
-                body: formData,
-                credentials: 'include'
-            });
-
-            if (!response.ok) throw new Error('Upload failed');
-
-            const data = await response.json();
             const preview = this.container.querySelector('.cover-preview');
-            preview.innerHTML = `<img src="${data.url}" alt="Cover Image">`;
+            if (!preview) return;
+
+            // Show loading state
+            preview.innerHTML = `
+                <div class="loading-indicator">Uploading...</div>
+                <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
+            `;
+
+            // 1. Use the existing handleImageUpload method to upload the file and get the S3 key
+            this.coverImageUrl = await this.handleImageUpload(file);
+
+            if (!this.coverImageUrl) throw new Error('Failed to upload image');
+
+            // 2. Get a presigned URL for the image to display in the preview
+            // GET requests to gallery/upload don't require authentication
+            const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(this.coverImageUrl)}`);
+
+            if (!imageUrlResponse.ok) throw new Error('Failed to get image URL');
+            
+            const imageUrlData = await imageUrlResponse.json();
+            const imageUrl = imageUrlData.url;
+            
+            // 3. Update the preview with the new image
+            preview.innerHTML = `
+                <img src="${imageUrl}" alt="Cover Image">
+                <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
+            `;
             preview.classList.add('has-image');
-            this.coverImageUrl = data.url;
+            
+            // 4. Re-attach the click event listener for the cover image
+            preview.addEventListener('click', () => {
+                const fileInput = preview.querySelector('#cover-image-input');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            });
+            
+            // 5. Re-attach change event listener for the file input
+            const fileInput = preview.querySelector('#cover-image-input');
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        this.handleCoverImageUpload(e.target.files[0]);
+                    }
+                });
+            }
+            
+            console.log('Cover image uploaded successfully:', this.coverImageUrl);
+            showNotification('Cover image uploaded successfully', 'success');
         } catch (error) {
             console.error('Cover image upload failed:', error);
             showNotification('Failed to upload cover image', 'error');
+            
+            // Reset the preview on error
+            const preview = this.container.querySelector('.cover-preview');
+            if (preview) {
+                preview.innerHTML = `
+                    <span>Click to add cover image</span>
+                    <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
+                `;
+                preview.classList.remove('has-image');
+                
+                // Re-attach event listeners
+                preview.addEventListener('click', () => {
+                    const fileInput = preview.querySelector('#cover-image-input');
+                    if (fileInput) {
+                        fileInput.click();
+                    }
+                });
+                
+                const fileInput = preview.querySelector('#cover-image-input');
+                if (fileInput) {
+                    fileInput.addEventListener('change', (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                            this.handleCoverImageUpload(e.target.files[0]);
+                        }
+                    });
+                }
+            }
         }
     }
 
@@ -157,15 +249,50 @@ class BlogEditor {
             
         if (blog.coverImage) {
             const preview = this.container.querySelector('.cover-preview');
-            // Check if coverImage is an object with a URL property (from presigned URL)
-            const imageUrl = typeof blog.coverImage === 'object' && blog.coverImage.url 
-                ? blog.coverImage.url 
-                : blog.coverImage;
+            // Safely handle coverImage which might be null, an object, or a string
+            let imageUrl = '';
+            if (blog.coverImage) {
+                imageUrl = typeof blog.coverImage === 'object' && blog.coverImage.url 
+                    ? blog.coverImage.url 
+                    : blog.coverImage;
+            }
             
-            preview.innerHTML = `<img src="${imageUrl}" alt="Cover Image">`;
-            preview.classList.add('has-image');
+            // Display the image in the preview while preserving the file input
+            if (imageUrl) {
+                preview.innerHTML = `
+                    <img src="${imageUrl}" alt="Cover Image">
+                    <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
+                `;
+                preview.classList.add('has-image');
+            } else {
+                // Reset to default if no image
+                preview.innerHTML = `
+                    <span>Click to add cover image</span>
+                    <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
+                `;
+                preview.classList.remove('has-image');
+            }
+            
             // Store the coverImage data structure as is
             this.coverImageUrl = blog.coverImage;
+            
+            // Re-attach the click event listener for the cover image
+            preview.addEventListener('click', () => {
+                const fileInput = preview.querySelector('#cover-image-input');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            });
+            
+            // Re-attach change event listener for the file input
+            const fileInput = preview.querySelector('#cover-image-input');
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        this.handleCoverImageUpload(e.target.files[0]);
+                    }
+                });
+            }
         }
 
             // Set content in Quill editor
@@ -216,20 +343,28 @@ class BlogEditor {
             const headers = getAuthHeaders();
             if (!headers) return;
 
+            console.log('Saving blog with data:', JSON.stringify(blogData));
+            
             const response = await fetch(url, {
                 method: this.currentBlogId ? 'PUT' : 'POST',
                 headers,
                 body: JSON.stringify(blogData),
             });
 
-            if (!response.ok) throw new Error('Failed to save blog post');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save blog post');
+            }
+
+            const data = await response.json();
+            console.log('Blog save response:', data);
 
             showNotification('Blog post saved successfully', 'success');
             this.hide();
             window.dispatchEvent(new CustomEvent('blogUpdated'));
         } catch (error) {
             console.error('Failed to save blog:', error);
-            showNotification('Failed to save blog post', 'error');
+            showNotification(`Failed to save blog: ${error.message}`, 'error');
         }
     }
 
@@ -253,6 +388,9 @@ class BlogEditor {
         // Reset buttons
         this.container.querySelector('.draft-btn').textContent = 'Save as Draft';
         this.container.querySelector('.publish-btn').textContent = 'Publish';
+        
+        // Trigger blog list reload
+        window.dispatchEvent(new CustomEvent('blogUpdated'));
     }
 }
 

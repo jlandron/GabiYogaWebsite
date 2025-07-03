@@ -3,19 +3,19 @@ const { v4: uuidv4 } = require('uuid');
 const { 
     createSuccessResponse, 
     createErrorResponse,
-    validateToken,
+    getUserFromToken,
     logWithContext
-} = require('../shared/public-utils');
+} = require('../shared/utils');
+const { processImage, getImageUrl } = require('../shared/image-utils');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const s3 = new AWS.S3();
 
 exports.handler = async (event, context) => {
     const requestId = context.awsRequestId;
     
     try {
         // Verify admin authentication
-        const user = await validateToken(event.headers.Authorization);
+        const user = await getUserFromToken(event);
         if (!user || user.role !== 'admin') {
             return createErrorResponse('Unauthorized - Admin access required', 403);
         }
@@ -34,37 +34,18 @@ exports.handler = async (event, context) => {
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '');
 
-        // Handle cover image if provided
-        let coverImage = null;
-        if (body.coverImage) {
-            // Extract base64 data
-            const matches = body.coverImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-            if (matches && matches.length === 3) {
-                const fileType = matches[1];
-                const buffer = Buffer.from(matches[2], 'base64');
-                const key = `blog-covers/${uuidv4()}.${fileType.split('/')[1]}`;
-
-                // Upload to S3
-                await s3.putObject({
-                    Bucket: process.env.ASSETS_BUCKET,
-                    Key: key,
-                    Body: buffer,
-                    ContentType: fileType
-                }).promise();
-
-                coverImage = key;
-            }
-        }
+        // Generate a new post ID
+        const postId = uuidv4();
 
         // Create blog post
         const timestamp = new Date().toISOString();
         const post = {
-            id: uuidv4(),
+            id: postId,
             title: body.title,
             slug,
             content: body.content,
             excerpt: body.excerpt || body.content.substring(0, 200) + '...',
-            coverImage,
+            coverImage: body.coverImage,
             category: body.category || 'General',
             tags: body.tags || [],
             status: 'draft',
@@ -85,9 +66,15 @@ exports.handler = async (event, context) => {
 
         logWithContext('info', 'Blog post created successfully', { requestId, postId: post.id });
 
+        // For the response, add presigned URLs for images
+        const responsePost = { ...post };
+        if (responsePost.coverImage) {
+            responsePost.coverImageUrl = getImageUrl(responsePost.coverImage);
+        }
+
         return createSuccessResponse({
             message: 'Blog post created successfully',
-            post
+            post: responsePost
         });
 
     } catch (error) {

@@ -1,6 +1,6 @@
 [Previous content remains the same until the Current Progress section...]
 
-### 🌐 Current Progress (2025-07-01):
+### 🌐 Current Progress (2025-07-02):
 
 #### 1. Static Website Implementation ✅
 [Previous content remains the same...]
@@ -43,14 +43,15 @@ Rules:
   - POST /admin/classes - Create class
   - PUT /admin/classes/:id - Update class
   - DELETE /admin/classes/:id - Delete class
+- **Booking APIs** ✅:
+  - GET /classes - List available classes ✅
+  - POST /classes/:id/book - Book a class ✅
+  - GET /bookings - List user's bookings ✅
+  - DELETE /bookings/:id - Cancel booking ✅
 
 ##### Remaining APIs TODO 📋
 - **Booking APIs**:
-  - GET /classes - List available classes
-  - POST /classes/:id/book - Book a class
-  - GET /bookings - List user's bookings
   - PUT /bookings/:id - Modify booking
-  - DELETE /bookings/:id - Cancel booking
 - **Payment APIs**:
   - POST /payment/intent - Create payment intent
   - POST /payment/webhook - Handle Stripe webhooks
@@ -65,11 +66,17 @@ Rules:
    - ✅ Integrate TinyMCE for rich text editing
    - ✅ Add cover image support
    - ✅ Implement blog post status management
+   - ✅ Fix blog save/update functionality
+   - ✅ Improve cover image upload handling
+   - ✅ Add direct navigation to blog posts from admin
+   - ✅ Fix cancel button to reload blog list
 
-2. **Booking System**
-   - Implement booking management
-   - Add capacity tracking
-   - Set up notifications
+2. **Booking System** ✅
+   - ✅ Implement booking management
+   - ✅ Add capacity tracking
+   - ✅ Set up waitlist functionality
+   - ✅ Add frontend integration for class booking
+   - Implement booking notifications (email confirmations)
 
 3. **Payment Integration**
    - Set up Stripe integration
@@ -98,6 +105,56 @@ Rules:
   - GET /admin/classes/{id} - Get specific class
   - PUT /admin/classes/{id} - Update class
   - DELETE /admin/classes/{id} - Delete class
+
+#### Booking System
+- ✅ **Class Booking APIs**: Complete booking system functionality:
+  - GET /classes - List available classes with filtering and pagination
+  - POST /classes/:id/book - Book a class with capacity checking
+  - GET /bookings - List user's bookings with filtering options
+  - DELETE /bookings/:id - Cancel booking with automatic waitlist promotion
+- ✅ **Capacity Management**: Automatic tracking of available spots
+  - Maximum capacity settings for each class
+  - Real-time availability display
+  - Prevents overbooking of classes
+- ✅ **Waitlist System**: Automatic waitlist management
+  - Waitlist position tracking
+  - Automatic promotion from waitlist when spots open
+  - Status tracking for confirmed/waitlisted bookings
+- ✅ **Frontend Integration**: Complete booking flow in the UI
+  - Class details modal with availability information
+  - Booking button with waitlist support
+  - Login integration with redirect back to booking
+  - Success/error notifications for booking actions
+- ✅ **User Dashboard Ready**: Infrastructure for user booking management
+  - View upcoming bookings
+  - View booking history
+  - Cancel bookings
+  - Filter bookings by various criteria
+
+#### User Portal Enhancements
+- ✅ **Integrated Calendar View**: Same calendar as homepage, now in user portal
+  - Visual class schedule with date navigation
+  - Color-coding for class types and booked classes
+  - Direct booking from calendar view
+- ✅ **Enhanced Booking Experience**:
+  - Book classes directly from homepage calendar
+  - Book classes from user portal calendar 
+  - Visual indicators for booked classes and availability
+  - Waitlist support with position tracking
+- ✅ **Booking Management**:
+  - View upcoming bookings list in user dashboard
+  - View past classes history with filtering options
+  - Cancel bookings with confirmation dialogs
+  - Handle waitlist status in booking display
+- ✅ **User Profile Management**:
+  - Load and display user profile data
+  - Update user information (name, phone, preferences)
+  - Email notification preferences toggle
+  - Account deletion with data protection
+- ✅ **Account Management**:
+  - Secure account deletion process
+  - Multi-confirmation for irreversible actions
+  - Complete user data purging on deletion
 
 #### Enhanced Settings Management
 - ✅ **Modular Settings Manager**: Implemented a dedicated class-based settings manager
@@ -136,6 +193,10 @@ Rules:
   - ✅ Cover image upload functionality
   - ✅ Metadata editing (title, category, tags)
   - ✅ Draft/publish workflow
+  - ✅ Direct navigation to blog posts from admin panel
+  - ✅ Blog post status indicators in admin list
+  - ✅ Robust image upload with error handling
+  - ✅ Fixed save/update functionality
 
 #### Gallery Management
 - ✅ **Admin Gallery Editor**: Complete gallery management with:
@@ -184,5 +245,32 @@ Rules:
   - Category-specific saving functionality
   - Proper error handling and notifications
   - Real-time connection to DynamoDB for persistent storage
+
+### 📝 Recent Updates:
+
+**2025-07-02 (PM):** Implemented User Portal Enhancements:
+- Exposed class calendar in the user portal (same as homepage calendar)
+- Implemented booking flow for classes from both homepage and user portal
+- Added display of past and future classes with filtering options
+- Created user profile data loading and updating functionality
+- Added account deletion feature with confirmation dialogs
+- Fixed profile data display and editing
+- Implemented booking cancellation functionality
+- Added visual indicators for booked classes in calendar view
+- Fixed API routes for profile, account, and booking endpoints in CDK infrastructure
+- Made necessary repairs to utils.js imports for authentication functions
+
+**2025-07-02 (AM):** Fixed admin blog functionality:
+- Fixed blog post create/update functionality by adding the missing `validateToken` function
+- Added robust coverImage handling to support both base64 encoded images and object references
+- Fixed "match is not a function" error in the blog update/create Lambda functions
+- Enhanced image uploading in blog editor with better error handling
+- Added clickable blog titles that navigate to the published blog post
+- Fixed blog URL format to use query parameters (`?slug=` instead of path-based routing)
+- Improved cover image selection/upload experience with proper null/undefined checks
+- Added status indicators for blog posts in admin list
+- Fixed the cancel button to reload blog list when closing editor
+- Added event-based reloading when blog content changes to ensure list is always up to date
+- Updated DOM element selection with more robust error checking
 
 [Rest of the content remains the same...]

@@ -399,32 +399,104 @@ async function loadAboutMe() {
             // Find profile image setting
             const profileImage = data.rawSettings.find(setting => setting.id === 'about_profile_image');
             
+            // Find certifications setting
+            const certifications = data.rawSettings.find(setting => setting.id === 'about_certifications');
+            
             // Update profile image if available
             if (profileImage && profileImage.value) {
                 const profileImageElement = document.getElementById('profile-image');
+                const profileImageLoading = document.getElementById('profile-image-loading');
+                
                 if (profileImageElement) {
                     // Use presignedUrl if available, otherwise use the relative path
+                    let imageUrl = '';
                     if (profileImage.presignedUrl) {
-                        profileImageElement.src = profileImage.presignedUrl;
+                        imageUrl = profileImage.presignedUrl;
                     } else if (profileImage.value.startsWith('http')) {
-                        profileImageElement.src = profileImage.value;
+                        imageUrl = profileImage.value;
                     } else {
                         // For relative paths, add the API base URL
-                        profileImageElement.src = API_BASE_URL + profileImage.value;
+                        imageUrl = API_BASE_URL + profileImage.value;
                     }
                     
                     // Update the alt text
                     profileImageElement.alt = "Gabi Yoga Profile";
                     
-                    console.log('✅ Updated profile image with:', profileImage.presignedUrl || profileImage.value);
+                    // Load the image and handle loading state
+                    profileImageElement.onload = function() {
+                        // Hide loading indicator, show image
+                        if (profileImageLoading) profileImageLoading.style.display = 'none';
+                        profileImageElement.style.display = 'block';
+                        console.log('✅ Profile image loaded successfully');
+                    };
+                    
+                    profileImageElement.onerror = function() {
+                        // Keep loading indicator visible with error message
+                        if (profileImageLoading) {
+                            profileImageLoading.innerHTML = '<p style="color: #dc3545;">Failed to load profile image</p>';
+                        }
+                        console.error('❌ Error loading profile image');
+                    };
+                    
+                    // Set the source to trigger loading
+                    profileImageElement.src = imageUrl;
+                    
+                    console.log('✅ Started loading profile image from:', imageUrl);
+                }
+            } else {
+                // No profile image available - show a message
+                const profileImageLoading = document.getElementById('profile-image-loading');
+                if (profileImageLoading) {
+                    profileImageLoading.innerHTML = '<p>No profile image available</p>';
                 }
             }
             
-            if (biography) {
-                aboutContent.innerHTML = 
-                    '<div style="white-space: pre-line; line-height: 1.8; font-size: 1.1rem; color: #555;">' +
+            let aboutHtml = '';
+            
+            // Add biography if available
+            if (biography && biography.value) {
+                aboutHtml += 
+                    '<div class="biography" style="white-space: pre-line; line-height: 1.8; font-size: 1.1rem; color: #555; margin-bottom: 2rem;">' +
                         biography.value +
                     '</div>';
+            }
+            
+            // Add certifications if available
+            if (certifications && certifications.value) {
+                try {
+                    const certsList = JSON.parse(certifications.value);
+                    
+                    if (certsList && certsList.length > 0) {
+                        // Create certifications section
+                        aboutHtml += '<div class="certifications-section">';
+                        aboutHtml += '<h3 class="section-subtitle">Certifications & Training</h3>';
+                        aboutHtml += '<div class="certifications-list">';
+                        
+                        // Loop through each certification
+                        certsList.forEach(cert => {
+                            aboutHtml += `
+                                <div class="certification-item">
+                                    <h4>${cert.title || ''}</h4>
+                                    <div class="certification-meta">
+                                        <span class="certification-org">${cert.organization || ''}</span>
+                                        ${cert.year ? `<span class="certification-year">${cert.year}</span>` : ''}
+                                    </div>
+                                    ${cert.description ? `<p>${cert.description}</p>` : ''}
+                                </div>
+                            `;
+                        });
+                        
+                        aboutHtml += '</div></div>';
+                        
+                        console.log('✅ Loaded certifications:', certsList.length);
+                    }
+                } catch (error) {
+                    console.error('❌ Error parsing certifications:', error);
+                }
+            }
+            
+            if (aboutHtml) {
+                aboutContent.innerHTML = aboutHtml;
                 
                 // Hide loading, show content
                 aboutLoading.style.display = 'none';
@@ -432,7 +504,7 @@ async function loadAboutMe() {
                 
                 console.log('✅ Loaded About Me content');
             } else {
-                throw new Error('Biography not found in settings');
+                throw new Error('No about me content found in settings');
             }
         } else {
             throw new Error('Invalid settings response');
@@ -547,13 +619,12 @@ function createCalendarView() {
     const calendarHTML = 
         '<div class="calendar-container">' +
             '<div class="calendar-header">' +
-                '<h1 class="calendar-title">Class Schedule</h1>' +
-                '<div class="calendar-date-range" id="calendar-date-range">' +
-                    '<!-- Date range will be populated here -->' +
-                '</div>' +
                 '<div class="calendar-navigation">' +
-                    '<button class="nav-btn" id="prev-month">← Previous</button>' +
-                    '<button class="nav-btn" id="next-month">Next →</button>' +
+                    '<button class="nav-btn" id="prev-month">←</button>' +
+                    '<div class="calendar-date-range" id="calendar-date-range">' +
+                        '<!-- Date range will be populated here -->' +
+                    '</div>' +
+                    '<button class="nav-btn" id="next-month">→</button>' +
                 '</div>' +
             '</div>' +
             '<div class="calendar-grid-container">' +

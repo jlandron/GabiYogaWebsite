@@ -8,7 +8,6 @@ const {
 } = require('../shared/utils');
 
 const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event) => {
     console.log('Event:', JSON.stringify(event, null, 2));
@@ -19,10 +18,10 @@ exports.handler = async (event) => {
             return createSuccessResponse({}, 200);
         }
 
-        // Check if this is a direct image URL request (no auth required)
+        // Check if this is a direct image URL request
         const queryParams = event.queryStringParameters || {};
         if (event.httpMethod === 'GET' && queryParams.key) {
-            // Generate a presigned URL for an existing image
+            // GET requests for presigned URLs are public - no authentication required
             try {
                 const bucket = process.env.ASSETS_BUCKET;
                 const s3Key = queryParams.key;

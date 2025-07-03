@@ -10,7 +10,7 @@ const {
     createErrorResponse,
     logWithContext,
     getUserFromToken 
-} = require('../shared/utils');
+} = require('../shared/public-utils');
 
 exports.handler = async (event, context) => {
     const requestId = context.awsRequestId;

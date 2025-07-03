@@ -66,5 +66,4 @@ module.exports = {
   createResponse,
   createSuccessResponse,
   createErrorResponse,
-  logWithContext
-};
+  logWithContext};
