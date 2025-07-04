@@ -4,26 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gabi Yoga Admin</title>
-    <link rel="stylesheet" href="/dev/static/theme-variables.css">
-    <link rel="stylesheet" href="/dev/static/common-styles.css">
-    <link rel="stylesheet" href="/dev/static/admin.css">
-    <link rel="stylesheet" href="/dev/static/class-modal.css">
+    <link rel="stylesheet" href="/static/theme-variables.css">
+    <link rel="stylesheet" href="/static/common-styles.css">
+    <link rel="stylesheet" href="/static/admin.css">
+    <link rel="stylesheet" href="/static/class-modal.css">
     <!-- Quill Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Main Navigation - Simplified to match homepage -->
     <header class="header">
         <nav class="nav-container">
-            <a href="/dev/admin.html" class="logo">Gabi Yoga</a>
+            <a href="/admin.html" class="logo">Gabi Yoga</a>
             <div class="nav-content">
                 <ul class="nav-links">
-                    <li><a href="/dev/">Home</a></li>
-                    <li><a href="/dev/blog-page">Blog</a></li>
-                    <li><a href="/dev/admin.html" class="active">Admin</a></li>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/blog-page">Blog</a></li>
+                    <li><a href="/admin.html" class="active">Admin</a></li>
                 </ul>
                 <div class="auth-buttons">
                     <button id="logoutBtn" class="btn btn-outline">Logout</button>
@@ -195,14 +194,15 @@
 
     <!-- Load dependencies first -->
     <!-- Image compression library -->
+    <script src="/static/environment-indicator.js"></script>
     <script src="https://unpkg.com/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
-    <script src="/dev/static/image-compressor-util.js"></script>
-    <script src="/dev/static/blog-editor.js"></script>
-    <script src="/dev/static/class-modal.js"></script>
-    <script src="/dev/static/schedule-editor.js"></script>
-    <script src="/dev/static/gallery-manager.js"></script>
-    <script src="/dev/static/settings.js"></script>
+    <script src="/static/image-compressor-util.js"></script>
+    <script src="/static/blog-editor.js"></script>
+    <script src="/static/class-modal.js"></script>
+    <script src="/static/schedule-editor.js"></script>
+    <script src="/static/gallery-manager.js"></script>
+    <script src="/static/settings.js"></script>
     <!-- Load main admin script last -->
-    <script src="/dev/static/admin.js"></script>
+    <script src="/static/admin.js"></script>
 </body>
 </html>

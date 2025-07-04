@@ -653,7 +653,7 @@ window.ScheduleEditor = class ScheduleEditor {
         const [hours, minutes] = timeInput.value.split(':').map(Number);
         const duration = parseInt(durationInput.value) || 60;
         const endMinutes = hours * 60 + minutes + duration;
-        const endHours = Math.floor(endMinutes /// 60) % 24; /// Handle wrap around midnight
+        const endHours = Math.floor(endMinutes / 60) % 24; /// Handle wrap around midnight
         const endMins = endMinutes % 60;
         
         endTimeInput.value = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;

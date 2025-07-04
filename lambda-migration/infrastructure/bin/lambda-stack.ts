@@ -4,7 +4,6 @@ import * as cdk from 'aws-cdk-lib';
 import { LambdaDbStack } from '../lib/lambda-db-stack';
 import { LambdaApiStack } from '../lib/lambda-api-stack';
 import { LambdaAuthStack } from '../lib/lambda-auth-stack';
-import { LambdaMonitoringStack } from '../lib/lambda-monitoring-stack';
 import { LambdaSesStack } from '../lib/lambda-ses-stack';
 import { LambdaRoute53Stack } from '../lib/lambda-route53-stack';
 
@@ -73,18 +72,6 @@ const apiStack = new LambdaApiStack(app, `${stackPrefix}-Api`, {
   stripeSecret: authStack.stripeSecret,
 });
 
-// Monitoring Stack - CloudWatch dashboards, alarms, and logs
-const monitoringStack = new LambdaMonitoringStack(app, `${stackPrefix}-Monitoring`, {
-  env,
-  stage,
-  tags: commonTags,
-  description: `Gabi Yoga Lambda Monitoring Stack (${stage})`,
-  // Pass API Gateway and Lambda references for monitoring
-  apiGateway: apiStack.apiGateway,
-  lambdaFunctions: apiStack.lambdaFunctions,
-  dynamodbTables: dbStack.dynamodbTables,
-});
-
 // SES Stack - Email sending infrastructure
 const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
   env,
@@ -110,7 +97,6 @@ const route53Stack = new LambdaRoute53Stack(app, `${stackPrefix}-Route53`, {
 apiStack.addDependency(dbStack);
 apiStack.addDependency(authStack);
 apiStack.addDependency(sesStack);
-monitoringStack.addDependency(apiStack);
 route53Stack.addDependency(apiStack);
 
 // Output key information
@@ -148,12 +134,6 @@ new cdk.CfnOutput(authStack, 'AuthStackName', {
   exportName: `${stackPrefix}-AuthStackName`,
 });
 
-new cdk.CfnOutput(monitoringStack, 'MonitoringDashboardUrl', {
-  value: monitoringStack.dashboardUrl,
-  description: 'CloudWatch Dashboard URL',
-  exportName: `${stackPrefix}-MonitoringDashboardUrl`,
-});
-
 new cdk.CfnOutput(sesStack, 'EmailDomain', {
   value: 'gabi.yoga',
   description: 'Email domain for sending emails',
@@ -179,7 +159,6 @@ console.log(`Deploying Gabi Yoga Lambda stacks for ${stage} environment:`);
 console.log(`- Database Stack: ${dbStack.stackName}`);
 console.log(`- Auth Stack: ${authStack.stackName}`);
 console.log(`- API Stack: ${apiStack.stackName}`);
-console.log(`- Monitoring Stack: ${monitoringStack.stackName}`);
 console.log(`- SES Stack: ${sesStack.stackName}`);
 console.log(`- Route53 Stack: ${route53Stack.stackName}`);
 console.log(`- Region: ${region}`);

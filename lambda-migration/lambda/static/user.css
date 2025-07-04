@@ -69,6 +69,32 @@ nav {
     color: var(--color-white) !important;
 }
 
+/* User Hero */
+.user-hero {
+    height: 33vh;
+    background-image: url('https://images.unsplash.com/photo-1465429103920-30e481ab35b4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.user-hero-content {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    text-align: center;
+    color: var(--color-white);
+}
+
+.user-hero-content h1 {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    color: var(--color-white);
+}
+
 /* Main Content */
 main {
     max-width: var(--container-max-width);
@@ -103,6 +129,7 @@ main {
 .dashboard-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
+    border-bottom: var(--border-width-thin) solid var(--color-metallic-highlight);
 }
 
 .dashboard-card h3 {
@@ -203,6 +230,7 @@ main {
     background: var(--color-error-light);
     border: var(--border-width-thin) solid var(--color-error);
     border-radius: var(--border-radius-lg);
+    box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .danger-zone h3 {
@@ -258,7 +286,7 @@ main {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(106, 141, 115, 0.2);
+    box-shadow: 0 0 0 2px var(--color-shadow);
 }
 
 .form-group textarea {

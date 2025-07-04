@@ -5,32 +5,38 @@
  */
 
 :root {
-  /* Brand Colors */
-  --color-primary: #6a8d73;         /* Sage green - main brand color */
-  --color-primary-light: #9cb0a3;   /* Light sage - for hover states */
-  --color-primary-dark: #465c4c;    /* Dark sage - for active states */
-  --color-secondary: #f4a259;       /* Warm orange - accent color */
-  --color-secondary-light: #f7be86; /* Light orange */
-  --color-secondary-dark: #d0803d;  /* Dark orange */
-  
-  /* Neutral Colors */
+  /* Brand Colors - Inspired by dried flowers and natural tones */
+  --color-primary: #a1b082;         /* Soft, muted pastel green from stems */
+  --color-primary-light: #c1d29d;   /* Lighter pastel green */
+  --color-primary-dark: #82946c;    /* Slightly darker pastel green */
+  --color-secondary: #f198b1;       /* Muted pink from flowers - a dominant flower color */
+  --color-secondary-light: #f7bcd0; /* Lighter muted pink */
+  --color-secondary-dark: #e07a96;  /* Deeper muted pink */
+
+  /* Neutral Colors - Natural, earthy tones */
   --color-white: #ffffff;
-  --color-off-white: #f9f7f3;       /* Background color */
-  --color-light-gray: #e0e0e0;      /* Borders, dividers */
-  --color-medium-gray: #9e9e9e;     /* Disabled elements */
-  --color-dark-gray: #616161;       /* Secondary text */
-  --color-charcoal: #333333;        /* Primary text */
-  --color-black: #121212;           /* Headers */
+  --color-off-white: #fcfcf9;       /* Soft, very light off-white */
+  --color-light-gray: #e8e8e3;      /* Very light, subtle gray */
+  --color-medium-gray: #c9c9c1;     /* Medium, soft gray */
+  --color-dark-gray: #8f8f87;       /* Darker, earthy gray */
+  --color-charcoal: #5c5c55;        /* Deep, natural charcoal */
+  --color-black: #3b3b35;           /* Very dark, almost black, subtle green/brown undertone */
+
+  /* Accent Colors - Extracted directly from flowers for vibrancy */
+  --color-accent-yellow: #f8d356;   /* Bright yellow from flowers */
+  --color-accent-orange: #f28b5e;   /* Warm orange from flowers */
+  --color-accent-deep-pink: #d65a88;/* Deeper pink/magenta from flowers */
+  --color-accent-light-pink: #fbc6d9; /* Very light pink/blush from flowers */
   
-  /* Status Colors */
-  --color-success: #2e7d32;         /* Green */
-  --color-success-light: #e8f5e9;   /* Light green background */
-  --color-error: #c62828;           /* Red */
-  --color-error-light: #ffebee;     /* Light red background */
-  --color-warning: #f57c00;         /* Orange */
-  --color-warning-light: #fff8e1;   /* Light orange background */
-  --color-info: #0288d1;            /* Blue */
-  --color-info-light: #e1f5fe;      /* Light blue background */
+  /* Status Colors - Harmonized with new palette */
+  --color-success: #82946c;         /* Using primary dark for success */
+  --color-success-light: #e8e9e4;   /* Lighter background for success */
+  --color-error: #e07a96;           /* Using secondary dark for error */
+  --color-error-light: #fbebf0;     /* Lighter background for error */
+  --color-warning: #f8d356;         /* Using accent yellow for warning */
+  --color-warning-light: #fff8e6;   /* Lighter background for warning */
+  --color-info: #78a6c4;            /* A soft blue for info, complementing the palette */
+  --color-info-light: #eaf3f8;      /* Lighter background for info */
   
   /* Status-specific Colors */
   --color-confirmed: var(--color-success);
@@ -39,10 +45,16 @@
   --color-waitlisted-bg: var(--color-warning-light);
   --color-canceled: var(--color-error);
   --color-canceled-bg: var(--color-error-light);
+
+  /* Additional themed colors for enhanced design */
+  --color-metallic-highlight: #f8d356; /* Using accent yellow for highlight */
+  --color-shadow: rgba(92, 92, 85, 0.15); /* Soft shadow based on charcoal */
+  --color-overlay: rgba(161, 176, 130, 0.75); /* Pastel green overlay */
+  --color-dev-env-border: #a1b082; /* Using primary color for dev environment border */
   
   /* Typography */
-  --font-family-primary: 'Abhaya Libre', serif;
-  --font-family-secondary: 'Abhaya Libre', serif;
+  --font-family-primary: 'Georgia', serif; /* Changed to a classic serif for a natural, slightly rustic feel */
+  --font-family-secondary: 'Lato', sans-serif; /* A clean sans-serif for contrast and readability */
   
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
@@ -59,7 +71,7 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   
-  /* Spacing */
+  /* Spacing - Retained as they are general layout properties */
   --spacing-xxs: 0.25rem;  /* 4px */
   --spacing-xs: 0.5rem;    /* 8px */
   --spacing-sm: 0.75rem;   /* 12px */
@@ -69,7 +81,7 @@
   --spacing-2xl: 3rem;     /* 48px */
   --spacing-3xl: 4rem;     /* 64px */
   
-  /* Borders */
+  /* Borders - Retained, but will inherently use new color variables */
   --border-radius-sm: 0.25rem;  /* 4px */
   --border-radius-md: 0.5rem;   /* 8px */
   --border-radius-lg: 0.75rem;  /* 12px */
@@ -80,29 +92,28 @@
   --border-width-medium: 2px;
   --border-width-thick: 4px;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  /* Shadows - Adjusted to use the new neutral colors */
+  --shadow-sm: 0 1px 3px var(--color-shadow), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px var(--color-shadow), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px var(--color-shadow), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px var(--color-shadow), 0 10px 10px rgba(0, 0, 0, 0.04);
   
-  /* Animations */
+  /* Animations - Retained as general animation properties */
   --transition-fast: 0.2s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
   
-  /* Layout */
+  /* Layout - Retained as general layout properties */
   --container-max-width: 1200px;
   --header-height: 80px;
   --footer-height: 200px;
   
-  /* Z-indices */
+  /* Z-indices - Retained as general layout properties */
   --z-index-dropdown: 100;
   --z-index-modal: 200;
   --z-index-tooltip: 300;
   --z-index-notification: 400;
 }
-
 /* Dark mode theme variables - for future implementation */
 @media (prefers-color-scheme: dark) {
   :root {

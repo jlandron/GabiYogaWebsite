@@ -128,8 +128,12 @@ function showRegisterForm() {
       <div class="auth-modal-body">
         <form id="register-form" onsubmit="handleRegister(event)">
           <div class="form-group">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" name="name" required>
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" required>
           </div>
           <div class="form-group">
             <label for="email">Email</label>
@@ -221,7 +225,8 @@ async function handleLogin(event) {
 async function handleRegister(event) {
   event.preventDefault();
   
-  const name = event.target.name.value;
+  const firstName = event.target.firstName.value;
+  const lastName = event.target.lastName.value;
   const email = event.target.email.value;
   const password = event.target.password.value;
   const errorEl = document.getElementById('register-error');
@@ -241,7 +246,7 @@ async function handleRegister(event) {
         'Accept': 'application/json'
       },
       mode: 'cors',
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ firstName, lastName, email, password })
     });
     
     const data = await response.json();

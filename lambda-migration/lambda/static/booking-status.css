@@ -9,6 +9,7 @@
     font-size: var(--font-size-sm);
     margin-left: var(--spacing-xs);
     font-weight: var(--font-weight-medium);
+    box-shadow: 0 2px 4px var(--color-shadow);
 }
 
 .status-badge.confirmed {
@@ -68,11 +69,15 @@
     cursor: pointer;
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-fast);
+    box-shadow: 0 2px 4px var(--color-shadow);
 }
 
 .rebook-btn:hover {
     background-color: var(--color-info);
     color: var(--color-white);
+    box-shadow: 0 3px 6px var(--color-shadow);
+    border: var(--border-width-thin) solid var(--color-metallic-highlight);
+    transform: translateY(-2px);
 }
 
 /* Modal availability status */
@@ -82,6 +87,8 @@
     padding: var(--spacing-md);
     border-radius: var(--border-radius-sm);
     margin: var(--spacing-md) 0;
+    box-shadow: 0 3px 6px var(--color-shadow);
+    border-left: 3px solid var(--color-metallic-highlight);
 }
 
 .class-modal-availability.canceled .class-modal-availability-text {

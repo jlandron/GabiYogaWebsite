@@ -25,5 +25,6 @@ export declare class LambdaApiStack extends cdk.Stack {
     readonly lambdaFunctions: lambda.Function[];
     readonly assetsBucket: s3.Bucket;
     constructor(scope: Construct, id: string, props: LambdaApiStackProps);
+    private grantSESPermissions;
     private createLambdaFunction;
 }

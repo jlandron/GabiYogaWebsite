@@ -17,9 +17,31 @@ body {
   padding: 0;
 }
 
+/* Dev Environment Indicator */
+body.dev-environment {
+  border: 6px solid var(--color-dev-env-border);
+  min-height: calc(100vh - 12px);
+}
+
+/* Script to add dev environment class if on dev domain */
+@media screen {
+  @supports (display: block) {
+    body::after {
+      content: "";
+      display: none;
+    }
+    body {
+      position: relative;
+    }
+    body.js-disabled::before {
+      content: "";
+      display: none;
+    }
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family-secondary);
-  color: var(--color-black);
   margin-top: 0;
 }
 
@@ -69,6 +91,8 @@ button.btn {
 
 .btn-primary:hover {
   background-color: var(--color-primary-dark);
+  box-shadow: 0 4px 8px var(--color-shadow);
+  border-bottom: var(--border-width-thin) solid var(--color-metallic-highlight);
 }
 
 .btn-secondary {
@@ -78,6 +102,8 @@ button.btn {
 
 .btn-secondary:hover {
   background-color: var(--color-secondary-dark);
+  box-shadow: 0 4px 8px var(--color-shadow);
+  border-bottom: var(--border-width-thin) solid var(--color-metallic-highlight);
 }
 
 .btn-outline {
@@ -89,6 +115,8 @@ button.btn {
 .btn-outline:hover {
   background-color: var(--color-primary);
   color: var(--color-white);
+  box-shadow: 0 4px 8px var(--color-shadow);
+  border-color: var(--color-metallic-highlight);
 }
 
 .btn-sm {
@@ -138,7 +166,7 @@ button.btn {
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(106, 141, 115, 0.2);
+  box-shadow: 0 0 0 2px var(--color-shadow);
 }
 
 .form-textarea {
@@ -153,6 +181,7 @@ button.btn {
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
+  border-bottom: var(--border-width-thin) solid var(--color-metallic-highlight);
 }
 
 .card-title {
