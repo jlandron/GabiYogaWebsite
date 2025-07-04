@@ -1,9 +1,11 @@
 /**
- * Settings Management Module
- * 
+* Settings Management Module
+ *
  * Handles all functionality related to website settings in the admin panel
  * including loading, displaying, editing, and saving settings.
  */
+
+import { compressProfileImage } from './image-compressor.js';
 
 class SettingsManager {
     constructor(containerElement) {
@@ -780,15 +782,18 @@ class SettingsManager {
      */
     async uploadImageToS3(file) {
         try {
+            // Compress the image before uploading
+            const compressedFile = await compressProfileImage(file);
+            
             // Step 1: Get a presigned URL for upload
             const headers = getAuthHeaders();
-            
+
             const getUrlResponse = await fetch('/dev/gallery/upload', {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({ 
-                    filename: file.name,
-                    contentType: file.type
+                body: JSON.stringify({
+                    filename: compressedFile.name,
+                    contentType: compressedFile.type
                 }),
             });
             
@@ -800,12 +805,12 @@ class SettingsManager {
             const urlData = await getUrlResponse.json();
             const { uploadUrl, imageUrl, s3Key, bucket } = urlData;
             
-            // Step 2: Upload the file directly to S3 using the presigned URL
+            // Step 2: Upload the compressed file directly to S3 using the presigned URL
             const uploadResponse = await fetch(uploadUrl, {
                 method: 'PUT',
-                body: file,
+                body: compressedFile,
                 headers: {
-                    'Content-Type': file.type
+                    'Content-Type': compressedFile.type
                 }
             });
             

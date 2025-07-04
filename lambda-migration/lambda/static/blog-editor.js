@@ -1,3 +1,5 @@
+import { compressBlogCoverImage, compressBlogContentImage } from './image-compressor.js';
+
 class BlogEditor {
     constructor(container) {
         this.container = container;
@@ -97,6 +99,9 @@ class BlogEditor {
 
     async handleImageUpload(file) {
         try {
+            // 0. Compress the image first
+            const compressedFile = await compressBlogContentImage(file);
+            
             // 1. Get headers for authentication
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -106,8 +111,8 @@ class BlogEditor {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    filename: file.name,
-                    contentType: file.type
+                    filename: compressedFile.name,
+                    contentType: compressedFile.type
                 })
             });
 
@@ -116,12 +121,12 @@ class BlogEditor {
             const presignedData = await presignedResponse.json();
             console.log('Received presigned URL data for content image:', presignedData);
 
-            // 3. Upload the file directly to S3 using the presigned URL
+            // 3. Upload the compressed file directly to S3 using the presigned URL
             const uploadResponse = await fetch(presignedData.uploadUrl, {
                 method: 'PUT',
-                body: file,
+                body: compressedFile,
                 headers: {
-                    'Content-Type': file.type
+                    'Content-Type': compressedFile.type
                 }
             });
 
@@ -143,12 +148,15 @@ class BlogEditor {
 
             // Show loading state
             preview.innerHTML = `
-                <div class="loading-indicator">Uploading...</div>
+                <div class="loading-indicator">Compressing & Uploading...</div>
                 <input type="file" id="cover-image-input" accept="image/*" style="display: none;">
             `;
+            
+            // Compress the image before uploading
+            const compressedFile = await compressBlogCoverImage(file);
 
             // 1. Use the existing handleImageUpload method to upload the file and get the S3 key
-            this.coverImageUrl = await this.handleImageUpload(file);
+            this.coverImageUrl = await this.handleImageUpload(compressedFile);
 
             if (!this.coverImageUrl) throw new Error('Failed to upload image');
 

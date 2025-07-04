@@ -675,54 +675,8 @@ function formatFieldName(field) {
         .replace(/([A-Z])/g, match => match.toLowerCase()); // Lower case remaining capital letters
 }
 
-/**
- * Show the class modal with data copied from an existing class
- * @param {Object} classData - Original class data to copy from
- */
-function copyClassModal(classData) {
-    if (!classData) return;
-    
-    // Create a deep copy of the class data
-    const copiedClass = JSON.parse(JSON.stringify(classData));
-    
-    // Remove ID and timestamps to create a new class
-    delete copiedClass.id;
-    delete copiedClass.createdAt;
-    delete copiedClass.updatedAt;
-    
-    // Set today's date for updatedAt
-    const today = new Date();
-    copiedClass.updatedAt = today.toISOString();
-    
-    // Show modal with copied data
-    showClassModal(copiedClass);
-    
-    // Update title to indicate it's a copy
-    document.getElementById('class-modal-title').textContent = 'Copy Class';
-    
-    // Focus on the date field since that's likely what the admin wants to change
-    setTimeout(() => {
-        // Switch to the Details tab - make sure to look within the modal
-        const detailsTab = classModal.querySelector('.tab-btn[data-tab="details"]');
-        if (detailsTab) {
-            console.log('Found details tab, clicking it');
-            detailsTab.click();
-            
-            // Focus on the date input after a small delay to ensure the tab switch is complete
-            setTimeout(() => {
-                const dateInput = classModal.querySelector('#class-date');
-                if (dateInput) {
-                    console.log('Focusing on date input');
-                    dateInput.focus();
-                } else {
-                    console.error('Date input not found in modal');
-                }
-            }, 100);
-        } else {
-            console.error('Details tab not found in modal');
-        }
-    }, 100);
-}
+// The copyClassModal function has been removed as this functionality is now
+// handled directly in the schedule editor by prefilling the create modal
 
 /**
  * Show a notification message to the user
@@ -793,4 +747,3 @@ function showNotification(message, type = 'info') {
 window.initAdminClassModal = initAdminClassModal;
 window.showClassModal = showClassModal;
 window.hideClassModal = hideClassModal;
-window.copyClassModal = copyClassModal;

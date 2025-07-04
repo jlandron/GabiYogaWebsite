@@ -156,7 +156,7 @@ async function openPublicClassModal(classId) {
                 <span>📍</span>
                 <span>${classItem.location}</span>
             </div>` : ''}
-            ${classItem.level ? 
+                ${classItem.level ? 
             `<div class="class-modal-detail">
                 <span>🎯</span>
                 <span>${classItem.level}</span>
@@ -166,6 +166,45 @@ async function openPublicClassModal(classId) {
                 <span>💰</span>
                 <span>$${classItem.price}</span>
             </div>` : ''}`;
+        
+        // Add optional fields if they exist
+        let additionalSectionsHTML = '';
+        
+        // Requirements section
+        if (classItem.requirements && classItem.requirements.length > 0) {
+            additionalSectionsHTML += `
+                <div class="class-modal-section">
+                    <h3>Requirements</h3>
+                    <ul class="class-modal-list">
+                        ${classItem.requirements.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>`;
+        }
+        
+        // What to Bring section
+        if (classItem.whatToBring && classItem.whatToBring.length > 0) {
+            additionalSectionsHTML += `
+                <div class="class-modal-section">
+                    <h3>What to Bring</h3>
+                    <ul class="class-modal-list">
+                        ${classItem.whatToBring.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>`;
+        }
+        
+        // Cancellation Policy section
+        if (classItem.cancellationPolicy) {
+            additionalSectionsHTML += `
+                <div class="class-modal-section">
+                    <h3>Cancellation Policy</h3>
+                    <p>${classItem.cancellationPolicy}</p>
+                </div>`;
+        }
+        
+        // Add additional sections after the description
+        if (additionalSectionsHTML) {
+            document.getElementById('public-class-modal-description').innerHTML += additionalSectionsHTML;
+        }
         
         document.getElementById('public-class-modal-details').innerHTML = detailsHTML;
         

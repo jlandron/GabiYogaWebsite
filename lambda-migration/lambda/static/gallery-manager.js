@@ -1,4 +1,6 @@
 // Ensure class is defined globally
+import { compressGalleryImage } from './image-compressor.js';
+
 window.GalleryManager = class GalleryManager {
     constructor(container) {
         this.container = container;
@@ -195,25 +197,28 @@ window.GalleryManager = class GalleryManager {
         const uploadBtn = this.container.querySelector('.upload-btn');
         const totalFiles = files.length;
         let successCount = 0;
-        
+
         // Disable upload button during upload
         uploadBtn.disabled = true;
-        
+
         try {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                statusText.textContent = `Uploading image ${i + 1}/${totalFiles}...`;
+                statusText.textContent = `Compressing & uploading image ${i + 1}/${totalFiles}...`;
+
+                // Compress the image before uploading
+                const compressedFile = await compressGalleryImage(file);
                 
                 // Step 1: Get a presigned URL for upload
                 const headers = getAuthHeaders();
                 if (!headers) return;
-                
+
                 const getUrlResponse = await fetch('/dev/gallery/upload', {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({ 
-                        filename: file.name,
-                        contentType: file.type
+                    body: JSON.stringify({
+                        filename: compressedFile.name,
+                        contentType: compressedFile.type
                     }),
                 });
                 
@@ -222,12 +227,12 @@ window.GalleryManager = class GalleryManager {
                 const urlData = await getUrlResponse.json();
                 const { uploadUrl, imageUrl, s3Key, bucket } = urlData;
                 
-                // Step 2: Upload the file to the presigned URL
+                // Step 2: Upload the compressed file to the presigned URL
                 const uploadResponse = await fetch(uploadUrl, {
                     method: 'PUT',
-                    body: file,
+                    body: compressedFile,
                     headers: {
-                        'Content-Type': file.type
+                        'Content-Type': compressedFile.type
                     }
                 });
                 

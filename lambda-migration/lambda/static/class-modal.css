@@ -379,3 +379,31 @@ textarea {
     background-color: var(--color-canceled-bg);
     color: var(--color-canceled);
 }
+
+/* Class additional sections styling */
+.class-modal-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: rgba(243, 243, 243, 0.5);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid var(--color-primary);
+}
+
+.class-modal-section h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: var(--font-size-lg);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.class-modal-list {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.class-modal-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    color: var(--color-dark-gray);
+}

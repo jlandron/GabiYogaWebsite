@@ -520,13 +520,17 @@ window.ScheduleEditor = class ScheduleEditor {
 
             classBlock.querySelector('.copy-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Use the new copyClassModal function from class-modal.js if available
-                if (typeof copyClassModal === 'function') {
-                    copyClassModal(classItem);
-                } else {
-                    // Fallback to local copy implementation
-                    this.copyClass(classItem);
-                }
+                // Instead of using copyClassModal, use showClassModal with copy functionality
+                const copiedClass = JSON.parse(JSON.stringify(classItem)); // Deep copy
+                delete copiedClass.id; // Remove ID to create a new class
+                delete copiedClass.createdAt; 
+                delete copiedClass.updatedAt;
+                
+                // Use the existing showClassModal function
+                window.showClassModal(copiedClass);
+                
+                // Update title to indicate it's a copy
+                document.getElementById('class-modal-title').textContent = 'Copy Class';
             });
 
             classBlock.querySelector('.delete-btn').addEventListener('click', (e) => {
@@ -776,40 +780,6 @@ window.ScheduleEditor = class ScheduleEditor {
         this.showModal(classData);
     }
     
-    // Fallback copy class method if copyClassModal isn't available
-    copyClass(classData) {
-        if (!classData) return;
-        
-        // Create a deep copy of the class data
-        const copiedClass = JSON.parse(JSON.stringify(classData));
-        
-        // Remove ID and timestamps to create a new class
-        delete copiedClass.id;
-        delete copiedClass.createdAt;
-        delete copiedClass.updatedAt;
-        
-        // Set today's date for updatedAt
-        const today = new Date();
-        copiedClass.updatedAt = today.toISOString();
-        
-        // Show modal with copied data and indicate it's a copy
-        this.showModal(copiedClass);
-        
-        // Update the modal title
-        const modal = this.container.querySelector('.modal');
-        const modalTitle = modal.querySelector('h3');
-        if (modalTitle) {
-            modalTitle.textContent = 'Copy Class';
-        }
-        
-        // Focus on the date field since that's likely what the admin wants to change
-        setTimeout(() => {
-            const dateInput = modal.querySelector('#class-date');
-            if (dateInput) {
-                dateInput.focus();
-            }
-        }, 100);
-    }
 
     async deleteClass(classId) {
         if (!confirm('Are you sure you want to delete this class?')) return;
