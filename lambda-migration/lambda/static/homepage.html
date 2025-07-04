@@ -23,17 +23,13 @@
     <meta property="og:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
     <meta property="og:image" content="https://gabi.yoga/images/og-image.jpg">
     
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://gabi.yoga/">
-    <meta property="twitter:title" content="Gabi Yoga - Find Your Inner Peace">
-    <meta property="twitter:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
-    <meta property="twitter:image" content="https://gabi.yoga/images/twitter-image.jpg">
-    
     <!-- Stylesheets -->
+    <link rel="stylesheet" href="/dev/static/theme-variables.css">
+    <link rel="stylesheet" href="/dev/static/common-styles.css">
     <link rel="stylesheet" href="/dev/static/styles.css">
     <link rel="stylesheet" href="/dev/static/gallery.css">
     <link rel="stylesheet" href="/dev/static/calendar.css">
+    <link rel="stylesheet" href="/dev/static/class-modal.css">
 </head>
 <body>
     <header class="header">
@@ -172,9 +168,16 @@
         </div>
     </footer>
 
+    <!-- Stylesheets for booking UI -->
+    <link rel="stylesheet" href="/dev/static/booking-status.css">
+    
+    <!-- Modal Styles for public booking -->
+    <link rel="stylesheet" href="/dev/static/class-modal.css">
+    
     <!-- Scripts -->
     <script src="/dev/static/auth.js"></script>
-    <script src="/dev/static/class-modal.js"></script>
+    <script src="/dev/static/class-modal-public.js"></script>
+    <script src="/dev/static/init-public-modal.js"></script>
     <script src="/dev/static/frontend.js"></script>
 </body>
 </html>

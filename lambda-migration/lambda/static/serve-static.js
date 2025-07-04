@@ -21,11 +21,6 @@ exports.handler = async (event) => {
         
         // Remove leading slash and 'static/' if present
         const cleanPath = filePath.replace(/^\//, '').replace(/^static\//, '');
-        
-        // Special handling for login.html
-        if (filePath === '/login.html') {
-            filePath = 'login.html';
-        }
 
         // Special handling for favicon.ico
         if (filePath === '/favicon.ico') {

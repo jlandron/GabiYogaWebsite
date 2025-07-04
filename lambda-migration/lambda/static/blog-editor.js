@@ -398,7 +398,7 @@ class BlogEditor {
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev';
         return null;
     }
     return {

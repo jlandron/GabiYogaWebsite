@@ -3,6 +3,9 @@
  * Centralized CSS for Lambda-based site
  */
 
+/* Import theme variables */
+@import 'theme-variables.css';
+
 /* Base Styles & Reset */
 * {
     margin: 0;
@@ -10,20 +13,14 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    color: #6b7b5d;
-    background: #f8faf5;
-}
-
-/* Color Palette - Pastel Sage & Mint */
+/* Legacy color variables - keeping for backward compatibility
+   but new styles should use the theme variables directly */
 :root {
-    --color-lightest: #f4f8f0;  /* Lightest sage - backgrounds, borders */
-    --color-light: #e0ecd4;     /* Light mint - nav elements, secondary buttons */
-    --color-medium: #b8d4a7;    /* Medium sage - hover states, accents */
-    --color-primary: #8fb580;   /* Primary sage - text, buttons */
-    --color-dark: #6a8c5c;      /* Dark sage - headings, strong elements */
+    --color-lightest: var(--color-off-white);
+    --color-light: var(--color-light-gray);
+    --color-medium: var(--color-primary-light);
+    --color-primary: var(--color-primary);
+    --color-dark: var(--color-primary-dark);
 }
 
 /* Typography */

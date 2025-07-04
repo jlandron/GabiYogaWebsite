@@ -1,0 +1,95 @@
+/* Booking Status Styles */
+@import 'theme-variables.css';
+
+/* Status badge styles */
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    margin-left: var(--spacing-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+.status-badge.confirmed {
+    background-color: var(--color-confirmed-bg);
+    color: var(--color-confirmed);
+}
+
+.status-badge.waitlisted {
+    background-color: var(--color-waitlisted-bg);
+    color: var(--color-waitlisted);
+}
+
+.status-badge.canceled {
+    background-color: var(--color-canceled-bg);
+    color: var(--color-canceled);
+}
+
+/* Class item styles for canceled classes */
+.section-title.canceled-title {
+    margin-top: var(--spacing-2xl);
+    color: var(--color-dark-gray);
+    font-size: var(--font-size-xl);
+    border-bottom: var(--border-width-thin) solid var(--color-light-gray);
+    padding-bottom: var(--spacing-xs);
+}
+
+.class-item.canceled {
+    opacity: 0.75;
+    background-color: var(--color-off-white);
+}
+
+.class-item.canceled h3 {
+    opacity: 0.7;
+}
+
+.class-item.canceled {
+    position: relative;
+}
+
+.class-item.canceled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-left: var(--border-width-thick) solid var(--color-canceled);
+}
+
+/* Rebook button */
+.rebook-btn {
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+    border: var(--border-width-thin) solid var(--color-info-light);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
+}
+
+.rebook-btn:hover {
+    background-color: var(--color-info);
+    color: var(--color-white);
+}
+
+/* Modal availability status */
+.class-modal-availability.canceled {
+    background-color: var(--color-canceled-bg);
+    color: var(--color-canceled);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    margin: var(--spacing-md) 0;
+}
+
+.class-modal-availability.canceled .class-modal-availability-text {
+    font-weight: var(--font-weight-medium);
+}
+
+/* Calendar day classes */
+.calendar-class.canceled {
+    opacity: 0.6;
+    text-decoration: line-through;
+}

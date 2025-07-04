@@ -1,0 +1,119 @@
+/**
+ * Theme Variables
+ * Central location for all theme-related CSS variables
+ * to ensure consistency across the entire application
+ */
+
+:root {
+  /* Brand Colors */
+  --color-primary: #6a8d73;         /* Sage green - main brand color */
+  --color-primary-light: #9cb0a3;   /* Light sage - for hover states */
+  --color-primary-dark: #465c4c;    /* Dark sage - for active states */
+  --color-secondary: #f4a259;       /* Warm orange - accent color */
+  --color-secondary-light: #f7be86; /* Light orange */
+  --color-secondary-dark: #d0803d;  /* Dark orange */
+  
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-off-white: #f9f7f3;       /* Background color */
+  --color-light-gray: #e0e0e0;      /* Borders, dividers */
+  --color-medium-gray: #9e9e9e;     /* Disabled elements */
+  --color-dark-gray: #616161;       /* Secondary text */
+  --color-charcoal: #333333;        /* Primary text */
+  --color-black: #121212;           /* Headers */
+  
+  /* Status Colors */
+  --color-success: #2e7d32;         /* Green */
+  --color-success-light: #e8f5e9;   /* Light green background */
+  --color-error: #c62828;           /* Red */
+  --color-error-light: #ffebee;     /* Light red background */
+  --color-warning: #f57c00;         /* Orange */
+  --color-warning-light: #fff8e1;   /* Light orange background */
+  --color-info: #0288d1;            /* Blue */
+  --color-info-light: #e1f5fe;      /* Light blue background */
+  
+  /* Status-specific Colors */
+  --color-confirmed: var(--color-success);
+  --color-confirmed-bg: var(--color-success-light);
+  --color-waitlisted: var(--color-warning);
+  --color-waitlisted-bg: var(--color-warning-light);
+  --color-canceled: var(--color-error);
+  --color-canceled-bg: var(--color-error-light);
+  
+  /* Typography */
+  --font-family-primary: 'Poppins', sans-serif;
+  --font-family-secondary: 'Lora', serif;
+  
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px - Base */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Spacing */
+  --spacing-xxs: 0.25rem;  /* 4px */
+  --spacing-xs: 0.5rem;    /* 8px */
+  --spacing-sm: 0.75rem;   /* 12px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+  
+  /* Borders */
+  --border-radius-sm: 0.25rem;  /* 4px */
+  --border-radius-md: 0.5rem;   /* 8px */
+  --border-radius-lg: 0.75rem;  /* 12px */
+  --border-radius-xl: 1rem;     /* 16px */
+  --border-radius-pill: 9999px; /* For pill buttons */
+  
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 4px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  
+  /* Animations */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Layout */
+  --container-max-width: 1200px;
+  --header-height: 80px;
+  --footer-height: 200px;
+  
+  /* Z-indices */
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-tooltip: 300;
+  --z-index-notification: 400;
+}
+
+/* Dark mode theme variables - for future implementation */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* These can be enabled when implementing dark mode */
+    /*
+    --color-off-white: #121212;
+    --color-light-gray: #333333;
+    --color-medium-gray: #616161;
+    --color-dark-gray: #9e9e9e;
+    --color-charcoal: #e0e0e0;
+    --color-black: #ffffff;
+    */
+  }
+}

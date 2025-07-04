@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/dev/login.html';
+            window.location.href = '/dev';
             return;
         }
 
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         if (!response.ok) {
-            window.location.href = '/dev/login.html';
+            window.location.href = '/dev';
             return;
         }
 
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadDashboardData();
     } catch (error) {
         console.error('Authentication error:', error);
-        window.location.href = '/dev/login.html';
+        window.location.href = '/dev';
     }
 });
 
@@ -123,6 +123,27 @@ function updateFilterDropdowns() {
             }
         });
     }
+    
+    // Add status filter dropdown if it doesn't exist
+    const historyFilters = document.querySelector('.history-filters');
+    if (historyFilters && !document.getElementById('status-filter')) {
+        const statusFilter = document.createElement('select');
+        statusFilter.id = 'status-filter';
+        statusFilter.innerHTML = `
+            <option value="">All Statuses</option>
+            <option value="confirmed">Attended</option>
+            <option value="canceled">Canceled</option>
+            <option value="waitlisted">Waitlisted</option>
+        `;
+        statusFilter.addEventListener('change', loadClassHistory);
+        
+        // Insert before the existing filters or at beginning
+        if (historyFilters.firstChild) {
+            historyFilters.insertBefore(statusFilter, historyFilters.firstChild);
+        } else {
+            historyFilters.appendChild(statusFilter);
+        }
+    }
 }
 
 // Setup Event Listeners
@@ -182,7 +203,7 @@ function navigateToSection(sectionId) {
 }
 
 // Filter bookings by type
-function filterBookings(type = 'all', month = '', classType = '') {
+function filterBookings(type = 'all', month = '', classType = '', includeStatus = []) {
     if (!allUserBookings || allUserBookings.length === 0) {
         return [];
     }
@@ -208,6 +229,11 @@ function filterBookings(type = 'all', month = '', classType = '') {
             return false;
         }
         
+        // Filter by status (if specified)
+        if (includeStatus.length > 0 && !includeStatus.includes(booking.status)) {
+            return false;
+        }
+        
         return true;
     });
 }
@@ -215,15 +241,15 @@ function filterBookings(type = 'all', month = '', classType = '') {
 // Load Dashboard Data
 function loadDashboardData() {
     try {
-        // Filter bookings for upcoming/past sections
-        const upcomingBookings = filterBookings('upcoming');
-        const pastBookings = filterBookings('past');
+        // Filter bookings for upcoming/past sections - exclude cancelled
+        const upcomingBookings = filterBookings('upcoming', '', '', ['confirmed', 'waitlisted']);
+        const pastBookings = filterBookings('past', '', '', ['confirmed', 'waitlisted']);
         
-        // Update dashboard counters
+        // Update dashboard counters - only count non-cancelled bookings
         document.getElementById('upcoming-count').textContent = upcomingBookings.length;
         document.getElementById('attended-count').textContent = pastBookings.length;
 
-        // Load next class
+        // Load next class - make sure it's a confirmed booking
         if (upcomingBookings.length > 0) {
             const nextClass = upcomingBookings[0]; // First upcoming class (they're already sorted)
             document.getElementById('next-class').innerHTML = `
@@ -245,8 +271,11 @@ function loadDashboardData() {
 // Load Upcoming Classes
 async function loadUpcomingClasses() {
     try {
-        // Filter bookings for upcoming classes
-        const upcomingBookings = filterBookings('upcoming');
+        // Filter bookings for upcoming classes - exclude cancelled bookings
+        const upcomingBookings = filterBookings('upcoming', '', '', ['confirmed', 'waitlisted']);
+        
+        // Also get canceled bookings for separate section
+        const canceledBookings = filterBookings('upcoming', '', '', ['canceled']);
         
         // Load available classes (we still need to fetch these)
         const classesResponse = await fetch('/dev/classes', {
@@ -255,26 +284,50 @@ async function loadUpcomingClasses() {
         const classesData = await classesResponse.json();
         const classes = classesData.classes || [];
         
-        // Update calendar
+        // Update calendar - only show active bookings in calendar
         updateCalendar(classes, upcomingBookings);
         
         // Update registered classes list
         const classList = document.querySelector('.class-list');
-        classList.innerHTML = upcomingBookings.map(booking => `
-            <div class="class-item">
-                <div class="class-info">
-                    <h3>${booking.className}</h3>
-                    <p>${formatDate(booking.date)} at ${booking.time}</p>
-                    <p>with ${booking.instructor}</p>
-                </div>
-                <div class="class-actions">
-                    <button onclick="cancelBooking('${booking.id}')" class="cancel-btn">Cancel</button>
-                </div>
-            </div>
-        `).join('');
         
-        if (upcomingBookings.length === 0) {
-            classList.innerHTML = '<div class="empty-state">No upcoming classes. Book a class from the calendar above.</div>';
+        // First, show active bookings
+        classList.innerHTML = '';
+        if (upcomingBookings.length > 0) {
+            classList.innerHTML += `
+                ${upcomingBookings.map(booking => `
+                    <div class="class-item ${booking.status || ''}">
+                        <div class="class-info">
+                            <h3>${booking.className}</h3>
+                            <p>${formatDate(booking.date)} at ${booking.time}</p>
+                            <p>with ${booking.instructor}</p>
+                        </div>
+                        <div class="class-actions">
+                            <button onclick="cancelBooking('${booking.id}')" class="cancel-btn">Cancel</button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        } else {
+            classList.innerHTML += '<div class="empty-state">No upcoming classes. Book a class from the calendar above.</div>';
+        }
+        
+        // Then, if we have canceled bookings, show them in a separate section
+        if (canceledBookings.length > 0) {
+            classList.innerHTML += `
+                <h3 class="section-title canceled-title">Canceled Classes</h3>
+                ${canceledBookings.map(booking => `
+                    <div class="class-item canceled">
+                        <div class="class-info">
+                            <h3>${booking.className} <span class="status-badge canceled">Canceled</span></h3>
+                            <p>${formatDate(booking.date)} at ${booking.time}</p>
+                            <p>with ${booking.instructor}</p>
+                        </div>
+                        <div class="class-actions">
+                            <button onclick="bookClass('${booking.classId}')" class="rebook-btn">Book Again</button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
         }
     } catch (error) {
         console.error('Error loading upcoming classes:', error);
@@ -286,20 +339,46 @@ function loadClassHistory() {
     try {
         const monthFilter = document.getElementById('month-filter').value;
         const typeFilter = document.getElementById('type-filter').value;
+        const statusFilter = document.getElementById('status-filter')?.value || '';
+        
+        // Set up status filter array
+        let statusFilters = [];
+        if (statusFilter) {
+            statusFilters = [statusFilter];
+        }
         
         // Filter bookings using client-side filtering
-        const historyBookings = filterBookings('past', monthFilter, typeFilter);
+        const historyBookings = filterBookings('past', monthFilter, typeFilter, statusFilters);
         
         const historyList = document.querySelector('.history-list');
-        historyList.innerHTML = historyBookings.map(booking => `
-            <div class="class-item">
-                <div class="class-info">
-                    <h3>${booking.className}</h3>
-                    <p>${formatDate(booking.date)} at ${booking.time}</p>
-                    <p>with ${booking.instructor}</p>
+        historyList.innerHTML = historyBookings.map(booking => {
+            // Determine class status and styles
+            let statusLabel = '';
+            let actionButton = '';
+            
+            if (booking.status === 'canceled') {
+                statusLabel = '<span class="status-badge canceled">Canceled</span>';
+                
+                // Check if class is in future and we should offer rebooking
+                const today = new Date().toISOString().split('T')[0];
+                if (booking.date >= today) {
+                    actionButton = `<button onclick="bookClass('${booking.classId}')" class="rebook-btn">Book Again</button>`;
+                }
+            }
+            
+            return `
+                <div class="class-item ${booking.status || ''}">
+                    <div class="class-info">
+                        <h3>${booking.className} ${statusLabel}</h3>
+                        <p>${formatDate(booking.date)} at ${booking.time}</p>
+                        <p>with ${booking.instructor}</p>
+                    </div>
+                    <div class="class-actions">
+                        ${actionButton}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         if (historyBookings.length === 0) {
             historyList.innerHTML = '<div class="empty-state">No past classes found for the selected filters.</div>';
@@ -689,11 +768,26 @@ function openClassModal(classId, isBooked = false) {
             
             document.getElementById('class-modal-details').innerHTML = detailsHTML;
             
+            // Check if this booking was previously cancelled 
+            let bookingStatus = null;
+            let bookingId = null;
+            for (const booking of allUserBookings) {
+                if (booking.classId === classId) {
+                    bookingStatus = booking.status;
+                    bookingId = booking.id;
+                    break;
+                }
+            }
+            
             // Availability
             const availabilityEl = document.getElementById('class-modal-availability');
             const bookBtn = document.getElementById('class-modal-book-btn');
             
-            if (isBooked) {
+            // Only consider a user booked if the status is confirmed or waitlisted
+            const activelyBooked = isBooked && bookingStatus && 
+                (bookingStatus === 'confirmed' || bookingStatus === 'waitlisted');
+            
+            if (activelyBooked) {
                 // User is already booked for this class
                 availabilityEl.className = 'class-modal-availability booked';
                 availabilityEl.innerHTML = 
@@ -701,6 +795,20 @@ function openClassModal(classId, isBooked = false) {
                     '<div class="class-modal-spots">' + classItem.currentBookings + '/' + classItem.maxParticipants + ' spots taken</div>';
                 bookBtn.textContent = 'Cancel Booking';
                 bookBtn.onclick = () => cancelBookingFromModal(classId);
+                bookBtn.disabled = false;
+            } else if (bookingStatus === 'canceled') {
+                // User previously canceled this class
+                availabilityEl.className = 'class-modal-availability canceled';
+                availabilityEl.innerHTML = 
+                    '<div class="class-modal-availability-text">You previously canceled this class</div>' +
+                    '<div class="class-modal-spots">' + classItem.currentBookings + '/' + classItem.maxParticipants + ' spots taken</div>';
+                
+                if (classItem.isFullyBooked) {
+                    bookBtn.textContent = 'Join Waitlist';
+                } else {
+                    bookBtn.textContent = 'Book Again';
+                }
+                bookBtn.onclick = () => bookClass(classId);
                 bookBtn.disabled = false;
             } else if (classItem.isFullyBooked) {
                 availabilityEl.className = 'class-modal-availability full';
@@ -746,10 +854,26 @@ async function bookClass(classId) {
         bookBtn.textContent = 'Processing...';
         bookBtn.disabled = true;
         
-        const response = await fetch(`/dev/classes/${classId}/book`, {
-            method: 'POST',
-            headers: getAuthHeaders()
-        });
+        // Check if user has a cancelled booking for this class
+        const existingBooking = allUserBookings.find(b => b.classId === classId && b.status === 'canceled');
+        
+        let response;
+        if (existingBooking) {
+            // If there's a cancelled booking, update it instead of creating a new one
+            response = await fetch(`/dev/bookings/${existingBooking.id}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    status: 'confirmed'
+                })
+            });
+        } else {
+            // Otherwise create a new booking
+            response = await fetch(`/dev/classes/${classId}/book`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+        }
         
         if (!response.ok) {
             const errorData = await response.json();
@@ -763,7 +887,7 @@ async function bookClass(classId) {
         if (result.booking.status === 'waitlisted') {
             message = `You've been added to the waitlist. Your position: #${result.booking.waitlistPosition}`;
         } else {
-            message = 'Class booked successfully!';
+            message = existingBooking ? 'Your booking has been reinstated!' : 'Class booked successfully!';
         }
         
         alert(message);
@@ -782,7 +906,7 @@ async function bookClass(classId) {
         
         // Reset button
         const bookBtn = document.getElementById('class-modal-book-btn');
-        bookBtn.textContent = 'Book This Class';
+        bookBtn.textContent = originalText || 'Book This Class';
         bookBtn.disabled = false;
     }
 }

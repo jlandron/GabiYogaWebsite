@@ -643,6 +643,180 @@ function createCalendarView() {
     addClassModal();
 }
 
+// Add class modal for viewing class details
+function addClassModal() {
+    // Check if any modal already exists (either our own or from class-modal-public.js)
+    if (document.getElementById('class-detail-modal') || document.getElementById('public-class-modal')) {
+        return;
+    }
+    
+    // Check if we have the openPublicClassModal function available
+    if (typeof window.openPublicClassModal === 'function') {
+        // We don't need to create our own modal, as we'll use the public one
+        console.log('✅ Using public class modal');
+        return;
+    }
+    
+    // If public modal is not available, create our own (fallback)
+    console.log('Creating fallback class modal');
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'class-detail-modal';
+    modal.className = 'class-modal';
+    
+    modal.innerHTML = `
+        <div class="class-modal-content">
+            <span class="class-modal-close">&times;</span>
+            <div class="class-modal-header">
+                <h2 class="class-modal-title">Class Title</h2>
+                <span class="class-status">Active</span>
+            </div>
+            <div class="class-modal-body">
+                <div class="class-modal-details">
+                    <div class="class-modal-detail">
+                        <span class="material-icons">event</span>
+                        <span id="class-date">Date</span>
+                    </div>
+                    <div class="class-modal-detail">
+                        <span class="material-icons">access_time</span>
+                        <span id="class-time">Time</span>
+                    </div>
+                    <div class="class-modal-detail">
+                        <span class="material-icons">location_on</span>
+                        <span id="class-location">Location</span>
+                    </div>
+                    <div class="class-modal-detail">
+                        <span class="material-icons">fitness_center</span>
+                        <span id="class-level">Level</span>
+                    </div>
+                </div>
+                
+                <div class="class-modal-description" id="class-description">
+                    <!-- Class description will be populated here -->
+                </div>
+                
+                <div class="class-modal-availability" id="class-availability">
+                    <!-- Availability will be populated here -->
+                </div>
+                
+                <div class="class-modal-actions">
+                    <button id="book-class-btn" class="class-modal-btn class-modal-btn-primary">Book Now</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(modal);
+    
+    // Set up event listeners
+    const closeBtn = modal.querySelector('.class-modal-close');
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Book button
+    const bookBtn = document.getElementById('book-class-btn');
+    bookBtn.addEventListener('click', () => {
+        const classId = modal.dataset.classId;
+        if (classId) {
+            window.location.href = `/dev/user.html?book=${classId}`;
+        }
+    });
+    
+    console.log('✅ Added class detail modal');
+}
+
+// Open class modal with class details
+function openClassModal(classId) {
+    // First check if we have the public class modal function
+    if (typeof window.openPublicClassModal === 'function') {
+        // Use the public class modal
+        window.openPublicClassModal(classId);
+        return;
+    }
+    
+    // Fallback to the old implementation
+    const modal = document.getElementById('class-detail-modal');
+    if (!modal) return;
+    
+    // Find class by ID
+    const classItem = allClasses.find(c => c.id === classId);
+    if (!classItem) {
+        console.error('Class not found:', classId);
+        return;
+    }
+    
+    // Update modal content
+    modal.dataset.classId = classId;
+    
+    // Update title and status
+    modal.querySelector('.class-modal-title').textContent = classItem.title || 'Class';
+    const statusElement = modal.querySelector('.class-status');
+    statusElement.textContent = classItem.status || 'Active';
+    statusElement.className = 'class-status ' + (classItem.status || 'active').toLowerCase();
+    
+    // Update details
+    document.getElementById('class-date').textContent = formatClassDate(classItem.scheduleDate);
+    document.getElementById('class-time').textContent = `${classItem.startTime} - ${classItem.endTime}`;
+    document.getElementById('class-location').textContent = classItem.location || 'Main Studio';
+    document.getElementById('class-level').textContent = formatLevel(classItem.level);
+    
+    // Update description
+    document.getElementById('class-description').textContent = classItem.description || 'No description available.';
+    
+    // Update availability
+    const availabilityElement = document.getElementById('class-availability');
+    const maxParticipants = classItem.maxParticipants || 10;
+    const bookedParticipants = classItem.bookedParticipants || 0;
+    const availableSpots = maxParticipants - bookedParticipants;
+    
+    if (availableSpots <= 0) {
+        availabilityElement.textContent = 'Class is fully booked';
+        availabilityElement.className = 'class-modal-availability full';
+        document.getElementById('book-class-btn').disabled = true;
+    } else {
+        availabilityElement.textContent = `${availableSpots} spots available`;
+        availabilityElement.className = 'class-modal-availability';
+        document.getElementById('book-class-btn').disabled = false;
+    }
+    
+    // Show the modal
+    modal.style.display = 'flex';
+}
+
+// Format class date for display
+function formatClassDate(dateStr) {
+    if (!dateStr) return 'Date not specified';
+    
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric'
+    });
+}
+
+// Format class level for display
+function formatLevel(level) {
+    if (!level) return 'All Levels';
+    
+    // Convert kebab-case to title case
+    return level
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
 // Initialize calendar and set up event listeners
 function initializeCalendar() {
     renderCalendar();

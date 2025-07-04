@@ -744,7 +744,7 @@ function createFormField(id, label, value, description, category, isJson = false
 /**
  * Create profile image field with preview and upload functionality
  */
-function createProfileImageField(id, value, description, category) {
+async function createProfileImageField(id, value, description, category) {
     const formGroup = document.createElement('div');
     formGroup.className = 'form-group';
     
@@ -1267,6 +1267,12 @@ async function loadSchedule() {
         
         function initializeScheduleEditor() {
             try {
+                // Initialize class modal functionality if available
+                if (typeof initAdminClassModal === 'function') {
+                    console.log('Initializing admin class modal');
+                    initAdminClassModal();
+                }
+                
                 if (!scheduleEditor) {
                     console.log('Initializing schedule editor');
                     scheduleEditor = new ScheduleEditor(scheduleContainer);

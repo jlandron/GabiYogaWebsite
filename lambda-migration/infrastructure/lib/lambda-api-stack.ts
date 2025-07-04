@@ -357,21 +357,6 @@ export class LambdaApiStack extends cdk.Stack {
       authorizationType: apigateway.AuthorizationType.NONE
     });
 
-    // Login page (no auth required)
-    const loginPageResource = this.apiGateway.root.addResource('login.html');
-    loginPageResource.addMethod('GET', new apigateway.LambdaIntegration(staticFiles, {
-      proxy: true,
-      requestParameters: {
-        'integration.request.path.proxy': 'method.request.path.proxy'
-      }
-    }), {
-      authorizationType: apigateway.AuthorizationType.NONE,
-      requestParameters: {
-        'method.request.path.proxy': true
-      }
-    });
-
-
     // Tags
     cdk.Tags.of(this.apiGateway).add('Service', 'GabiYogaLambda');
     cdk.Tags.of(this.apiGateway).add('Environment', stage);

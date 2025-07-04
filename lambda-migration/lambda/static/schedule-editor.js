@@ -501,8 +501,9 @@ window.ScheduleEditor = class ScheduleEditor {
                 <div class="class-time">${classItem.startTime}</div>
                 <div class="class-title">${classItem.title}</div>
                 <div class="class-actions">
-                    <button class="edit-btn">✏️</button>
-                    <button class="delete-btn">🗑️</button>
+                    <button class="edit-btn" title="Edit">✏️</button>
+                    <button class="copy-btn" title="Copy">📋</button>
+                    <button class="delete-btn" title="Delete">🗑️</button>
                 </div>
             `;
             
@@ -515,6 +516,17 @@ window.ScheduleEditor = class ScheduleEditor {
             classBlock.querySelector('.edit-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.editClass(classItem);
+            });
+
+            classBlock.querySelector('.copy-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Use the new copyClassModal function from class-modal.js if available
+                if (typeof copyClassModal === 'function') {
+                    copyClassModal(classItem);
+                } else {
+                    // Fallback to local copy implementation
+                    this.copyClass(classItem);
+                }
             });
 
             classBlock.querySelector('.delete-btn').addEventListener('click', (e) => {
@@ -763,6 +775,41 @@ window.ScheduleEditor = class ScheduleEditor {
     editClass(classData) {
         this.showModal(classData);
     }
+    
+    // Fallback copy class method if copyClassModal isn't available
+    copyClass(classData) {
+        if (!classData) return;
+        
+        // Create a deep copy of the class data
+        const copiedClass = JSON.parse(JSON.stringify(classData));
+        
+        // Remove ID and timestamps to create a new class
+        delete copiedClass.id;
+        delete copiedClass.createdAt;
+        delete copiedClass.updatedAt;
+        
+        // Set today's date for updatedAt
+        const today = new Date();
+        copiedClass.updatedAt = today.toISOString();
+        
+        // Show modal with copied data and indicate it's a copy
+        this.showModal(copiedClass);
+        
+        // Update the modal title
+        const modal = this.container.querySelector('.modal');
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = 'Copy Class';
+        }
+        
+        // Focus on the date field since that's likely what the admin wants to change
+        setTimeout(() => {
+            const dateInput = modal.querySelector('#class-date');
+            if (dateInput) {
+                dateInput.focus();
+            }
+        }, 100);
+    }
 
     async deleteClass(classId) {
         if (!confirm('Are you sure you want to delete this class?')) return;
@@ -925,7 +972,7 @@ function getAuthHeaders() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/dev/login.html';
+            window.location.href = '/dev';
             return null;
         }
         
