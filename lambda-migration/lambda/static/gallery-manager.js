@@ -1,6 +1,4 @@
 // Ensure class is defined globally
-import { compressGalleryImage } from './image-compressor.js';
-
 window.GalleryManager = class GalleryManager {
     constructor(container) {
         this.container = container;
@@ -207,7 +205,7 @@ window.GalleryManager = class GalleryManager {
                 statusText.textContent = `Compressing & uploading image ${i + 1}/${totalFiles}...`;
 
                 // Compress the image before uploading
-                const compressedFile = await compressGalleryImage(file);
+                const compressedFile = await ImageCompressor.compressGalleryImage(file);
                 
                 // Step 1: Get a presigned URL for upload
                 const headers = getAuthHeaders();

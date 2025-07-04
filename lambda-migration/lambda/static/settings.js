@@ -5,8 +5,6 @@
  * including loading, displaying, editing, and saving settings.
  */
 
-import { compressProfileImage } from './image-compressor.js';
-
 class SettingsManager {
     constructor(containerElement) {
         this.container = containerElement;
@@ -783,7 +781,7 @@ class SettingsManager {
     async uploadImageToS3(file) {
         try {
             // Compress the image before uploading
-            const compressedFile = await compressProfileImage(file);
+            const compressedFile = await ImageCompressor.compressProfileImage(file);
             
             // Step 1: Get a presigned URL for upload
             const headers = getAuthHeaders();

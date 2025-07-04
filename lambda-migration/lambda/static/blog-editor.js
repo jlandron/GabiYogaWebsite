@@ -1,5 +1,3 @@
-import { compressBlogCoverImage, compressBlogContentImage } from './image-compressor.js';
-
 class BlogEditor {
     constructor(container) {
         this.container = container;
@@ -100,7 +98,7 @@ class BlogEditor {
     async handleImageUpload(file) {
         try {
             // 0. Compress the image first
-            const compressedFile = await compressBlogContentImage(file);
+            const compressedFile = await ImageCompressor.compressBlogContentImage(file);
             
             // 1. Get headers for authentication
             const headers = getAuthHeaders();
@@ -153,7 +151,7 @@ class BlogEditor {
             `;
             
             // Compress the image before uploading
-            const compressedFile = await compressBlogCoverImage(file);
+            const compressedFile = await ImageCompressor.compressBlogCoverImage(file);
 
             // 1. Use the existing handleImageUpload method to upload the file and get the S3 key
             this.coverImageUrl = await this.handleImageUpload(compressedFile);
