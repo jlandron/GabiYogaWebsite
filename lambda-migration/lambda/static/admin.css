@@ -1,26 +1,5 @@
-:root {
-    /* Use the same color palette as the main site */
-    --color-lightest: #f4f8f0;     /* Lightest sage - backgrounds, borders */
-    --color-light: #e0ecd4;        /* Light mint - nav elements, secondary buttons */
-    --color-medium: #b8d4a7;       /* Medium sage - hover states, accents */
-    --color-primary: #8fb580;      /* Primary sage - text, buttons */
-    --color-dark: #6a8c5c;         /* Dark sage - headings, strong elements */
-    
-    /* Admin-specific colors */
-    --accent-color: #E28F83;       /* Soft coral - warm and inviting for admin elements */
-    --light-accent: #FAE8E0;       /* Light peach - gentle background for admin sections */
-    --text-color: #2C3639;         /* Dark gray - easy to read */
-    --text-light: #666;            /* Light gray for secondary text */
-    --background-color: #f8faf5;   /* Match the main site's background */
-    --white: #fff;                 /* Pure white */
-    --border-color: #e0ecd4;       /* Light mint for borders */
-    --error-color: #E28F83;        /* Soft coral for errors */
-    --shadow: 0 2px 10px rgba(0,0,0,0.1);  /* Match main site shadow */
-
-    /* Map the old variable names to new ones for compatibility */
-    --primary-color: var(--color-primary);
-    --secondary-color: var(--color-dark);
-}
+@import 'theme-variables.css';
+@import 'common-styles.css';
 
 
 /* General Styles */
@@ -31,20 +10,20 @@
 }
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-family-primary);
     line-height: 1.6;
-    color: #6b7b5d;
-    background: var(--background-color);
+    color: var(--color-primary-dark);
+    background: var(--color-off-white);
 }
 
 /* Header - Matches the homepage style */
 .header {
-    background-color: white;
-    padding: 15px 0;
+    background-color: var(--color-white);
+    padding: var(--spacing-sm) 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .nav-container {
@@ -58,8 +37,8 @@ body {
 
 .logo {
     color: var(--color-primary);
-    font-size: 28px;
-    font-weight: 700;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
     text-decoration: none;
     letter-spacing: 1px;
 }
@@ -78,18 +57,18 @@ body {
 }
 
 .nav-links li a {
-    color: var(--color-dark);
+    color: var(--color-charcoal);
     text-decoration: none;
-    font-weight: 500;
-    padding: 8px 15px;
-    transition: all 0.3s ease;
-    border-radius: 25px;
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    transition: all var(--transition-medium);
+    border-radius: var(--border-radius-pill);
     display: block;
 }
 
 .nav-links li a.active, 
 .nav-links li a:hover {
-    color: white;
+    color: var(--color-white);
     background-color: var(--color-primary);
 }
 
@@ -98,12 +77,12 @@ body {
 }
 
 .btn {
-    padding: 8px 20px;
-    border-radius: 25px;
-    font-weight: 500;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-pill);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Montserrat', sans-serif;
+    transition: all var(--transition-medium);
+    font-family: var(--font-family-primary);
 }
 
 .btn-outline {
@@ -114,8 +93,8 @@ body {
 
 .btn-outline:hover {
     background-color: var(--color-primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(107, 123, 93, 0.2);
+    color: var(--color-white);
+    box-shadow: var(--shadow-md);
 }
 
 /* Admin Hero Section */
@@ -123,10 +102,10 @@ body {
     background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1545389336-cf090694435e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
     background-size: cover;
     background-position: center;
-    color: white;
+    color: var(--color-white);
     text-align: center;
-    padding: 60px 0;
-    margin-bottom: 40px;
+    padding: var(--spacing-3xl) 0;
+    margin-bottom: var(--spacing-2xl);
 }
 
 .hero-content {
@@ -136,14 +115,14 @@ body {
 }
 
 .hero-content h1 {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-sm);
 }
 
 .hero-content p {
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
     opacity: 0.9;
-    margin-bottom: 30px;
+    margin-bottom: var(--spacing-lg);
 }
 
 /* Admin Layout with Sidebar */
@@ -156,43 +135,43 @@ body {
 
 .admin-sidebar {
     width: 250px;
-    background-color: var(--white);
-    border-right: 1px solid var(--border-color);
-    padding: 2rem 0;
+    background-color: var(--color-white);
+    border-right: var(--border-width-thin) solid var(--color-light-gray);
+    padding: var(--spacing-xl) 0;
     position: sticky;
     top: 100px;
     height: calc(100vh - 100px);
     overflow-y: auto;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0 1rem;
+    gap: var(--spacing-xs);
+    padding: 0 var(--spacing-md);
 }
 
 .sidebar-nav a {
-    color: var(--text-color);
+    color: var(--color-charcoal);
     text-decoration: none;
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-md);
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    transition: all 0.2s ease;
+    gap: var(--spacing-xs);
+    transition: all var(--transition-fast);
 }
 
 .sidebar-nav a:hover {
-    background-color: var(--color-lightest);
-    color: var(--color-dark);
+    background-color: var(--color-off-white);
+    color: var(--color-charcoal);
 }
 
 .sidebar-nav a.active {
-    background-color: var(--color-light);
-    color: var(--color-dark);
-    font-weight: 600;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    font-weight: var(--font-weight-semibold);
 }
 
 .sidebar-nav .icon {
@@ -203,9 +182,9 @@ body {
 
 /* Container Styles */
 .container {
-    max-width: 1200px;
+    max-width: var(--container-max-width);
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 var(--spacing-md);
 }
 
 /* Mobile Admin Navigation */
@@ -443,41 +422,41 @@ body {
 /* Buttons - Match the main site style */
 .primary-btn {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-white);
     border: none;
-    padding: 10px 25px;
-    border-radius: 25px;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-pill);
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    font-family: 'Montserrat', sans-serif;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-medium);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-family-primary);
 }
 
 .primary-btn:hover {
-    background: var(--color-dark);
+    background: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow-lg);
 }
 
 .secondary-btn {
     background: transparent;
-    border: 2px solid var(--color-primary);
+    border: var(--border-width-medium) solid var(--color-primary);
     color: var(--color-primary);
-    padding: 10px 25px;
-    border-radius: 25px;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-pill);
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    font-family: 'Montserrat', sans-serif;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-medium);
+    font-family: var(--font-family-primary);
 }
 
 .secondary-btn:hover {
-    background: var(--color-light);
+    background: var(--color-primary-light);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 123, 93, 0.2);
+    box-shadow: var(--shadow-md);
 }
 
 .cancel-btn {
@@ -518,7 +497,7 @@ body {
 }
 
 .notification.error {
-    background: var(--error-color);
+    background: var(--color-error);
 }
 
 @keyframes slideIn {

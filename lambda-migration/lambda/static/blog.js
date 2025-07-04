@@ -19,8 +19,11 @@ function serveBlogPage() {
     <title>Blog - Gabi Yoga | Wellness & Mindfulness Articles</title>
     <meta name="description" content="Discover insights on yoga, wellness, and mindful living through our thoughtful blog posts and articles.">
     
-    <!-- Centralized CSS -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/dev/static/theme-variables.css">
+    <link rel="stylesheet" href="/dev/static/common-styles.css">
     <link rel="stylesheet" href="/dev/static/styles.css">
+    <link rel="stylesheet" href="/dev/static/blog.css">
 </head>
 <body>
    <header class="header">

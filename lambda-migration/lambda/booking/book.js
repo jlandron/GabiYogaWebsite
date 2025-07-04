@@ -78,12 +78,21 @@ exports.handler = async (event, context) => {
     const existingBookingsResult = await dynamoDb.query(userBookingsParams).promise();
     const existingBookings = existingBookingsResult.Items || [];
 
-    if (existingBookings && existingBookings.length > 0) {
-      logWithContext('error', 'User already has a booking for this class', { 
+    // Check if user has any active (confirmed or waitlisted) bookings for this class
+    const activeBooking = existingBookings.find(b => 
+      b.status === 'confirmed' || b.status === 'waitlisted'
+    );
+    
+    // If user has an active booking, return error
+    if (activeBooking) {
+      logWithContext('error', 'User already has an active booking for this class', { 
         requestId, userId, classId 
       });
       return createErrorResponse('You already have a booking for this class', 409);
     }
+    
+    // Check if user has a canceled booking that can be reinstated
+    const canceledBooking = existingBookings.find(b => b.status === 'canceled');
 
     // Check class availability - use direct DB query to avoid KeyConditionExpression issues
     const classBookingsParams = {
@@ -137,8 +146,12 @@ exports.handler = async (event, context) => {
       });
     }
 
-    // Create new booking
-    const booking = {
+    // If user had a canceled booking, update it instead of creating a new one
+    const booking = canceledBooking ? {
+      ...canceledBooking,
+      status: 'confirmed',
+      updatedAt: new Date().toISOString()
+    } : {
       id: uuidv4(),
       classId,
       userId,
@@ -161,7 +174,12 @@ exports.handler = async (event, context) => {
       Item: booking
     }).promise();
 
-    logWithContext('info', 'Class booked successfully', { requestId, userId, classId });
+    logWithContext('info', 'Class booked successfully', { 
+      requestId, 
+      userId, 
+      classId, 
+      reinstated: !!canceledBooking 
+    });
 
     // Fetch user details to send confirmation email (in a real system)
     // const userResult = await dynamoDb.get({
@@ -172,7 +190,7 @@ exports.handler = async (event, context) => {
     // await sendBookingConfirmationEmail(user.email, booking);
 
     return createSuccessResponse({
-      message: 'Class booked successfully',
+      message: canceledBooking ? 'Your booking has been reinstated!' : 'Class booked successfully',
       booking
     });
 

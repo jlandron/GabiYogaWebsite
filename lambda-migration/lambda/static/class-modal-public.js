@@ -22,6 +22,25 @@ function initPublicClassModal() {
     publicClassModal = document.getElementById('public-class-modal');
 }
 
+// Get auth headers for API requests
+function getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/dev';
+        return null;
+    }
+    
+    // Clean the token to ensure it doesn't have any problematic characters
+    const cleanToken = token.trim();
+    console.log('Using auth token:', cleanToken);
+    
+    return {
+        'Authorization': `Bearer ${cleanToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
+}
+
 /**
  * Create the modal HTML structure and append to the document
  */
@@ -83,11 +102,13 @@ async function openPublicClassModal(classId) {
         publicClassModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
-        // Fetch class details from API
+        // Fetch class details from API, don't use generic header method as that redirects
         const headers = {};
         const token = localStorage.getItem('token');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            headers['Content-Type'] = 'application/json',
+            headers['Accept'] = 'application/json'
         }
         
         const response = await fetch(`/dev/classes/${classId}`, { headers });
@@ -163,7 +184,7 @@ async function openPublicClassModal(classId) {
             try {
                 // Fetch user's bookings to check status
                 const bookingsResponse = await fetch('/dev/bookings', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: getAuthHeaders()
                 });
                 
                 if (bookingsResponse.ok) {
@@ -264,71 +285,48 @@ async function handlePublicBooking(classId, token) {
         bookBtn.textContent = 'Processing...';
         bookBtn.disabled = true;
         
-        // Check if this is a previously canceled booking
-        // First fetch user's bookings to check for cancellations
-        const bookingsResponse = await fetch('/dev/bookings', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        let existingBooking = null;
-        if (bookingsResponse.ok) {
-            const bookingsData = await bookingsResponse.json();
-            const bookings = bookingsData.bookings || [];
-            existingBooking = bookings.find(b => b.classId === classId && b.status === 'canceled');
-        }
-        
-        let response;
-        // If there's a canceled booking, update it instead of creating a new one
-        if (existingBooking) {
-            response = await fetch(`/dev/bookings/${existingBooking.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    status: 'confirmed'
-                })
-            });
-        } else {
-            // Otherwise create a new booking
-            response = await fetch(`/dev/classes/${classId}/book`, {
+        // Simplify booking logic - always use the book endpoint and let backend handle existing bookings
+        try {
+            // Create the booking - the backend will handle cases where a booking previously existed
+            const response = await fetch(`/dev/classes/${classId}/book`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: getAuthHeaders()
             });
-        }
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Booking failed');
-        }
-        
-        const result = await response.json();
-        
-        // Show success message
-        let message;
-        if (result.booking.status === 'waitlisted') {
-            message = `You've been added to the waitlist. Your position: #${result.booking.waitlistPosition}`;
-        } else {
-            message = existingBooking ? 'Your booking has been reinstated!' : 'Class booked successfully!';
-        }
-        
-        // Update modal to show booked status
-        closePublicClassModal();
-        showNotification(message, 'success');
-        
-        // Refresh calendar if it exists
-        if (window.renderCalendar) {
-            window.renderCalendar();
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Booking failed');
+            }
+            
+            const result = await response.json();
+            
+            // Show success message
+            let message;
+            if (result.booking.status === 'waitlisted') {
+                message = `You've been added to the waitlist. Your position: #${result.booking.waitlistPosition}`;
+            } else {
+                message = 'Class booked successfully!';
+            }
+            
+            // Update modal to show booked status
+            closePublicClassModal();
+            showNotification(message, 'success');
+            
+            // Refresh calendar if it exists
+            if (window.renderCalendar) {
+                window.renderCalendar();
+            }
+        } catch (error) {
+            // Reset button state on error
+            bookBtn.textContent = originalText;
+            bookBtn.disabled = false;
+            throw error;
         }
         
     } catch (error) {
         console.error('Error booking class:', error);
         const bookBtn = document.getElementById('public-class-modal-book-btn');
-        bookBtn.textContent = originalText || 'Book This Class';
+        bookBtn.textContent = 'Book This Class';
         bookBtn.disabled = false;
         showNotification('Booking failed: ' + error.message, 'error');
     }

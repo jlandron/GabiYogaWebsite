@@ -854,26 +854,12 @@ async function bookClass(classId) {
         bookBtn.textContent = 'Processing...';
         bookBtn.disabled = true;
         
-        // Check if user has a cancelled booking for this class
-        const existingBooking = allUserBookings.find(b => b.classId === classId && b.status === 'canceled');
-        
-        let response;
-        if (existingBooking) {
-            // If there's a cancelled booking, update it instead of creating a new one
-            response = await fetch(`/dev/bookings/${existingBooking.id}`, {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    status: 'confirmed'
-                })
-            });
-        } else {
-            // Otherwise create a new booking
-            response = await fetch(`/dev/classes/${classId}/book`, {
-                method: 'POST',
-                headers: getAuthHeaders()
-            });
-        }
+        // Simplify booking logic - always use the book endpoint
+        // Backend will handle cases where the booking previously existed
+        const response = await fetch(`/dev/classes/${classId}/book`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
         
         if (!response.ok) {
             const errorData = await response.json();
@@ -887,7 +873,7 @@ async function bookClass(classId) {
         if (result.booking.status === 'waitlisted') {
             message = `You've been added to the waitlist. Your position: #${result.booking.waitlistPosition}`;
         } else {
-            message = existingBooking ? 'Your booking has been reinstated!' : 'Class booked successfully!';
+            message = result.message || 'Class booked successfully!';
         }
         
         alert(message);
