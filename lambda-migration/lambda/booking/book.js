@@ -13,6 +13,7 @@ const {
 const { v4: uuidv4 } = require('uuid');
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const emailService = require('../shared/email-service');
 
 exports.handler = async (event, context) => {
   const requestId = context.awsRequestId;
@@ -181,13 +182,36 @@ exports.handler = async (event, context) => {
       reinstated: !!canceledBooking 
     });
 
-    // Fetch user details to send confirmation email (in a real system)
-    // const userResult = await dynamoDb.get({
-    //   TableName: process.env.USERS_TABLE,
-    //   Key: { id: userId }
-    // }).promise();
-    // const user = userResult.Item;
-    // await sendBookingConfirmationEmail(user.email, booking);
+    // Fetch user details for confirmation email
+    try {
+      // Get full user data to access email and firstName
+      const userResult = await dynamoDb.get({
+        TableName: process.env.USERS_TABLE,
+        Key: { id: userId }
+      }).promise();
+      
+      if (userResult.Item) {
+        await emailService.sendBookingConfirmationEmail(
+          userResult.Item.email, 
+          userResult.Item.firstName,
+          booking
+        );
+        
+        logWithContext('info', 'Booking confirmation email sent', { 
+          requestId, 
+          userId, 
+          classId 
+        });
+      }
+    } catch (emailError) {
+      // Log error but don't fail the request if email sending fails
+      logWithContext('error', 'Failed to send booking confirmation email', { 
+        requestId, 
+        userId, 
+        classId,
+        error: emailError.message 
+      });
+    }
 
     return createSuccessResponse({
       message: canceledBooking ? 'Your booking has been reinstated!' : 'Class booked successfully',

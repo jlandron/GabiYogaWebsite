@@ -4,10 +4,12 @@ const {
     getUserFromToken, 
     isAdmin, 
     createSuccessResponse, 
-    createErrorResponse 
+    createErrorResponse,
+    logWithContext
 } = require('../shared/utils');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const emailService = require('../shared/email-service');
 
 exports.handler = async (event) => {
     console.log('Event:', JSON.stringify(event, null, 2));
@@ -172,21 +174,119 @@ async function handleDeleteClass(event) {
         return createErrorResponse('Class not found', 404);
     }
 
-    // Note: Skip booking check for now as the ClassIndex doesn't exist yet
-    // We'll implement proper booking checks when we build the booking system
+    const classDetails = existingClass.Item;
+    const requestId = event.requestContext?.requestId || 'unknown';
 
     try {
+        // Find all bookings for this class
+        const bookingsParams = {
+            TableName: process.env.BOOKINGS_TABLE,
+            IndexName: 'ClassBookingsIndex',
+            KeyConditionExpression: 'classId = :classId',
+            FilterExpression: '#status = :status',
+            ExpressionAttributeValues: {
+                ':classId': classId,
+                ':status': 'confirmed'
+            },
+            ExpressionAttributeNames: {
+                '#status': 'status'
+            }
+        };
+        
+        const bookingsResult = await dynamodb.query(bookingsParams).promise();
+        const bookings = bookingsResult.Items || [];
+        
+        logWithContext('info', `Found ${bookings.length} bookings for class being deleted`, { 
+            requestId,
+            classId,
+            className: classDetails.title
+        });
+
+        // Delete the class
         await dynamodb.delete({
             TableName: process.env.CLASSES_TABLE,
             Key: { id: classId }
         }).promise();
         
+        // Send emails to all booked users
+        const notificationPromises = bookings.map(async (booking) => {
+            try {
+                // Get user details
+                const userResult = await dynamodb.get({
+                    TableName: process.env.USERS_TABLE,
+                    Key: { id: booking.userId }
+                }).promise();
+                
+                if (userResult.Item) {
+                    // Send cancellation email
+                    await emailService.sendClassCancellationEmail(
+                        userResult.Item.email,
+                        userResult.Item.firstName,
+                        classDetails
+                    );
+                    
+                    // Update booking status to cancelled
+                    await dynamodb.update({
+                        TableName: process.env.BOOKINGS_TABLE,
+                        Key: { id: booking.id },
+                        UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt, cancelReason = :cancelReason',
+                        ExpressionAttributeNames: {
+                            '#status': 'status'
+                        },
+                        ExpressionAttributeValues: {
+                            ':status': 'canceled',
+                            ':updatedAt': new Date().toISOString(),
+                            ':cancelReason': 'Class cancelled by admin'
+                        }
+                    }).promise();
+                    
+                    logWithContext('info', 'Sent class cancellation email', { 
+                        requestId,
+                        userId: booking.userId,
+                        classId,
+                        bookingId: booking.id
+                    });
+                }
+            } catch (notificationError) {
+                // Log error but continue with other users
+                logWithContext('error', 'Failed to notify user about class cancellation', {
+                    requestId,
+                    userId: booking.userId,
+                    classId,
+                    error: notificationError.message
+                });
+            }
+        });
+        
+        // Wait for all notification operations to complete (or fail)
+        // but don't let it block the response
+        Promise.allSettled(notificationPromises)
+            .then(results => {
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+                logWithContext('info', `Class cancellation notifications: ${successful} sent, ${failed} failed`, { 
+                    requestId,
+                    classId
+                });
+            })
+            .catch(error => {
+                logWithContext('error', 'Error in cancellation notification batch', { 
+                    requestId,
+                    classId,
+                    error: error.message
+                });
+            });
+        
         return createSuccessResponse({
-            message: 'Class deleted successfully',
+            message: `Class deleted successfully. ${bookings.length} affected bookings are being cancelled.`,
             classId
         });
     } catch (error) {
-        console.error('Error deleting class:', error);
+        logWithContext('error', 'Error deleting class', { 
+            requestId,
+            classId,
+            error: error.message
+        });
         return createErrorResponse(`Failed to delete class: ${error.message}`, 500);
     }
 }
