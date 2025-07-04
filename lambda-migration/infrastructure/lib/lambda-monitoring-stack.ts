@@ -194,8 +194,11 @@ export class LambdaMonitoringStack extends cdk.Stack {
     const criticalFunctions = ['AuthLogin', 'PaymentIntent', 'PaymentWebhook'];
     lambdaFunctions
       .filter(func => criticalFunctions.some(name => func.functionName.includes(name)))
-      .forEach((func, index) => {
-        new cloudwatch.Alarm(this, `LambdaErrorAlarm${index}`, {
+      .forEach((func) => {
+        // Create unique construct ID using function name
+        const safeFunctionName = func.functionName.replace(/[^a-zA-Z0-9]/g, '');
+        
+        new cloudwatch.Alarm(this, `LambdaErrorAlarm${safeFunctionName}`, {
           alarmName: `${resourcePrefix}-Lambda-${func.functionName}-Errors`,
           metric: new cloudwatch.Metric({
             namespace: 'AWS/Lambda',
@@ -215,8 +218,12 @@ export class LambdaMonitoringStack extends cdk.Stack {
       });
 
     // High Duration Alarm for Lambda functions
-    lambdaFunctions.forEach((func, index) => {
-      new cloudwatch.Alarm(this, `LambdaDurationAlarm${index}`, {
+    lambdaFunctions.forEach((func) => {
+      // Use the function name directly in the construct ID to make it unique
+      // This avoids duplicate alarms with the same name
+      const safeFunctionName = func.functionName.replace(/[^a-zA-Z0-9]/g, '');
+      
+      new cloudwatch.Alarm(this, `LambdaDurationAlarm${safeFunctionName}`, {
         alarmName: `${resourcePrefix}-Lambda-${func.functionName}-Duration`,
         metric: new cloudwatch.Metric({
           namespace: 'AWS/Lambda',
@@ -236,8 +243,11 @@ export class LambdaMonitoringStack extends cdk.Stack {
     });
 
     // DynamoDB Throttling Alarms
-    dynamodbTables.forEach((table, index) => {
-      new cloudwatch.Alarm(this, `DynamoThrottleReadAlarm${index}`, {
+    dynamodbTables.forEach((table) => {
+      // Create unique construct IDs using table name
+      const safeTableName = table.tableName.replace(/[^a-zA-Z0-9]/g, '');
+      
+      new cloudwatch.Alarm(this, `DynamoThrottleReadAlarm${safeTableName}`, {
         alarmName: `${resourcePrefix}-DynamoDB-${table.tableName}-ReadThrottle`,
         metric: new cloudwatch.Metric({
           namespace: 'AWS/DynamoDB',
@@ -255,7 +265,7 @@ export class LambdaMonitoringStack extends cdk.Stack {
         treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
       });
 
-      new cloudwatch.Alarm(this, `DynamoThrottleWriteAlarm${index}`, {
+      new cloudwatch.Alarm(this, `DynamoThrottleWriteAlarm${safeTableName}`, {
         alarmName: `${resourcePrefix}-DynamoDB-${table.tableName}-WriteThrottle`,
         metric: new cloudwatch.Metric({
           namespace: 'AWS/DynamoDB',

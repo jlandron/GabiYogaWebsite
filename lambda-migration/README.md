@@ -39,7 +39,7 @@ This will:
 
 Your website will be available at:
 ```
-https://your-api-id.execute-api.us-east-1.amazonaws.com/dev/
+https://your-api-id.execute-api.us-east-1.amazonaws.com/
 ```
 
 ## 🏗️ Architecture Overview

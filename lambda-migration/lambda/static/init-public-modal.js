@@ -5,7 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize public class modal if it exists
+    /// Initialize public class modal if it exists
     if (typeof window.initPublicClassModal === 'function') {
         window.initPublicClassModal({
             onBookingAttempt: handleBookingAttempt
@@ -15,15 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Get auth headers for API requests
+/// Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/index.html';
+        window.location.href = '/index.html';
         return null;
     }
     
-    // Clean the token to ensure it doesn't have any problematic characters
+    /// Clean the token to ensure it doesn't have any problematic characters
     const cleanToken = token.trim();
     console.log('Using auth token:', cleanToken);
     
@@ -41,14 +41,14 @@ function getAuthHeaders() {
  * @param {Object} classData - The class data object
  */
 function handleBookingAttempt(classId, classData) {
-    // Check if user is authenticated by looking for token
+    /// Check if user is authenticated by looking for token
     const token = localStorage.getItem('token');
     
     if (token) {
-        // User is authenticated - proceed with direct booking
+        /// User is authenticated - proceed with direct booking
         bookClass(classId, classData);
     } else {
-        // User is not authenticated - show login prompt
+        /// User is not authenticated - show login prompt
         showLoginPrompt(classId);
     }
 }
@@ -69,7 +69,7 @@ function bookClass(classId, classData) {
     }
     
     // Check if user previously canceled this booking
-    fetch('/dev/bookings', {
+    fetch('/bookings', {
         headers: getAuthHeaders()
     })
     .then(response => response.json())
@@ -83,12 +83,12 @@ function bookClass(classId, classData) {
         
         if (existingBooking) {
             // If there's a canceled booking, update it instead of creating a new one
-            endpoint = `/dev/bookings/${existingBooking.id}`;
+            endpoint = `/bookings/${existingBooking.id}`;
             method = 'PUT';
             bodyData = { status: 'confirmed' };
         } else {
             // Otherwise create a new booking
-            endpoint = `/dev/classes/${classId}/book`;
+            endpoint = `/classes/${classId}/book`;
             method = 'POST';
         }
         
@@ -116,7 +116,7 @@ function bookClass(classId, classData) {
             bookingStatusEl.innerHTML = message;
             
             // Add view bookings button
-            bookingStatusEl.innerHTML += '<div class="booking-action"><a href="/dev/user.html" class="btn view-bookings-btn">View My Bookings</a></div>';
+            bookingStatusEl.innerHTML += '<div class="booking-action"><a href="/user.html" class="btn view-bookings-btn">View My Bookings</a></div>';
             
             // Auto close after delay
             setTimeout(() => {
@@ -174,7 +174,7 @@ window.addEventListener('authSuccess', () => {
             // Only proceed if it's the same class they were trying to book
             if (currentClassId === pendingClassId) {
                 // Get class data
-                fetch(`/dev/classes/${currentClassId}`, {
+                fetch(`/classes/${currentClassId}`, {
                     headers: getAuthHeaders()
                 })
                 .then(response => response.json())

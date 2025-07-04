@@ -1,6 +1,6 @@
-const API_BASE_URL = window.location.origin + '/dev';
+const API_BASE_URL = window.location.origin;
 
-// Gallery state
+/// Gallery state
 let isTransitioning = false;
 let allImages = [];
 let featuredImages = [];
@@ -8,12 +8,12 @@ let currentSlide = 0;
 let autoRotateInterval = null;
 let isPaused = false;
 
-// Calendar state
+/// Calendar state
 let currentDate = new Date();
 let allClasses = [];
 let calendarClasses = {};
 
-// Load all content when page loads
+/// Load all content when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     loadGallery();
@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     checkUserRole();
 });
 
-// Global settings object
+/// Global settings object
 let siteSettings = {};
 
-// Load site settings from API
+/// Load site settings from API
 async function loadSettings() {
     try {
         console.log('Loading settings from:', API_BASE_URL + '/settings');
@@ -64,7 +64,7 @@ async function loadSettings() {
     }
 }
 
-// Load gallery images from Lambda API
+/// Load gallery images from Lambda API
 async function loadGallery() {
     try {
         console.log('Loading gallery from:', API_BASE_URL + '/gallery');
@@ -107,7 +107,7 @@ async function loadGallery() {
     }
 }
 
-// Initialize carousel with featured images
+/// Initialize carousel with featured images
 function initializeCarousel() {
     const carouselTrack = document.getElementById('carousel-track');
     const carouselIndicators = document.getElementById('carousel-indicators');
@@ -133,7 +133,7 @@ function initializeCarousel() {
     updateSidePreviews();
 }
 
-// Setup carousel navigation and controls
+/// Setup carousel navigation and controls
 function setupCarouselNavigation() {
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
@@ -169,7 +169,7 @@ function setupCarouselNavigation() {
     startAutoRotate();
 }
 
-// Update carousel position and indicators with 3D animation
+/// Update carousel position and indicators with 3D animation
 function updateCarousel3D() {
     if (isTransitioning) return;
     
@@ -224,7 +224,7 @@ function updateCarousel3D() {
     }, 800);
 }
 
-// Update side preview images
+/// Update side preview images
 function updateSidePreviews() {
     if (featuredImages.length === 0) return;
     
@@ -258,7 +258,7 @@ function updateSidePreviews() {
     }
 }
 
-// Auto-rotation functions
+/// Auto-rotation functions
 function startAutoRotate() {
     if (autoRotateInterval) {
         clearInterval(autoRotateInterval);
@@ -278,7 +278,7 @@ function pauseAutoRotate() {
     }, 10000);
 }
 
-// Setup side preview click handlers
+/// Setup side preview click handlers
 function setupSidePreviewHandlers() {
     const leftPreview = document.getElementById('carousel-preview-left');
     const rightPreview = document.getElementById('carousel-preview-right');
@@ -333,7 +333,7 @@ document.getElementById('carousel-container').addEventListener('touchend', (e) =
     startY = 0;
 });
 
-// Setup modal gallery with masonry layout
+/// Setup modal gallery with masonry layout
 function setupModalGallery() {
     const viewAllBtn = document.getElementById('view-all-btn');
     const modal = document.getElementById('gallery-modal');
@@ -382,7 +382,7 @@ function setupModalGallery() {
     });
 }
 
-// Load About Me content from settings API
+/// Load About Me content from settings API
 async function loadAboutMe() {
     try {
         console.log('Loading About Me from:', API_BASE_URL + '/settings');
@@ -516,7 +516,7 @@ async function loadAboutMe() {
     }
 }
 
-// Load latest blog post from blog API
+/// Load latest blog post from blog API
 async function loadLatestBlog() {
     try {
         console.log('Loading latest blog from:', API_BASE_URL + '/blog');
@@ -550,7 +550,7 @@ async function loadLatestBlog() {
                         post.excerpt +
                     '</div>' +
                     '<div style="text-align: center;">' +
-                        '<a href="/dev/blog-page/' + post.slug + '" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">' +
+                        '<a href="/blog-page/' + post.slug + '" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">' +
                             'Read Full Article' +
                         '</a>' +
                     '</div>' +
@@ -571,7 +571,7 @@ async function loadLatestBlog() {
     }
 }
 
-// Load class schedule from classes API and display as calendar
+/// Load class schedule from classes API and display as calendar
 async function loadClassSchedule() {
     try {
         console.log('Loading class schedule from:', API_BASE_URL + '/classes');
@@ -612,7 +612,7 @@ async function loadClassSchedule() {
     }
 }
 
-// Create calendar view
+/// Create calendar view
 function createCalendarView() {
     const classesContent = document.getElementById('classes-content');
     
@@ -643,7 +643,7 @@ function createCalendarView() {
     addClassModal();
 }
 
-// Add class modal for viewing class details
+/// Add class modal for viewing class details
 function addClassModal() {
     // Check if any modal already exists (either our own or from class-modal-public.js)
     if (document.getElementById('class-detail-modal') || document.getElementById('public-class-modal')) {
@@ -728,14 +728,14 @@ function addClassModal() {
     bookBtn.addEventListener('click', () => {
         const classId = modal.dataset.classId;
         if (classId) {
-            window.location.href = `/dev/user.html?book=${classId}`;
+            window.location.href = `/user.html?book=${classId}`;
         }
     });
     
     console.log('✅ Added class detail modal');
 }
 
-// Open class modal with class details
+/// Open class modal with class details
 function openClassModal(classId) {
     // First check if we have the public class modal function
     if (typeof window.openPublicClassModal === 'function') {
@@ -793,7 +793,7 @@ function openClassModal(classId) {
     modal.style.display = 'flex';
 }
 
-// Format class date for display
+/// Format class date for display
 function formatClassDate(dateStr) {
     if (!dateStr) return 'Date not specified';
     
@@ -806,7 +806,7 @@ function formatClassDate(dateStr) {
     });
 }
 
-// Format class level for display
+/// Format class level for display
 function formatLevel(level) {
     if (!level) return 'All Levels';
     
@@ -817,13 +817,13 @@ function formatLevel(level) {
         .join(' ');
 }
 
-// Initialize calendar and set up event listeners
+/// Initialize calendar and set up event listeners
 function initializeCalendar() {
     renderCalendar();
     setupEventListeners();
 }
 
-// Set up event listeners for calendar navigation
+/// Set up event listeners for calendar navigation
 function setupEventListeners() {
     document.getElementById('prev-month').addEventListener('click', () => {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -836,7 +836,7 @@ function setupEventListeners() {
     });
 }
 
-// Render calendar view with 4 weeks of classes
+/// Render calendar view with 4 weeks of classes
 function renderCalendar() {
     const grid = document.getElementById('calendar-grid');
     const dateRange = document.getElementById('calendar-date-range');
@@ -912,7 +912,7 @@ function renderCalendar() {
     }
 }
 
-// Format date for display in the calendar header
+/// Format date for display in the calendar header
 function formatDateRange(date) {
     return date.toLocaleDateString('en-US', { 
         month: 'short', 
@@ -921,7 +921,7 @@ function formatDateRange(date) {
     });
 }
 
-// Check user role and update navigation
+/// Check user role and update navigation
 async function checkUserRole() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -942,26 +942,26 @@ async function checkUserRole() {
         // Add user portal link for all logged-in users
         const navLinks = document.querySelector('.nav-links');
         if (!navLinks.innerHTML.includes('My Account')) {
-            navLinks.innerHTML += '<li><a href="/dev/user.html">My Account</a></li>';
+            navLinks.innerHTML += '<li><a href="/user.html">My Account</a></li>';
         }
 
         // If user is admin, add admin navigation
         if (authData.user.role === 'admin') {
             if (!navLinks.innerHTML.includes('Admin')) {
-                navLinks.innerHTML += '<li><a href="/dev/admin.html">Admin</a></li>';
+                navLinks.innerHTML += '<li><a href="/admin.html">Admin</a></li>';
             }
         }
 
         // Update hero CTA for logged-in users
         const heroCta = document.getElementById('hero-cta');
-        heroCta.innerHTML = '<a href="/dev/user.html" class="btn">My Account</a>';
+        heroCta.innerHTML = '<a href="/user.html" class="btn">My Account</a>';
 
     } catch (error) {
         console.error('Error checking user role:', error);
     }
 }
 
-// Smooth scrolling for anchor links
+/// Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
@@ -978,15 +978,15 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Handle Logout
+/// Handle Logout
 async function handleLogout() {
     try {
-        await fetch('/dev/auth/logout', {
+        await fetch('/auth/logout', {
             method: 'POST',
             headers: getAuthHeaders()
         });    
         localStorage.removeItem('token');
-        window.location.href = '/dev';
+        window.location.href = '/';
     } catch (error) {
         console.error('Logout error:', error);
     }

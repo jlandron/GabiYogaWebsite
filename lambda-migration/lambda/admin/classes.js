@@ -208,74 +208,61 @@ async function handleDeleteClass(event) {
             Key: { id: classId }
         }).promise();
         
-        // Send emails to all booked users
-        const notificationPromises = bookings.map(async (booking) => {
-            try {
-                // Get user details
-                const userResult = await dynamodb.get({
-                    TableName: process.env.USERS_TABLE,
-                    Key: { id: booking.userId }
-                }).promise();
-                
-                if (userResult.Item) {
-                    // Send cancellation email
-                    await emailService.sendClassCancellationEmail(
-                        userResult.Item.email,
-                        userResult.Item.firstName,
-                        classDetails
-                    );
-                    
-                    // Update booking status to cancelled
-                    await dynamodb.update({
-                        TableName: process.env.BOOKINGS_TABLE,
-                        Key: { id: booking.id },
-                        UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt, cancelReason = :cancelReason',
-                        ExpressionAttributeNames: {
-                            '#status': 'status'
-                        },
-                        ExpressionAttributeValues: {
-                            ':status': 'canceled',
-                            ':updatedAt': new Date().toISOString(),
-                            ':cancelReason': 'Class cancelled by admin'
-                        }
-                    }).promise();
-                    
-                    logWithContext('info', 'Sent class cancellation email', { 
-                        requestId,
-                        userId: booking.userId,
-                        classId,
-                        bookingId: booking.id
-                    });
+        // Collect user details for all bookings
+        const userPromises = bookings.map(async (booking) => {
+            // Get user details
+            const userResult = await dynamodb.get({
+                TableName: process.env.USERS_TABLE,
+                Key: { id: booking.userId }
+            }).promise();
+            
+            // Update booking status to cancelled
+            await dynamodb.update({
+                TableName: process.env.BOOKINGS_TABLE,
+                Key: { id: booking.id },
+                UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt, cancelReason = :cancelReason',
+                ExpressionAttributeNames: {
+                    '#status': 'status'
+                },
+                ExpressionAttributeValues: {
+                    ':status': 'canceled',
+                    ':updatedAt': new Date().toISOString(),
+                    ':cancelReason': 'Class cancelled by admin'
                 }
-            } catch (notificationError) {
-                // Log error but continue with other users
-                logWithContext('error', 'Failed to notify user about class cancellation', {
-                    requestId,
-                    userId: booking.userId,
-                    classId,
-                    error: notificationError.message
-                });
-            }
+            }).promise();
+            
+            return userResult.Item || null;
         });
         
-        // Wait for all notification operations to complete (or fail)
-        // but don't let it block the response
-        Promise.allSettled(notificationPromises)
-            .then(results => {
-                const successful = results.filter(r => r.status === 'fulfilled').length;
-                const failed = results.filter(r => r.status === 'rejected').length;
-                logWithContext('info', `Class cancellation notifications: ${successful} sent, ${failed} failed`, { 
-                    requestId,
-                    classId
+        // Process all user details updates
+        const users = (await Promise.all(userPromises)).filter(user => user !== null);
+        
+        // Send cancellation emails to all affected users using the batch method
+        if (users.length > 0) {
+            // Process emails in the background without waiting for completion
+            emailService.sendClassCancellationEmailsToAll(classDetails, users)
+                .then(results => {
+                    logWithContext('info', `Class cancellation notifications: ${results.success} sent, ${results.failed} failed`, { 
+                        requestId,
+                        classId
+                    });
+                    
+                    if (results.errors.length > 0) {
+                        logWithContext('warn', 'Some cancellation emails failed to send', {
+                            requestId,
+                            classId,
+                            errors: results.errors
+                        });
+                    }
+                })
+                .catch(error => {
+                    logWithContext('error', 'Error in cancellation notification batch', { 
+                        requestId,
+                        classId,
+                        error: error.message
+                    });
                 });
-            })
-            .catch(error => {
-                logWithContext('error', 'Error in cancellation notification batch', { 
-                    requestId,
-                    classId,
-                    error: error.message
-                });
-            });
+        }
         
         return createSuccessResponse({
             message: `Class deleted successfully. ${bookings.length} affected bookings are being cancelled.`,

@@ -2,5 +2,9 @@
   "acknowledged-issue-numbers": [
     32775,
     34892
-  ]
+  ],
+  "hosted-zone:account=891709159344:domainName=gabi.yoga:region=us-east-1": {
+    "Id": "/hostedzone/Z0858162FM97J2FO2QJU",
+    "Name": "gabi.yoga."
+  }
 }

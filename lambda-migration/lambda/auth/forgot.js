@@ -113,23 +113,23 @@ exports.handler = async (event, context) => {
     
     const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    // Send password reset email
-    try {
-      await emailService.sendPasswordResetEmail(user.email, user.firstName, resetToken);
-      
+    // Send password reset email using the safer method that won't throw errors
+    const emailSent = await emailService.sendForgotPasswordEmailSafely(email, {
+      ...user,
+      resetToken
+    });
+    
+    if (emailSent) {
       logWithContext('info', 'Password reset email sent successfully', { 
         requestId, 
         userId: user.id 
       });
-    } catch (emailError) {
-      logWithContext('error', 'Failed to send password reset email', { 
+    } else {
+      // This will only be logged, not exposed to the client
+      logWithContext('warn', 'Password reset email not sent, but operation reported as successful', { 
         requestId, 
-        userId: user.id,
-        error: emailError.message 
+        userId: user.id 
       });
-      
-      // Don't reveal email sending failure to client for security
-      // The reset token is still valid if they get the email through other means
     }
 
     return successResponse;

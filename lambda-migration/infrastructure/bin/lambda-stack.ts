@@ -5,6 +5,8 @@ import { LambdaDbStack } from '../lib/lambda-db-stack';
 import { LambdaApiStack } from '../lib/lambda-api-stack';
 import { LambdaAuthStack } from '../lib/lambda-auth-stack';
 import { LambdaMonitoringStack } from '../lib/lambda-monitoring-stack';
+import { LambdaSesStack } from '../lib/lambda-ses-stack';
+import { LambdaRoute53Stack } from '../lib/lambda-route53-stack';
 
 const app = new cdk.App();
 
@@ -83,10 +85,33 @@ const monitoringStack = new LambdaMonitoringStack(app, `${stackPrefix}-Monitorin
   dynamodbTables: dbStack.dynamodbTables,
 });
 
+// SES Stack - Email sending infrastructure
+const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
+  env,
+  stage,
+  tags: commonTags,
+  description: `Gabi Yoga Lambda SES Email Stack (${stage})`,
+  domainName: 'gabi.yoga',
+  // If we have the hosted zone ID, we'd include it here
+  // hostedZoneId: 'Z1234567890ABC',
+});
+
+// Route53 Stack - Custom domain for API Gateway
+const route53Stack = new LambdaRoute53Stack(app, `${stackPrefix}-Route53`, {
+  env,
+  stage,
+  tags: commonTags,
+  description: `Gabi Yoga Lambda Route53 Stack (${stage})`,
+  apiGateway: apiStack.apiGateway,
+  domainName: 'gabi.yoga',
+});
+
 // Stack dependencies
 apiStack.addDependency(dbStack);
 apiStack.addDependency(authStack);
+apiStack.addDependency(sesStack);
 monitoringStack.addDependency(apiStack);
+route53Stack.addDependency(apiStack);
 
 // Output key information
 new cdk.CfnOutput(apiStack, 'ApiGatewayUrl', {
@@ -129,11 +154,33 @@ new cdk.CfnOutput(monitoringStack, 'MonitoringDashboardUrl', {
   exportName: `${stackPrefix}-MonitoringDashboardUrl`,
 });
 
+new cdk.CfnOutput(sesStack, 'EmailDomain', {
+  value: 'gabi.yoga',
+  description: 'Email domain for sending emails',
+  exportName: `${stackPrefix}-EmailDomain`,
+});
+
+new cdk.CfnOutput(sesStack, 'DefaultSenderEmail', {
+  value: 'noreply@gabi.yoga',
+  description: 'Default sender email address',
+  exportName: `${stackPrefix}-DefaultSenderEmail`,
+});
+
+// Route53 outputs are already defined in the stack
+
+new cdk.CfnOutput(route53Stack, 'ApiCustomDomain', {
+  value: route53Stack.customDomainName,
+  description: 'Custom domain for API',
+  exportName: `${stackPrefix}-ApiCustomDomain`,
+});
+
 // Add stack information for debugging
 console.log(`Deploying Gabi Yoga Lambda stacks for ${stage} environment:`);
 console.log(`- Database Stack: ${dbStack.stackName}`);
 console.log(`- Auth Stack: ${authStack.stackName}`);
 console.log(`- API Stack: ${apiStack.stackName}`);
 console.log(`- Monitoring Stack: ${monitoringStack.stackName}`);
+console.log(`- SES Stack: ${sesStack.stackName}`);
+console.log(`- Route53 Stack: ${route53Stack.stackName}`);
 console.log(`- Region: ${region}`);
 console.log(`- Account: ${account}`);

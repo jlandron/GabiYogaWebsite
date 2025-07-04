@@ -136,7 +136,7 @@ class SettingsManager {
      * Load settings from the API
      */
     async loadSettings() {
-        const response = await fetch('/dev/settings', {
+        const response = await fetch('/settings', {
             headers: getAuthHeaders()
         });
         
@@ -370,22 +370,22 @@ class SettingsManager {
                             img.src = value;
                         } else if (value.startsWith('gallery/')) {
                             // Gallery path - try to get presigned URL
-                            fetch(`/dev/gallery/upload?key=${encodeURIComponent(value)}`)
+                            fetch(`/gallery/upload?key=${encodeURIComponent(value)}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data && data.url) {
                                         img.src = data.url;
                                     } else {
-                                        img.src = '/dev' + value;
+                                        img.src = '/' + value;
                                     }
                                 })
                                 .catch(() => {
                                     // Fallback to direct path
-                                    img.src = '/dev' + value;
+                                    img.src = '/' + value;
                                 });
                         } else {
                             // Regular path - use as is
-                            img.src = '/dev' + value;
+                            img.src = '/' + value;
                         }
                         
                         img.alt = 'Profile Image';
@@ -395,7 +395,7 @@ class SettingsManager {
                         img.onerror = () => {
                             console.warn('Failed to load image, trying settings API');
                             // Try to get the image via settings API
-                            fetch(`/dev/settings/about_profile_image`, {
+                            fetch(`/settings/about_profile_image`, {
                                 headers: getAuthHeaders()
                             })
                             .then(response => response.json())
@@ -403,11 +403,11 @@ class SettingsManager {
                                 if (data.setting && data.setting.presignedUrl) {
                                     img.src = data.setting.presignedUrl;
                                 } else {
-                                    img.src = 'https://placehold.co/400x400?text=Profile+Image';
+                                    img.src = 'https:/placehold.co/400x400?text=Profile+Image';
                                 }
                             })
                             .catch(() => {
-                                img.src = 'https://placehold.co/400x400?text=Profile+Image';
+                                img.src = 'https:/placehold.co/400x400?text=Profile+Image';
                             });
                         };
                         
@@ -454,7 +454,7 @@ class SettingsManager {
                     // Use the presigned URL for preview to avoid path issues
                     try {
                         // Request presigned URL for the image
-                        const getUrlResponse = await fetch(`/dev/settings/${id}`, {
+                        const getUrlResponse = await fetch(`/settings/${id}`, {
                             method: 'GET',
                             headers: getAuthHeaders()
                         });
@@ -469,13 +469,13 @@ class SettingsManager {
                         } else {
                             // Fallback to constructed path if needed
                             const previewPath = this.displayPath || ('/images/profile/' + newPath.split('/').pop());
-                            img.src = '/dev' + previewPath;
+                            img.src = '/' + previewPath;
                         }
                     } catch (error) {
                         console.warn('Error getting presigned URL, using display path instead:', error);
-                        // Ensure we have a slash between /dev and the path
+                        // Ensure we have a slash between // and the path
                         const previewPath = this.displayPath || ('/images/profile/' + newPath.split('/').pop());
-                        img.src = '/dev' + (previewPath.startsWith('/') ? '' : '/') + previewPath;
+                        img.src = '/' + (previewPath.startsWith('/') ? '' : '/') + previewPath;
                     }
                     
                     img.alt = 'Profile Image';
@@ -485,7 +485,7 @@ class SettingsManager {
                         // Try alternative format if original fails
                         
                         // Use a presigned URL fetch endpoint instead of direct path
-                        fetch(`/dev/settings/about_profile_image`, {
+                        fetch(`/settings/about_profile_image`, {
                             method: 'GET',
                             headers: getAuthHeaders()
                         })
@@ -496,13 +496,13 @@ class SettingsManager {
                                 img.src = data.setting.presignedUrl;
                             } else {
                                 // Last resort fallback - use a temporary placeholder
-                                img.src = 'https://placehold.co/400x400?text=Profile+Image';
+                                img.src = 'https:/placehold.co/400x400?text=Profile+Image';
                                 console.error('Could not load profile image, using placeholder');
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching presigned URL:', error);
-                            img.src = 'https://placehold.co/400x400?text=Profile+Image';
+                            img.src = 'https:/placehold.co/400x400?text=Profile+Image';
                         });
                     };
                     imagePreview.appendChild(img);
@@ -532,7 +532,7 @@ class SettingsManager {
                     
                     // Restore previous image or placeholder
                     if (value && value.trim() !== '') {
-                        imagePreview.innerHTML = `<img src="${value.startsWith('http') ? value : '/dev' + value}" alt="Profile Image" class="profile-image">`;
+                        imagePreview.innerHTML = `<img src="${value.startsWith('http') ? value : '/' + value}" alt="Profile Image" class="profile-image">`;
                     } else {
                         imagePreview.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
                     }
@@ -786,7 +786,7 @@ class SettingsManager {
             // Step 1: Get a presigned URL for upload
             const headers = getAuthHeaders();
 
-            const getUrlResponse = await fetch('/dev/gallery/upload', {
+            const getUrlResponse = await fetch('/gallery/upload', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -852,7 +852,7 @@ class SettingsManager {
             });
         }
         
-        const response = await fetch('/dev/admin/settings', {
+        const response = await fetch('/admin/settings', {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -875,7 +875,7 @@ class SettingsManager {
     }
 }
 
-// Initialize settings manager when DOM content is loaded
+/// Initialize settings manager when DOM content is loaded
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('settings-section')) {
         window.settingsManager = new SettingsManager(document.getElementById('settings-section'));

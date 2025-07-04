@@ -23,18 +23,18 @@ function serveBlogPostPage(slug) {
     <meta name="description" content="Read this insightful article from Gabi Yoga on wellness and mindful living.">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/dev/static/theme-variables.css">
-    <link rel="stylesheet" href="/dev/static/common-styles.css">
-    <link rel="stylesheet" href="/dev/static/styles.css">
-    <link rel="stylesheet" href="/dev/static/blog.css">
+    <link rel="stylesheet" href="/static/theme-variables.css">
+    <link rel="stylesheet" href="/static/common-styles.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/blog.css">
 </head>
 <body>
     <header class="header">
         <nav class="nav-container">
-            <a href="/dev" class="logo">Gabi Yoga</a>
+            <a href="/" class="logo">Gabi Yoga</a>
             <ul class="nav-links">
-                <li><a href="/dev">Home</a></li>
-                <li><a href="/dev/blog-page">Blog</a></li>
+                <li><a href="/">Home</a></li>
+                <li><a href="/blog-page">Blog</a></li>
             </ul>
         </nav>
     </header>
@@ -57,7 +57,7 @@ function serveBlogPostPage(slug) {
         <div id="blog-error" class="error" style="display: none;">
             <h3>Post Not Found</h3>
             <p>Sorry, we couldn't find the blog post you're looking for.</p>
-            <a href="/dev/blog-page" class="back-to-blog">Back to Blog</a>
+            <a href="/blog-page" class="back-to-blog">Back to Blog</a>
         </div>
 
         <!-- Blog Post Content -->
@@ -79,7 +79,7 @@ function serveBlogPostPage(slug) {
         console.log('Loading blog post with slug:', slug);
         
         // Lambda API Configuration
-        const API_BASE_URL = window.location.origin + '/dev';
+        const API_BASE_URL = window.location.origin;
         
         // Load blog post from API
         async function loadBlogPost() {
@@ -156,7 +156,7 @@ function serveBlogPostPage(slug) {
                         // Add tags if available
                         if (post.tags && post.tags.length > 0) {
                             // Create tag links with string concatenation
-                            const tagLinks = post.tags.map(tag => '<a href="/dev/blog-page" class="blog-tag">#' + tag + '</a>').join('');
+                            const tagLinks = post.tags.map(tag => '<a href="/blog-page" class="blog-tag">#' + tag + '</a>').join('');
                             
                             postHTML += '<div class="blog-tags">' +
                                 tagLinks +
@@ -165,7 +165,7 @@ function serveBlogPostPage(slug) {
                         
                         // Add author section
                         postHTML += '<div class="blog-author">' +
-                            '<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Author" class="blog-author-image">' +
+                            '<img src="https:/images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Author" class="blog-author-image">' +
                             '<div>' +
                                 '<div class="blog-author-name">' + (post.author ? post.author.firstName + ' ' + post.author.lastName : 'Gabi Yoga') + '</div>' +
                                 '<div class="blog-author-bio">Yoga instructor and wellness expert with over 10 years of experience teaching mindfulness and movement practices.</div>' +
@@ -176,7 +176,7 @@ function serveBlogPostPage(slug) {
                         postHTML += '</div>';
                         
                         // Add back to blog button
-                        postHTML += '<a href="/dev/blog-page" class="back-to-blog">Back to Blog</a>';
+                        postHTML += '<a href="/blog-page" class="back-to-blog">Back to Blog</a>';
                         
                         // Update content and hide loading
                         blogContent.innerHTML = postHTML;

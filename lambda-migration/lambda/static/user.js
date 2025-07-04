@@ -1,19 +1,19 @@
-// Global state for bookings data
+/// Global state for bookings data
 let allUserBookings = [];
 let bookingFilterOptions = {
     months: [],
     categories: []
 };
 
-// Get auth headers for API requests
+/// Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/index.html';
+        window.location.href = '/index.html';
         return null;
     }
     
-    // Clean the token to ensure it doesn't have any problematic characters
+    /// Clean the token to ensure it doesn't have any problematic characters
     const cleanToken = token.trim();
     console.log('Using auth token:', cleanToken);
     
@@ -24,41 +24,41 @@ function getAuthHeaders() {
     };
 }
 
-// Check authentication on page load
+/// Check authentication on page load
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/dev';
+            window.location.href = '/';
             return;
         }
 
-        const response = await fetch('/dev/auth/verify-token', {
+        const response = await fetch('/auth/verify-token', {
             method: 'GET',
             headers: getAuthHeaders(),
             credentials: 'include'
         });
         
         if (!response.ok) {
-            window.location.href = '/dev';
+            window.location.href = '/';
             return;
         }
 
-        // Initialize dashboard - fetch all bookings first
+        /// Initialize dashboard - fetch all bookings first
         await fetchAllBookings();
         setupEventListeners();
         loadUserProfile();
         loadDashboardData();
     } catch (error) {
         console.error('Authentication error:', error);
-        window.location.href = '/dev';
+        window.location.href = '/';
     }
 });
 
-// Fetch all user bookings in one request
+/// Fetch all user bookings in one request
 async function fetchAllBookings() {
     try {
-        const response = await fetch('/dev/bookings', {
+        const response = await fetch('/bookings', {
             headers: getAuthHeaders()
         });
         
@@ -87,7 +87,7 @@ async function fetchAllBookings() {
     }
 }
 
-// Update filter dropdowns with available options
+/// Update filter dropdowns with available options
 function updateFilterDropdowns() {
     // Month filter dropdown
     const monthFilter = document.getElementById('month-filter');
@@ -238,7 +238,7 @@ function filterBookings(type = 'all', month = '', classType = '', includeStatus 
     });
 }
 
-// Load Dashboard Data
+/// Load Dashboard Data
 function loadDashboardData() {
     try {
         // Filter bookings for upcoming/past sections - exclude cancelled
@@ -278,7 +278,7 @@ async function loadUpcomingClasses() {
         const canceledBookings = filterBookings('upcoming', '', '', ['canceled']);
         
         // Load available classes (we still need to fetch these)
-        const classesResponse = await fetch('/dev/classes', {
+        const classesResponse = await fetch('/classes', {
             headers: getAuthHeaders()
         });
         const classesData = await classesResponse.json();
@@ -334,7 +334,7 @@ async function loadUpcomingClasses() {
     }
 }
 
-// Load Class History
+/// Load Class History
 function loadClassHistory() {
     try {
         const monthFilter = document.getElementById('month-filter').value;
@@ -391,7 +391,7 @@ function loadClassHistory() {
 // Load User Profile
 async function loadUserProfile() {
     try {
-        const response = await fetch('/dev/auth/profile', {
+        const response = await fetch('/auth/profile', {
             headers: getAuthHeaders()
         });
         const profile = await response.json();
@@ -424,7 +424,7 @@ async function saveProfile() {
             }
         };
         
-        const response = await fetch('/dev/auth/profile', {
+        const response = await fetch('/auth/profile', {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(profile)
@@ -459,7 +459,7 @@ async function deleteAccount() {
         deleteBtn.textContent = 'Processing...';
         deleteBtn.disabled = true;
         
-        const response = await fetch('/dev/auth/account', {
+        const response = await fetch('/auth/account', {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -471,7 +471,7 @@ async function deleteAccount() {
         // Success - clear token and redirect to home
         localStorage.removeItem('token');
         alert('Your account has been successfully deleted.');
-        window.location.href = '/dev/';
+        window.location.href = '/';
         
     } catch (error) {
         console.error('Error deleting account:', error);
@@ -516,7 +516,7 @@ function updateCalendar(classes, bookings) {
     addClassModal();
 }
 
-// Initialize calendar and set up event listeners
+/// Initialize calendar and set up event listeners
 function initializeCalendar(classes, bookings) {
     // Group classes by date
     const calendarClasses = {};
@@ -641,7 +641,7 @@ function renderCalendar(currentDate, calendarClasses, bookings) {
     }
 }
 
-// Format date for display in the calendar header
+/// Format date for display in the calendar header
 function formatDateRange(date) {
     return date.toLocaleDateString('en-US', { 
         month: 'short', 
@@ -650,13 +650,13 @@ function formatDateRange(date) {
     });
 }
 
-// Format date for display (more detailed)
+/// Format date for display (more detailed)
 function formatDate(dateString) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-// Add class detail modal to the page
+/// Add class detail modal to the page
 function addClassModal() {
     if (document.getElementById('class-modal')) {
         // Modal already exists
@@ -703,10 +703,10 @@ function addClassModal() {
     });
 }
 
-// Open class detail modal - enhanced to show booking status
+/// Open class detail modal - enhanced to show booking status
 function openClassModal(classId, isBooked = false) {
     // Find class by ID from the allClasses array
-    fetch('/dev/classes/' + classId, {
+    fetch('/classes/' + classId, {
         headers: getAuthHeaders()
     })
     .then(response => response.json())
@@ -839,13 +839,13 @@ function openClassModal(classId, isBooked = false) {
     });
 }
 
-// Close class modal
+/// Close class modal
 function closeClassModal() {
     document.getElementById('class-modal').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-// Booking Functions
+/// Booking Functions
 async function bookClass(classId) {
     try {
         // Show booking in progress
@@ -856,7 +856,7 @@ async function bookClass(classId) {
         
         // Simplify booking logic - always use the book endpoint
         // Backend will handle cases where the booking previously existed
-        const response = await fetch(`/dev/classes/${classId}/book`, {
+        const response = await fetch(`/classes/${classId}/book`, {
             method: 'POST',
             headers: getAuthHeaders()
         });
@@ -897,12 +897,12 @@ async function bookClass(classId) {
     }
 }
 
-// Cancel booking from class list
+/// Cancel booking from class list
 async function cancelBooking(bookingId) {
     if (!confirm('Are you sure you want to cancel this class?')) return;
     
     try {
-        const response = await fetch(`/dev/bookings/${bookingId}`, {
+        const response = await fetch(`/bookings/${bookingId}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -921,7 +921,7 @@ async function cancelBooking(bookingId) {
     }
 }
 
-// Cancel booking from modal
+/// Cancel booking from modal
 async function cancelBookingFromModal(classId) {
     try {
         // Find the booking for this class in our cached data
@@ -939,7 +939,7 @@ async function cancelBookingFromModal(classId) {
         bookBtn.disabled = true;
         
         // Cancel the booking
-        const response = await fetch(`/dev/bookings/${booking.id}`, {
+        const response = await fetch(`/bookings/${booking.id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -968,21 +968,21 @@ async function cancelBookingFromModal(classId) {
     }
 }
 
-// Handle Logout
+/// Handle Logout
 async function handleLogout() {
     try {
-        await fetch('/dev/auth/logout', {
+        await fetch('/auth/logout', {
             method: 'POST',
             headers: getAuthHeaders()
         });    
         localStorage.removeItem('token');
-        window.location.href = '/dev';
+        window.location.href = '/';
     } catch (error) {
         console.error('Logout error:', error);
     }
 }
 
-// Utility Functions
+/// Utility Functions
 function formatDate(dateString) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);

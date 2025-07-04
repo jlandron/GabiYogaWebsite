@@ -1,7 +1,7 @@
-// Auth state
+/// Auth state
 let currentUser = null;
 
-// Show login form modal
+/// Show login form modal
 function showLoginForm() {
   const modal = document.createElement('div');
   modal.className = 'auth-modal';
@@ -114,7 +114,7 @@ function showLoginForm() {
   document.head.appendChild(styles);
 }
 
-// Show register form modal
+/// Show register form modal
 function showRegisterForm() {
   const modal = document.querySelector('.auth-modal');
   if (!modal) return;
@@ -150,7 +150,7 @@ function showRegisterForm() {
   `;
 }
 
-// Close auth modal
+/// Close auth modal
 function closeAuthModal() {
   const modal = document.querySelector('.auth-modal');
   if (modal) {
@@ -158,7 +158,7 @@ function closeAuthModal() {
   }
 }
 
-// Handle login form submission
+/// Handle login form submission
 async function handleLogin(event) {
   event.preventDefault();
   
@@ -174,7 +174,7 @@ async function handleLogin(event) {
   
   try {
     console.log('Attempting login...');
-    const response = await fetch('/dev/auth/login', {
+    const response = await fetch('/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ async function handleLogin(event) {
   }
 }
 
-// Handle register form submission
+/// Handle register form submission
 async function handleRegister(event) {
   event.preventDefault();
   
@@ -234,7 +234,7 @@ async function handleRegister(event) {
   
   try {
     console.log('Attempting registration...');
-    const response = await fetch('/dev/auth/register', {
+    const response = await fetch('/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -269,7 +269,7 @@ async function handleRegister(event) {
   }
 }
 
-// Update auth UI based on current user
+/// Update auth UI based on current user
 function updateAuthUI() {
   const authButtons = document.getElementById('auth-buttons');
   if (!authButtons) return;
@@ -285,11 +285,11 @@ function updateAuthUI() {
   }
 }
 
-// Handle logout
+/// Handle logout
 async function handleLogout() {
   try {
     console.log('Logging out...');
-    const response = await fetch('/dev/auth/logout', {
+    const response = await fetch('/auth/logout', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -320,14 +320,14 @@ async function handleLogout() {
   }
 }
 
-// Check auth status on page load
+/// Check auth status on page load
 async function checkAuthStatus() {
   const token = localStorage.getItem('token');
   if (!token) return;
   
   try {
     console.log('Verifying auth token...');
-    const response = await fetch('/dev/auth/verify-token', {
+    const response = await fetch('/auth/verify-token', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer ' + token,
@@ -357,10 +357,10 @@ async function checkAuthStatus() {
   }
 }
 
-// Initialize auth
+/// Initialize auth
 document.addEventListener('DOMContentLoaded', checkAuthStatus);
 
-// Close modal when clicking outside
+/// Close modal when clicking outside
 document.addEventListener('click', (e) => {
   const modal = document.querySelector('.auth-modal');
   if (e.target === modal) {
@@ -368,7 +368,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Close modal on escape key
+/// Close modal on escape key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeAuthModal();

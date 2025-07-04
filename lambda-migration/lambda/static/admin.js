@@ -1,8 +1,8 @@
-// Get auth headers for API requests
+/// Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/index.html';
+        window.location.href = '/index.html';
         return null;
     }
     
@@ -17,17 +17,17 @@ function getAuthHeaders() {
     };
 }
 
-// Check authentication on page load
+/// Check authentication on page load
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch('/dev/auth/verify-token', {
+        const response = await fetch('/auth/verify-token', {
             method: 'GET',
             headers: getAuthHeaders()
         });
         
         if (!response.ok) {
             console.error('Token verification failed:', await response.text());
-            window.location.href = '/dev/index.html';
+            window.location.href = '/index.html';
             return;
         }
 
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (!data.user || data.user.role !== 'admin') {
             console.error('Access denied: User is not admin', data);
-            window.location.href = '/dev/';
+            window.location.href = '/';
             return;
         }
 
@@ -51,11 +51,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     } catch (error) {
         console.error('Authentication error:', error);
-        window.location.href = '/dev/index.html';
+        window.location.href = '/index.html';
     }
 });
 
-// Setup Event Listeners
+/// Setup Event Listeners
 function setupEventListeners() {
     // Navigation - handle sidebar nav clicks with proper target determination
     document.querySelectorAll('.sidebar-nav a').forEach(element => {
@@ -86,7 +86,7 @@ function setupEventListeners() {
     });
 }
 
-// Navigation
+/// Navigation
 function navigateToSection(sectionId) {
     // Hide all sections
     document.querySelectorAll('.admin-section').forEach(section => {
@@ -130,21 +130,21 @@ function navigateToSection(sectionId) {
     }
 }
 
-// Load Dashboard Data
+/// Load Dashboard Data
 async function loadDashboardData() {
     try {
         // Load blog count
-        const blogResponse = await fetch('/dev/blog', { headers: getAuthHeaders() });
+        const blogResponse = await fetch('/blog', { headers: getAuthHeaders() });
         const blogData = await blogResponse.json();
         document.getElementById('blog-count').textContent = blogData.posts?.length || 0;
         
         // Load user count
-        const userResponse = await fetch('/dev/admin/users', { headers: getAuthHeaders() });
+        const userResponse = await fetch('/admin/users', { headers: getAuthHeaders() });
         const userData = await userResponse.json();
         document.getElementById('user-count').textContent = userData.users?.length || 0;
 
         // Load class count 
-        const classResponse = await fetch('/dev/classes', { headers: getAuthHeaders() });
+        const classResponse = await fetch('/classes', { headers: getAuthHeaders() });
         const classData = await classResponse.json();
         document.getElementById('class-count').textContent = classData.classes?.length || 0;
 
@@ -154,13 +154,13 @@ async function loadDashboardData() {
     }
 }
 
-// Blog Management Functions
+/// Blog Management Functions
 let currentBlogEditor = null;
 
 async function loadBlogPosts() {
     try {
         // Fetch all blogs (including drafts) by setting published=false
-        const response = await fetch('/dev/blog?published=false', {
+        const response = await fetch('/blog?published=false', {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -202,16 +202,16 @@ async function loadBlogPosts() {
     }
 }
 
-// Function to navigate to blog post on frontend
+/// Function to navigate to blog post on frontend
 function viewBlogPost(id, slug) {
     let url;
     if (slug) {
         // Use the correct blog URL format
-        url = `/dev/blog-page/${slug}`;
+        url = `/blog-page/${slug}`;
     } else if (id) {
-        url = `/dev/blog-page.html?id=${id}`;
+        url = `/blog-page.html?id=${id}`;
     } else {
-        url = '/dev/blog-page.html';
+        url = '/blog-page.html';
     }
     
     window.open(url, '_blank');
@@ -287,7 +287,7 @@ async function editBlog(id) {
         const headers = getAuthHeaders();
         if (!headers) return;
 
-        const response = await fetch(`/dev/blog/${id}`, {
+        const response = await fetch(`/blog/${id}`, {
             headers
         });
         
@@ -312,7 +312,7 @@ async function deleteBlog(id) {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
     
     try {
-        await fetch(`/dev/blog/${id}`, {
+        await fetch(`/blog/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -326,7 +326,7 @@ async function deleteBlog(id) {
 
 async function publishBlog(id) {
     try {
-        await fetch(`/dev/blog/${id}/publish`, {
+        await fetch(`/blog/${id}/publish`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
@@ -338,7 +338,7 @@ async function publishBlog(id) {
     }
 }
 
-// Settings Management
+/// Settings Management
 let scheduleEditor = null;
 let galleryManager = null;
 let allSettings = {};
@@ -353,7 +353,7 @@ async function loadSettings() {
         setupSettingsTabs();
         
         // Use the public settings endpoint to load settings
-        const response = await fetch('/dev/settings', {
+        const response = await fetch('/settings', {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -760,7 +760,7 @@ async function createProfileImageField(id, value, description, category) {
     if (value && value.trim() !== '') {
         try {
             // Get a presigned URL for the image to display in the preview
-            const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(value)}`);
+            const imageUrlResponse = await fetch(`/gallery/upload?key=${encodeURIComponent(value)}`);
             
             if (imageUrlResponse.ok) {
                 const imageUrlData = await imageUrlResponse.json();
@@ -835,7 +835,7 @@ async function createProfileImageField(id, value, description, category) {
                 const s3Key = await handleImageUpload(file);
                 
                 // 2. Get a presigned URL for the image to display in the preview
-                const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(s3Key)}`);
+                const imageUrlResponse = await fetch(`/gallery/upload?key=${encodeURIComponent(s3Key)}`);
 
                 if (!imageUrlResponse.ok) {
                     throw new Error('Failed to get image URL');
@@ -871,7 +871,7 @@ async function createProfileImageField(id, value, description, category) {
                     
                     if (value && value.trim() !== '') {
                         // Try to get a presigned URL again for the old value
-                        const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(value)}`);
+                        const imageUrlResponse = await fetch(`/gallery/upload?key=${encodeURIComponent(value)}`);
                         if (imageUrlResponse.ok) {
                             const imageUrlData = await imageUrlResponse.json();
                             const imageUrl = imageUrlData.url;
@@ -1046,7 +1046,7 @@ async function handleImageUpload(file) {
         if (!headers) return;
 
         // 2. Request a presigned URL from the server
-        const presignedResponse = await fetch('/dev/gallery/upload', {
+        const presignedResponse = await fetch('/gallery/upload', {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -1122,9 +1122,9 @@ function handleSettingChange(key, value, category, description, isJson) {
     };
 }
 
-// Update a setting
+/// Update a setting
 async function updateSetting(key, value, category = 'general', description = '') {
-    const response = await fetch('/dev/admin/settings', {
+    const response = await fetch('/admin/settings', {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -1142,7 +1142,7 @@ async function updateSetting(key, value, category = 'general', description = '')
     return response.json();
 }
 
-// Create notification element if it doesn't exist
+/// Create notification element if it doesn't exist
 function createNotificationElement() {
     let notification = document.getElementById('notification');
     if (!notification) {
@@ -1155,7 +1155,7 @@ function createNotificationElement() {
     return notification;
 }
 
-// Show notification
+/// Show notification
 function showNotification(message, type = 'success') {
     const notification = createNotificationElement();
     notification.textContent = message;
@@ -1167,10 +1167,10 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Load Users
+/// Load Users
 async function loadUsers() {
     try {
-        const response = await fetch('/dev/admin/users', {
+        const response = await fetch('/admin/users', {
             headers: getAuthHeaders()
         });
         const data = await response.json();
@@ -1200,12 +1200,12 @@ async function loadUsers() {
     }
 }
 
-// Make user admin
+/// Make user admin
 async function makeAdmin(userId) {
     if (!confirm('Are you sure you want to make this user an admin?')) return;
     
     try {
-        await fetch(`/dev/admin/users/${userId}/make-admin`, {
+        await fetch(`/admin/users/${userId}/make-admin`, {
             method: 'PUT',
             headers: getAuthHeaders()
         });
@@ -1217,12 +1217,12 @@ async function makeAdmin(userId) {
     }
 }
 
-// Delete user
+/// Delete user
 async function deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-        await fetch(`/dev/admin/users/${userId}`, {
+        await fetch(`/admin/users/${userId}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -1234,7 +1234,7 @@ async function deleteUser(userId) {
     }
 }
 
-// Schedule Management
+/// Schedule Management
 async function loadSchedule() {
     try {
         console.log('Loading schedule editor in dedicated page');
@@ -1296,7 +1296,7 @@ async function loadSchedule() {
     }
 }
 
-// Gallery Management
+/// Gallery Management
 async function loadGallery() {
     try {
         console.log('Loading gallery manager in dedicated page');
@@ -1352,15 +1352,15 @@ async function loadGallery() {
     }
 }
 
-// Handle Logout
+/// Handle Logout
 async function handleLogout() {
     try {
-        await fetch('/dev/auth/logout', {
+        await fetch('/auth/logout', {
             method: 'POST',
             headers: getAuthHeaders()
         });    
         localStorage.removeItem('token');
-        window.location.href = '/dev';
+        window.location.href = '/';
     } catch (error) {
         console.error('Logout error:', error);
     }

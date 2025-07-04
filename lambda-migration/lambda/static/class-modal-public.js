@@ -3,7 +3,7 @@
  * Handles viewing and booking classes directly from the homepage
  */
 
-// Global variables
+/// Global variables
 let publicClassModal;
 let currentClassId = null;
 
@@ -22,11 +22,11 @@ function initPublicClassModal() {
     publicClassModal = document.getElementById('public-class-modal');
 }
 
-// Get auth headers for API requests
+/// Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev';
+        window.location.href = '/';
         return null;
     }
     
@@ -111,7 +111,7 @@ async function openPublicClassModal(classId) {
             headers['Accept'] = 'application/json'
         }
         
-        const response = await fetch(`/dev/classes/${classId}`, { headers });
+        const response = await fetch(`/classes/${classId}`, { headers });
         const data = await response.json();
         
         if (!data.success || !data.classItem) {
@@ -222,7 +222,7 @@ async function openPublicClassModal(classId) {
         if (token) {
             try {
                 // Fetch user's bookings to check status
-                const bookingsResponse = await fetch('/dev/bookings', {
+                const bookingsResponse = await fetch('/bookings', {
                     headers: getAuthHeaders()
                 });
                 
@@ -293,7 +293,7 @@ async function openPublicClassModal(classId) {
             bookBtn.onclick = () => {
                 // Save the class ID to localStorage to redirect back after login
                 localStorage.setItem('pendingBooking', classId);
-                window.location.href = '/dev/user.html';
+                window.location.href = '/user.html';
             };
             bookBtn.classList.remove('booked');
         }
@@ -314,7 +314,7 @@ async function handlePublicBooking(classId, token) {
     try {
         if (!token) {
             localStorage.setItem('pendingBooking', classId);
-            window.location.href = '/dev/user.html';
+            window.location.href = '/user.html';
             return;
         }
         
@@ -327,7 +327,7 @@ async function handlePublicBooking(classId, token) {
         // Simplify booking logic - always use the book endpoint and let backend handle existing bookings
         try {
             // Create the booking - the backend will handle cases where a booking previously existed
-            const response = await fetch(`/dev/classes/${classId}/book`, {
+            const response = await fetch(`/classes/${classId}/book`, {
                 method: 'POST',
                 headers: getAuthHeaders()
             });
@@ -464,7 +464,7 @@ function checkPendingBooking() {
     }
 }
 
-// Export functions for external use
+/// Export functions for external use
 window.initPublicClassModal = initPublicClassModal;
 window.openPublicClassModal = openPublicClassModal;
 window.closePublicClassModal = closePublicClassModal;

@@ -22,6 +22,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.136",
+    "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^29.5.5",
     "@types/node": "20.5.1",
     "@typescript-eslint/eslint-plugin": "^6.4.0",

@@ -1,4 +1,4 @@
-// Ensure class is defined globally
+/// Ensure class is defined globally
 window.GalleryManager = class GalleryManager {
     constructor(container) {
         this.container = container;
@@ -69,7 +69,7 @@ window.GalleryManager = class GalleryManager {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
             
-            const response = await fetch('/dev/gallery', {
+            const response = await fetch('/gallery', {
                 headers,
                 signal: controller.signal
             });
@@ -211,7 +211,7 @@ window.GalleryManager = class GalleryManager {
                 const headers = getAuthHeaders();
                 if (!headers) return;
 
-                const getUrlResponse = await fetch('/dev/gallery/upload', {
+                const getUrlResponse = await fetch('/gallery/upload', {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
@@ -237,7 +237,7 @@ window.GalleryManager = class GalleryManager {
                 if (!uploadResponse.ok) throw new Error('Failed to upload to S3');
                 
                 // Step 3: Save metadata in DynamoDB
-                const metadataResponse = await fetch('/dev/gallery', {
+                const metadataResponse = await fetch('/gallery', {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
@@ -283,7 +283,7 @@ window.GalleryManager = class GalleryManager {
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            const response = await fetch(`/dev/gallery/${imageId}`, {
+            const response = await fetch(`/gallery/${imageId}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify(metadata),
@@ -315,7 +315,7 @@ window.GalleryManager = class GalleryManager {
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            const response = await fetch(`/dev/gallery/${imageId}`, {
+            const response = await fetch(`/gallery/${imageId}`, {
                 method: 'DELETE',
                 headers,
             });
@@ -378,7 +378,7 @@ window.GalleryManager = class GalleryManager {
     }
 }
 
-// Helper function for getting auth headers
+/// Helper function for getting auth headers
 function getAuthHeaders() {
     try {
         const token = localStorage.getItem('token');
@@ -397,7 +397,7 @@ function getAuthHeaders() {
     }
 }
 
-// Fallback notification function if the global one doesn't exist
+/// Fallback notification function if the global one doesn't exist
 if (typeof showNotification !== 'function') {
     window.showNotification = function(message, type = 'info') {
         console.log(`${type.toUpperCase()}: ${message}`);

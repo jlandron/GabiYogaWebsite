@@ -105,7 +105,7 @@ class BlogEditor {
             if (!headers) return;
 
             // 2. Request a presigned URL from the server
-            const presignedResponse = await fetch('/dev/gallery/upload', {
+            const presignedResponse = await fetch('/gallery/upload', {
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
@@ -160,7 +160,7 @@ class BlogEditor {
 
             // 2. Get a presigned URL for the image to display in the preview
             // GET requests to gallery/upload don't require authentication
-            const imageUrlResponse = await fetch(`/dev/gallery/upload?key=${encodeURIComponent(this.coverImageUrl)}`);
+            const imageUrlResponse = await fetch(`/gallery/upload?key=${encodeURIComponent(this.coverImageUrl)}`);
 
             if (!imageUrlResponse.ok) throw new Error('Failed to get image URL');
             
@@ -232,7 +232,7 @@ class BlogEditor {
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            const response = await fetch(`/dev/blog/${blogId}`, {
+            const response = await fetch(`/blog/${blogId}`, {
                 headers,
                 credentials: 'include'
             });
@@ -343,8 +343,8 @@ class BlogEditor {
             };
 
             const url = this.currentBlogId 
-                ? `/dev/blog/${this.currentBlogId}`
-                : '/dev/blog';
+                ? `/blog/${this.currentBlogId}`
+                : '/blog';
 
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -400,11 +400,11 @@ class BlogEditor {
     }
 }
 
-// Helper function for getting auth headers
+/// Helper function for getting auth headers
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev';
+        window.location.href = '/';
         return null;
     }
     return {
@@ -414,7 +414,7 @@ function getAuthHeaders() {
     };
 }
 
-// Helper function for notifications
+/// Helper function for notifications
 function showNotification(message, type = 'success') {
     let notification = document.getElementById('notification');
     if (!notification) {

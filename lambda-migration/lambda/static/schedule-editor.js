@@ -1,4 +1,4 @@
-// Monthly Schedule Editor for Admin
+//// Monthly Schedule Editor for Admin
 window.ScheduleEditor = class ScheduleEditor {
     constructor(container) {
         this.container = container;
@@ -7,7 +7,7 @@ window.ScheduleEditor = class ScheduleEditor {
         this.currentMonth = new Date().getMonth();
         this.currentYear = new Date().getFullYear();
         
-        // Initialize the enhanced class modal functionality
+        /// Initialize the enhanced class modal functionality
         if (typeof initAdminClassModal === 'function') {
             initAdminClassModal();
         }
@@ -165,7 +165,7 @@ window.ScheduleEditor = class ScheduleEditor {
             </div>
         `;
 
-        // Setup month navigation
+        /// Setup month navigation
         this.updateMonthDisplay();
         this.container.querySelector('.prev-month').addEventListener('click', () => {
             this.navigateMonth(-1);
@@ -174,7 +174,7 @@ window.ScheduleEditor = class ScheduleEditor {
             this.navigateMonth(1);
         });
 
-        // Setup other event listeners
+        /// Setup other event listeners
         this.container.querySelector('.add-class-btn').addEventListener('click', () => {
             this.showModal();
         });
@@ -192,21 +192,21 @@ window.ScheduleEditor = class ScheduleEditor {
             this.saveClass();
         });
         
-        // Setup tab navigation in modal
+        /// Setup tab navigation in modal
         modal.querySelectorAll('.tab-btn').forEach(button => {
             button.addEventListener('click', () => {
-                // Update active tab button
+                /// Update active tab button
                 modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 
-                // Show the correct tab content
+                /// Show the correct tab content
                 const tabId = button.dataset.tab + '-tab';
                 modal.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
                 modal.querySelector(`#${tabId}`).style.display = 'block';
             });
         });
         
-        // Add event listener to calculate end time based on start time and duration
+        /// Add event listener to calculate end time based on start time and duration
         const startTimeInput = modal.querySelector('#class-time');
         const durationInput = modal.querySelector('#class-duration');
         const endTimeInput = modal.querySelector('#class-end-time');
@@ -217,17 +217,17 @@ window.ScheduleEditor = class ScheduleEditor {
             });
         });
         
-        // Initialize admin class modal if available
+        /// Initialize admin class modal if available
         if (typeof window.classModalHelpers !== 'undefined') {
             console.log('Using enhanced class modal functionality');
         }
 
-        // Set default date in modal to today
+        /// Set default date in modal to today
         const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+        const formattedDate = today.toISOString().split('T')[0]; /// YYYY-MM-DD
         this.container.querySelector('#class-date').value = formattedDate;
         
-        // Load initial schedule
+        /// Load initial schedule
         this.loadSchedule();
     }
 
@@ -260,7 +260,7 @@ window.ScheduleEditor = class ScheduleEditor {
     }
 
     getFirstDayOfMonth(month, year) {
-        return new Date(year, month, 1).getDay(); // 0 = Sunday, 6 = Saturday
+        return new Date(year, month, 1).getDay(); /// 0 = Sunday, 6 = Saturday
     }
 
     renderCalendar() {
@@ -273,14 +273,14 @@ window.ScheduleEditor = class ScheduleEditor {
         let date = 1;
         let html = '<div class="calendar-week">';
         
-        // Add empty cells for days before the first day of month
+        /// Add empty cells for days before the first day of month
         for (let i = 0; i < firstDay; i++) {
             html += '<div class="calendar-day empty"></div>';
         }
         
-        // Fill the calendar with days
+        /// Fill the calendar with days
         while (date <= daysInMonth) {
-            // If we've reached the end of a week, start a new row
+            /// If we've reached the end of a week, start a new row
             if ((date + firstDay - 1) % 7 === 0 && date !== 1) {
                 html += '</div><div class="calendar-week">';
             }
@@ -300,7 +300,7 @@ window.ScheduleEditor = class ScheduleEditor {
             date++;
         }
         
-        // Add empty cells for days after the end of month to complete the last week
+        /// Add empty cells for days after the end of month to complete the last week
         const lastWeekCells = (date + firstDay - 1) % 7;
         if (lastWeekCells > 0) {
             for (let i = 0; i < 7 - lastWeekCells; i++) {
@@ -308,14 +308,14 @@ window.ScheduleEditor = class ScheduleEditor {
             }
         }
         
-        html += '</div>'; // Close the last week
+        html += '</div>'; /// Close the last week
         
         calendarBody.innerHTML = html;
         
-        // Set up drag and drop for days
+        /// Set up drag and drop for days
         this.setupDragAndDrop();
         
-        // Populate classes on the calendar
+        /// Populate classes on the calendar
         this.populateClasses();
     }
 
@@ -327,7 +327,7 @@ window.ScheduleEditor = class ScheduleEditor {
     }
 
     parseDate(dateString) {
-        // Parse YYYY-MM-DD format
+        /// Parse YYYY-MM-DD format
         const [year, month, day] = dateString.split('-').map(Number);
         return new Date(year, month - 1, day);
     }
@@ -371,14 +371,14 @@ window.ScheduleEditor = class ScheduleEditor {
 
             console.log('Fetching classes from API...');
             
-            // Add timeout to prevent hanging
+            /// Add timeout to prevent hanging
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-            // Try using admin/classes endpoint
+            /// Try using admin/classes endpoint
             let response;
             
-            response = await fetch('/dev/admin/classes', {
+            response = await fetch('/admin/classes', {
                 headers,
                 signal: controller.signal
             });
@@ -393,7 +393,7 @@ window.ScheduleEditor = class ScheduleEditor {
             const data = await response.json();
             console.log('Received class data:', data);
             
-            // Handle different response formats
+            /// Handle different response formats
             if (data.classes && Array.isArray(data.classes)) {
                 this.schedule = data.classes;
                 console.log(`Found ${this.schedule.length} classes in response from admin endpoint`);
@@ -401,7 +401,7 @@ window.ScheduleEditor = class ScheduleEditor {
                 this.schedule = [];
                 console.log('No classes found in the database');
             } else {
-                // Try to handle other formats
+                /// Try to handle other formats
                 console.log('Attempting to parse alternative data format');
                 this.schedule = [];
                 
@@ -425,7 +425,7 @@ window.ScheduleEditor = class ScheduleEditor {
             const statusText = this.container.querySelector('.status-text');
             statusText.textContent = `${this.schedule.length} classes scheduled`;
 
-            // Trigger event for parent components
+            /// Trigger event for parent components
             const event = new CustomEvent('schedule-loaded', { 
                 detail: { count: this.schedule.length } 
             });
@@ -467,12 +467,12 @@ window.ScheduleEditor = class ScheduleEditor {
         
         console.log('Populating classes on calendar');
         
-        // Reset all day containers
+        /// Reset all day containers
         this.container.querySelectorAll('.day-classes').forEach(container => {
             container.innerHTML = '';
         });
         
-        // Get classes for the current month
+        /// Get classes for the current month
         const classes = this.schedule.filter(classItem => {
             const classDate = this.parseDate(classItem.scheduleDate || classItem.date);
             return classDate.getMonth() === this.currentMonth && 
@@ -481,7 +481,7 @@ window.ScheduleEditor = class ScheduleEditor {
         
         console.log(`Found ${classes.length} classes for current month view`);
         
-        // Add classes to their respective days
+        /// Add classes to their respective days
         classes.forEach(classItem => {
             const scheduleDate = classItem.scheduleDate || classItem.date;
             const dayElement = this.container.querySelector(`.calendar-day[data-date="${scheduleDate}"]`);
@@ -507,12 +507,12 @@ window.ScheduleEditor = class ScheduleEditor {
                 </div>
             `;
             
-            // Setup drag events
+            /// Setup drag events
             classBlock.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('text/plain', classItem.id);
             });
 
-            // Setup action buttons
+            /// Setup action buttons
             classBlock.querySelector('.edit-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.editClass(classItem);
@@ -520,16 +520,16 @@ window.ScheduleEditor = class ScheduleEditor {
 
             classBlock.querySelector('.copy-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Instead of using copyClassModal, use showClassModal with copy functionality
-                const copiedClass = JSON.parse(JSON.stringify(classItem)); // Deep copy
-                delete copiedClass.id; // Remove ID to create a new class
+                /// Instead of using copyClassModal, use showClassModal with copy functionality
+                const copiedClass = JSON.parse(JSON.stringify(classItem)); /// Deep copy
+                delete copiedClass.id; /// Remove ID to create a new class
                 delete copiedClass.createdAt; 
                 delete copiedClass.updatedAt;
                 
-                // Use the existing showClassModal function
+                /// Use the existing showClassModal function
                 window.showClassModal(copiedClass);
                 
-                // Update title to indicate it's a copy
+                /// Update title to indicate it's a copy
                 document.getElementById('class-modal-title').textContent = 'Copy Class';
             });
 
@@ -566,7 +566,7 @@ window.ScheduleEditor = class ScheduleEditor {
             dateInput.value = classData.scheduleDate || classData.date || '';
             timeInput.value = classData.startTime || '09:00';
             
-            // Calculate duration in minutes if endTime is available
+            /// Calculate duration in minutes if endTime is available
             if (classData.startTime && classData.endTime) {
                 const startParts = classData.startTime.split(':').map(Number);
                 const endParts = classData.endTime.split(':').map(Number);
@@ -589,7 +589,7 @@ window.ScheduleEditor = class ScheduleEditor {
             instructorInput.value = classData.instructor || 'Gabi';
             priceInput.value = classData.price || 25;
             
-            // Handle array fields
+            /// Handle array fields
             if (classData.requirements && Array.isArray(classData.requirements)) {
                 requirementsInput.value = classData.requirements.join('\n');
             }
@@ -603,7 +603,7 @@ window.ScheduleEditor = class ScheduleEditor {
             modal.dataset.editId = classData.id;
         } else {
             nameInput.value = '';
-            // Keep date as is (current value or today)
+            /// Keep date as is (current value or today)
             timeInput.value = '09:00';
             durationInput.value = '60';
             this.calculateEndTime();
@@ -622,7 +622,7 @@ window.ScheduleEditor = class ScheduleEditor {
             delete modal.dataset.editId;
         }
         
-        // Switch to first tab
+        /// Switch to first tab
         modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         modal.querySelector('.tab-btn[data-tab="basic"]').classList.add('active');
         modal.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
@@ -631,7 +631,7 @@ window.ScheduleEditor = class ScheduleEditor {
         modal.style.display = 'flex';
     }
     
-    // Calculate and display end time based on start time and duration
+    /// Calculate and display end time based on start time and duration
     calculateEndTime() {
         const modal = this.container.querySelector('.modal');
         const timeInput = modal.querySelector('#class-time');
@@ -640,7 +640,7 @@ window.ScheduleEditor = class ScheduleEditor {
         
         if (!timeInput.value) return;
         
-        // Use the helper function if available
+        /// Use the helper function if available
         if (window.classModalHelpers && window.classModalHelpers.calculateEndTime) {
             endTimeInput.value = window.classModalHelpers.calculateEndTime(
                 timeInput.value, 
@@ -649,11 +649,11 @@ window.ScheduleEditor = class ScheduleEditor {
             return;
         }
         
-        // Fallback implementation if helper is not available
+        /// Fallback implementation if helper is not available
         const [hours, minutes] = timeInput.value.split(':').map(Number);
         const duration = parseInt(durationInput.value) || 60;
         const endMinutes = hours * 60 + minutes + duration;
-        const endHours = Math.floor(endMinutes / 60) % 24; // Handle wrap around midnight
+        const endHours = Math.floor(endMinutes /// 60) % 24; /// Handle wrap around midnight
         const endMins = endMinutes % 60;
         
         endTimeInput.value = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
@@ -678,7 +678,7 @@ window.ScheduleEditor = class ScheduleEditor {
         const bringInput = modal.querySelector('#class-bring');
         const cancellationInput = modal.querySelector('#class-cancellation');
 
-        // Input validation
+        /// Input validation
         if (!nameInput.value.trim()) {
             showNotification('Class name is required', 'error');
             return;
@@ -694,7 +694,7 @@ window.ScheduleEditor = class ScheduleEditor {
             return;
         }
 
-        // Extract day of week from selected date
+        /// Extract day of week from selected date
         let dayOfWeek;
         if (window.classModalHelpers && window.classModalHelpers.extractDayOfWeek) {
             dayOfWeek = window.classModalHelpers.extractDayOfWeek(dateInput.value);
@@ -704,7 +704,7 @@ window.ScheduleEditor = class ScheduleEditor {
             dayOfWeek = daysOfWeek[selectedDate.getDay()];
         }
         
-        // Parse requirements and what to bring as arrays
+        /// Parse requirements and what to bring as arrays
         let requirements, whatToBring;
         
         if (window.classModalHelpers && window.classModalHelpers.parseListItems) {
@@ -723,7 +723,7 @@ window.ScheduleEditor = class ScheduleEditor {
         const classData = {
             title: nameInput.value,
             scheduleDate: dateInput.value,
-            date: dateInput.value, // Ensure compatibility with different API formats
+            date: dateInput.value, /// Ensure compatibility with different API formats
             day: dayOfWeek,
             startTime: timeInput.value,
             endTime: endTimeInput.value,
@@ -743,8 +743,8 @@ window.ScheduleEditor = class ScheduleEditor {
 
         try {
             const url = modal.dataset.editId 
-                ? `/dev/admin/classes/${modal.dataset.editId}`
-                : '/dev/admin/classes';
+                ? `/admin/classes/${modal.dataset.editId}`
+                : '/admin/classes';
 
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -763,7 +763,7 @@ window.ScheduleEditor = class ScheduleEditor {
             showNotification('Class saved successfully', 'success');
             modal.style.display = 'none';
             
-            // Trigger custom event
+            /// Trigger custom event
             const event = new CustomEvent('schedule-updated', { 
                 detail: { action: modal.dataset.editId ? 'update' : 'create' } 
             });
@@ -785,7 +785,7 @@ window.ScheduleEditor = class ScheduleEditor {
         if (!confirm('Are you sure you want to delete this class?')) return;
 
         try {
-            // First, try deleting through the admin API
+            /// First, try deleting through the admin API
             console.log(`Attempting to delete class ${classId} via admin API`);
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -793,7 +793,7 @@ window.ScheduleEditor = class ScheduleEditor {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             
-            const response = await fetch(`/dev/admin/classes/${classId}`, {
+            const response = await fetch(`/admin/classes/${classId}`, {
                 method: 'DELETE',
                 headers,
                 signal: controller.signal
@@ -808,14 +808,14 @@ window.ScheduleEditor = class ScheduleEditor {
 
             showNotification('Class deleted successfully', 'success');
             
-            // Update local array
+            /// Update local array
             this.schedule = this.schedule.filter(c => c.id !== classId);
             
-            // Update status
+            /// Update status
             const statusText = this.container.querySelector('.status-text');
             statusText.textContent = `${this.schedule.length} classes scheduled`;
             
-            // Trigger custom event
+            /// Trigger custom event
             const event = new CustomEvent('schedule-updated', { 
                 detail: { action: 'delete', classId } 
             });
@@ -838,21 +838,21 @@ window.ScheduleEditor = class ScheduleEditor {
             return;
         }
 
-        // Extract day of week from new date
+        /// Extract day of week from new date
         const selectedDate = this.parseDate(newDate);
         const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayOfWeek = daysOfWeek[selectedDate.getDay()];
 
-        // Update the date
+        /// Update the date
         classData.scheduleDate = newDate;
-        classData.date = newDate; // Ensure compatibility with different API formats
+        classData.date = newDate; /// Ensure compatibility with different API formats
         classData.day = dayOfWeek;
         
         try {
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            const response = await fetch(`/dev/admin/classes/${classId}`, {
+            const response = await fetch(`/admin/classes/${classId}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify(classData)
@@ -865,13 +865,13 @@ window.ScheduleEditor = class ScheduleEditor {
 
             showNotification('Class date updated successfully', 'success');
             
-            // Trigger custom event
+            /// Trigger custom event
             const event = new CustomEvent('schedule-updated', { 
                 detail: { action: 'move', classId } 
             });
             this.container.dispatchEvent(event);
             
-            // Update the schedule locally
+            /// Update the schedule locally
             const index = this.schedule.findIndex(c => c.id === classId);
             if (index !== -1) {
                 this.schedule[index] = classData;
@@ -880,7 +880,7 @@ window.ScheduleEditor = class ScheduleEditor {
         } catch (error) {
             console.error('Failed to update class:', error);
             showNotification(`Failed to update class: ${error.message}`, 'error');
-            this.loadSchedule(); // Reload to revert changes
+            this.loadSchedule(); /// Reload to revert changes
         }
     }
 
@@ -893,13 +893,13 @@ window.ScheduleEditor = class ScheduleEditor {
             let successCount = 0;
             let failCount = 0;
             
-            // For each class, ensure it's saved to the server
+            /// For each class, ensure it's saved to the server
             for (const classItem of this.schedule) {
                 try {
                     const headers = getAuthHeaders();
                     if (!headers) return;
                     
-                    const url = `/dev/admin/classes/${classItem.id}`;
+                    const url = `/admin/classes/${classItem.id}`;
                     const response = await fetch(url, {
                         method: 'PUT',
                         headers,
@@ -921,7 +921,7 @@ window.ScheduleEditor = class ScheduleEditor {
                 showNotification('Schedule saved successfully', 'success');
                 statusText.textContent = `${this.schedule.length} classes scheduled`;
                 
-                // Trigger custom event
+                /// Trigger custom event
                 const event = new CustomEvent('schedule-updated', { 
                     detail: { action: 'save-all' } 
                 });
@@ -937,16 +937,16 @@ window.ScheduleEditor = class ScheduleEditor {
     }
 }
 
-// Helper function for getting auth headers
+//// Helper function for getting auth headers
 function getAuthHeaders() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/dev';
+            window.location.href = '/';
             return null;
         }
         
-        // Ensure token doesn't already have 'Bearer ' prefix
+        /// Ensure token doesn't already have 'Bearer ' prefix
         const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
         console.log('Using auth token:', cleanToken.substring(0, 10) + '...');
         
@@ -956,7 +956,7 @@ function getAuthHeaders() {
             'Accept': 'application/json'
         };
         
-        // Add more debug logs
+        /// Add more debug logs
         console.log('Authorization header:', headers.Authorization.substring(0, 15) + '...');
         
         return headers;
@@ -969,17 +969,17 @@ function getAuthHeaders() {
     }
 }
 
-// Schedule-specific notification function
+//// Schedule-specific notification function
 function showNotification(message, type = 'success') {
-    // Use admin's notification function if it exists and is NOT this function
-    // (prevents infinite recursion)
+    /// Use admin's notification function if it exists and is NOT this function
+    /// (prevents infinite recursion)
     if (typeof window.showNotification === 'function' && 
         window.showNotification !== showNotification) {
         window.showNotification(message, type);
         return;
     }
     
-    // Fallback to creating our own notification
+    /// Fallback to creating our own notification
     let notification = document.getElementById('schedule-notification');
     
     if (!notification) {

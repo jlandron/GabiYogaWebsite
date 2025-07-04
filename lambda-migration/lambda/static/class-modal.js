@@ -3,7 +3,7 @@
  * Handles creation and editing of yoga classes with an enhanced modal interface
  */
 
-// Global variables
+/// Global variables
 let classModal;
 let currentClass = null;
 
@@ -25,11 +25,11 @@ function initAdminClassModal() {
     addCreateClassButton();
 }
 
-// Get auth headers for API requests
+/// Get auth headers for API requests
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/dev/index.html';
+        window.location.href = '/index.html';
         return null;
     }
     
@@ -405,7 +405,7 @@ function setDefaultValues() {
  */
 async function getCurrentUserId() {
     try {
-        const response = await fetch('/dev/auth/verify-token', {
+        const response = await fetch('/auth/verify-token', {
             headers: getAuthHeaders()
         });
         
@@ -527,7 +527,7 @@ async function handleFormSubmit(event) {
         const isUpdate = !!formData.id;
         
         // API endpoint and method
-        const endpoint = isUpdate ? `/dev/classes/${formData.id}` : '/dev/classes';
+        const endpoint = isUpdate ? `/classes/${formData.id}` : '/classes';
         const method = isUpdate ? 'PUT' : 'POST';
         
         // Send data to server
@@ -675,8 +675,8 @@ function formatFieldName(field) {
         .replace(/([A-Z])/g, match => match.toLowerCase()); // Lower case remaining capital letters
 }
 
-// The copyClassModal function has been removed as this functionality is now
-// handled directly in the schedule editor by prefilling the create modal
+/// The copyClassModal function has been removed as this functionality is now
+/// handled directly in the schedule editor by prefilling the create modal
 
 /**
  * Show a notification message to the user
@@ -743,7 +743,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Export functions for external use
+/// Export functions for external use
 window.initAdminClassModal = initAdminClassModal;
 window.showClassModal = showClassModal;
 window.hideClassModal = hideClassModal;

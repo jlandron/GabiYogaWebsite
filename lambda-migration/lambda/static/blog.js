@@ -20,18 +20,18 @@ function serveBlogPage() {
     <meta name="description" content="Discover insights on yoga, wellness, and mindful living through our thoughtful blog posts and articles.">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/dev/static/theme-variables.css">
-    <link rel="stylesheet" href="/dev/static/common-styles.css">
-    <link rel="stylesheet" href="/dev/static/styles.css">
-    <link rel="stylesheet" href="/dev/static/blog.css">
+    <link rel="stylesheet" href="/static/theme-variables.css">
+    <link rel="stylesheet" href="/static/common-styles.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/blog.css">
 </head>
 <body>
    <header class="header">
         <nav class="nav-container">
-            <a href="/dev" class="logo">Gabi Yoga</a>
+            <a href="/" class="logo">Gabi Yoga</a>
             <ul class="nav-links">
-                <li><a href="/dev">Home</a></li>
-                <li><a href="/dev/blog-page" class="active">Blog</a></li>
+                <li><a href="/">Home</a></li>
+                <li><a href="/blog-page" class="active">Blog</a></li>
             </ul>
         </nav>
     </header>
@@ -95,7 +95,7 @@ function serveBlogPage() {
 
     <script>
         // Lambda API Configuration - Simple fixed URL approach
-        const API_BASE_URL = window.location.origin + '/dev';
+        const API_BASE_URL = window.location.origin;
         
         // Filter posts by search term
         function filterPostsBySearch(posts, searchTerm) {
@@ -162,7 +162,7 @@ function serveBlogPage() {
                         year: 'numeric'
                     });
                     
-                    return '<a href="/dev/blog-page/' + post.slug + '" class="blog-card' + (!post.coverImage || !post.coverImage.url ? ' no-image' : '') + '">' +
+                    return '<a href="/blog-page/' + post.slug + '" class="blog-card' + (!post.coverImage || !post.coverImage.url ? ' no-image' : '') + '">' +
                             (post.coverImage && post.coverImage.url ?
                             '<div class="blog-card-image" style="background-image: url(' + post.coverImage.url + ')">' +
                                 '<div class="blog-card-category">' + category + '</div>' +

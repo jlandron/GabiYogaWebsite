@@ -4,6 +4,7 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export interface LambdaApiStackProps extends cdk.StackProps {
@@ -72,6 +73,9 @@ export class LambdaApiStack extends cdk.Stack {
       STRIPE_SECRET_NAME: props.stripeSecret.secretName,
       ASSETS_BUCKET: this.assetsBucket.bucketName,
       CORS_ORIGIN: stage === 'prod' ? 'https://gabi.yoga,https://www.gabi.yoga' : '*',
+      // Base URL for API and email links - uses custom domain
+      BASE_URL: stage === 'prod' ? 'https://gabi.yoga' : `https://dev.gabi.yoga`,
+      FROM_EMAIL: 'noreply@gabi.yoga',
     };
 
     // Common Lambda properties
@@ -180,6 +184,13 @@ export class LambdaApiStack extends cdk.Stack {
       // Grant S3 permissions
       this.assetsBucket.grantReadWrite(func);
     });
+    
+    // Grant SES permissions to specific Lambda functions that need to send emails
+    this.grantSESPermissions([
+      authForgot,      // For password reset emails
+      bookingBook,     // For booking confirmation emails
+      adminClasses     // For class cancellation emails
+    ]);
 
     // API Gateway
     this.apiGateway = new apigateway.RestApi(this, 'ApiGateway', {
@@ -191,10 +202,13 @@ export class LambdaApiStack extends cdk.Stack {
         allowHeaders: ['Content-Type', 'Authorization', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token', 'Accept'],
         allowCredentials: true,
       },
-      deployOptions: {
-        stageName: stage,
-        tracingEnabled: true,
-      },
+  deployOptions: {
+    stageName: stage,  // Keep using the stage name for compatibility
+    tracingEnabled: true,
+    metricsEnabled: true,
+    loggingLevel: apigateway.MethodLoggingLevel.INFO,
+    dataTraceEnabled: stage !== 'prod', // Enable for non-prod environments
+  },
     });
 
     // API Gateway Resources and Methods
@@ -368,6 +382,31 @@ export class LambdaApiStack extends cdk.Stack {
       value: this.assetsBucket.bucketName,
       description: 'Assets bucket name',
       exportName: `${resourcePrefix}-AssetsBucketName`,
+    });
+  }
+
+  private grantSESPermissions(functions: lambda.Function[]): void {
+    functions.forEach(func => {
+      // Create a policy statement for SES permissions
+      const sesPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'ses:SendEmail',
+          'ses:SendRawEmail',
+          'ses:SendTemplatedEmail',
+          'ses:SendBulkTemplatedEmail',
+          'ses:GetSendQuota',
+          'ses:GetAccountSendingEnabled',
+          'ses:GetIdentityVerificationAttributes',
+          'ses:GetIdentityDkimAttributes',
+          'ses:GetIdentityMailFromDomainAttributes',
+          'ses:ListIdentities'
+        ],
+        resources: ['*'], // Ideally should be more restrictive in a production environment
+      });
+
+      // Add the policy to the function's role
+      func.addToRolePolicy(sesPolicy);
     });
   }
 
