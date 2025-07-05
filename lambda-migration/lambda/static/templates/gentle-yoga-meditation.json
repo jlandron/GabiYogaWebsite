@@ -1,0 +1,24 @@
+{
+  "title": "Gentle Yoga & Meditation",
+  "category": "all-levels",
+  "level": "all-levels",
+  "duration": 90,
+  "maxParticipants": 15,
+  "description": "A nurturing practice that combines gentle yoga with guided meditation. This class focuses on slow, mindful movement, deep stretching, and restorative poses followed by meditation techniques for stress reduction and relaxation. Perfect for those seeking a peaceful practice or recovering from injury.",
+  "status": "active",
+  "location": "Main Studio",
+  "price": 25,
+  "instructor": "Gabi",
+  "requirements": [
+    "No yoga experience required",
+    "Suitable for all bodies and abilities",
+    "Please inform the instructor of any injuries or health concerns"
+  ],
+  "whatToBring": [
+    "Yoga mat (mats available to borrow)",
+    "Water bottle",
+    "Comfortable, layered clothing",
+    "Optional: your own blanket or meditation cushion"
+  ],
+  "cancellationPolicy": "Cancel up to 2 hours before class"
+}

@@ -50,6 +50,18 @@ window.ScheduleEditor = class ScheduleEditor {
             <div class="modal class-modal" style="display: none;">
                 <div class="modal-content">
                     <h3>Add/Edit Class</h3>
+                    
+                    <div class="template-selector" style="margin-bottom: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
+                        <label for="template-select" style="display: block; margin-bottom: 5px; font-weight: 500;">Choose a template:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="template-select" style="flex-grow: 1; padding: 8px;">
+                                <option value="">Select a template...</option>
+                                <!-- Template options will be populated dynamically -->
+                            </select>
+                            <button type="button" id="apply-template-btn" class="secondary-btn">Apply Template</button>
+                        </div>
+                    </div>
+                    
                     <div class="form-tabs">
                         <button class="tab-btn active" data-tab="basic">Basic Info</button>
                         <button class="tab-btn" data-tab="details">Details</button>
@@ -216,6 +228,44 @@ window.ScheduleEditor = class ScheduleEditor {
                 this.calculateEndTime();
             });
         });
+        
+        // Setup template selector
+        const templateSelect = modal.querySelector('#template-select');
+        const applyTemplateBtn = modal.querySelector('#apply-template-btn');
+        
+        if (window.classTemplates && typeof window.classTemplates.load === 'function') {
+            // Populate the template dropdown
+            window.classTemplates.load().then(templates => {
+                // Clear existing options except the first one
+                while (templateSelect.options.length > 1) {
+                    templateSelect.remove(1);
+                }
+                
+                // Add options for each template
+                Object.keys(templates).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = templates[key].title;
+                    templateSelect.appendChild(option);
+                });
+            });
+            
+            // Add event listener for the apply button
+            applyTemplateBtn.addEventListener('click', () => {
+                const selectedTemplate = templateSelect.value;
+                if (selectedTemplate) {
+                    this.applyTemplate(selectedTemplate);
+                } else {
+                    showNotification('Please select a template first', 'warning');
+                }
+            });
+        } else {
+            // Hide template selector if templates are not available
+            const templateSelector = modal.querySelector('.template-selector');
+            if (templateSelector) {
+                templateSelector.style.display = 'none';
+            }
+        }
         
         // Initialize admin class modal if available
         if (typeof window.classModalHelpers !== 'undefined') {
@@ -784,7 +834,55 @@ window.ScheduleEditor = class ScheduleEditor {
         this.showModal(classData);
     }
     
-
+    applyTemplate(templateKey) {
+        if (!window.classTemplates) {
+            console.error('Class templates functionality is not available');
+            return;
+        }
+        
+        window.classTemplates.load().then(templates => {
+            const template = templates[templateKey];
+            
+            if (!template) {
+                console.error('Template not found:', templateKey);
+                showNotification('Template not found', 'error');
+                return;
+            }
+            
+            console.log('Applying template:', template.title);
+            
+            const modal = this.container.querySelector('.modal');
+            
+            // Fill in form fields with template data
+            modal.querySelector('#class-name').value = template.title || '';
+            modal.querySelector('#class-description').value = template.description || '';
+            modal.querySelector('#class-duration').value = template.duration || 60;
+            modal.querySelector('#class-capacity').value = template.maxParticipants || 10;
+            modal.querySelector('#class-category').value = template.category || 'general';
+            modal.querySelector('#class-level').value = template.level || 'all-levels';
+            modal.querySelector('#class-location').value = template.location || 'Main Studio';
+            modal.querySelector('#class-status').value = template.status || 'active';
+            modal.querySelector('#class-instructor').value = template.instructor || 'Gabi';
+            modal.querySelector('#class-price').value = template.price || 25;
+            
+            // Handle array fields
+            if (template.requirements && Array.isArray(template.requirements)) {
+                modal.querySelector('#class-requirements').value = template.requirements.join('\n');
+            }
+            
+            if (template.whatToBring && Array.isArray(template.whatToBring)) {
+                modal.querySelector('#class-bring').value = template.whatToBring.join('\n');
+            }
+            
+            modal.querySelector('#class-cancellation').value = template.cancellationPolicy || 'Cancel up to 2 hours before class';
+            
+            // Update the end time based on duration
+            this.calculateEndTime();
+            
+            showNotification(`Applied "${template.title}" template`, 'success');
+        });
+    }
+    
     async deleteClass(classId) {
         if (!confirm('Are you sure you want to delete this class?')) return;
 
