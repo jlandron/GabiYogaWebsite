@@ -19,11 +19,23 @@ exports.handler = async (event) => {
         // Get the file path from the event
         let filePath = event.path || event.pathParameters?.proxy || '';
         
-        // Remove leading slash and 'static/' if present
-        const cleanPath = filePath.replace(/^\//, '').replace(/^static\//, '');
+        console.log('Static file request path:', filePath);
+        
+        // Handle special HTML pages at the root level
+        if (filePath === '/reset-password.html' || filePath === 'reset-password.html') {
+            filePath = 'reset-password.html';
+        } else if (filePath === '/login.html' || filePath === 'login.html') {
+            filePath = 'login.html';
+        } else {
+            // For other files, remove leading slash and 'static/' if present
+            filePath = filePath.replace(/^\//, '').replace(/^static\//, '');
+        }
 
+        // Log the cleaned path
+        console.log('Cleaned path for static file:', filePath);
+        
         // Special handling for favicon.ico
-        if (filePath === '/favicon.ico') {
+        if (filePath === '/favicon.ico' || filePath === 'favicon.ico') {
             return {
                 statusCode: 404,
                 headers: {
@@ -35,15 +47,15 @@ exports.handler = async (event) => {
         }
         
         // Get the file extension
-        const ext = path.extname(cleanPath);
+        const ext = path.extname(filePath);
         const contentType = contentTypes[ext] || 'application/octet-stream';
 
         // Read the file from the current directory
-        const fileContent = await fs.readFile(path.join(__dirname, cleanPath), 'utf8');
+        const fileContent = await fs.readFile(path.join(__dirname, filePath), 'utf8');
         
         // Log the file path and content type for debugging
         console.log('Serving file:', {
-            path: cleanPath,
+            path: filePath,
             contentType,
             size: fileContent.length
         });

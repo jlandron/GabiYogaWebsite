@@ -894,8 +894,31 @@ function renderCalendar() {
         const classesDiv = document.createElement('div');
         classesDiv.className = 'calendar-classes';
         
-        const dayStr = currentDay.toISOString().split('T')[0];
-        const dayClasses = calendarClasses[dayStr] || [];
+        // Get the current day of week (0=Sunday, 1=Monday, etc.)
+        const currentDayOfWeek = currentDay.getDay();
+        const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][currentDayOfWeek];
+        
+        // Get classes for both specific dates and matching day-of-week
+        
+        // 1. First get any classes scheduled for this specific date
+        const year = currentDay.getFullYear();
+        const month = String(currentDay.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDay.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        
+        // Get classes scheduled for this specific date
+        let dayClasses = calendarClasses[dateStr] || [];
+        
+        // 2. Then add any classes that match this day of week (if not already included)
+        allClasses.forEach(classItem => {
+            // If this class has the day property matching the current day of week
+            if (classItem.day === dayName) {
+                // Check if this class isn't already included (avoid duplicates)
+                if (!dayClasses.some(c => c.id === classItem.id)) {
+                    dayClasses.push(classItem);
+                }
+            }
+        });
         
         dayClasses.forEach(classItem => {
             const classDiv = document.createElement('div');
@@ -1019,13 +1042,11 @@ function initContactForm() {
             return;
         }
         
-        // Show loading state
+        // Show loading state with wave shimmer animation
         const submitBtn = contactForm.querySelector('.submit-btn');
-        const spinner = document.getElementById('contact-spinner');
         
-        submitBtn.classList.add('submitting');
+        submitBtn.classList.add('btn-loading');
         submitBtn.disabled = true;
-        spinner.style.display = 'block';
         
         try {
             // Send data to API
@@ -1054,9 +1075,8 @@ function initContactForm() {
             showContactFormStatus('An error occurred. Please try again later.', 'error');
         } finally {
             // Reset loading state
-            submitBtn.classList.remove('submitting');
+            submitBtn.classList.remove('btn-loading');
             submitBtn.disabled = false;
-            spinner.style.display = 'none';
         }
     });
 }

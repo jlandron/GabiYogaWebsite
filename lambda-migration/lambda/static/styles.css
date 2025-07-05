@@ -130,8 +130,8 @@ a:hover {
 
 /* Blog Hero Section */
 .blog-hero {
-    height: 33vh; /* One third of viewport height for blog hero */
-    background-image: url('https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    height: 50vh; /* One third of viewport height for blog hero */
+    background-image: url('https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -139,6 +139,16 @@ a:hover {
     justify-content: center;
     text-align: center;
     color: white;
+}
+
+.blog-hero h1, .blog-hero h2, .blog-hero h3 {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.75);
+    color: white;
+}
+
+.blog-hero p {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.75);
+    opacity: 0.9;
 }
 
 .hero-content {
@@ -150,7 +160,7 @@ a:hover {
     font-size: 3.5rem;
     margin-bottom: 1rem;
     font-weight: 300;
-    text-shadow: 2px 2px 4px hwb(0 0% 100% / 0.75);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.75);
     animation: fadeInUp 1s ease-out;
     color: white;
 }
@@ -443,6 +453,16 @@ a:hover {
     color: white;
 }
 
+.blog-post-hero h1, .blog-post-hero h2, .blog-post-hero h3 {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.75);
+    color: white;
+}
+
+.blog-post-hero p {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.75);
+    opacity: 0.9;
+}
+
 .blog-post-hero img {
     width: 100%;
     height: 100%;
@@ -686,6 +706,7 @@ a:hover {
     color: var(--color-primary);
     margin-bottom: 1rem;
     font-weight: 300;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .gallery-subtitle {
@@ -1148,6 +1169,8 @@ a:hover {
     border-radius: 25px;
     font-weight: 600;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn:hover {
@@ -1167,6 +1190,42 @@ a:hover {
     color: var(--color-dark);
 }
 
+/* Loading States */
+.loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-medium);
+}
+
+/* Wave Shimmer Loading Animation */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.9;
+    overflow: hidden;
+}
+
+.btn-loading span {
+    opacity: 0.7;
+}
+
+.btn-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: wave-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes wave-slide {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
 /* Footer */
 footer {
     background: var(--color-dark);
@@ -1181,44 +1240,6 @@ footer {
     text-align: center;
     padding: 3rem;
     color: var(--color-medium);
-}
-
-/* Loading Animation */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid var(--color-light);
-    border-radius: 50%;
-    border-top-color: var(--color-primary);
-    animation: spin 1s linear infinite;
-    margin-left: 10px;
-}
-
-.btn-loading {
-    position: relative;
-    pointer-events: none;
-    opacity: 0.8;
-}
-
-.btn-loading .loading-spinner {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    border-width: 2px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.btn-loading span {
-    margin-right: 30px;  /* Make space for the spinner */
 }
 
 /* Modal Styles */

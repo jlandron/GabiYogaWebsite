@@ -117,6 +117,7 @@ export class LambdaApiStack extends cdk.Stack {
     const adminSettings = this.createLambdaFunction('AdminSettings', 'admin/settings.js', commonLambdaProps);
     const adminMakeAdmin = this.createLambdaFunction('AdminMakeAdmin', 'admin/make-admin.js', commonLambdaProps);
     const adminClasses = this.createLambdaFunction('AdminClasses', 'admin/classes.js', commonLambdaProps);
+    const adminCommunications = this.createLambdaFunction('AdminCommunications', 'admin/communications.js', commonLambdaProps);
 
     // Public Settings Lambda Function (for GET requests)
     const settingsGet = this.createLambdaFunction('SettingsGet', 'settings/get.js', commonLambdaProps);
@@ -282,6 +283,13 @@ export class LambdaApiStack extends cdk.Stack {
     // Settings management
     adminResource.addResource('settings').addMethod('PUT', new apigateway.LambdaIntegration(adminSettings));
     
+    // Communications management (contact form messages)
+    const adminCommunicationsResource = adminResource.addResource('communications');
+    adminCommunicationsResource.addMethod('GET', new apigateway.LambdaIntegration(adminCommunications));
+    const adminCommunicationResource = adminCommunicationsResource.addResource('{id}');
+    adminCommunicationResource.addMethod('PUT', new apigateway.LambdaIntegration(adminCommunications));
+    adminCommunicationResource.addMethod('DELETE', new apigateway.LambdaIntegration(adminCommunications));
+    
     // Classes management
     const adminClassesResource = adminResource.addResource('classes');
     adminClassesResource.addMethod('GET', new apigateway.LambdaIntegration(adminClasses));
@@ -354,6 +362,18 @@ export class LambdaApiStack extends cdk.Stack {
 
     const userDashboardResource = this.apiGateway.root.addResource('user.html');
     userDashboardResource.addMethod('GET', new apigateway.LambdaIntegration(userDashboardPage), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // Add a specific route for reset-password.html
+    const resetPasswordResource = this.apiGateway.root.addResource('reset-password.html');
+    resetPasswordResource.addMethod('GET', new apigateway.LambdaIntegration(staticFiles), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // Add a specific route for login.html
+    const loginHtmlResource = this.apiGateway.root.addResource('login.html');
+    loginHtmlResource.addMethod('GET', new apigateway.LambdaIntegration(staticFiles), {
       authorizationType: apigateway.AuthorizationType.NONE
     });
     

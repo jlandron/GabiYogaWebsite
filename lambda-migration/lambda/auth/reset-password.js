@@ -38,10 +38,6 @@ exports.handler = async (event, context) => {
       return createErrorResponse('Reset token is required', 400);
     }
 
-    if (!email) {
-      return createErrorResponse('Email is required', 400);
-    }
-
     if (!password) {
       return createErrorResponse('Password is required', 400);
     }
@@ -52,16 +48,16 @@ exports.handler = async (event, context) => {
 
     logWithContext('info', 'Processing password reset request', {
       requestId,
-      email: email.substring(0, 3) + '...'
+      token: token.substring(0, 5) + '...'
     });
 
-    // Find user by email
+    // Find user by reset token using the GSI we created
     const users = await dynamoUtils.queryItems(
       process.env.USERS_TABLE,
-      'EmailIndex',
-      'email = :email',
+      'ResetTokenIndex',
+      'resetToken = :token',
       {
-        ':email': email.toLowerCase()
+        ':token': token
       }
     );
 
@@ -71,9 +67,9 @@ exports.handler = async (event, context) => {
 
     const user = users[0];
 
-    // Verify reset token
-    if (!user.resetToken || user.resetToken !== token) {
-      logWithContext('warn', 'Invalid reset token provided', {
+    // Token verification already done by query, but double check to be safe
+    if (!user.resetToken || user.resetToken === "EXPIRED_TOKEN") {
+      logWithContext('warn', 'Invalid or expired reset token provided', {
         requestId,
         userId: user.id
       });
@@ -95,11 +91,12 @@ exports.handler = async (event, context) => {
     const hashedPassword = await hashPassword(password);
 
     // Update user record with new password and clear reset token
+    // Use a placeholder value instead of null for resetToken to satisfy GSI requirements
     const updatedUser = {
       ...user,
       password: hashedPassword,
-      resetToken: null,
-      resetTokenExpiry: null,
+      resetToken: "EXPIRED_TOKEN",  // Use placeholder value instead of null/empty to work with GSI
+      resetTokenExpiry: new Date(0).toISOString(),  // Set to epoch time to clearly indicate expiration
       updatedAt: new Date().toISOString()
     };
 

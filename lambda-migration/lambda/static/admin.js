@@ -17,6 +17,9 @@ function getAuthHeaders() {
     };
 }
 
+/// Variable to hold the communications manager instance
+let communicationsManager = null;
+
 /// Check authentication on page load
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -117,6 +120,9 @@ function navigateToSection(sectionId) {
             break;
         case 'gallery':
             loadGallery();
+            break;
+        case 'communications':
+            loadCommunications();
             break;
         case 'settings':
             // Settings are now managed by the SettingsManager class
@@ -1349,6 +1355,28 @@ async function loadGallery() {
     } catch (error) {
         console.error('Error loading gallery:', error);
         showNotification('Error loading gallery', 'error');
+    }
+}
+
+/// Communications Management
+function loadCommunications() {
+    try {
+        const container = document.getElementById('communications-container');
+        if (!container) {
+            console.error('Communications container not found');
+            return;
+        }
+        
+        // Initialize communications manager if not already done
+        if (!communicationsManager) {
+            communicationsManager = new CommunicationsManager(container);
+        } else {
+            // Refresh data if already initialized
+            communicationsManager.loadMessages();
+        }
+    } catch (error) {
+        console.error('Error loading communications:', error);
+        showNotification('Error loading communications', 'error');
     }
 }
 

@@ -20,12 +20,16 @@ function wrapEmailContent(content, title, subtitle = null) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title}</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: 'Georgia', serif; line-height: 1.6; color: #3b3b35; background-color: #fcfcf9; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+        .header { background: linear-gradient(135deg, #a1b082 0%, #82946c 100%); color: white; padding: 30px; text-align: center; border-radius: 0.75rem 0.75rem 0 0; }
+        .content { background: #fcfcf9; padding: 30px; border-radius: 0 0 0.75rem 0.75rem; box-shadow: 0 4px 15px rgba(92, 92, 85, 0.15); }
+        .button { display: inline-block; background: linear-gradient(135deg, #a1b082, #82946c); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(92, 92, 85, 0.15); transition: all 0.3s ease; }
+        .button:hover { background: #82946c; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92, 92, 85, 0.2); }
+        .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #8f8f87; }
+        h1, h2, h3, h4 { font-family: 'Georgia', serif; font-weight: 600; color: #3b3b35; }
+        p { color: #5c5c55; }
+        .highlight { color: #a1b082; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -60,9 +64,9 @@ exports.passwordResetTemplate = {
     <p style="text-align: center;">
         <a href="${resetUrl}" class="button">Reset Password</a>
     </p>
-    <p><strong>This link will expire in 1 hour.</strong></p>
+    <p><strong>This link will expire in 15 minutes.</strong></p>
     <p>If you didn't request this password reset, you can safely ignore this email. Your password will not be changed.</p>
-    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e8e8e3;">
     <p><small>If the button doesn't work, copy and paste this link into your browser:</small></p>
     <p><small>${resetUrl}</small></p>
   `, 'Reset Your Gabi Yoga Password', 'Password Reset Request'),
@@ -77,7 +81,7 @@ We received a request to reset your password for your Gabi Yoga account.
 Click the link below to reset your password:
 ${resetUrl}
 
-This link will expire in 1 hour.
+This link will expire in 15 minutes.
 
 If you didn't request this password reset, you can safely ignore this email. Your password will not be changed.
 
@@ -94,8 +98,8 @@ exports.bookingConfirmationTemplate = {
   htmlContent: (firstName, booking, classDate) => wrapEmailContent(`
     <h2>Hi ${firstName || 'there'},</h2>
     <p>Thank you for booking a class with Gabi Yoga! Your spot has been confirmed.</p>
-    <div style="background-color: #eef2ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #4b5563;">Class Details</h3>
+    <div style="background-color: #e8e9e4; padding: 15px; border-radius: 0.75rem; margin: 20px 0; box-shadow: 0 4px 15px rgba(92, 92, 85, 0.05);">
+      <h3 style="margin-top: 0; color: #82946c;">Class Details</h3>
       <p><strong>Class:</strong> ${booking.className}</p>
       <p><strong>Date & Time:</strong> ${classDate}</p>
       <p><strong>Instructor:</strong> ${booking.instructor}</p>
@@ -155,8 +159,8 @@ exports.classCancellationTemplate = {
   htmlContent: (firstName, classInfo, classDate) => wrapEmailContent(`
     <h2>Hi ${firstName || 'there'},</h2>
     <p>We're sorry to inform you that the following class has been cancelled:</p>
-    <div style="background-color: #fee2e2; padding: 15px; border-radius: 5px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #ef4444;">Cancelled Class</h3>
+    <div style="background-color: #fbebf0; padding: 15px; border-radius: 0.75rem; margin: 20px 0; box-shadow: 0 4px 15px rgba(92, 92, 85, 0.05);">
+      <h3 style="margin-top: 0; color: #e07a96;">Cancelled Class</h3>
       <p><strong>Class:</strong> ${classInfo.title}</p>
       <p><strong>Date & Time:</strong> ${classDate}</p>
       <p><strong>Instructor:</strong> ${classInfo.instructor || 'Gabi'}</p>

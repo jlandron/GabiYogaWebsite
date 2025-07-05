@@ -87,18 +87,7 @@ exports.handler = async (event, context) => {
 
     // Generate reset token
     const resetToken = generateResetToken();
-    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
-
-    // Store reset token in database
-    const resetRecord = {
-      id: resetToken,
-      userId: user.id,
-      email: user.email,
-      createdAt: new Date().toISOString(),
-      expiresAt: resetTokenExpiry.toISOString(),
-      used: false,
-      type: 'password_reset'
-    };
+    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
 
     await dynamoUtils.putItem(process.env.USERS_TABLE, {
       ...user,
@@ -106,12 +95,6 @@ exports.handler = async (event, context) => {
       resetTokenExpiry: resetTokenExpiry.toISOString(),
       updatedAt: new Date().toISOString()
     });
-
-    // Determine base URL for reset link
-    const baseUrl = process.env.BASE_URL || 
-      (process.env.STAGE === 'prod' ? 'https://gabi.yoga' : 'https://j5enu5t3ik.execute-api.us-east-1.amazonaws.com/dev/');
-    
-    const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     // Send password reset email using the safer method that won't throw errors
     const emailSent = await emailService.sendForgotPasswordEmailSafely(email, {

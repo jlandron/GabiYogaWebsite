@@ -191,7 +191,7 @@ async function handleLogin(event) {
   
   // Add loading state
   loginBtn.classList.add('btn-loading');
-  loginBtn.innerHTML = '<span>Logging in...</span><div class="loading-spinner"></div>';
+  loginBtn.innerHTML = '<span>Logging in...</span>';
   loginBtn.disabled = true;
   
   try {
@@ -252,7 +252,7 @@ async function handleRegister(event) {
   
   // Add loading state
   registerBtn.classList.add('btn-loading');
-  registerBtn.innerHTML = '<span>Registering...</span><div class="loading-spinner"></div>';
+  registerBtn.innerHTML = '<span>Registering...</span>';
   registerBtn.disabled = true;
   
   try {
@@ -429,7 +429,7 @@ async function handleForgotPassword(event) {
   
   // Add loading state
   forgotBtn.classList.add('btn-loading');
-  forgotBtn.innerHTML = '<span>Processing...</span><div class="loading-spinner"></div>';
+  forgotBtn.innerHTML = '<span>Processing...</span>';
   forgotBtn.disabled = true;
   
   try {

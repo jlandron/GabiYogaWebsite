@@ -21,6 +21,7 @@
     "aws-sdk": "^2.1691.0",
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
+    "nodemailer": "^6.9.5",
     "uuid": "^9.0.1",
     "mime-types": "^2.1.35",
     "validator": "^13.11.0"

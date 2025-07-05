@@ -3,80 +3,124 @@
  */
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
-const { validateFields, sanitizeInput } = require('./utils');
+const { isValidEmail, createErrorResponse } = require('./utils');
+
+/**
+ * Simple sanitization function to prevent XSS attacks
+ */
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return input;
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 /**
  * Handle contact form submissions
  */
 exports.handler = async (event) => {
-  console.log('Processing contact form submission');
+  console.log('Contact form handler received event:', event.httpMethod);
   
   try {
+    // Only allow POST for form submissions
+    if (event.httpMethod !== 'POST') {
+      return {
+        statusCode: 405,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*'
+        },
+        body: JSON.stringify({
+          success: false,
+          message: 'Method not allowed'
+        })
+      };
+    }
+
     // Parse request body
     const body = JSON.parse(event.body);
-    console.log('Request body:', body);
     
     // Validate required fields
-    const { name, email, message } = body;
-    validateFields({ name, email, message });
+    if (!body.name || !body.email || !body.message) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*'
+        },
+        body: JSON.stringify({
+          success: false,
+          message: 'Name, email and message are required'
+        })
+      };
+    }
+
+    // Validate email format
+    if (!isValidEmail(body.email)) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*'
+        },
+        body: JSON.stringify({
+          success: false,
+          message: 'Invalid email address'
+        })
+      };
+    }
     
-    // Sanitize inputs
-    const sanitizedName = sanitizeInput(name);
-    const sanitizedEmail = sanitizeInput(email);
-    const sanitizedMessage = sanitizeInput(message);
+    // Sanitize inputs to prevent XSS
+    const name = sanitizeInput(body.name);
+    const email = sanitizeInput(body.email.toLowerCase());
+    const message = sanitizeInput(body.message);
     
-    // Initialize DynamoDB client
+    // Store in DynamoDB
     const dynamoDb = new AWS.DynamoDB.DocumentClient();
     const tableName = process.env.COMMUNICATIONS_TABLE;
-    
-    // Generate unique ID
-    const id = uuidv4();
     const timestamp = new Date().toISOString();
     
-    // Create record
     const params = {
       TableName: tableName,
       Item: {
-        id,
+        id: uuidv4(),
         type: 'CONTACT',
         status: 'NEW',
-        name: sanitizedName,
-        email: sanitizedEmail,
-        message: sanitizedMessage,
+        name: name,
+        email: email,
+        message: message,
         createdAt: timestamp,
         updatedAt: timestamp
       }
     };
     
-    // Save to DynamoDB
     await dynamoDb.put(params).promise();
     
+    // Return success response
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
-        'Access-Control-Allow-Credentials': true
+        'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*'
       },
       body: JSON.stringify({
         success: true,
-        message: 'Contact form submitted successfully',
-        data: { id }
+        message: 'Contact form submitted successfully'
       })
     };
   } catch (error) {
-    console.error('Error processing contact form:', error);
-    
+    console.error('Error processing contact form submission:', error);
     return {
-      statusCode: error.statusCode || 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
-        'Access-Control-Allow-Credentials': true
+        'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*'
       },
       body: JSON.stringify({
         success: false,
-        message: error.message || 'Internal server error'
+        message: error.message || 'An error occurred while processing your request'
       })
     };
   }

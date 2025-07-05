@@ -31,14 +31,31 @@ export class LambdaSesStack extends cdk.Stack {
       });
     }
 
-    // Create a verified domain identity
-    // Use the existing domain identity from Route53 stack instead of creating a new one
-    // In dev, we're reusing the main domain but with a different mail sender
-    new ses.EmailIdentity(this, 'DomainIdentity', {
-      identity: ses.Identity.domain(domainName),
-      mailFromDomain: `mail.${domainName}`,
-      // We'll rely on the Route53 domain verification
-    });
+    // Handle SES domain identity differently based on environment
+    if (stage === 'prod') {
+      // For production, completely skip creating the domain identity
+      // This avoids conflicts with the existing identity in the dev stack
+      // Instead, add a comment in the stack outputs
+      
+      // Add a metadata node to the stack to document the decision
+      this.node.addMetadata('SES.DomainIdentity', {
+        domainName: domainName,
+        status: 'IMPORTED',
+        note: 'Using existing domain identity from dev environment'
+      });
+      
+      // Output for reference
+      new cdk.CfnOutput(this, 'DomainIdentityStatus', {
+        value: 'Using existing identity from dev environment',
+        description: 'SES Domain Identity Status',
+      });
+    } else {
+      // For dev environment, create the domain identity as usual
+      new ses.EmailIdentity(this, 'DomainIdentity', {
+        identity: ses.Identity.domain(domainName),
+        mailFromDomain: `mail.${domainName}`,
+      });
+    }
 
     // If we have a hosted zone, we'll add a comment node (CDK metadata) to document
     // that we're reusing the domain from Route53 stack

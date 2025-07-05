@@ -46,6 +46,13 @@ export class LambdaDbStack extends cdk.Stack {
       partitionKey: { name: 'email', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
+    
+    // Add a GSI for password reset tokens
+    this.usersTable.addGlobalSecondaryIndex({
+      indexName: 'ResetTokenIndex',
+      partitionKey: { name: 'resetToken', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
 
     // Blog Posts Table
     this.blogPostsTable = new dynamodb.Table(this, 'BlogPostsTable', {
