@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadClassSchedule();
     loadLatestBlog();
     checkUserRole();
+    initContactForm();
 });
 
 /// Global settings object
@@ -550,7 +551,7 @@ async function loadLatestBlog() {
                         post.excerpt +
                     '</div>' +
                     '<div style="text-align: center;">' +
-                        '<a href="/blog-page/' + post.slug + '" style="display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">' +
+                        '<a href="/blog-page/' + post.slug + '" class="read-article-btn">' +
                             'Read Full Article' +
                         '</a>' +
                     '</div>' +
@@ -989,5 +990,90 @@ async function handleLogout() {
         window.location.href = '/';
     } catch (error) {
         console.error('Logout error:', error);
+    }
+}
+
+/// Contact Form Functionality
+function initContactForm() {
+    const contactForm = document.getElementById('contact-form');
+    if (!contactForm) return;
+    
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Get form data
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        // Basic validation
+        if (!name || !email || !message) {
+            showContactFormStatus('Please fill in all required fields.', 'error');
+            return;
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showContactFormStatus('Please enter a valid email address.', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = contactForm.querySelector('.submit-btn');
+        const spinner = document.getElementById('contact-spinner');
+        
+        submitBtn.classList.add('submitting');
+        submitBtn.disabled = true;
+        spinner.style.display = 'block';
+        
+        try {
+            // Send data to API
+            const response = await fetch(`${API_BASE_URL}/contact`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, message })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message
+                showContactFormStatus('Your message has been sent! I\'ll get back to you soon.', 'success');
+                
+                // Reset form
+                contactForm.reset();
+            } else {
+                // Show error message
+                showContactFormStatus(data.message || 'Something went wrong. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Error submitting contact form:', error);
+            showContactFormStatus('An error occurred. Please try again later.', 'error');
+        } finally {
+            // Reset loading state
+            submitBtn.classList.remove('submitting');
+            submitBtn.disabled = false;
+            spinner.style.display = 'none';
+        }
+    });
+}
+
+function showContactFormStatus(message, type) {
+    const statusElement = document.getElementById('contact-status');
+    if (!statusElement) return;
+    
+    // Set message and type
+    statusElement.textContent = message;
+    statusElement.className = `form-status ${type}`;
+    
+    // Auto-hide after delay if success
+    if (type === 'success') {
+        setTimeout(() => {
+            statusElement.className = 'form-status';
+            statusElement.textContent = '';
+        }, 5000);
     }
 }

@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ses from 'aws-cdk-lib/aws-ses';
+import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { SESCrossRegionVerification } from './constructs/ses-cross-region';
@@ -18,14 +19,39 @@ export class LambdaSesStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: LambdaSesStackProps) {
     super(scope, id, props);
 
-    const { stage, domainName } = props;
+    const { stage, domainName, hostedZoneId } = props;
     const resourcePrefix = `GabiYoga-${stage}`;
 
+    // Look up the hosted zone if hostedZoneId is provided
+    let hostedZone;
+    if (hostedZoneId) {
+      hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ImportedHostedZone', {
+        hostedZoneId,
+        zoneName: domainName,
+      });
+    }
+
     // Create a verified domain identity
+    // Use the existing domain identity from Route53 stack instead of creating a new one
+    // In dev, we're reusing the main domain but with a different mail sender
     new ses.EmailIdentity(this, 'DomainIdentity', {
       identity: ses.Identity.domain(domainName),
       mailFromDomain: `mail.${domainName}`,
+      // We'll rely on the Route53 domain verification
     });
+
+    // If we have a hosted zone, we'll add a comment node (CDK metadata) to document
+    // that we're reusing the domain from Route53 stack
+    if (hostedZone) {
+      cdk.Aspects.of(this).add({
+        visit(node) {
+          if (node instanceof ses.EmailIdentity) {
+            // Add a CDK metadata annotation to document the domain reuse
+            node.node.addMetadata('info', `Domain ${domainName} is managed by Route53 stack with hosted zone ID: ${hostedZoneId}`);
+          }
+        }
+      });
+    }
 
     // Create a sending policy that allows sending emails from this domain and subdomains
     new iam.Policy(this, 'EmailSendingPolicy', {
@@ -101,6 +127,9 @@ export class LambdaSesStack extends cdk.Stack {
       targetRegion: this.region,  // Target region where we want to use the domain
     });
 
+    // Determine the appropriate email prefix based on stage
+    const emailPrefix = stage === 'prod' ? 'noreply' : 'noreply' + stage;
+    
     // Outputs
     new cdk.CfnOutput(this, 'EmailDomainIdentity', {
       value: domainName,
@@ -109,7 +138,7 @@ export class LambdaSesStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'DefaultSenderAddress', {
-      value: `noreply@${domainName}`,
+      value: `${emailPrefix}@${domainName}`,
       description: 'Default Sender Email Address',
       exportName: `${resourcePrefix}-SenderEmail`,
     });

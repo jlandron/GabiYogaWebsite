@@ -72,17 +72,6 @@ const apiStack = new LambdaApiStack(app, `${stackPrefix}-Api`, {
   stripeSecret: authStack.stripeSecret,
 });
 
-// SES Stack - Email sending infrastructure
-const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
-  env,
-  stage,
-  tags: commonTags,
-  description: `Gabi Yoga Lambda SES Email Stack (${stage})`,
-  domainName: 'gabi.yoga',
-  // If we have the hosted zone ID, we'd include it here
-  // hostedZoneId: 'Z1234567890ABC',
-});
-
 // Route53 Stack - Custom domain for API Gateway
 const route53Stack = new LambdaRoute53Stack(app, `${stackPrefix}-Route53`, {
   env,
@@ -93,11 +82,22 @@ const route53Stack = new LambdaRoute53Stack(app, `${stackPrefix}-Route53`, {
   domainName: 'gabi.yoga',
 });
 
+// SES Stack - Email sending infrastructure
+const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
+  env,
+  stage,
+  tags: commonTags,
+  description: `Gabi Yoga Lambda SES Email Stack (${stage})`,
+  domainName: 'gabi.yoga',
+  // Pass the hosted zone ID from Route53 stack
+  hostedZoneId: route53Stack.hostedZone.hostedZoneId,
+});
+
 // Stack dependencies
 apiStack.addDependency(dbStack);
 apiStack.addDependency(authStack);
-apiStack.addDependency(sesStack);
 route53Stack.addDependency(apiStack);
+sesStack.addDependency(route53Stack);
 
 // Output key information
 new cdk.CfnOutput(apiStack, 'ApiGatewayUrl', {
@@ -140,11 +140,8 @@ new cdk.CfnOutput(sesStack, 'EmailDomain', {
   exportName: `${stackPrefix}-EmailDomain`,
 });
 
-new cdk.CfnOutput(sesStack, 'DefaultSenderEmail', {
-  value: 'noreply@gabi.yoga',
-  description: 'Default sender email address',
-  exportName: `${stackPrefix}-DefaultSenderEmail`,
-});
+// This output is already provided by the SES stack, using stage-specific email address
+// No need to override it here as it would conflict with the SES stack's output
 
 // Route53 outputs are already defined in the stack
 

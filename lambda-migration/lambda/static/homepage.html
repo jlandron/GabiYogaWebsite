@@ -57,10 +57,7 @@
             </div>
         </div>
     </section>
-
-    <!-- Parallax Background Section -->
-    <section class="parallax-background"></section>
-
+    
     <!-- About Me Section -->
     <section id="about" class="section">
         <div class="container">
@@ -163,6 +160,50 @@
             </div>
         </div>
     </div>
+
+    <!-- Contact Me Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h1 class="section-title">Contact Me</h1>
+            <div class="section-subtitle"></div>
+            
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3>Get in Touch</h3>
+                    <p>Have questions about my yoga classes or interested in private sessions? Feel free to reach out using the form.</p>
+                    <p>I'll get back to you as soon as possible!</p>
+                </div>
+                
+                <div class="contact-form-container">
+                    <form id="contact-form" class="contact-form">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" placeholder="Your name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="Your email address" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" placeholder="Your message" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="submit-btn">
+                                <span>Send Message</span>
+                                <div class="loading-spinner" id="contact-spinner" style="display: none;"></div>
+                            </button>
+                        </div>
+                        
+                        <div id="contact-status" class="form-status"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer>

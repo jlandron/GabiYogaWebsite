@@ -26,6 +26,9 @@ function showLoginForm() {
             <button type="submit" class="btn" id="login-btn"><span>Login</span></button>
             <button type="button" class="btn btn-outline" onclick="showRegisterForm()">Register</button>
           </div>
+          <div class="forgot-password-link">
+            <a href="#" onclick="showForgotPasswordForm(); return false;">Forgot Password?</a>
+          </div>
         </form>
       </div>
     </div>
@@ -109,6 +112,21 @@ function showLoginForm() {
       display: flex;
       gap: 1rem;
       justify-content: flex-end;
+    }
+    
+    .forgot-password-link {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    
+    .forgot-password-link a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+    
+    .forgot-password-link a:hover {
+      text-decoration: underline;
     }
   `;
   document.head.appendChild(styles);
@@ -372,6 +390,87 @@ document.addEventListener('click', (e) => {
     closeAuthModal();
   }
 });
+
+/// Show forgot password form
+function showForgotPasswordForm() {
+  const modal = document.querySelector('.auth-modal');
+  if (!modal) return;
+  
+  modal.innerHTML = `
+    <div class="auth-modal-content">
+      <div class="auth-modal-header">
+        <h2>Forgot Password</h2>
+        <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+      </div>
+      <div class="auth-modal-body">
+        <form id="forgot-form" onsubmit="handleForgotPassword(event)">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="auth-error" id="forgot-error"></div>
+          <div class="auth-actions">
+            <button type="button" class="btn btn-outline" onclick="showLoginForm()">Back to Login</button>
+            <button type="submit" class="btn" id="forgot-btn"><span>Reset Password</span></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+/// Handle forgot password form submission
+async function handleForgotPassword(event) {
+  event.preventDefault();
+  
+  const email = event.target.email.value;
+  const errorEl = document.getElementById('forgot-error');
+  const forgotBtn = document.getElementById('forgot-btn');
+  
+  // Add loading state
+  forgotBtn.classList.add('btn-loading');
+  forgotBtn.innerHTML = '<span>Processing...</span><div class="loading-spinner"></div>';
+  forgotBtn.disabled = true;
+  
+  try {
+    console.log('Sending password reset request...');
+    const response = await fetch('/auth/forgot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      mode: 'cors',
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await response.json();
+    
+    // Always show success message for security (to prevent user enumeration)
+    errorEl.style.color = 'var(--color-success)';
+    errorEl.textContent = data.message || 'If your email exists in our system, you will receive password reset instructions shortly.';
+    
+    // Disable the form fields after submission
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+      emailInput.disabled = true;
+    }
+    
+    // Show back to login button after 3 seconds
+    setTimeout(() => {
+      showLoginForm();
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Password reset error:', error);
+    errorEl.textContent = 'An error occurred. Please try again.';
+  } finally {
+    // Remove loading state
+    forgotBtn.classList.remove('btn-loading');
+    forgotBtn.innerHTML = '<span>Reset Password</span>';
+    forgotBtn.disabled = true; // Keep disabled to prevent multiple submissions
+  }
+}
 
 /// Close modal on escape key
 document.addEventListener('keydown', (e) => {

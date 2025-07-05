@@ -6,6 +6,10 @@
       "es2020",
       "dom"
     ],
+    "types": [
+      "node",
+      "aws-sdk"
+    ],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,

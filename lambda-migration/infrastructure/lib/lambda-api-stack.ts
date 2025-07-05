@@ -94,6 +94,7 @@ export class LambdaApiStack extends cdk.Stack {
     const authRefresh = this.createLambdaFunction('AuthRefresh', 'auth/refresh.js', commonLambdaProps);
     const authLogout = this.createLambdaFunction('AuthLogout', 'auth/logout.js', commonLambdaProps);
     const authForgot = this.createLambdaFunction('AuthForgot', 'auth/forgot.js', commonLambdaProps);
+    const authResetPassword = this.createLambdaFunction('AuthResetPassword', 'auth/reset-password.js', commonLambdaProps);
     const authVerify = this.createLambdaFunction('AuthVerify', 'auth/verify.js', commonLambdaProps);
     const authVerifyToken = this.createLambdaFunction('AuthVerifyToken', 'auth/verify-token.js', commonLambdaProps);
     const authProfile = this.createLambdaFunction('AuthProfile', 'auth/profile.js', commonLambdaProps);
@@ -136,6 +137,9 @@ export class LambdaApiStack extends cdk.Stack {
     // Payment Lambda Functions
     const paymentIntent = this.createLambdaFunction('PaymentIntent', 'payment/intent.js', commonLambdaProps);
     const paymentWebhook = this.createLambdaFunction('PaymentWebhook', 'payment/webhook.js', commonLambdaProps);
+    
+    // Contact Form Lambda Function
+    const contactForm = this.createLambdaFunction('ContactForm', 'shared/contact.js', commonLambdaProps);
 
     // Static Website Lambda Functions
     const staticWebsite = this.createLambdaFunction('StaticWebsite', 'static/website.js', {
@@ -239,6 +243,9 @@ export class LambdaApiStack extends cdk.Stack {
     authResource.addResource('verify-token').addMethod('GET', new apigateway.LambdaIntegration(authVerifyToken), {
       authorizationType: apigateway.AuthorizationType.NONE
     });
+    authResource.addResource('reset-password').addMethod('POST', new apigateway.LambdaIntegration(authResetPassword), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
     
     // User profile management
     const profileResource = authResource.addResource('profile');
@@ -321,6 +328,12 @@ export class LambdaApiStack extends cdk.Stack {
     const paymentResource = this.apiGateway.root.addResource('payment');
     paymentResource.addResource('intent').addMethod('POST', new apigateway.LambdaIntegration(paymentIntent));
     paymentResource.addResource('webhook').addMethod('POST', new apigateway.LambdaIntegration(paymentWebhook));
+    
+    // Contact form endpoint (no auth required)
+    const contactResource = this.apiGateway.root.addResource('contact');
+    contactResource.addMethod('POST', new apigateway.LambdaIntegration(contactForm), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
 
     // Public Settings Resource (for GET requests)
     const settingsResource = this.apiGateway.root.addResource('settings');
