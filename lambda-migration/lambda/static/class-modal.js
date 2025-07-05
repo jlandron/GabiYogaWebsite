@@ -311,8 +311,15 @@ function showClassModal(classData = null) {
     currentClass = classData;
     
     // Update modal title
+    // If classData exists but has no ID or is marked as a copy, it's a new class
+    const isNewClass = !classData || !classData.id || classData._isCopy;
     document.getElementById('class-modal-title').textContent = 
-        classData ? 'Edit Class' : 'Create New Class';
+        isNewClass ? 'Create New Class' : 'Edit Class';
+        
+    // Remove our internal flag if it exists
+    if (classData && classData._isCopy) {
+        delete classData._isCopy;
+    }
     
     // Reset form and populate with data if editing
     resetForm();
