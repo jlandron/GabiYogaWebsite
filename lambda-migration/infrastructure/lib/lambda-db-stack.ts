@@ -17,6 +17,7 @@ export class LambdaDbStack extends cdk.Stack {
   public readonly settingsTable: dynamodb.Table;
   public readonly communicationsTable: dynamodb.Table;
   public readonly jwtBlacklistTable: dynamodb.Table;
+  public readonly offeringsTable: dynamodb.Table;
   public readonly dynamodbTables: dynamodb.Table[];
 
   constructor(scope: Construct, id: string, props: LambdaDbStackProps) {
@@ -236,6 +237,26 @@ export class LambdaDbStack extends cdk.Stack {
       timeToLiveAttribute: 'expiresAt',
     });
 
+    // Offering Table (new)
+    this.offeringsTable = new dynamodb.Table(this, 'OfferingTable', {
+      ...commonTableProps,
+      tableName: `${tableNamePrefix}-Offering`,
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
+    });
+
+    this.offeringsTable.addGlobalSecondaryIndex({
+      indexName: 'OfferingTypeIndex',
+      partitionKey: { name: 'type', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    this.offeringsTable.addGlobalSecondaryIndex({
+      indexName: 'OfferingStatusIndex',
+      partitionKey: { name: 'status', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // Array of all tables for monitoring
     this.dynamodbTables = [
       this.usersTable,
@@ -248,6 +269,7 @@ export class LambdaDbStack extends cdk.Stack {
       this.settingsTable,
       this.communicationsTable,
       this.jwtBlacklistTable,
+      this.offeringsTable,  // Added to the array
     ];
 
     // Add tags to all tables
@@ -280,6 +302,12 @@ export class LambdaDbStack extends cdk.Stack {
       value: this.bookingsTable.tableName,
       description: 'Bookings table name',
       exportName: `${tableNamePrefix}-BookingsTableName`,
+    });
+
+    new cdk.CfnOutput(this, 'OfferingsTableName', {
+      value: this.offeringsTable.tableName,
+      description: 'Offerings table name',
+      exportName: `${tableNamePrefix}-OfferingsTableName`,
     });
   }
 }

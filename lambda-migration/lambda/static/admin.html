@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/common-styles.css">
     <link rel="stylesheet" href="/static/admin.css">
     <link rel="stylesheet" href="/static/class-modal.css">
+    <link rel="stylesheet" href="/static/offerings.css">
     <!-- Quill Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
@@ -59,6 +60,10 @@
                 <a href="#" data-section="gallery">
                     <i class="icon">🖼️</i>
                     <span>Gallery</span>
+                </a>
+                <a href="#" data-section="offerings">
+                    <i class="icon">🧘</i>
+                    <span>Offerings</span>
                 </a>
                 <a href="#" data-section="communications">
                     <i class="icon">✉️</i>
@@ -192,6 +197,18 @@
             <div class="users-list"></div>
         </section>
         
+        <!-- Offerings Section -->
+        <section id="offerings-section" class="admin-section">
+            <div class="section-header">
+                <h2>Offerings</h2>
+                <button id="new-offering-btn" class="primary-btn">New Offering</button>
+            </div>
+            <div id="offering-editor-container" style="display: none;"></div>
+            <div class="offerings-list">
+                <!-- Will be populated dynamically -->
+            </div>
+        </section>
+        
         <!-- Communications Section -->
         <section id="communications-section" class="admin-section">
             <div id="communications-container"></div>
@@ -213,6 +230,7 @@
     <script src="/static/gallery-manager.js"></script>
     <script src="/static/settings.js"></script>
     <script src="/static/communications-manager.js"></script>
+    <script src="/static/offerings-manager.js"></script>
     <!-- Load main admin script last -->
     <script src="/static/admin.js"></script>
 </body>

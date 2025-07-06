@@ -67,6 +67,7 @@ const apiStack = new LambdaApiStack(app, `${stackPrefix}-Api`, {
   settingsTable: dbStack.settingsTable,
   communicationsTable: dbStack.communicationsTable,
   jwtBlacklistTable: dbStack.jwtBlacklistTable,
+  offeringsTable: dbStack.offeringsTable,
   // Pass auth resources
   jwtSecret: authStack.jwtSecret,
   stripeSecret: authStack.stripeSecret,

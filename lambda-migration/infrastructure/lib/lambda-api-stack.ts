@@ -19,6 +19,7 @@ export interface LambdaApiStackProps extends cdk.StackProps {
   settingsTable: dynamodb.Table;
   communicationsTable: dynamodb.Table;
   jwtBlacklistTable: dynamodb.Table;
+  offeringsTable: dynamodb.Table;
   jwtSecret: secretsmanager.Secret;
   stripeSecret: secretsmanager.Secret;
 }
@@ -69,10 +70,11 @@ export class LambdaApiStack extends cdk.Stack {
       SETTINGS_TABLE: props.settingsTable.tableName,
       COMMUNICATIONS_TABLE: props.communicationsTable.tableName,
       JWT_BLACKLIST_TABLE: props.jwtBlacklistTable.tableName,
+      OFFERINGS_TABLE: props.offeringsTable.tableName,
       JWT_SECRET_NAME: props.jwtSecret.secretName,
       STRIPE_SECRET_NAME: props.stripeSecret.secretName,
       ASSETS_BUCKET: this.assetsBucket.bucketName,
-      CORS_ORIGIN: stage === 'prod' ? 'https://gabi.yoga,https://www.gabi.yoga' : '*',
+      CORS_ORIGIN: stage === 'prod' ? 'https://gabi.yoga,https://www.gabi.yoga' : 'https://dev.gabi.yoga',
       // Base URL for API and email links - uses custom domain
       BASE_URL: stage === 'prod' ? 'https://gabi.yoga' : `https://dev.gabi.yoga`,
       FROM_EMAIL: 'noreply@gabi.yoga',
@@ -121,6 +123,12 @@ export class LambdaApiStack extends cdk.Stack {
 
     // Public Settings Lambda Function (for GET requests)
     const settingsGet = this.createLambdaFunction('SettingsGet', 'settings/get.js', commonLambdaProps);
+    
+    // Offerings Lambda Functions
+    const offeringsGet = this.createLambdaFunction('OfferingsGet', 'offerings/get.js', commonLambdaProps);
+    const offeringsCreate = this.createLambdaFunction('OfferingsCreate', 'offerings/create.js', commonLambdaProps);
+    const offeringsUpdate = this.createLambdaFunction('OfferingsUpdate', 'offerings/update.js', commonLambdaProps);
+    const offeringsDelete = this.createLambdaFunction('OfferingsDelete', 'offerings/delete.js', commonLambdaProps);
 
     // Gallery Lambda Functions
     const galleryList = this.createLambdaFunction('GalleryList', 'gallery/list.js', commonLambdaProps);
@@ -181,6 +189,7 @@ export class LambdaApiStack extends cdk.Stack {
       props.settingsTable.grantReadWriteData(func);
       props.communicationsTable.grantReadWriteData(func);
       props.jwtBlacklistTable.grantReadWriteData(func);
+      props.offeringsTable.grantReadWriteData(func);
 
       // Grant Secrets Manager permissions
       props.jwtSecret.grantRead(func);
@@ -349,6 +358,31 @@ export class LambdaApiStack extends cdk.Stack {
     // Support for getting specific settings by key
     const settingsItemResource = settingsResource.addResource('{key}');
     settingsItemResource.addMethod('GET', new apigateway.LambdaIntegration(settingsGet));
+    
+    // Offerings Resources
+    const offeringsResource = this.apiGateway.root.addResource('offerings');
+    
+    // GET /offerings (public) - List all active offerings
+    offeringsResource.addMethod('GET', new apigateway.LambdaIntegration(offeringsGet), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // POST /offerings (admin) - Create new offering
+    offeringsResource.addMethod('POST', new apigateway.LambdaIntegration(offeringsCreate));
+    
+    // Individual offering resources
+    const offeringResource = offeringsResource.addResource('{id}');
+    
+    // GET /offerings/{id} (public) - Get specific offering
+    offeringResource.addMethod('GET', new apigateway.LambdaIntegration(offeringsGet), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // PUT /offerings/{id} (admin) - Update offering
+    offeringResource.addMethod('PUT', new apigateway.LambdaIntegration(offeringsUpdate));
+    
+    // DELETE /offerings/{id} (admin) - Delete offering
+    offeringResource.addMethod('DELETE', new apigateway.LambdaIntegration(offeringsDelete));
 
     // Static Website Routes - serve homepage and assets
     // Root path for homepage

@@ -13,12 +13,17 @@ let currentDate = new Date();
 let allClasses = [];
 let calendarClasses = {};
 
+/// Offerings state
+let allOfferings = [];
+let offeringModals = {};
+
 /// Load all content when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     loadGallery();
     loadAboutMe();
     loadClassSchedule();
+    loadOfferings();
     loadLatestBlog();
     checkUserRole();
     initContactForm();
@@ -1096,4 +1101,223 @@ function showContactFormStatus(message, type) {
             statusElement.textContent = '';
         }, 5000);
     }
+}
+
+/// Load offerings from API
+async function loadOfferings() {
+    try {
+        console.log('Loading offerings from:', API_BASE_URL + '/offerings');
+        const response = await fetch(API_BASE_URL + '/offerings');
+        const data = await response.json();
+        
+        const offeringsLoading = document.getElementById('offerings-loading');
+        const offeringsContent = document.getElementById('offerings-content');
+        
+        if (data.success && data.offerings) {
+            allOfferings = data.offerings;
+            
+            if (allOfferings.length === 0) {
+                offeringsLoading.innerHTML = '<p>No offerings available at the moment.</p>';
+                return;
+            }
+            
+            // Generate offerings HTML
+            const offeringsHTML = generateOfferingsHTML(allOfferings);
+            offeringsContent.innerHTML = offeringsHTML;
+            
+            // Clear loading state
+            offeringsLoading.style.display = 'none';
+            offeringsContent.style.display = 'grid';
+            
+            // Setup click handlers for offerings
+            setupOfferingClickHandlers();
+            
+            console.log('✅ Loaded offerings:', allOfferings.length);
+        } else {
+            throw new Error('Invalid offerings response');
+        }
+    } catch (error) {
+        console.error('❌ Error loading offerings:', error);
+        document.getElementById('offerings-loading').innerHTML = 
+            '<p style="color: #dc3545;"><strong>Error loading offerings</strong><br>' + error.message + '</p>';
+    }
+}
+
+/// Generate HTML for offerings
+function generateOfferingsHTML(offerings) {
+    return offerings.map(offering => {
+        // Set default image if not provided
+        const imageUrl = offering.imageUrl || '/static/images/placeholder-yoga.jpg';
+        
+        // Format price with currency symbol
+        const price = formatPrice(offering.price);
+        
+        // Create offering card
+        return `
+            <div class="offering-card" data-id="${offering.id}" data-type="${offering.type}">
+                <div class="offering-image">
+                    <img src="${imageUrl}" alt="${offering.name}" loading="lazy">
+                </div>
+                <div class="offering-content">
+                    <div class="offering-badge">${offering.type}</div>
+                    <h3 class="offering-title">${offering.name}</h3>
+                    <p class="offering-description">${truncateText(offering.description, 100)}</p>
+                    <div class="offering-footer">
+                        <span class="offering-price">${price}</span>
+                        <button class="offering-btn">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/// Format price with currency symbol
+function formatPrice(price) {
+    if (!price) return 'Contact for pricing';
+    
+    // Check if price is a number or a string that can be converted to a number
+    if (!isNaN(price)) {
+        return '$' + parseFloat(price).toFixed(2);
+    }
+    
+    return price; // Return as is if it's a custom pricing string
+}
+
+/// Truncate text to specified length with ellipsis
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    
+    if (text.length <= maxLength) return text;
+    
+    return text.substring(0, maxLength) + '...';
+}
+
+/// Setup click handlers for offering cards
+function setupOfferingClickHandlers() {
+    const offeringCards = document.querySelectorAll('.offering-card');
+    
+    offeringCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const offerId = card.dataset.id;
+            openOfferingModal(offerId);
+        });
+    });
+}
+
+/// Open offering modal with details
+function openOfferingModal(offerId) {
+    const offering = allOfferings.find(o => o.id === offerId);
+    
+    if (!offering) {
+        console.error('Offering not found:', offerId);
+        return;
+    }
+    
+    // If we've already created a modal for this offering, just show it
+    if (offeringModals[offerId]) {
+        offeringModals[offerId].style.display = 'flex';
+        return;
+    }
+    
+    // Format price
+    const price = formatPrice(offering.price);
+    
+    // Create modal element
+    const modal = document.createElement('div');
+    modal.id = `offering-modal-${offerId}`;
+    modal.className = 'modal offering-modal';
+    modal.dataset.id = offerId;
+    
+    // Build modal content
+    let detailsList = '';
+    if (offering.details) {
+        const details = offering.details;
+        Object.keys(details).forEach(key => {
+            if (details[key]) {
+                const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+                detailsList += `<li><strong>${formattedKey}:</strong> ${details[key]}</li>`;
+            }
+        });
+    }
+    
+    // Add duration if available
+    if (offering.duration) {
+        detailsList += `<li><strong>Duration:</strong> ${offering.duration}</li>`;
+    }
+    
+    modal.innerHTML = `
+        <div class="offering-modal-content">
+            <span class="offering-modal-close">&times;</span>
+            <div class="offering-modal-header">
+                <h2>${offering.name}</h2>
+                <div class="offering-modal-badge">${offering.type}</div>
+            </div>
+            <div class="offering-modal-body">
+                ${offering.imageUrl ? 
+                    `<div class="offering-modal-image">
+                        <img src="${offering.imageUrl}" alt="${offering.name}">
+                    </div>` : ''}
+                <div class="offering-modal-description">
+                    <p>${offering.description}</p>
+                    ${detailsList ? `<ul class="offering-details-list">${detailsList}</ul>` : ''}
+                </div>
+                <div class="offering-modal-price">
+                    <strong>Price:</strong> ${price}
+                </div>
+                <div class="offering-modal-actions">
+                    <a href="#contact" class="offering-modal-btn">Contact for More Info</a>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(modal);
+    
+    // Store reference to modal
+    offeringModals[offerId] = modal;
+    
+    // Add event listeners
+    const closeBtn = modal.querySelector('.offering-modal-close');
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    // Close when clicking outside modal content
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Show the modal
+    modal.style.display = 'flex';
+    
+    // Close with ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Smooth scroll to contact form when clicking contact button
+    const contactBtn = modal.querySelector('.offering-modal-actions .offering-modal-btn');
+    contactBtn.addEventListener('click', (e) => {
+        modal.style.display = 'none';
+        
+        // Add a small delay before scrolling to contact
+        setTimeout(() => {
+            const contactSection = document.getElementById('contact');
+            if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth' });
+                
+                // Focus on first input in contact form
+                const firstInput = document.querySelector('#contact-form input');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }
+        }, 100);
+    });
 }
