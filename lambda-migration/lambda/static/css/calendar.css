@@ -1,5 +1,5 @@
 /* Calendar Styles */
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 /* Legacy calendar variables mapped to new theme variables */
 :root {

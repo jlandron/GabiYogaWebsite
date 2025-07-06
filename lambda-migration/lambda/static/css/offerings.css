@@ -1,4 +1,5 @@
 /* Offerings Styles */
+@import './theme-variables.css';
 
 /* Offerings grid */
 .offerings-grid {

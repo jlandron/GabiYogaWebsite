@@ -23,10 +23,10 @@ function serveBlogPostPage(slug) {
     <meta name="description" content="Read this insightful article from Gabi Yoga on wellness and mindful living.">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/static/theme-variables.css">
-    <link rel="stylesheet" href="/static/common-styles.css">
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/blog.css">
+    <link rel="stylesheet" href="/static/css/theme-variables.css">
+    <link rel="stylesheet" href="/static/css/common-styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/blog.css">
 </head>
 <body>
     <header class="header">

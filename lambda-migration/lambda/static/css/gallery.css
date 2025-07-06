@@ -1,5 +1,5 @@
 /* Gallery CSS */
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 .carousel-footer {
     display: flex;

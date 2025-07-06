@@ -1,5 +1,5 @@
 /* Booking Status Styles */
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 /* Status badge styles */
 .status-badge {

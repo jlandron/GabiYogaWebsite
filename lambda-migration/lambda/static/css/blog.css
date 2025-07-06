@@ -1,6 +1,6 @@
 /* Blog Styles */
-@import 'theme-variables.css';
-@import 'common-styles.css';
+@import './theme-variables.css';
+@import './common-styles.css';
 
 /* Blog Hero */
 .blog-hero {

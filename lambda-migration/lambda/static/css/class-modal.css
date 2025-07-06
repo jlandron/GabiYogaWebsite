@@ -1,5 +1,5 @@
 /* Enhanced Class Modal Styling */
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 /* Base modal container - mobile first approach */
 .class-modal {

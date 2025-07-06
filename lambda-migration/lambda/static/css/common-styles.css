@@ -4,7 +4,7 @@
  * for a consistent look and feel across the application
  */
 
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 /* Base Styles */
 body {

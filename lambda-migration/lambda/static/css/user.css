@@ -1,5 +1,5 @@
 /* User Dashboard Styles */
-@import 'theme-variables.css';
+@import './theme-variables.css';
 
 /* Legacy variables mapping for backwards compatibility */
 :root {
