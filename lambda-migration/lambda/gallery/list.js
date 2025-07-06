@@ -9,6 +9,7 @@ const {
   logWithContext,
   dynamoUtils
 } = require('../shared/public-utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 
 exports.handler = async (event, context) => {
   const requestId = context.awsRequestId;
@@ -87,17 +88,36 @@ exports.handler = async (event, context) => {
         let imageUrl = image.imageUrl; // Fallback for old format
         let thumbnailUrl = image.thumbnailUrl || image.imageUrl;
         
-        // Generate presigned URLs for S3 keys
+        // Generate URLs for S3 keys - try CDN first, fall back to presigned URLs
         if (image.s3Key && image.s3Bucket) {
           try {
-            imageUrl = await s3.getSignedUrlPromise('getObject', {
-              Bucket: image.s3Bucket,
-              Key: image.s3Key,
-              Expires: 3600 // 1 hour
-            });
-            thumbnailUrl = imageUrl; // Use same URL for thumbnail for now
+            // First try to generate a CDN URL
+            const cdnUrl = generateCdnUrl(image.s3Key);
+            
+            if (cdnUrl) {
+              // Use CDN URL if available
+              imageUrl = cdnUrl;
+              thumbnailUrl = cdnUrl; // Use same URL for thumbnail for now
+              logWithContext('debug', 'Using CDN URL for gallery image', { 
+                requestId, 
+                imageId: image.id,
+                cdnUrl 
+              });
+            } else {
+              // Fall back to presigned S3 URL if CDN is not configured
+              imageUrl = await s3.getSignedUrlPromise('getObject', {
+                Bucket: image.s3Bucket,
+                Key: image.s3Key,
+                Expires: 3600 // 1 hour
+              });
+              thumbnailUrl = imageUrl; // Use same URL for thumbnail for now
+              logWithContext('debug', 'Using presigned S3 URL for gallery image', { 
+                requestId, 
+                imageId: image.id
+              });
+            }
           } catch (s3Error) {
-            logWithContext('warn', 'Failed to generate presigned URL', { 
+            logWithContext('warn', 'Failed to generate image URL', { 
               requestId, 
               s3Key: image.s3Key,
               error: s3Error.message 

@@ -103,7 +103,6 @@ export class ImageCdnConstruct extends Construct {
       defaultBehavior: {
         origin: new origins.S3Origin(assetsBucket, {
           originAccessIdentity,
-          originPath: '/gallery', // Only serve files from the gallery folder
         }),
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,

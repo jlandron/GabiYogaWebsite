@@ -8,6 +8,7 @@
 
 const AWS = require('aws-sdk');
 const { createSuccessResponse, createErrorResponse, dynamoUtils, logWithContext } = require('../shared/public-utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 
 // Initialize DynamoDB client
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
@@ -145,38 +146,72 @@ async function listOfferings(queryParams = {}) {
 }
 
 /**
- * Process image URLs for offerings to generate presigned URLs if needed
+ * Process image URLs for offerings to generate CDN or presigned URLs as needed
  */
 async function processImageUrls(offerings) {
   try {
-    // Generate presigned URLs for S3 images
+    // Generate CDN URLs (or fallback to presigned URLs) for images
     for (const offering of offerings) {
       // Use coverImage as the source for the S3 key if available, otherwise try imageUrl
       if (offering.coverImage) {
         const key = offering.coverImage;
         
-        // Generate presigned URL
-        const presignedUrl = await s3.getSignedUrlPromise('getObject', {
-          Bucket: process.env.ASSETS_BUCKET,
-          Key: key,
-          Expires: 3600 // URL expires in 1 hour
+        // Try to generate CDN URL first
+        const cdnUrl = generateCdnUrl(key, { 
+          offeringId: offering.id 
         });
         
-        // Set the imageUrl to the presigned URL for client display
-        offering.imageUrl = presignedUrl;
+        if (cdnUrl) {
+          // Use CloudFront CDN URL if available
+          offering.imageUrl = cdnUrl;
+          logWithContext('debug', 'Using CDN URL for offering image', { 
+            offeringId: offering.id,
+            cdnUrl 
+          });
+        } else {
+          // Fall back to presigned URL
+          const presignedUrl = await s3.getSignedUrlPromise('getObject', {
+            Bucket: process.env.ASSETS_BUCKET,
+            Key: key,
+            Expires: 3600 // URL expires in 1 hour
+          });
+          
+          // Set the imageUrl to the presigned URL for client display
+          offering.imageUrl = presignedUrl;
+          logWithContext('debug', 'Using presigned S3 URL for offering image', { 
+            offeringId: offering.id 
+          });
+        }
       } else if (offering.imageUrl) {
         // Legacy support for imageUrl if coverImage is not available
         const key = offering.imageUrl;
         
-        // Generate presigned URL
-        const presignedUrl = await s3.getSignedUrlPromise('getObject', {
-          Bucket: process.env.ASSETS_BUCKET,
-          Key: key,
-          Expires: 3600 // URL expires in 1 hour
+        // Try to generate CDN URL first
+        const cdnUrl = generateCdnUrl(key, 'gallery', { 
+          offeringId: offering.id 
         });
         
-        // Replace the S3 path with presigned URL
-        offering.imageUrl = presignedUrl;
+        if (cdnUrl) {
+          // Use CloudFront CDN URL if available
+          offering.imageUrl = cdnUrl;
+          logWithContext('debug', 'Using CDN URL for offering image (legacy path)', { 
+            offeringId: offering.id,
+            cdnUrl 
+          });
+        } else {
+          // Fall back to presigned URL
+          const presignedUrl = await s3.getSignedUrlPromise('getObject', {
+            Bucket: process.env.ASSETS_BUCKET,
+            Key: key,
+            Expires: 3600 // URL expires in 1 hour
+          });
+          
+          // Replace the S3 path with presigned URL
+          offering.imageUrl = presignedUrl;
+          logWithContext('debug', 'Using presigned S3 URL for offering image (legacy path)', { 
+            offeringId: offering.id 
+          });
+        }
       }
     }
   } catch (error) {

@@ -9,6 +9,7 @@ const {
   logWithContext,
   dynamoUtils
 } = require('../shared/public-utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
@@ -101,21 +102,39 @@ exports.handler = async (event, context) => {
     const paginatedPosts = posts.slice(startIndex, startIndex + limit);
 
     const transformedPosts = await Promise.all(paginatedPosts.map(async post => {
-      // Generate presigned URL for cover image if path exists
+      // Generate URL for cover image if path exists
       let coverImage = null;
       if (post.coverImage) {
         try {
           // Clean the S3 key (remove leading slash if present)
           const s3Key = post.coverImage.startsWith('/') ? post.coverImage.substring(1) : post.coverImage;
           
-          const presignedUrl = await s3.getSignedUrlPromise('getObject', {
-            Bucket: process.env.ASSETS_BUCKET,
-            Key: s3Key, // Use the cleaned key
-            Expires: 3600 // 1 hour
-          });
+          // Try to generate CDN URL first
+          const cdnUrl = generateCdnUrl(s3Key, { requestId, blogId: post.id });
+          
+          // If CDN URL is available, use it; otherwise fall back to presigned URL
+          let imageUrl;
+          if (cdnUrl) {
+            imageUrl = cdnUrl;
+            logWithContext('debug', 'Using CDN URL for blog cover image', { 
+              requestId, 
+              blogId: post.id, 
+              cdnUrl 
+            });
+          } else {
+            imageUrl = await s3.getSignedUrlPromise('getObject', {
+              Bucket: process.env.ASSETS_BUCKET,
+              Key: s3Key,
+              Expires: 3600 // 1 hour
+            });
+            logWithContext('debug', 'Using presigned S3 URL for blog cover image', { 
+              requestId, 
+              blogId: post.id 
+            });
+          }
           
           coverImage = {
-            url: presignedUrl
+            url: imageUrl
           };
         } catch (s3Error) {
           logWithContext('warn', 'Failed to generate presigned URL for cover image', {

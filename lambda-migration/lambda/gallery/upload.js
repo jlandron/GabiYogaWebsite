@@ -6,35 +6,11 @@ const {
     createSuccessResponse, 
     createErrorResponse 
 } = require('../shared/utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 
 const s3 = new AWS.S3();
 
-/**
- * Generates a CloudFront URL for an image based on its S3 key
- * 
- * @param {string} s3Key - The S3 key of the image
- * @returns {string} The CloudFront URL
- */
-const generateCdnUrl = (s3Key) => {
-    // Check if we have a CDN domain configured
-    const cdnDomain = process.env.IMAGE_CDN_DOMAIN;
-    
-    if (!cdnDomain) {
-        console.log('No CDN domain configured in environment variables');
-        return null; // No CDN configured, return null
-    }
-    
-    // The S3 key includes 'gallery/' prefix, but our CloudFront is already
-    // configured with /gallery as the origin path, so we need to remove the prefix
-    const imageKey = s3Key.startsWith('gallery/') 
-        ? s3Key.substring(8) // Remove 'gallery/' prefix
-        : s3Key;
-    
-    // Return the CDN URL
-    const url = `https://${cdnDomain}/${imageKey}`;
-    console.log(`Generated CDN URL: ${url} (from key: ${s3Key})`);
-    return url;
-};
+// The generateCdnUrl function is now imported from ../shared/cdn-utils.js
 
 exports.handler = async (event) => {
     console.log('Event:', JSON.stringify(event, null, 2));

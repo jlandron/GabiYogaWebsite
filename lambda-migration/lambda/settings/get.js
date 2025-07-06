@@ -10,6 +10,7 @@ const {
   dynamoUtils
 } = require('../shared/public-utils');
 const s3Utils = require('../shared/s3-utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 
 exports.handler = async (event, context) => {
   const requestId = context.awsRequestId;
@@ -66,93 +67,11 @@ async function handleGetSettings(requestId, settingKey) {
       // Check if this is a profile image setting and generate presigned URL if needed
       if (settingKey === 'about_profile_image' && setting.value && !setting.value.startsWith('http')) {
         try {
-          let s3Key;
-          
-          // Handle direct gallery paths (new format - gallery/UUID.jpg)
-          if (setting.value.startsWith('gallery/')) {
-            s3Key = setting.value;
-            logWithContext('info', 'Using direct gallery path for presigned URL', { 
-              requestId,
-              settingKey,
-              s3Key 
-            });
-          } 
-          // Handle old format paths (/images/profile/filename.jpg)
-          else {
-            // Extract the S3 key from the stored path (strip leading slash if present)
-            s3Key = setting.value.startsWith('/') 
-              ? setting.value.substring(1)  // Remove leading slash
-              : setting.value;
-              
-            // If this still references an images/profile path, check if we should use gallery/
-            if (s3Key.includes('images/profile/')) {
-              // Extract just the filename
-              const filename = s3Key.split('/').pop();
-              
-              // If this is a UUID-based filename, assume it should be in gallery/
-              if (/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.test(filename)) {
-                s3Key = `gallery/${filename}`;
-                logWithContext('info', 'Converted profile image path to gallery format', { 
-                  requestId,
-                  settingKey,
-                  originalPath: setting.value,
-                  s3Key 
-                });
-              }
-            }
-          }
-          
-          // Try to check if the object exists in S3
-          const objectExists = await s3Utils.objectExists(assetsBucket, s3Key).catch(err => {
-            logWithContext('warn', 'Error checking S3 object existence', {
-              requestId,
-              s3Key,
-              error: err.message
-            });
-            return false;
-          });
-          
-          // If object doesn't exist, try alternative location
-          if (!objectExists) {
-            // Try gallery path if we were using images/profile
-            if (s3Key.includes('images/profile/')) {
-              const filename = s3Key.split('/').pop();
-              const alternativeKey = `gallery/${filename}`;
-              
-              const alternativeExists = await s3Utils.objectExists(assetsBucket, alternativeKey).catch(() => false);
-              if (alternativeExists) {
-                logWithContext('info', 'Using alternative gallery path for image', {
-                  requestId,
-                  settingKey,
-                  originalPath: s3Key,
-                  alternativePath: alternativeKey
-                });
-                s3Key = alternativeKey;
-              }
-            } 
-            // Try images/profile path if we were using gallery
-            else if (s3Key.startsWith('gallery/')) {
-              const filename = s3Key.split('/').pop();
-              const alternativeKey = `images/profile/${filename}`;
-              
-              const alternativeExists = await s3Utils.objectExists(assetsBucket, alternativeKey).catch(() => false);
-              if (alternativeExists) {
-                logWithContext('info', 'Using alternative profile path for image', {
-                  requestId,
-                  settingKey,
-                  originalPath: s3Key,
-                  alternativePath: alternativeKey
-                });
-                s3Key = alternativeKey;
-              }
-            }
-          }
-          
-          // Generate a presigned URL for the image
-          const presignedUrl = await s3Utils.getDownloadUrl(assetsBucket, s3Key, 3600); // 1 hour expiry
+          // Generate a CDN URL for the image
+          const cdnUrl = await generateCdnUrl(setting.value);
           
           // Add the presigned URL to the setting object
-          setting.presignedUrl = presignedUrl;
+          setting.presignedUrl = cdnUrl;
         } catch (error) {
           logWithContext('warn', 'Failed to generate presigned URL for profile image', { 
             requestId, 
@@ -242,88 +161,12 @@ async function processImageSettings(settings, bucket) {
   for (const setting of settings) {
     if (imageSettingKeys.includes(setting.key) && setting.value && !setting.value.startsWith('http')) {
       try {
-        let s3Key;
-        
-        // Handle direct gallery paths (new format - gallery/UUID.jpg)
-        if (setting.value.startsWith('gallery/')) {
-          s3Key = setting.value;
-          logWithContext('info', 'Using direct gallery path for presigned URL', { 
-            settingKey: setting.key,
-            s3Key: s3Key 
-          });
-        } 
-        // Handle old format paths (/images/profile/filename.jpg)
-        else {
-          // Extract the S3 key from the stored path (strip leading slash if present)
-          s3Key = setting.value.startsWith('/') 
-            ? setting.value.substring(1)  // Remove leading slash
-            : setting.value;
-            
-          // If this still references an images/profile path, check if we should use gallery/
-          if (s3Key.includes('images/profile/')) {
-            // Extract just the filename
-            const filename = s3Key.split('/').pop();
-            
-            // If this is a UUID-based filename, assume it should be in gallery/
-            if (/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.test(filename)) {
-              s3Key = `gallery/${filename}`;
-              logWithContext('info', 'Converted profile image path to gallery format', { 
-                settingKey: setting.key,
-                originalPath: setting.value,
-                s3Key: s3Key 
-              });
-            }
-          }
-        }
-        
-        // Try to check if the object exists in S3
-        const objectExists = await s3Utils.objectExists(bucket, s3Key).catch(err => {
-          logWithContext('warn', 'Error checking S3 object existence', {
-            s3Key,
-            error: err.message
-          });
-          return false;
-        });
-        
-        // If object doesn't exist, try alternative location
-        if (!objectExists && setting.key === 'about_profile_image') {
-          // Try gallery path if we were using images/profile
-          if (s3Key.includes('images/profile/')) {
-            const filename = s3Key.split('/').pop();
-            const alternativeKey = `gallery/${filename}`;
-            
-            const alternativeExists = await s3Utils.objectExists(bucket, alternativeKey).catch(() => false);
-            if (alternativeExists) {
-              logWithContext('info', 'Using alternative gallery path for image', {
-                settingKey: setting.key,
-                originalPath: s3Key,
-                alternativePath: alternativeKey
-              });
-              s3Key = alternativeKey;
-            }
-          } 
-          // Try images/profile path if we were using gallery
-          else if (s3Key.startsWith('gallery/')) {
-            const filename = s3Key.split('/').pop();
-            const alternativeKey = `images/profile/${filename}`;
-            
-            const alternativeExists = await s3Utils.objectExists(bucket, alternativeKey).catch(() => false);
-            if (alternativeExists) {
-              logWithContext('info', 'Using alternative profile path for image', {
-                settingKey: setting.key,
-                originalPath: s3Key,
-                alternativePath: alternativeKey
-              });
-              s3Key = alternativeKey;
-            }
-          }
-        }
-        
+
         // Generate a presigned URL for the image
-        const presignedUrl = await s3Utils.getDownloadUrl(bucket, s3Key, 3600); // 1 hour expiry
+        const cdnUrl = await generateCdnUrl(setting.value);
         
         // Add the presigned URL to the setting object
-        setting.presignedUrl = presignedUrl;
+        setting.presignedUrl = cdnUrl;
       } catch (error) {
         console.warn(`Failed to generate presigned URL for ${setting.key}:`, error);
         // Continue without the presigned URL
