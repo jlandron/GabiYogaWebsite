@@ -166,7 +166,7 @@ function createClassModal() {
                 <div class="tab-content" id="advanced-tab" style="display: none;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="class-price">Price ($)</label>
+                            <label for="class-price">Price (€)</label>
                             <input type="number" id="class-price" min="0" step="0.01" value="25">
                         </div>
                         <div class="form-group">

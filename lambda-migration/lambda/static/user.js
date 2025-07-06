@@ -763,7 +763,7 @@ function openClassModal(classId, isBooked = false) {
                 (classItem.price ? 
                 '<div class="class-modal-detail">' +
                     '<span>💰</span>' +
-                    '<span>$' + classItem.price + '</span>' +
+                    '<span>€' + classItem.price + '</span>' +
                 '</div>' : '');
             
             document.getElementById('class-modal-details').innerHTML = detailsHTML;

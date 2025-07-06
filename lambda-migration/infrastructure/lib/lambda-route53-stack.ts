@@ -32,6 +32,7 @@ export class LambdaRoute53Stack extends cdk.Stack {
     // Create Certificate for custom domain - managed by CDK
     const certificate = new acm.Certificate(this, 'Certificate', {
       domainName: this.customDomainName,
+      subjectAlternativeNames: stage === 'prod' ? [`www.${domainName}`] : [],
       validation: acm.CertificateValidation.fromDns(this.hostedZone),
     });
     
@@ -59,6 +60,32 @@ export class LambdaRoute53Stack extends cdk.Stack {
       target: route53.RecordTarget.fromAlias(new targets.ApiGatewayDomain(customDomain)),
       ttl: cdk.Duration.minutes(5),
     });
+    
+    // Create a separate record for www subdomain in production
+    if (stage === 'prod') {
+      // Create a custom domain name for www subdomain
+      const wwwCustomDomain = new apigateway.DomainName(this, 'WwwCustomDomainName', {
+        domainName: `www.${domainName}`,
+        certificate,
+        endpointType: apigateway.EndpointType.EDGE,
+        securityPolicy: apigateway.SecurityPolicy.TLS_1_2,
+      });
+      
+      // Add base path mapping for www subdomain if API Gateway is provided
+      if (apiGateway) {
+        wwwCustomDomain.addBasePathMapping(apiGateway, {
+          basePath: '',  // Empty string for root path
+        });
+      }
+      
+      // Create A record for www subdomain
+      new route53.ARecord(this, 'WwwApiAliasRecord', {
+        zone: this.hostedZone,
+        recordName: 'www',
+        target: route53.RecordTarget.fromAlias(new targets.ApiGatewayDomain(wwwCustomDomain)),
+        ttl: cdk.Duration.minutes(5),
+      });
+    }
     
     // Outputs
     new cdk.CfnOutput(this, 'CustomDomainUrl', {

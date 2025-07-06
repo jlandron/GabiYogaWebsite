@@ -1178,7 +1178,7 @@ function formatPrice(price) {
     
     // Check if price is a number or a string that can be converted to a number
     if (!isNaN(price)) {
-        return '$' + parseFloat(price).toFixed(2);
+        return '€' + parseFloat(price).toFixed(2);
     }
     
     return price; // Return as is if it's a custom pricing string
