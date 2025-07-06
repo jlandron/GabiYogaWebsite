@@ -94,11 +94,14 @@ const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
   hostedZoneId: route53Stack.hostedZone.hostedZoneId,
 });
 
+// Image CDN is now directly integrated in the API stack
+
 // Stack dependencies
 apiStack.addDependency(dbStack);
 apiStack.addDependency(authStack);
 route53Stack.addDependency(apiStack);
 sesStack.addDependency(route53Stack);
+// No need for imageCdnStack dependencies as it's now part of the API stack
 
 // Output key information
 new cdk.CfnOutput(apiStack, 'ApiGatewayUrl', {
@@ -141,11 +144,6 @@ new cdk.CfnOutput(sesStack, 'EmailDomain', {
   exportName: `${stackPrefix}-EmailDomain`,
 });
 
-// This output is already provided by the SES stack, using stage-specific email address
-// No need to override it here as it would conflict with the SES stack's output
-
-// Route53 outputs are already defined in the stack
-
 new cdk.CfnOutput(route53Stack, 'ApiCustomDomain', {
   value: route53Stack.customDomainName,
   description: 'Custom domain for API',
@@ -159,5 +157,6 @@ console.log(`- Auth Stack: ${authStack.stackName}`);
 console.log(`- API Stack: ${apiStack.stackName}`);
 console.log(`- SES Stack: ${sesStack.stackName}`);
 console.log(`- Route53 Stack: ${route53Stack.stackName}`);
+console.log(`- Image CDN: Integrated into API Stack`);
 console.log(`- Region: ${region}`);
 console.log(`- Account: ${account}`);

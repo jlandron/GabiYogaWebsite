@@ -6,6 +6,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
+import { ImageCdnConstruct } from './constructs/image-cdn-construct';
 
 export interface LambdaApiStackProps extends cdk.StackProps {
   stage: string;
@@ -28,6 +29,8 @@ export class LambdaApiStack extends cdk.Stack {
   public readonly apiGateway: apigateway.RestApi;
   public readonly lambdaFunctions: lambda.Function[] = [];
   public readonly assetsBucket: s3.Bucket;
+  public readonly imageCdn: ImageCdnConstruct;
+  public readonly imageCdnDomain: string;
 
   constructor(scope: Construct, id: string, props: LambdaApiStackProps) {
     super(scope, id, props);
@@ -56,6 +59,15 @@ export class LambdaApiStack extends cdk.Stack {
       removalPolicy: stage === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
     });
 
+    // Create the image CDN construct directly in this stack
+    this.imageCdn = new ImageCdnConstruct(this, 'ImageCdn', {
+      stage,
+      assetsBucket: this.assetsBucket,
+    });
+    
+    // Store the image CDN domain for Lambda environment variables
+    this.imageCdnDomain = this.imageCdn.imageCdnDomain;
+
     // Common Lambda environment variables
     const commonEnvironment = {
       STAGE: stage,
@@ -69,6 +81,7 @@ export class LambdaApiStack extends cdk.Stack {
       GALLERY_TABLE: props.galleryTable.tableName,
       SETTINGS_TABLE: props.settingsTable.tableName,
       COMMUNICATIONS_TABLE: props.communicationsTable.tableName,
+      IMAGE_CDN_DOMAIN: this.imageCdnDomain, // Add CloudFront CDN domain
       JWT_BLACKLIST_TABLE: props.jwtBlacklistTable.tableName,
       OFFERINGS_TABLE: props.offeringsTable.tableName,
       JWT_SECRET_NAME: props.jwtSecret.secretName,
@@ -77,7 +90,7 @@ export class LambdaApiStack extends cdk.Stack {
       CORS_ORIGIN: stage === 'prod' ? 'https://gabi.yoga,https://www.gabi.yoga' : 'https://dev.gabi.yoga',
       // Base URL for API and email links - uses custom domain
       BASE_URL: stage === 'prod' ? 'https://gabi.yoga' : `https://dev.gabi.yoga`,
-      FROM_EMAIL: 'noreply@gabi.yoga',
+      FROM_EMAIL: 'noreply@gabi.yoga'
     };
 
     // Common Lambda properties
