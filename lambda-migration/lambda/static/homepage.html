@@ -32,8 +32,20 @@
     <link rel="stylesheet" href="/static/css/class-modal.css">
 </head>
 <body>
-    <!-- Unified Header -->
-    <div id="header-container"></div>
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/" class="logo">Gabi Yoga</a>
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="/" class="active">Home</a></li>
+                    <li><a href="/blog-page">Blog</a></li>
+                </ul>
+                <div id="auth-buttons" class="auth-buttons">
+                    <button class="btn btn-outline" onclick="showLoginForm()">Login</button>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -221,20 +233,9 @@
     
     <!-- Scripts -->
     <script src="/static/environment-indicator.js"></script>
-    <script src="/static/js/shared/unified-header.js"></script>
     <script src="/static/auth.js"></script>
     <script src="/static/class-modal-public.js"></script>
     <script src="/static/init-public-modal.js"></script>
     <script src="/static/frontend.js"></script>
-    <script>
-        // Initialize unified header
-        document.addEventListener('DOMContentLoaded', () => {
-            const header = new UnifiedHeader({
-                currentPage: 'home',
-                showAuthButtons: true
-            });
-            header.mount('#header-container');
-        });
-    </script>
 </body>
 </html>
