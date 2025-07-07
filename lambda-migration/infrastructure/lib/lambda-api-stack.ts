@@ -121,7 +121,7 @@ export class LambdaApiStack extends cdk.Stack {
     const blogCreate = this.createLambdaFunction('BlogCreate', 'blog/create.js', commonLambdaProps);
     const blogUpdate = this.createLambdaFunction('BlogUpdate', 'blog/update.js', commonLambdaProps);
     const blogDelete = this.createLambdaFunction('BlogDelete', 'blog/delete.js', commonLambdaProps);
-    const blogPublish = this.createLambdaFunction('BlogPublish', 'blog/publish.js', commonLambdaProps);
+
 
     // Admin Lambda Functions
     const adminDashboard = this.createLambdaFunction('AdminDashboard', 'admin/dashboard.js', {
@@ -290,7 +290,7 @@ export class LambdaApiStack extends cdk.Stack {
     });
     blogItemResource.addMethod('PUT', new apigateway.LambdaIntegration(blogUpdate));
     blogItemResource.addMethod('DELETE', new apigateway.LambdaIntegration(blogDelete));
-    blogItemResource.addResource('publish').addMethod('POST', new apigateway.LambdaIntegration(blogPublish));
+
 
     // Admin routes
     const adminResource = this.apiGateway.root.addResource('admin');

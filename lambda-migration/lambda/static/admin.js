@@ -284,8 +284,8 @@ function hideBlogEditor() {
     blogList.style.display = 'grid';
     newBlogBtn.style.display = 'block';
     
-    // No need to explicitly call loadBlogPosts here
-    // It will be called by the 'blogUpdated' event
+    // Reload blog posts to refresh the list
+    loadBlogPosts();
 }
 
 async function editBlog(id) {
@@ -332,15 +332,33 @@ async function deleteBlog(id) {
 
 async function publishBlog(id) {
     try {
-        await fetch(`/blog/${id}/publish`, {
-            method: 'PUT',
+        // Get current blog post to check its status
+        const response = await fetch(`/blog/${id}`, {
             headers: getAuthHeaders()
         });
-        showNotification('Blog post published successfully');
+        const data = await response.json();
+        const currentStatus = data.post?.status || 'draft';
+        const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+        
+        // Update the blog post with new status
+        await fetch(`/blog/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                title: data.post.title,
+                content: data.post.content,
+                status: newStatus,
+                category: data.post.category,
+                tags: data.post.tags,
+                coverImage: data.post.coverImage,
+                excerpt: data.post.excerpt
+            })
+        });
+        showNotification(`Blog post ${newStatus === 'published' ? 'published' : 'unpublished'} successfully`);
         loadBlogPosts();
     } catch (error) {
-        console.error('Error publishing blog:', error);
-        showNotification('Error publishing blog post', 'error');
+        console.error('Error updating blog status:', error);
+        showNotification('Error updating blog post status', 'error');
     }
 }
 

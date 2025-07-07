@@ -18,6 +18,11 @@ class BlogEditor {
                 <div class="meta-section">
                     <input type="text" class="category-input" placeholder="Category">
                     <input type="text" class="tags-input" placeholder="Tags (comma separated)">
+                    <textarea class="excerpt-input" placeholder="Excerpt (optional - will auto-generate from content if empty)" rows="3"></textarea>
+                    <div class="status-display">
+                        <span class="status-label">Status:</span>
+                        <span class="status-value">Draft</span>
+                    </div>
                 </div>
             </div>
             <div id="blog-content-editor" style="height: 400px;"></div>
@@ -252,6 +257,14 @@ class BlogEditor {
         this.container.querySelector('.title-input').value = blog.title;
         this.container.querySelector('.category-input').value = blog.category || '';
         this.container.querySelector('.tags-input').value = blog.tags?.join(', ') || '';
+        this.container.querySelector('.excerpt-input').value = blog.excerpt || '';
+        
+        // Update status display
+        const statusValue = this.container.querySelector('.status-value');
+        if (statusValue) {
+            statusValue.textContent = blog.status === 'published' ? 'Published' : 'Draft';
+            statusValue.className = `status-value ${blog.status}`;
+        }
             
         if (blog.coverImage) {
             const preview = this.container.querySelector('.cover-preview');
@@ -332,6 +345,7 @@ class BlogEditor {
                 .map(tag => tag.trim())
                 .filter(tag => tag);
             const content = this.quill.root.innerHTML;
+            const excerpt = this.container.querySelector('.excerpt-input').value;
 
             const blogData = {
                 title,
@@ -341,6 +355,11 @@ class BlogEditor {
                 coverImage: this.coverImageUrl,
                 status: publish ? 'published' : 'draft'
             };
+            
+            // Only include excerpt if it's not empty
+            if (excerpt.trim()) {
+                blogData.excerpt = excerpt;
+            }
 
             const url = this.currentBlogId 
                 ? `/blog/${this.currentBlogId}`
@@ -387,16 +406,29 @@ class BlogEditor {
         this.container.querySelector('.title-input').value = '';
         this.container.querySelector('.category-input').value = '';
         this.container.querySelector('.tags-input').value = '';
+        this.container.querySelector('.excerpt-input').value = '';
         this.container.querySelector('.cover-preview').innerHTML = '<span>Click to add cover image</span>';
         this.container.querySelector('.cover-preview').classList.remove('has-image');
         this.quill.setText('');
+        
+        // Reset status display
+        const statusValue = this.container.querySelector('.status-value');
+        if (statusValue) {
+            statusValue.textContent = 'Draft';
+            statusValue.className = 'status-value draft';
+        }
         
         // Reset buttons
         this.container.querySelector('.draft-btn').textContent = 'Save as Draft';
         this.container.querySelector('.publish-btn').textContent = 'Publish';
         
-        // Trigger blog list reload - don't call hideBlogEditor directly to avoid recursion
-        window.dispatchEvent(new CustomEvent('blogUpdated'));
+        // Call hideBlogEditor to properly refresh the blog list
+        if (typeof hideBlogEditor === 'function') {
+            hideBlogEditor();
+        } else {
+            // Fallback to event dispatch
+            window.dispatchEvent(new CustomEvent('blogUpdated'));
+        }
     }
 }
 

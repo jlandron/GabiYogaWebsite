@@ -6,9 +6,10 @@ const {
     getUserFromToken,
     logWithContext
 } = require('../shared/utils');
-const { processImage, getImageUrl } = require('../shared/image-utils');
+const { generateCdnUrl } = require('../shared/cdn-utils');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const s3 = new AWS.S3();
 
 exports.handler = async (event, context) => {
     const requestId = context.awsRequestId;
@@ -66,11 +67,43 @@ exports.handler = async (event, context) => {
 
         logWithContext('info', 'Blog post created successfully', { requestId, postId: post.id });
 
-        // For the response, add presigned URLs for images
+        // For the response, add image URLs consistent with other blog functions
         const responsePost = { ...post };
+        let coverImage = null;
         if (responsePost.coverImage) {
-            responsePost.coverImageUrl = getImageUrl(responsePost.coverImage);
+            try {
+                const s3Key = responsePost.coverImage.startsWith('/') ? responsePost.coverImage.substring(1) : responsePost.coverImage;
+                const cdnUrl = generateCdnUrl(s3Key, { requestId, blogId: postId });
+                
+                let imageUrl;
+                if (cdnUrl) {
+                    imageUrl = cdnUrl;
+                } else {
+                    imageUrl = await s3.getSignedUrlPromise('getObject', {
+                        Bucket: process.env.ASSETS_BUCKET,
+                        Key: s3Key,
+                        Expires: 3600
+                    });
+                }
+                
+                coverImage = {
+                    s3Key: s3Key,
+                    url: imageUrl
+                };
+            } catch (s3Error) {
+                logWithContext('warn', 'Failed to generate image URL', {
+                    requestId,
+                    s3Key: responsePost.coverImage,
+                    error: s3Error.message
+                });
+                coverImage = {
+                    s3Key: responsePost.coverImage,
+                    url: null
+                };
+            }
         }
+        
+        responsePost.coverImage = coverImage;
 
         return createSuccessResponse({
             message: 'Blog post created successfully',
