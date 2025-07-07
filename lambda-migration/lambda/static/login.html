@@ -7,15 +7,8 @@
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
-            <a href="/" class="logo">Gabi Yoga</a>
-            <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/blog-page">Blog</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- Unified Header -->
+    <div id="header-container"></div>
 
     <main>
         <div class="auth-modal-content" style="margin: 4rem auto; max-width: 400px;">
@@ -45,6 +38,17 @@
         </div>
     </main>
 
+    <script src="/static/js/shared/unified-header.js"></script>
     <script src="/static/auth.js"></script>
+    <script>
+        // Initialize unified header
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = new UnifiedHeader({
+                currentPage: 'login',
+                showAuthButtons: false
+            });
+            header.mount('#header-container');
+        });
+    </script>
 </body>
 </html>

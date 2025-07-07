@@ -273,6 +273,13 @@ function loadDashboardData() {
     }
 }
 
+// Logout handler
+function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+}
+
 // Load Upcoming Classes
 async function loadUpcomingClasses() {
     try {

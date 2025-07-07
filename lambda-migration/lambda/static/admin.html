@@ -15,22 +15,8 @@
     <!-- Google Fonts -->
 </head>
 <body>
-    <!-- Main Navigation - Simplified to match homepage -->
-    <header class="header">
-        <nav class="nav-container">
-            <a href="/admin.html" class="logo">Gabi Yoga</a>
-            <div class="nav-content">
-                <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/blog-page">Blog</a></li>
-                    <li><a href="/admin.html" class="active">Admin</a></li>
-                </ul>
-                <div class="auth-buttons">
-                    <button id="logoutBtn" class="btn btn-outline">Logout</button>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <!-- Unified Header -->
+    <div id="header-container"></div>
 
     <!-- Hero Banner - Simplified version of homepage hero -->
     <section class="admin-hero">
@@ -221,6 +207,7 @@
     <!-- Load dependencies first -->
     <!-- Image compression library -->
     <script src="/static/environment-indicator.js"></script>
+    <script src="/static/js/shared/unified-header.js"></script>
     <script src="https://unpkg.com/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
     <script src="/static/image-compressor-util.js"></script>
     <script src="/static/blog-editor.js"></script>
@@ -233,5 +220,24 @@
     <script src="/static/offerings-manager.js"></script>
     <!-- Load main admin script last -->
     <script src="/static/admin.js"></script>
+    <script>
+        // Initialize unified header
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = new UnifiedHeader({
+                currentPage: 'admin',
+                showAuthButtons: false,
+                customActions: [
+                    { text: 'Logout', onclick: 'handleAdminLogout()', class: 'btn-outline' }
+                ]
+            });
+            header.mount('#header-container');
+        });
+        
+        function handleAdminLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
 </body>
 </html>

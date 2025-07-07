@@ -294,6 +294,14 @@ async function handleRegister(event) {
 
 /// Update auth UI based on current user
 function updateAuthUI() {
+  // Check if we have a unified header and update it
+  if (window.UnifiedHeader && window.currentHeaderInstance) {
+    // Re-render the header with updated auth state
+    window.currentHeaderInstance.mount('#header-container');
+    return;
+  }
+  
+  // Fallback for legacy auth buttons
   const authButtons = document.getElementById('auth-buttons');
   if (!authButtons) return;
   

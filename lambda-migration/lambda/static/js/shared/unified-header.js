@@ -32,7 +32,9 @@ class UnifiedHeader {
         if (!this.showAuthButtons) return '';
         
         const token = localStorage.getItem('token');
-        if (token) {
+        const user = localStorage.getItem('user');
+        
+        if (token && user) {
             return `
                 <a href="/user-dashboard.html" class="btn btn-outline">Dashboard</a>
                 <button id="header-logout-btn" class="btn btn-outline">Logout</button>
@@ -53,6 +55,8 @@ class UnifiedHeader {
         if (container) {
             container.innerHTML = this.render();
             this.attachEventListeners();
+            // Store reference for auth updates
+            window.currentHeaderInstance = this;
         }
     }
 
