@@ -148,7 +148,25 @@ exports.handler = async (event, context) => {
       role: user.role 
     });
 
-    // Return success response with user data and token
+    // Get cookie domain from base URL
+    const baseUrl = process.env.BASE_URL || 'https://gabi.yoga';
+    const urlObj = new URL(baseUrl);
+    let cookieDomain = urlObj.hostname;
+    
+    // If not localhost, use root domain (with dot prefix) to include all subdomains
+    if (!cookieDomain.includes('localhost')) {
+      // Extract root domain (e.g., from www.gabi.yoga to .gabi.yoga)
+      const parts = cookieDomain.split('.');
+      if (parts.length >= 2) {
+        // Get the last two parts and add a dot prefix
+        cookieDomain = `.${parts.slice(-2).join('.')}`;
+      }
+    }
+
+    // Set cookie headers
+    const cookieHeader = `auth_token=${token}; Domain=${cookieDomain}; Path=/; Max-Age=86400; Secure; SameSite=Strict; HttpOnly`;
+    
+    // Return success response with user data, token and cookie
     return createSuccessResponse({
       message: 'Login successful',
       user: {
@@ -165,6 +183,8 @@ exports.handler = async (event, context) => {
         authenticated: true,
         expiresIn: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
       }
+    }, 200, {
+      'Set-Cookie': cookieHeader
     });
 
   } catch (error) {

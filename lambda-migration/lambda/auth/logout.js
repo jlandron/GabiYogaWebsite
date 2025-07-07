@@ -98,9 +98,29 @@ exports.handler = async (event, context) => {
       });
     }
 
+    // Get cookie domain from base URL
+    const baseUrl = process.env.BASE_URL || 'https://gabi.yoga';
+    const urlObj = new URL(baseUrl);
+    let cookieDomain = urlObj.hostname;
+    
+    // If not localhost, use root domain (with dot prefix) to include all subdomains
+    if (!cookieDomain.includes('localhost')) {
+      // Extract root domain (e.g., from www.gabi.yoga to .gabi.yoga)
+      const parts = cookieDomain.split('.');
+      if (parts.length >= 2) {
+        // Get the last two parts and add a dot prefix
+        cookieDomain = `.${parts.slice(-2).join('.')}`;
+      }
+    }
+
+    // Set expired cookie to clear it
+    const cookieHeader = `auth_token=; Domain=${cookieDomain}; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Strict; HttpOnly`;
+    
     // Always return success for logout
     return createSuccessResponse({
       message: 'Logged out successfully'
+    }, 200, {
+      'Set-Cookie': cookieHeader
     });
 
   } catch (error) {

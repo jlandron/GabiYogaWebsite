@@ -121,7 +121,25 @@ exports.handler = async (event, context) => {
       userId: decoded.id 
     });
 
-    // Return new token with user data
+    // Get cookie domain from base URL
+    const baseUrl = process.env.BASE_URL || 'https://gabi.yoga';
+    const urlObj = new URL(baseUrl);
+    let cookieDomain = urlObj.hostname;
+    
+    // If not localhost, use root domain (with dot prefix) to include all subdomains
+    if (!cookieDomain.includes('localhost')) {
+      // Extract root domain (e.g., from www.gabi.yoga to .gabi.yoga)
+      const parts = cookieDomain.split('.');
+      if (parts.length >= 2) {
+        // Get the last two parts and add a dot prefix
+        cookieDomain = `.${parts.slice(-2).join('.')}`;
+      }
+    }
+
+    // Set cookie headers
+    const cookieHeader = `auth_token=${newToken}; Domain=${cookieDomain}; Path=/; Max-Age=86400; Secure; SameSite=Strict; HttpOnly`;
+    
+    // Return new token with user data and set cookie
     return createSuccessResponse({
       message: 'Token refreshed successfully',
       user: {
@@ -133,6 +151,8 @@ exports.handler = async (event, context) => {
         profilePicture: user.profilePicture || null
       },
       token: newToken
+    }, 200, {
+      'Set-Cookie': cookieHeader
     });
 
   } catch (error) {
