@@ -1,0 +1,89 @@
+/*******************************
+ * 0. VARIABLES & GLOBAL SETTINGS
+ *******************************/
+:root {
+    /* Primary brand colors */
+    --primary-color: #7ba69a;
+    --primary-dark: #5e8c7f;
+    --primary-light: #a7c4bc;
+    --primary-bg: #f8f8f8;
+    
+    /* Text colors */
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-muted: #777;
+    --text-light: #ddd;
+    
+    /* Status colors */
+    --success-color: #27ae60;
+    --success-bg: #e6f7f1;
+    --warning-color: #f39c12;
+    --warning-bg: #fef9e7;
+    --danger-color: #e74c3c;
+    --danger-bg: #fcf0ef;
+    --info-color: #3498db;
+    --info-bg: #eaf2fa;
+    
+    /* UI colors */
+    --border-color: #eee;
+    --border-dark: #ddd;
+    --panel-bg: #fff;
+    --hover-bg: #f5f5f5;
+    --sidebar-bg: #333;
+    --sidebar-active: #444;
+    
+    /* Typography */
+    --font-family: 'Open Sans', sans-serif;
+    --headings-font-family: 'Open Sans', sans-serif;
+    --font-size-base: 14px;
+    --font-size-sm: 12px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+    --font-size-xxl: 24px;
+    
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+    
+    /* Border radius */
+    --border-radius-sm: 3px;
+    --border-radius: 4px;
+    --border-radius-lg: 8px;
+    --border-radius-circle: 50%;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow: 0 2px 5px rgba(0,0,0,0.1);
+    --shadow-lg: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Base styling */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--headings-font-family);
+    margin-top: 0;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary-dark);
+}

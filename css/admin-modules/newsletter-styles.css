@@ -1,0 +1,140 @@
+/**
+ * Newsletter Styles for Admin Dashboard
+ */
+
+/* Blog newsletter modal */
+.blog-posts-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.blog-post-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.blog-post-item:last-child {
+    border-bottom: none;
+}
+
+.blog-post-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.blog-post-item.selected {
+    background-color: var(--primary-color-light);
+}
+
+.blog-post-info {
+    flex: 1;
+}
+
+.blog-post-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.blog-post-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.blog-post-actions {
+    padding-left: 10px;
+}
+
+.newsletter-preview {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 20px;
+    background: white;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.newsletter-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.newsletter-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.newsletter-instructions {
+    margin-bottom: 15px;
+}
+
+.newsletter-email-template {
+    font-family: Arial, sans-serif;
+}
+
+.newsletter-email-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+}
+
+.newsletter-email-content {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.newsletter-email-footer {
+    background-color: #f5f5f5;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-radius: 0 0 4px 4px;
+}
+
+.newsletter-unsubscribe-link {
+    color: var(--text-muted);
+    text-decoration: underline;
+}
+
+/* Send button with confirmation state */
+#send-selected-blog:not(:disabled) {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+#send-selected-blog.sending {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+#send-selected-blog.sending::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: calc(50% - 10px);
+    right: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

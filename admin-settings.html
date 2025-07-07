@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - Gabi Yoga</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin-unified.css">
+    <link rel="stylesheet" href="css/account-styles.css">
+    <link rel="stylesheet" href="css/fonts.css">
+    
+    <!-- QuillJS Editor -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-modules/quill-editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <!-- Sidebar content will be loaded dynamically -->
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Settings Panel -->
+            <div id="settings-panel" class="admin-panel-content active">
+                <div class="admin-header">
+                    <h1 class="admin-title">Website Settings</h1>
+                    <div class="admin-actions">
+                        <button id="save-all-settings" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-save"></i> Save All Changes
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hero Text Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Homepage Hero Text</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="hero-text-form">
+                        <div class="admin-form-group">
+                            <label for="hero-heading">Main Heading</label>
+                            <input type="text" id="hero-heading" class="admin-form-control" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="hero-subheading">Subheading</label>
+                            <input type="text" id="hero-subheading" class="admin-form-control" required>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- About Me Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">About Me</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="about-form">
+                        <div class="admin-form-group">
+                            <label for="instructor-name">Instructor Name</label>
+                            <input type="text" id="instructor-name" class="admin-form-control" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-subtitle">Subtitle</label>
+                            <input type="text" id="instructor-subtitle" class="admin-form-control" required>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-bio">Biography</label>
+                            <textarea id="instructor-bio" class="admin-form-control" rows="6" required></textarea>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="instructor-photo">Profile Photo</label>
+                            <div class="photo-upload-container">
+                                <img id="instructor-photo-preview" src="images/DSC02659.JPG" alt="Instructor Photo">
+                                <div class="photo-upload-controls">
+                                    <input type="file" id="instructor-photo" accept="image/*">
+                                    <label for="instructor-photo" class="admin-btn admin-btn-secondary">
+                                        <i class="fas fa-upload"></i> Upload New Photo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Certifications Section -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Certifications</h2>
+                        <button id="add-certification" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-plus"></i> Add Certification
+                        </button>
+                    </div>
+                    
+                    <div class="admin-table-responsive">
+                        <table class="admin-table" id="certifications-table">
+                            <thead>
+                                <tr>
+                                    <th>Certification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Certification rows will be dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Homepage Sections Visibility -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Homepage Sections</h2>
+                    </div>
+                    
+                    <div class="admin-form">
+                        <h3>Classes & Offerings</h3>
+                        <p class="admin-form-note">Enable or disable specific offerings displayed on the homepage</p>
+                        
+                        <div class="toggle-section">
+                        <div class="toggle-item toggle-item-with-editor">
+                            <div class="toggle-label">
+                                <h4>Group Classes</h4>
+                                <div class="editor-container">
+                                    <textarea id="group-classes-text" class="admin-form-control offering-text"></textarea>
+                                    <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-group-classes" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item toggle-item-with-editor">
+                            <div class="toggle-label">
+                                <h4>Private Lessons</h4>
+                                <div class="editor-container">
+                                    <textarea id="private-lessons-text" class="admin-form-control offering-text"></textarea>
+                                    <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-private-lessons" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item toggle-item-with-editor">
+                            <div class="toggle-label">
+                                <h4>Workshops</h4>
+                                <div class="editor-container">
+                                    <textarea id="workshops-text" class="admin-form-control offering-text"></textarea>
+                                    <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-workshops" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="toggle-item toggle-item-with-editor">
+                            <div class="toggle-label">
+                                <h4>Retreats</h4>
+                                <div class="editor-container">
+                                    <textarea id="retreats-text" class="admin-form-control offering-text"></textarea>
+                                    <p class="admin-form-note">Use the editor above to add formatted text, lists, etc.</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-retreats" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        </div>
+                        
+                        <div class="admin-form-divider"></div>
+                        
+                        <h3>Other Sections</h3>
+                        <p class="admin-form-note">Enable or disable entire sections on the homepage</p>
+                        
+                        <div class="toggle-section">
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Upcoming Retreats Section</h4>
+                                    <p>Section showcasing your upcoming retreat offerings</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-retreats-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Weekly Schedule Section</h4>
+                                    <p>Section displaying your weekly class schedule</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-schedule-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Membership & Pricing Section</h4>
+                                    <p>Section showing membership options and pricing</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-membership-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Private Sessions Section</h4>
+                                    <p>Section with private session offerings and booking option</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-private-sessions-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-label">
+                                    <h4>Gallery Section</h4>
+                                    <p>Section showcasing your photo gallery</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-gallery-section" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="admin-panel">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Contact Information</h2>
+                    </div>
+                    
+                    <form class="admin-form" id="contact-form">
+                        <div class="admin-form-group">
+                            <label for="contact-address">Studio Address</label>
+                            <input type="text" id="contact-address" class="admin-form-control">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="contact-phone">Phone Number</label>
+                            <input type="tel" id="contact-phone" class="admin-form-control">
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="contact-email">Email Address</label>
+                            <input type="email" id="contact-email" class="admin-form-control">
+                        </div>
+                        
+                        <h3>Social Media Links</h3>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-facebook">Facebook</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-facebook-f"></i>
+                                <input type="url" id="social-facebook" class="admin-form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-instagram">Instagram</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-instagram"></i>
+                                <input type="url" id="social-instagram" class="admin-form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="admin-form-group">
+                            <label for="social-youtube">YouTube</label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-youtube"></i>
+                                <input type="url" id="social-youtube" class="admin-form-control">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating save button (only shown when scrolling) -->
+    <div class="fixed-save-button" id="fixed-save-button">
+        <button id="save-all-settings-fixed" class="admin-btn admin-btn-primary">
+            <i class="fas fa-save"></i> Save All Changes
+        </button>
+    </div>
+
+    <!-- Success notification -->
+    <div id="settings-notification" class="admin-notification">
+        <i class="fas fa-check-circle"></i> Settings saved successfully!
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/auth-handler.js"></script>
+    <script src="js/admin-api-utils.js"></script>  
+    <script src="js/login-modal.js"></script>    
+    <script src="js/admin.js"></script>
+    <script src="js/admin-sidebar-template.js"></script>
+    <script src="js/admin-sidebar.js"></script>
+    <!-- Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="js/admin-quill-editor.js"></script>
+    <script src="js/admin-settings-completion.js"></script>
+    <script src="js/admin-settings.js"></script>
+</body>
+</html>

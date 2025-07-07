@@ -1,0 +1,198 @@
+/*******************************
+ * 1. LAYOUT & BASE ELEMENTS
+ *******************************/
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Grid Layouts */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: var(--spacing-lg);
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: var(--spacing-lg);
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: var(--spacing-lg);
+}
+
+/* Flex Layouts */
+.flex-container {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-around {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sections */
+.section-bg-primary {
+    background-color: var(--primary-light);
+}
+
+.section-bg-secondary {
+    background-color: var(--secondary-color);
+}
+
+.section-bg-accent {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.section-bg-dark {
+    background-color: var(--dark-bg);
+    color: var(--light-text);
+}
+
+.section-bg-image {
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.section-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 0;
+}
+
+.section-content {
+    position: relative;
+    z-index: 1;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.section-heading h2 {
+    margin-bottom: var(--spacing-md);
+}
+
+.section-heading p {
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-light);
+}
+
+/* Utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--spacing-xl);
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+    margin-top: var(--spacing-xl);
+}
+
+/* Responsive layouts */
+@media screen and (max-width: 992px) {
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .flex-container {
+        flex-direction: column;
+    }
+    
+    .container {
+        width: 95%;
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-heading h2 {
+        font-size: var(--font-size-2xl);
+    }
+}

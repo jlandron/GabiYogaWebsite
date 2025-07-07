@@ -1,0 +1,162 @@
+<!-- Login Modal -->
+<div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Login to Your Account</h2>
+            <button class="close modal-close" onclick="closeLoginModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="loginModalForm">
+                <div class="form-group">
+                    <label for="modalEmail">Email:</label>
+                    <input type="email" id="modalEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalPassword">Password:</label>
+                    <div class="password-container">
+                        <input type="password" id="modalPassword" name="password" required>
+                        <i class="fas fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="modalRememberMe">
+                    <label for="modalRememberMe">Remember me</label>
+                    <a href="#" onclick="showForgotPasswordModal()">Forgot Password?</a>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full-width">Login</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary btn-full-width" onclick="showRegistrationModal()">Create New Account</button>
+                </div>
+            </form>
+            <div id="loginModalMessage" class="message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Modal -->
+<div id="registrationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Your Account</h2>
+            <button class="close modal-close" onclick="closeRegistrationModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="registrationModalForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalFirstName">First Name:</label>
+                        <input type="text" id="modalFirstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalLastName">Last Name:</label>
+                        <input type="text" id="modalLastName" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modalRegisterEmail">Email:</label>
+                    <input type="email" id="modalRegisterEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalRegisterPassword">Password:</label>
+                    <div class="password-container">
+                        <input type="password" id="modalRegisterPassword" name="password" required minlength="8">
+                        <i class="fas fa-eye-slash toggle-password"></i>
+                    </div>
+                    <p class="password-hint">Password must be at least 8 characters.</p>
+                </div>
+                <div class="form-group">
+                    <label for="modalConfirmPassword">Confirm Password:</label>
+                    <div class="password-container">
+                        <input type="password" id="modalConfirmPassword" name="confirmPassword" required>
+                        <i class="fas fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="modalTermsAgree" required>
+                    <label for="modalTermsAgree">I agree to the <a href="#" onclick="showTermsModal()">Terms & Conditions</a></label>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full-width">Create Account</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary btn-full-width" onclick="showLoginModal()">Already have an account? Login</button>
+                </div>
+            </form>
+            <div id="registrationModalMessage" class="message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Reset Password</h2>
+            <button class="close modal-close" onclick="closeForgotPasswordModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="forgotPasswordModalForm">
+                <div class="form-group">
+                    <label for="modalResetEmail">Email:</label>
+                    <input type="email" id="modalResetEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-full-width">Send Reset Link</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary btn-full-width" onclick="showLoginModal()">Back to Login</button>
+                </div>
+            </form>
+            <div id="forgotPasswordModalMessage" class="message"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms & Conditions Modal -->
+<div id="termsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Terms & Conditions</h2>
+            <button class="close modal-close" onclick="closeTermsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="terms-content">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing and using Gabi Yoga's services, you agree to be bound by these Terms & Conditions, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.</p>
+                
+                <h3>2. Memberships and Class Packages</h3>
+                <p>Membership and class packages are non-refundable and non-transferable. Memberships automatically renew unless cancelled with at least 7 days' notice before the renewal date. Class packages expire 6 months from the date of purchase.</p>
+                
+                <h3>3. Class Bookings and Cancellations</h3>
+                <p>Please arrive 5-10 minutes before class begins. Late arrivals may not be permitted to join if it would disrupt the class. Class cancellations must be made at least 12 hours in advance to avoid being charged for the class.</p>
+                
+                <h3>4. Health and Safety</h3>
+                <p>Participants should be in good physical condition and free from injury or illness that may be aggravated by physical exercise. Pregnant women should consult with their doctor before participating. We reserve the right to refuse service to anyone if we believe participation may pose health risks.</p>
+                
+                <h3>5. Private Sessions</h3>
+                <p>Private sessions must be cancelled at least 24 hours in advance for a full refund. Cancellations with less than 24 hours' notice will be charged the full session fee.</p>
+                
+                <h3>6. Workshops and Retreats</h3>
+                <p>Workshop registrations can be cancelled up to 7 days before the event for a full refund. Retreat deposits are non-refundable but may be transferable to another participant with at least 30 days' notice.</p>
+                
+                <h3>7. Personal Property</h3>
+                <p>Gabi Yoga is not responsible for lost, stolen, or damaged personal property. Please keep valuables secure or leave them at home.</p>
+                
+                <h3>8. Images and Likeness</h3>
+                <p>We occasionally take photos during classes and events for promotional purposes. By participating, you grant us permission to use your likeness in promotional materials. If you prefer not to be photographed, please notify us in writing.</p>
+                
+                <h3>9. Code of Conduct</h3>
+                <p>We aim to maintain a peaceful, respectful environment for all participants. Inappropriate behavior, harassment, or disregard for studio policies may result in removal from class and termination of membership without refund.</p>
+                
+                <h3>10. Changes to Terms</h3>
+                <p>Gabi Yoga reserves the right to modify these terms at any time. Changes will be posted on our website and will be effective immediately. Continued use of our services constitutes acceptance of modified terms.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="acceptTerms()">Accept</button>
+            <button type="button" class="btn btn-secondary" onclick="closeTermsModal()">Close</button>
+        </div>
+    </div>
+</div>

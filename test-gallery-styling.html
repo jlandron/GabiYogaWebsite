@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Image Gallery Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/admin-modules/blog-image-gallery.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blog Image Gallery Test</h1>
+        
+        <p>This page tests the styling of the blog image gallery component.</p>
+        
+        <h2>Image Gallery</h2>
+        <div class="blog-images-gallery">
+            <!-- Test with 6 images -->
+            <div class="blog-image-item">
+                <img src="images/austin-1bVPBM3bDDE-unsplash.jpg" alt="Yoga Pose">
+                <div class="blog-image-info">Yoga Pose</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-image-item featured-image">
+                <span class="featured-image-badge" title="Featured Image"><i class="fas fa-star"></i></span>
+                <img src="images/leo_visions-ljo7oqm_w0U-unsplash.jpg" alt="Featured Yoga">
+                <div class="blog-image-info">Featured Yoga</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-image-item">
+                <img src="images/joeri-romer-Xne1N4yZuOY-unsplash.jpg" alt="Meditation">
+                <div class="blog-image-info">Meditation</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-image-item">
+                <img src="images/sara-bach-YXn56G46MSU-unsplash.jpg" alt="Beach Yoga">
+                <div class="blog-image-info">Beach Yoga</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-image-item">
+                <img src="images/annie-spratt-V95YrpWFgMk-unsplash.jpg" alt="Group Class">
+                <div class="blog-image-info">Group Class</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-image-item">
+                <img src="images/ulrike-r-donohue-8MUFyLGjyak-unsplash.jpg" alt="Yoga Studio">
+                <div class="blog-image-info">Yoga Studio</div>
+                <div class="blog-image-actions">
+                    <button title="Insert into post" class="insert-image">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button title="Set as featured image" class="set-as-featured">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button title="Edit image details" class="edit-image">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button title="Remove from post" class="delete-image">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Empty Gallery Example</h2>
+        <div class="blog-images-gallery">
+            <!-- This will be empty to test the empty state styling -->
+        </div>
+        
+        <div class="image-gallery-actions">
+            <button type="button" style="padding:10px; margin-top:10px; background:#5a92d6; color:white; border:none; border-radius:4px; cursor:pointer;">
+                <i class="fas fa-plus"></i> Add More Images
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Simple hover effects demonstration
+        document.querySelectorAll('.blog-image-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const actions = item.querySelector('.blog-image-actions');
+                if (actions) {
+                    actions.style.opacity = '1';
+                }
+            });
+            
+            item.addEventListener('mouseleave', () => {
+                const actions = item.querySelector('.blog-image-actions');
+                if (actions) {
+                    actions.style.opacity = '0';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

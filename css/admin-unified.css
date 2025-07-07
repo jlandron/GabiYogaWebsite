@@ -1,0 +1,52 @@
+/**
+ * Unified Admin Styles for Gabi Yoga
+ * This file combines all admin-related styles into a single, standardized stylesheet.
+ * Using a modular approach to make maintenance and updates easier.
+ */
+
+/**************************************
+ * TABLE OF CONTENTS
+ *
+ * 0. VARIABLES & GLOBAL SETTINGS
+ * 1. BASIC LAYOUT
+ * 2. SIDEBAR
+ * 3. CONTENT AREA
+ * 4. CARDS & PANELS
+ * 5. TABLES
+ * 6. BUTTONS
+ * 7. FORMS
+ * 8. MODALS
+ * 9. TEXT EDITOR & FORMATTING
+ * 10. STATUS INDICATORS & BADGES
+ * 11. TOGGLES & SWITCHES
+ * 12. MEDIA & IMAGES
+ * 13. BLOG SPECIFIC STYLES
+ * 14. PRICING SPECIFIC STYLES
+ * 15. CALENDAR & SCHEDULING
+ * 16. NOTIFICATIONS & MESSAGES
+ * 17. RESPONSIVE ADJUSTMENTS
+ * 18. MEMBER PROFILES
+ **************************************/
+
+/* Import all module styles */
+@import url('admin-modules/0-variables.css');
+@import url('admin-modules/1-layout.css');
+@import url('admin-modules/2-sidebar.css');
+@import url('admin-modules/3-content-area.css');
+@import url('admin-modules/4-cards-panels.css');
+@import url('admin-modules/5-tables.css');
+@import url('admin-modules/6-buttons.css');
+@import url('admin-modules/7-forms.css');
+@import url('admin-modules/8-modals.css');
+@import url('admin-modules/9-text-editor.css');
+@import url('admin-modules/10-status-indicators.css');
+@import url('admin-modules/11-toggles.css');
+@import url('admin-modules/12-media-images.css');
+@import url('admin-modules/13-blog-styles.css');
+@import url('admin-modules/14-pricing-styles.css');
+@import url('admin-modules/15-calendar-scheduling.css');
+@import url('admin-modules/16-notifications.css');
+@import url('admin-modules/17-responsive.css');
+@import url('admin-modules/member-profiles.css');
+@import url('admin-modules/quill-editor.css');
+@import url('admin-modules/newsletter-styles.css');

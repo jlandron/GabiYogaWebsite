@@ -1,0 +1,285 @@
+/*******************************
+ * MEMBER PROFILES SPECIFIC STYLES
+ *******************************/
+.member-profiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.member-card {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.member-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.member-header {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background-color: var(--primary-light);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.member-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: var(--spacing-md);
+    border: 2px solid white;
+    box-shadow: var(--shadow-sm);
+}
+
+.member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+}
+
+.member-email {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.member-details {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--panel-bg);
+}
+
+.member-detail-item {
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.member-detail-item:last-child {
+    border-bottom: none;
+}
+
+.member-detail-item i {
+    color: var(--primary-color);
+    margin-right: var(--spacing-sm);
+    width: 18px;
+    text-align: center;
+}
+
+.member-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-sm);
+    background-color: var(--hover-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.member-actions button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.member-actions button:hover {
+    color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Member Detail Modal */
+.member-detail-modal {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.member-detail-header {
+    display: flex;
+    padding: var(--spacing-lg);
+    background-color: var(--primary-light);
+    gap: var(--spacing-lg);
+}
+
+.member-detail-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid white;
+    box-shadow: var(--shadow);
+}
+
+.member-detail-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.member-detail-info {
+    flex: 1;
+}
+
+.member-detail-info h2 {
+    margin: 0 0 var(--spacing-xs) 0;
+    color: var(--primary-dark);
+}
+
+.member-detail-info p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-secondary);
+}
+
+.admin-modal .admin-panel {
+    margin: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-modal .admin-panel-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.admin-modal .admin-panel-header h3 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.member-bio {
+    padding: var(--spacing-lg);
+    background-color: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    max-height: 30vh;
+    margin: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.member-bio h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-dark);
+    font-size: var(--font-size-lg);
+    position: sticky;
+    top: 0;
+    background-color: var(--hover-bg);
+    padding: var(--spacing-xs) 0;
+    z-index: 1;
+}
+
+.member-bio-content {
+    overflow-y: auto;
+    padding-right: var(--spacing-sm);
+}
+
+/* Style for tables within the modal */
+.admin-modal .admin-table {
+    margin-top: var(--spacing-md);
+}
+
+.member-detail-modal .admin-form-row {
+    padding: var(--spacing-xs) 0;
+    margin-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.member-detail-modal .admin-form-row:last-child {
+    border-bottom: none;
+}
+
+.member-detail-modal .admin-form-group label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Fix the modal width */
+.member-detail-modal {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    max-height: 85vh; /* Increase from 80vh to 85vh */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Prevent content from being cut off */
+.admin-modal-body {
+    overflow-y: auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* Fix the modal layout */
+.member-detail-modal > div:not(.admin-modal-header):not(.member-detail-header):not(.admin-modal-footer):not(.member-bio) {
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* Fix formatting of modal sections */
+#modal-member-bio {
+    line-height: 1.5;
+    padding: var(--spacing-sm);
+    background-color: white;
+    border-radius: var(--border-radius);
+}
+
+.admin-modal-footer {
+    padding: var(--spacing-md) var(--spacing-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .member-profiles {
+        grid-template-columns: 1fr;
+    }
+    
+    .member-detail-header {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .member-detail-info {
+        text-align: center;
+    }
+}

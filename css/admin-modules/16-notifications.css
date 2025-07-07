@@ -1,0 +1,118 @@
+/*******************************
+ * 16. NOTIFICATIONS & MESSAGES
+ *******************************/
+/* Admin Notification */
+.admin-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--success-color);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
+}
+
+.admin-notification.show,
+.admin-notification.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.admin-notification i {
+    font-size: var(--font-size-lg);
+}
+
+/* Admin Alert */
+.admin-alert {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.admin-alert i {
+    font-size: var(--font-size-lg);
+}
+
+.admin-alert.success {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.admin-alert.warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-color);
+}
+
+.admin-alert.error {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.admin-alert.info {
+    background-color: var(--info-bg);
+    color: var(--info-color);
+}
+
+/* Form Error Messages */
+.form-error {
+    color: var(--danger-color);
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.input-error {
+    border-color: var(--danger-color) !important;
+}
+
+/* Loading States */
+.admin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+}
+
+.admin-loading i {
+    margin-right: var(--spacing-sm);
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Empty States */
+.admin-empty-state {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+}
+
+.admin-empty-state i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.6;
+}
+
+.admin-empty-state h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+}
+
+.admin-empty-state p {
+    margin: 0 0 var(--spacing-lg) 0;
+}

@@ -12,42 +12,27 @@
     <link rel="stylesheet" href="/static/css/booking-status.css">
 </head>
 <body>
-    <!-- Unified Header -->
-    <div id="header-container"></div>
+    <header>
+        <nav>
+            <div class="nav-brand">My Dashboard</div>
+            <div class="nav-links">
+                <a href="#" class="active" data-section="dashboard">Overview</a>
+                <a href="#" data-section="upcoming">Upcoming Classes</a>
+                <a href="#" data-section="history">Class History</a>
+                <a href="#" data-section="profile">Profile</a>
+                <a href="/" class="view-site">View Site</a>
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </nav>
+    </header>
 
-    <!-- Hero Banner -->
-    <section class="user-hero">
-        <div class="hero-content">
-            <h1>My Dashboard</h1>
-            <p>Manage your yoga journey</p>
+    <div class="user-hero">
+        <div class="user-hero-content">
+            <h1>Welcome to Your Dashboard</h1>
         </div>
-    </section>
-    
-    <!-- User Layout with Sidebar -->
-    <div class="user-container">
-        <!-- User Sidebar Navigation -->
-        <aside class="user-sidebar">
-            <nav class="sidebar-nav">
-                <a href="#" data-section="dashboard" class="active">
-                    <i class="icon">📊</i>
-                    <span>Overview</span>
-                </a>
-                <a href="#" data-section="upcoming">
-                    <i class="icon">📅</i>
-                    <span>Upcoming Classes</span>
-                </a>
-                <a href="#" data-section="history">
-                    <i class="icon">📚</i>
-                    <span>Class History</span>
-                </a>
-                <a href="#" data-section="profile">
-                    <i class="icon">👤</i>
-                    <span>Profile</span>
-                </a>
-            </nav>
-        </aside>
+    </div>
 
-        <main class="user-content">
+    <main>
         <!-- Dashboard Overview Section -->
         <section id="dashboard-section" class="user-section active">
             <h1>My Overview</h1>
@@ -148,25 +133,10 @@
                 </div>
             </div>
         </section>
-        </main>
-    </div>
+    </main>
 
     <script src="/static/environment-indicator.js"></script>
-    <script src="/static/js/shared/unified-header.js"></script>
     <script src="/static/auth.js"></script>
     <script src="/static/user.js"></script>
-    <script>
-        // Initialize unified header
-        document.addEventListener('DOMContentLoaded', () => {
-            const header = new UnifiedHeader({
-                currentPage: 'user',
-                showAuthButtons: false,
-                customActions: [
-                    { text: 'Logout', onclick: 'handleLogout()', class: 'btn-outline' }
-                ]
-            });
-            header.mount('#header-container');
-        });
-    </script>
 </body>
 </html>

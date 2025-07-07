@@ -1,0 +1,134 @@
+/*******************************
+ * 0. VARIABLES & GLOBAL SETTINGS
+ *******************************/
+:root {
+    /* Colors */
+    --primary-color: #7ba69a;
+    --primary-light: rgba(123, 166, 154, 0.2);
+    --primary-dark: #5c8a7d;
+    --secondary-color: #f8f3eb;
+    --accent-color: #e0a458;
+    --text-color: #4a4a4a;
+    --text-light: #6e6e6e;
+    --text-muted: #999;
+    --text-dark: #333;
+    --light-text: #f8f3eb;
+    --dark-bg: #2c3e50;
+    
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 30px;
+    --spacing-xl: 60px;
+    
+    /* UI Elements */
+    --border-radius: 5px;
+    --border-radius-sm: 3px;
+    --border-radius-lg: 8px;
+    --box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    
+    /* Typography */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-md: 1.125rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 1.875rem;
+    --font-size-3xl: 2.25rem;
+    --font-size-4xl: 3rem;
+    
+    /* Fonts */
+    --font-primary: 'Open Sans', sans-serif;
+    --font-headings: 'Playfair Display', serif;
+    --font-display: 'Julietta', 'Playfair Display', serif;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headings);
+    margin-bottom: 20px;
+    line-height: 1.3;
+}
+
+h1 {
+    font-family: var(--font-display);
+    margin-bottom: 20px;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: var(--font-size-3xl);
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--primary-color);
+}
+
+h3 {
+    font-size: var(--font-size-xl);
+    color: var(--dark-bg);
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--accent-color);
+}
+
+ul, ol {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+section {
+    padding: var(--spacing-xl) 0;
+}
+
+/* Placeholder Images */
+.placeholder-image {
+    background-color: var(--secondary-color);
+    height: 100%;
+    width: 100%;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-weight: bold;
+    border-radius: var(--border-radius);
+}
+
+.placeholder-image::after {
+    content: "Image Placeholder";
+}

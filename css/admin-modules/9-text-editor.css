@@ -1,0 +1,177 @@
+/*******************************
+ * 9. TEXT EDITOR & FORMATTING
+ *******************************/
+/* Text Editor Controls */
+.text-editor-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-xs);
+    background-color: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Formatting Controls */
+.formatting-controls {
+    display: flex;
+    gap: 4px;
+    margin-bottom: var(--spacing-xs);
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+}
+
+.format-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: var(--font-size-base);
+}
+
+.format-button:hover {
+    background-color: #e9e9e9;
+}
+
+.format-button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.formatting-controls .divider,
+.toolbar-divider {
+    display: inline-block;
+    width: 1px;
+    height: 24px;
+    margin: 0 5px;
+    background-color: var(--border-dark);
+    align-self: center;
+}
+
+.font-selector,
+.size-selector {
+    padding: 4px 8px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--hover-bg);
+    height: 32px;
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+}
+
+.font-selector {
+    flex-grow: 1;
+    max-width: 250px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.font-selector option {
+    padding: var(--spacing-xs);
+    min-height: 24px;
+    display: block;
+    font-size: var(--font-size-lg);
+}
+
+.font-selector:focus option:checked {
+    background-color: var(--hover-bg);
+    font-weight: normal;
+}
+
+.size-selector {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+}
+
+/* Editor Toolbar */
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: var(--spacing-xs);
+    background-color: var(--hover-bg);
+    border: 1px solid var(--border-dark);
+    border-bottom: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.editor-toolbar button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+}
+
+.editor-toolbar button:hover {
+    background-color: #e0e0e0;
+}
+
+.editor-toolbar button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Font Selector in Editor Toolbar */
+.editor-toolbar .font-selector {
+    padding: 5px 10px;
+    border: 1px solid var(--border-dark);
+    border-radius: var(--border-radius);
+    background-color: var(--hover-bg);
+    font-size: var(--font-size-base);
+    height: 30px;
+    min-width: 120px;
+}
+
+.editor-toolbar .font-selector option {
+    padding: var(--spacing-xs);
+    min-height: 24px;
+    display: block;
+    font-size: var(--font-size-lg);
+}
+
+.editor-toolbar .font-selector:focus option:checked {
+    background-color: var(--hover-bg);
+    font-weight: normal;
+}
+
+.editor-toolbar button[data-format="h2"],
+.editor-toolbar button[data-format="h3"],
+.editor-toolbar button[data-format="h4"] {
+    width: auto;
+    padding: 0 var(--spacing-xs);
+    font-family: serif;
+    font-weight: bold;
+}
+
+.editor-toolbar button[data-format="h2"] i,
+.editor-toolbar button[data-format="h3"] i,
+.editor-toolbar button[data-format="h4"] i {
+    margin-right: 2px;
+    font-size: 0.9rem;
+}
+
+.post-editor {
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    resize: vertical;
+}

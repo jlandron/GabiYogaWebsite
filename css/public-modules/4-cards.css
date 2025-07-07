@@ -1,0 +1,475 @@
+/*******************************
+ * 4. CARDS & CONTENT BLOCKS
+ *******************************/
+
+/* Basic Card */
+.card {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-content h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+/* Offering Cards */
+.offering-card {
+    background-color: #fff;
+    border-radius: var(--border-radius-lg);
+    padding: 30px 25px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.offering-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.offering-icon {
+    background-color: var(--primary-color);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.offering-icon i {
+    color: #fff;
+    font-size: 1.8rem;
+}
+
+.offering-card h3 {
+    margin-bottom: 15px;
+}
+
+.offering-card ul {
+    margin: 15px 0;
+    text-align: left;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.offering-card .btn-small {
+    margin-top: auto;
+}
+
+/* Retreat Cards */
+.retreat-card {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background-color: #fff;
+    transition: var(--transition);
+    flex: 1 1 300px;
+    min-width: 280px;
+    max-width: 400px;
+    margin: 0;
+    border: 2px solid transparent;
+}
+
+.retreat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.retreat-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.retreat-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.retreat-card:hover .retreat-image img {
+    transform: scale(1.1);
+}
+
+.retreat-content {
+    padding: 25px;
+}
+
+.retreat-content h3 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.retreat-location, .retreat-date, .retreat-price {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.retreat-description {
+    margin: 15px 0;
+}
+
+/* Pricing Cards */
+.pricing-card {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+    width: 100%;
+    flex: 1 1 280px;
+    min-width: 260px;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card.featured {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    border: 2px solid var(--accent-color);
+}
+
+.featured-tag {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: var(--accent-color);
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 20px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.private-option .header {
+    position: relative;
+}
+
+.pricing-header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.pricing-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.price {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+.pricing-features {
+    padding: 20px 20px 15px;
+    flex: 1;
+}
+
+.pricing-features ul {
+    padding-left: 20px;
+    list-style-type: disc;
+    margin-bottom: 20px;
+}
+
+.pricing-btn {
+    display: block;
+    text-align: center;
+    margin: 0 20px 15px;
+    position: relative;
+    bottom: 0;
+}
+
+/* Private Session Options */
+.private-option {
+    background-color: #fff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 320px; /* Minimum height, allow growth for content */
+    border: 2px solid transparent;
+    flex: 1 1 250px;
+    min-width: 240px;
+    max-width: 350px;
+    margin: 0;
+}
+
+/* Featured/Popular card styling */
+.private-option.featured {
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.private-option:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.private-option .header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 20px 15px;
+}
+
+.private-option .content {
+    padding: 15px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.private-option h4 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.private-option .price {
+    font-size: 1.7rem;
+    color: var(--accent-color);
+    margin: 10px 0;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.private-option .button-container {
+    margin-top: auto;
+    padding-top: 10px;
+    min-height: 50px; /* Minimum height for button container */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Focus Options Styling */
+.private-option .focus-options {
+    margin: 15px 0;
+    text-align: left;
+}
+
+.private-option .focus-options p {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.private-option .focus-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+    justify-content: center;
+}
+
+.private-option .focus-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    color: #fff;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* Color variations for focus tags */
+.private-option .focus-tag:nth-child(odd) {
+    background-color: #7db3a8; /* Teal/green */
+}
+
+.private-option .focus-tag:nth-child(even) {
+    background-color: #d4a574; /* Orange/tan */
+}
+
+.private-option .focus-tag:nth-child(3n) {
+    background-color: #8b6b47; /* Brown */
+}
+
+/* Workshop Cards */
+.workshop-card {
+    display: flex;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+}
+
+.workshop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.workshop-date {
+    flex: 0 0 150px;
+    background-color: var(--primary-color);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 15px;
+}
+
+.date-box {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.date-box .month {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.date-box .day {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 5px 0;
+}
+
+.date-box .year {
+    display: block;
+    font-size: 1rem;
+}
+
+.workshop-date .time {
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 10px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.workshop-details {
+    flex: 1;
+    padding: 25px 30px;
+}
+
+.workshop-details h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.workshop-details .instructor,
+.workshop-details .location {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+}
+
+.workshop-description {
+    margin: 15px 0;
+    line-height: 1.5;
+}
+
+.workshop-pricing {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.workshop-price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.member-price {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+}
+
+/* Account Card */
+.account-card {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    padding: 30px;
+    margin-bottom: 40px;
+}
+
+/* Responsive Cards */
+@media screen and (max-width: 768px) {
+    .workshop-card {
+        flex-direction: column;
+    }
+    
+    .workshop-date {
+        flex: 0 0 auto;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 15px;
+    }
+    
+    .date-box {
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .date-box .month,
+    .date-box .day,
+    .date-box .year {
+        display: inline;
+    }
+}

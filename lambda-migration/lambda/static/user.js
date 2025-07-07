@@ -148,21 +148,16 @@ function updateFilterDropdowns() {
 
 // Setup Event Listeners
 function setupEventListeners() {
-    // Sidebar Navigation
-    document.querySelectorAll('.sidebar-nav [data-section]').forEach(element => {
-        element.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateToSection(e.target.closest('[data-section]').dataset.section);
-        });
-    });
-
-    // Dashboard card navigation
-    document.querySelectorAll('.dashboard-card [data-section]').forEach(element => {
+    // Navigation
+    document.querySelectorAll('[data-section]').forEach(element => {
         element.addEventListener('click', (e) => {
             e.preventDefault();
             navigateToSection(e.target.dataset.section);
         });
     });
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
     // Profile form
     document.getElementById('save-profile').addEventListener('click', saveProfile);
@@ -182,8 +177,8 @@ function navigateToSection(sectionId) {
     // Show selected section
     document.getElementById(`${sectionId}-section`).classList.add('active');
 
-    // Update sidebar navigation active state
-    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    // Update navigation active state
+    document.querySelectorAll('.nav-links a').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.section === sectionId) {
             link.classList.add('active');

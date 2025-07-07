@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabi Yoga - Find Your Inner Peace Through Yoga & Meditation</title>
+    <meta name="description" content="Join Gabi Yoga for transformative yoga classes, workshops, retreats and private sessions. Discover inner peace and wellness through mindful practice.">
+    <meta name="keywords" content="yoga, yoga classes, yoga studio, meditation, wellness, retreats, workshops, private yoga sessions, Gabi Yoga">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://gabi.yoga/">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gabi.yoga/">
+    <meta property="og:title" content="Gabi Yoga - Find Your Inner Peace">
+    <meta property="og:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
+    <meta property="og:image" content="https://gabi.yoga/images/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://gabi.yoga/">
+    <meta property="twitter:title" content="Gabi Yoga - Find Your Inner Peace">
+    <meta property="twitter:description" content="Join our community and transform your mind, body, and spirit through yoga and meditation.">
+    <meta property="twitter:image" content="https://gabi.yoga/images/twitter-image.jpg">
+    
+    <!-- Preload hero image -->
+    <link rel="preload" href="images/photo-1615729947596-a598e5de0ab3.jpeg" as="image" type="image/jpeg">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/public-unified.css">
+    <link rel="stylesheet" href="css/multi-region-image-loader.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Sacramento&family=Allura&family=Open+Sans&family=Playfair+Display&family=Roboto&family=Satisfy&family=Pinyon+Script&family=Tangerine&family=Alex+Brush&family=Amatic+SC&family=Caveat&family=Indie+Flower&family=Kalam&family=Shadows+Into+Light&family=Architects+Daughter&family=Comic+Neue&family=Courgette&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/fonts.css">
+    
+    <!-- Stripe JS -->
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <!-- Header Component Placeholder -->
+    <div id="header-placeholder"></div>
+    
+    <!-- Login Modal Component Placeholder -->
+    <div id="login-modal-placeholder"></div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <!-- All content will be dynamically loaded by hero-text-loader.js with smooth animations -->
+        </div>
+    </section>
+
+    <!-- About/Bio Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2>About Me</h2>
+            <div class="about-content">
+                <div class="about-image">
+                    <img data-src="images/DSC02659.JPG" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='100%25' height='100%25' fill='%23f8f9fa'/%3E%3C/svg%3E" alt="Yoga Instructor" class="lazy-load">
+                </div>
+                <div class="about-text">
+                    <!-- Instructor bio content dynamically injected by bio-content-loader.js -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Blog Section -->
+    <section id="latest-blog" class="latest-blog">
+        <div class="container">
+            <h2>Latest From The Blog</h2>
+            <div class="latest-blog-container">
+                <div id="latest-blog-loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="latest-blog-content"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2>Gallery</h2>
+            <div class="gallery-carousel-container">
+                <div class="carousel-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Loading gallery...
+                </div>
+                <div class="gallery-carousel" style="display: none;">
+                    <div class="gallery-carousel-track">
+                        <!-- Carousel items will be dynamically inserted here -->
+                    </div>
+                    <button class="carousel-nav-btn prev-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-nav-btn next-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="carousel-indicators">
+                    <!-- Indicators will be dynamically inserted here -->
+                </div>
+                <div style="text-align: center;">
+                    <button class="view-all-btn">
+                        <i class="fas fa-images"></i>
+                        View All Photos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Offerings Section -->
+    <section id="offerings" class="offerings">
+        <div class="container">
+            <h2>Classes & Offerings</h2>
+            <div class="offerings-grid">
+                <!-- Offering cards will be dynamically injected by offerings-content-loader.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Class Schedule Section -->
+    <section id="schedule" class="schedule">
+        <div class="container">
+            <h2>Weekly Schedule</h2>
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Schedule will be dynamically loaded from the database -->
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:20px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading class schedule...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="class-signup">
+                <a href="#" class="btn" id="signup-btn">Sign Up for a Class</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membership Section -->
+    <section id="membership" class="membership">
+        <div class="container">
+            <h2>Membership & Packages</h2>
+            <div class="scrollable-container">
+                <div id="pricing-container" class="pricing-container">
+                    <!-- Memberships will be dynamically loaded here -->
+                    <div class="pricing-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading membership options...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Private Sessions Section -->
+    <section id="private-sessions" class="private-sessions-section">
+        <div class="container">
+            <h2>Private Sessions</h2>
+            <div class="private-pricing-container">
+                <div id="private-pricing" class="private-pricing">
+                    <!-- Private sessions will be dynamically loaded here -->
+                    <div class="pricing-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading private session options...
+                    </div>
+                </div>
+            </div>
+            <div class="private-sessions-cta">
+                <a href="#" class="btn" id="private-sessions-btn">Book a Private Session</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Retreats Section -->
+    <section id="retreats" class="retreats">
+        <div class="container">
+            <h2>Upcoming Retreats</h2>
+            <div class="retreats-container">
+                <div class="retreats-grid">
+                    <!-- Retreats will be dynamically loaded here -->
+                </div>
+                <div id="retreats-loading" class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i> Loading upcoming retreats...
+                </div>
+                <div id="retreats-empty" class="empty-message" style="display: none;">
+                    <p>No upcoming retreats at this time. Please check back soon for new adventures!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sign-up Modal (hidden by default) -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Sign Up for a Class</h2>
+            <form id="class-signup-form">
+                <div class="form-group">
+                    <label for="class-select">Select Class:</label>
+                    <select id="class-select" required>
+                        <option value="" selected disabled>Choose a class...</option>
+                        <option value="vinyasa-mon-7am">Monday 7:00 AM - Rise & Shine Vinyasa</option>
+                        <option value="hatha-tue-9am">Tuesday 9:00 AM - Gentle Hatha</option>
+                        <!-- Additional options would be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Payment Method:</label>
+                    <select id="payment-method" required>
+                        <option value="drop-in">Drop-in ($20)</option>
+                        <option value="class-pack">Use from Class Pack</option>
+                        <option value="membership">Membership</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Reserve Spot</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Contact Me</h2>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3>Get In Touch</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Yoga Street, Mindful City, CA 94000</p>
+                    <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> info@gabiyoga.yoga</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject:</label>
+                            <input type="text" id="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message:</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>Gabi Yoga</h2>
+                    <p>Find your inner peace with us</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#offerings">Classes</a></li>
+                        <li><a href="#membership">Membership</a></li>
+                        <li><a href="#retreats">Retreats</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="login.html" class="admin-link">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3>Stay Updated</h3>
+                    <p>Subscribe to our newsletter for updates on classes, workshops, and events</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Gabi Yoga. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Workshops Schedule Modal (hidden by default) -->
+    <div id="workshops-modal" class="modal">
+        <div class="modal-content workshop-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Upcoming Workshops</h2>
+            <div class="workshops-grid">
+                <!-- Workshop 1 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">MAY</span>
+                            <span class="day">15</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">2:00 PM - 4:30 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Inversions & Arm Balances</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Main Studio</p>
+                        <p class="workshop-description">Learn the fundamentals of inversions and arm balances in this comprehensive workshop. Suitable for all levels.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$45</span>
+                            <span class="member-price">$40 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="inversions-may15">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 2 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">JUN</span>
+                            <span class="day">8</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">10:00 AM - 1:00 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Yoga Philosophy & Meditation</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi & Dr. Anand Sharma</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Meditation Room</p>
+                        <p class="workshop-description">Explore the philosophical roots of yoga and learn meditation techniques to deepen your practice.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$55</span>
+                            <span class="member-price">$49 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="philosophy-jun8">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 3 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">JUL</span>
+                            <span class="day">22</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">6:30 PM - 8:30 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Pranayama & Breathwork</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Main Studio</p>
+                        <p class="workshop-description">Learn powerful breathing techniques to enhance your yoga practice, reduce stress, and increase vitality.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$40</span>
+                            <span class="member-price">$36 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="pranayama-jul22">Register Now</button>
+                    </div>
+                </div>
+                
+                <!-- Workshop 4 -->
+                <div class="workshop-card">
+                    <div class="workshop-date">
+                        <div class="date-box">
+                            <span class="month">AUG</span>
+                            <span class="day">12</span>
+                            <span class="year">2025</span>
+                        </div>
+                        <div class="time">1:00 PM - 4:00 PM</div>
+                    </div>
+                    <div class="workshop-details">
+                        <h3>Yoga for Back Health</h3>
+                        <p class="instructor"><i class="fas fa-user"></i> Gabi & Dr. Lisa Chen</p>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> Healing Arts Room</p>
+                        <p class="workshop-description">Learn therapeutic yoga poses and techniques specifically designed to relieve back pain and promote spinal health.</p>
+                        <div class="workshop-pricing">
+                            <span class="workshop-price">$60</span>
+                            <span class="member-price">$54 for members</span>
+                        </div>
+                        <button class="btn-small workshop-signup-btn" data-workshop="back-health-aug12">Register Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workshop Registration Modal (hidden by default) -->
+    <div id="workshop-signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Register for Workshop</h2>
+            <form id="workshop-signup-form">
+                <div class="form-group">
+                    <label for="workshop-title">Workshop:</label>
+                    <input type="text" id="workshop-title" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-date">Date & Time:</label>
+                    <input type="text" id="workshop-date" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-member">Membership:</label>
+                    <select id="workshop-member" required>
+                        <option value="non-member">Non-Member</option>
+                        <option value="member">Member</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-experience">Experience Level:</label>
+                    <select id="workshop-experience" required>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="workshop-notes">Special Requests or Questions:</label>
+                    <textarea id="workshop-notes" rows="3"></textarea>
+                </div>
+                <div class="form-group payment-options">
+                    <label>Payment Method:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="payment-now" name="payment" value="now" checked>
+                            <label for="payment-now">Pay Now</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="payment-later" name="payment" value="later">
+                            <label for="payment-later">Pay at Studio</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Complete Registration</button>
+                <p class="form-note">* Registration is not confirmed until payment is received.</p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Private Session Booking Modal (hidden by default) -->
+    <div id="private-booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Book a Private Session</h2>
+            <form id="private-booking-form">
+                <div class="form-group">
+                    <label for="session-type">Session Package:</label>
+                    <select id="session-type" required>
+                        <option value="" selected disabled>Select package...</option>
+                        <!-- Session packages will be dynamically loaded here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="session-focus">Session Focus:</label>
+                    <select id="session-focus" required>
+                        <option value="" selected disabled>Select a session package first</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="preferred-dates">Preferred Dates:</label>
+                    <p class="form-note">Select up to 3 preferred dates</p>
+                    <div class="date-picker-grid">
+                        <div class="date-input">
+                            <label for="date1">Date 1:</label>
+                            <input type="date" id="date1" required min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time1">Time 1:</label>
+                            <select id="time1" required>
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                        <div class="date-input">
+                            <label for="date2">Date 2 (Optional):</label>
+                            <input type="date" id="date2" min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time2">Time 2:</label>
+                            <select id="time2">
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                        <div class="date-input">
+                            <label for="date3">Date 3 (Optional):</label>
+                            <input type="date" id="date3" min="">
+                        </div>
+                        <div class="time-input">
+                            <label for="time3">Time 3:</label>
+                            <select id="time3">
+                                <option value="" selected disabled>Select time</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="17:30">5:30 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="booking-notes">Special Requests or Health Concerns:</label>
+                    <textarea id="booking-notes" rows="4"></textarea>
+                </div>
+                <p class="form-note">* I'll contact you to confirm your booking within 24 hours.</p>
+                <button type="submit" class="btn">Request Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Multi-region configuration - should be set by server in production
+        window.NODE_ENV = window.NODE_ENV || 'production';
+        window.GLOBAL_CLOUDFRONT_URL = window.GLOBAL_CLOUDFRONT_URL || '';
+        
+        // TEMPORARY: Manual override for testing (replace with your CloudFront URL)
+        if (!window.GLOBAL_CLOUDFRONT_URL && window.NODE_ENV === 'production') {
+            // Using correct CloudFront distribution URL from infrastructure deployment
+            window.GLOBAL_CLOUDFRONT_URL = 'https://dan3ifh3jhral.cloudfront.net';
+            console.warn('Using correct CloudFront URL from infrastructure. Please set GLOBAL_CLOUDFRONT_URL environment variable.');
+        }
+        
+        // Debug: Log configuration in console
+        console.log('Multi-region config:', {
+            NODE_ENV: window.NODE_ENV,
+            GLOBAL_CLOUDFRONT_URL: window.GLOBAL_CLOUDFRONT_URL ? 'SET' : 'NOT SET',
+            actualUrl: window.GLOBAL_CLOUDFRONT_URL
+        });
+    </script>
+    
+    <!-- Critical scripts loaded first -->
+    <script src="js/multi-region-image-loader.js"></script>
+    <script src="js/user-data-manager.js"></script>
+    
+    <!-- Progressive loader - manages all other script loading -->
+    <script src="js/progressive-loader.js"></script>
+    
+    <!-- Content loaders - loaded on-demand by progressive loader -->
+    <script>
+        // Make content loaders available to progressive loader
+        window.contentLoaders = {};
+    </script>
+    <script src="js/header-loader.js"></script>
+    <script src="js/hero-text-loader.js"></script>
+    <script src="js/bio-content-loader.js"></script>
+    <script src="js/offerings-content-loader.js"></script>
+    <script src="js/latest-blog.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/pricing-display.js"></script>
+    <script src="js/stripe-payment.js"></script>
+    <script src="js/profile-loader.js"></script>
+    <script src="js/section-background-alternator.js"></script>
+    
+    <!-- Authentication and login modal scripts -->
+    <script src="js/account.js"></script>
+    <script src="js/login-modal.js"></script>
+    <script>
+        // Load login modal component
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginModalPlaceholder = document.getElementById('login-modal-placeholder');
+            if (loginModalPlaceholder) {
+                fetch('/components/login-modal.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        loginModalPlaceholder.innerHTML = html;
+                        // Initialize login modal functionality after component is loaded
+                        if (typeof initializeLoginModals === 'function') {
+                            initializeLoginModals();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading login modal component:', error);
+                    });
+            }
+        });
+    </script>
+    
+    <!-- Legacy script - functionality moved to progressive loader -->
+    <script>
+        // Disable automatic loading from script.js since progressive loader handles it
+        window.PROGRESSIVE_LOADING_ENABLED = true;
+    </script>
+    <script src="js/script.js"></script>
+</body>
+</html>
