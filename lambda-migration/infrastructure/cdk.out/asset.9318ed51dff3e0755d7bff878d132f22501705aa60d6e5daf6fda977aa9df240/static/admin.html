@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabi Yoga Admin</title>
+    <link rel="stylesheet" href="/static/theme-variables.css">
+    <link rel="stylesheet" href="/static/common-styles.css">
+    <link rel="stylesheet" href="/static/admin.css">
+    <link rel="stylesheet" href="/static/class-modal.css">
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- Google Fonts -->
+</head>
+<body>
+    <!-- Main Navigation - Simplified to match homepage -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/admin.html" class="logo">Gabi Yoga</a>
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/blog-page">Blog</a></li>
+                    <li><a href="/admin.html" class="active">Admin</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <button id="logoutBtn" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Banner - Simplified version of homepage hero -->
+    <section class="admin-hero">
+        <div class="hero-content">
+            <h1>Admin Dashboard</h1>
+            <p>Manage your website content</p>
+        </div>
+    </section>
+    
+    <!-- Admin Layout with Sidebar -->
+    <div class="admin-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" data-section="dashboard" class="active">
+                    <i class="icon">📊</i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" data-section="blogs">
+                    <i class="icon">📝</i>
+                    <span>Blog Posts</span>
+                </a>
+                <a href="#" data-section="schedule">
+                    <i class="icon">📅</i>
+                    <span>Class Schedule</span>
+                </a>
+                <a href="#" data-section="gallery">
+                    <i class="icon">🖼️</i>
+                    <span>Gallery</span>
+                </a>
+                <a href="#" data-section="settings">
+                    <i class="icon">⚙️</i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" data-section="users">
+                    <i class="icon">👥</i>
+                    <span>Users</span>
+                </a>
+            </nav>
+        </aside>
+
+    <main class="admin-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="admin-section active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Blog Posts</h3>
+                    <p id="blog-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Users</h3>
+                    <p id="user-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Classes</h3>
+                    <p id="class-count">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Posts Section -->
+        <section id="blogs-section" class="admin-section">
+            <div class="section-header">
+                <h2>Blog Posts</h2>
+                <button id="new-blog-btn" class="primary-btn">New Blog Post</button>
+            </div>
+            <div id="blog-editor-container" style="display: none;"></div>
+            <div class="blog-list"></div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section id="schedule-section" class="admin-section">
+            <div class="section-header">
+                <h2>Class Schedule</h2>
+                <div class="section-actions">
+                    <span class="help-text">Manage your yoga class schedule</span>
+                </div>
+            </div>
+            <div id="schedule-editor"></div>
+        </section>
+        
+        <!-- Gallery Section -->
+        <section id="gallery-section" class="admin-section">
+            <div class="section-header">
+                <h2>Gallery</h2>
+                <div class="section-actions">
+                    <span class="help-text">Manage your image gallery</span>
+                </div>
+            </div>
+            <div id="gallery-manager"></div>
+        </section>
+        
+        <!-- Settings Section -->
+        <section id="settings-section" class="admin-section">
+            <h2>Settings</h2>
+            
+            <div class="settings-container">
+                <!-- Settings Navigation Tabs -->
+                <div class="settings-tabs">
+                    <button class="tab-button active" data-category="general">General</button>
+                    <button class="tab-button" data-category="homepage">Homepage</button>
+                    <button class="tab-button" data-category="content">Content</button>
+                    <button class="tab-button" data-category="contact">Contact</button>
+                    <button class="tab-button" data-category="social">Social</button>
+                </div>
+                
+                <!-- Settings Content -->
+                <div class="settings-content">
+                    <!-- General Settings -->
+                    <div class="settings-panel active" id="general-settings">
+                        <h3>General Settings</h3>
+                        <div class="settings-form" id="general-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Homepage Settings -->
+                    <div class="settings-panel" id="homepage-settings">
+                        <h3>Homepage Settings</h3>
+                        <div class="settings-form" id="homepage-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Content Settings -->
+                    <div class="settings-panel" id="content-settings">
+                        <h3>Content Settings</h3>
+                        <div class="settings-form" id="content-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Settings -->
+                    <div class="settings-panel" id="contact-settings">
+                        <h3>Contact Settings</h3>
+                        <div class="settings-form" id="contact-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Social Settings -->
+                    <div class="settings-panel" id="social-settings">
+                        <h3>Social Media Settings</h3>
+                        <div class="settings-form" id="social-settings-form">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users-section" class="admin-section">
+            <h2>Users</h2>
+            <div class="users-list"></div>
+        </section>
+    </main>
+
+    <!-- Notification -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <!-- Load dependencies first -->
+    <!-- Image compression library -->
+    <script src="/static/environment-indicator.js"></script>
+    <script src="https://unpkg.com/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
+    <script src="/static/image-compressor-util.js"></script>
+    <script src="/static/blog-editor.js"></script>
+    <script src="/static/class-modal.js"></script>
+    <script src="/static/schedule-editor.js"></script>
+    <script src="/static/gallery-manager.js"></script>
+    <script src="/static/settings.js"></script>
+    <!-- Load main admin script last -->
+    <script src="/static/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "gabi-yoga-lambda-functions",
+  "version": "1.0.0",
+  "description": "Lambda functions for Gabi Yoga website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "npm install",
+    "clean": "rm -rf node_modules package-lock.json"
+  },
+  "keywords": [
+    "lambda",
+    "aws",
+    "yoga",
+    "serverless",
+    "dynamodb"
+  ],
+  "author": "Gabi Yoga",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.1",
+    "mime-types": "^2.1.35",
+    "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.130",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^20.10.4",
+    "@types/uuid": "^9.0.7",
+    "@types/validator": "^13.11.7"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

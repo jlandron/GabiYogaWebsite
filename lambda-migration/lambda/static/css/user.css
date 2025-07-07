@@ -15,91 +15,107 @@ body {
     color: var(--color-primary-dark);
 }
 
-/* Header */
-header {
-    background: var(--color-white);
-    box-shadow: var(--shadow-sm);
-    position: sticky;
-    top: 0;
-    z-index: var(--z-index-dropdown);
-}
-
-nav {
+/* User Container Layout */
+.user-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-md) var(--spacing-xl);
+    min-height: calc(100vh - 200px);
     max-width: var(--container-max-width);
     margin: 0 auto;
+    gap: var(--spacing-xl);
+    padding: 0 var(--spacing-xl);
 }
 
-.nav-brand {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
+/* User Sidebar */
+.user-sidebar {
+    width: 250px;
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    height: fit-content;
+    position: sticky;
+    top: var(--spacing-xl);
 }
 
-.nav-links {
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.sidebar-nav a {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-}
-
-.nav-links a {
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
     color: var(--color-primary-dark);
     text-decoration: none;
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--border-radius-pill);
+    border-radius: var(--border-radius-lg);
     transition: all var(--transition-medium);
+    font-weight: var(--font-weight-medium);
 }
 
-.nav-links a:hover,
-.nav-links a.active {
+.sidebar-nav a:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    transform: translateX(5px);
+}
+
+.sidebar-nav a.active {
     background: var(--color-primary);
     color: var(--color-white);
+    box-shadow: var(--shadow-sm);
 }
 
-.view-site {
-    color: var(--color-primary) !important;
-    border: var(--border-width-medium) solid var(--color-primary);
+.sidebar-nav .icon {
+    font-size: var(--font-size-lg);
+    width: 24px;
+    text-align: center;
 }
 
-.view-site:hover {
-    background: var(--color-primary) !important;
-    color: var(--color-white) !important;
+/* User Content Area */
+.user-content {
+    flex: 1;
+    background: var(--color-white);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    min-height: 600px;
 }
 
 /* User Hero */
 .user-hero {
-    height: 33vh;
-    background-image: url('https://images.unsplash.com/photo-1465429103920-30e481ab35b4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-    background-size: cover;
-    background-position: center;
+    height: 200px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: var(--spacing-xl);
 }
 
-.user-hero-content {
-    max-width: var(--container-max-width);
-    margin: 0 auto;
+.user-hero .hero-content {
     text-align: center;
     color: var(--color-white);
 }
 
-.user-hero-content h1 {
+.user-hero .hero-content h1 {
     font-size: var(--font-size-4xl);
     margin-bottom: var(--spacing-sm);
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
     color: var(--color-white);
 }
 
-/* Main Content */
-main {
-    max-width: var(--container-max-width);
-    margin: 0 auto;
-    padding: var(--spacing-xl);
+.user-hero .hero-content p {
+    font-size: var(--font-size-lg);
+    opacity: 0.9;
+    color: var(--color-white);
+}
+
+/* Section Titles */
+.user-content h1 {
+    color: var(--color-primary-dark);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: var(--border-width-thin) solid var(--color-light-gray);
 }
 
 .user-section {
@@ -452,19 +468,34 @@ button {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    nav {
+    .user-container {
         flex-direction: column;
-        padding: 1rem;
+        padding: var(--spacing-md);
     }
 
-    .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 1rem;
+    .user-sidebar {
+        width: 100%;
+        position: static;
+        margin-bottom: var(--spacing-lg);
     }
 
-    main {
-        padding: 1rem;
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    .user-hero {
+        height: 150px;
+    }
+
+    .user-hero .hero-content h1 {
+        font-size: var(--font-size-2xl);
     }
 
     .dashboard-grid {

@@ -1,0 +1,321 @@
+{
+ "Description": "Gabi Yoga Lambda SES Email Stack (prod)",
+ "Outputs": {
+  "DomainIdentityStatus": {
+   "Description": "SES Domain Identity Status",
+   "Value": "Using existing identity from dev environment"
+  },
+  "EmailDomainIdentity": {
+   "Description": "SES Verified Domain",
+   "Value": "gabi.yoga",
+   "Export": {
+    "Name": "GabiYoga-prod-EmailDomain"
+   }
+  },
+  "DefaultSenderAddress": {
+   "Description": "Default Sender Email Address",
+   "Value": "noreply@gabi.yoga",
+   "Export": {
+    "Name": "GabiYoga-prod-SenderEmail"
+   }
+  },
+  "EmailDomain": {
+   "Description": "Email domain for sending emails",
+   "Value": "gabi.yoga",
+   "Export": {
+    "Name": "GabiYogaLambda-prod-EmailDomain"
+   }
+  }
+ },
+ "Resources": {
+  "TransactionalEmailTemplate": {
+   "Type": "AWS::SES::Template",
+   "Properties": {
+    "Template": {
+     "HtmlPart": "\n          <!DOCTYPE html>\n          <html>\n          <head>\n              <meta charset=\"utf-8\">\n              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n              <title>{{subject}}</title>\n              <style>\n                  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n                  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }\n                  .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }\n                  .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }\n                  .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }\n              </style>\n          </head>\n          <body>\n              <div class=\"container\">\n                  <div class=\"header\">\n                      <h1>🧘‍♀️ Gabi Yoga</h1>\n                      <p>{{headerSubtitle}}</p>\n                  </div>\n                  <div class=\"content\">\n                      {{content}}\n                  </div>\n                  <div class=\"footer\">\n                      <p>© 2025 Gabi Yoga. All rights reserved.</p>\n                      <p>This email was sent to {{email}}</p>\n                  </div>\n              </div>\n          </body>\n          </html>\n        ",
+     "SubjectPart": "{{subject}}",
+     "TemplateName": "GabiYoga-prod-TransactionalEmail",
+     "TextPart": "{{textContent}}"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/TransactionalEmailTemplate"
+   }
+  },
+  "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/VerificationFunction/ServiceRole/Resource"
+   }
+  },
+  "CrossRegionVerificationVerificationFunctionServiceRoleDefaultPolicyA86D2C00": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ses:GetIdentityDkimAttributes",
+        "ses:GetIdentityMailFromDomainAttributes",
+        "ses:GetIdentityVerificationAttributes",
+        "ses:ListIdentities",
+        "ses:SetIdentityDkimEnabled",
+        "ses:SetIdentityMailFromDomain",
+        "ses:VerifyDomainIdentity"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "CrossRegionVerificationVerificationFunctionServiceRoleDefaultPolicyA86D2C00",
+    "Roles": [
+     {
+      "Ref": "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/VerificationFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CrossRegionVerificationVerificationFunctionC056806F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
+     "S3Key": "d730ff9bd37bb55f318781f1d6d537cb51dd5dbe61ae384e67166c84b7808d64.zip"
+    },
+    "Description": "Lambda function to handle cross-region SES domain verification",
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs16.x",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "CrossRegionVerificationVerificationFunctionServiceRoleDefaultPolicyA86D2C00",
+    "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/VerificationFunction/Resource",
+    "aws:asset:path": "asset.d730ff9bd37bb55f318781f1d6d537cb51dd5dbe61ae384e67166c84b7808d64",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/Resource"
+   }
+  },
+  "CrossRegionVerificationProviderframeworkonEventServiceRoleDefaultPolicyC1FEE98F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "CrossRegionVerificationVerificationFunctionC056806F",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "CrossRegionVerificationVerificationFunctionC056806F",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "CrossRegionVerificationProviderframeworkonEventServiceRoleDefaultPolicyC1FEE98F",
+    "Roles": [
+     {
+      "Ref": "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CrossRegionVerificationProviderframeworkonEvent8CE8B526": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
+     "S3Key": "7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94.zip"
+    },
+    "Description": "AWS CDK resource provider framework - onEvent (GabiYogaLambda-prod-SES/CrossRegionVerification/Provider)",
+    "Environment": {
+     "Variables": {
+      "USER_ON_EVENT_FUNCTION_ARN": {
+       "Fn::GetAtt": [
+        "CrossRegionVerificationVerificationFunctionC056806F",
+        "Arn"
+       ]
+      }
+     }
+    },
+    "Handler": "framework.onEvent",
+    "Role": {
+     "Fn::GetAtt": [
+      "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "CrossRegionVerificationProviderframeworkonEventServiceRoleDefaultPolicyC1FEE98F",
+    "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/Provider/framework-onEvent/Resource",
+    "aws:asset:path": "asset.7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CrossRegionVerification2BF53957": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CrossRegionVerificationProviderframeworkonEvent8CE8B526",
+      "Arn"
+     ]
+    },
+    "DomainName": "gabi.yoga",
+    "SourceRegion": "us-west-2",
+    "TargetRegion": "us-east-1"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CrossRegionVerification/Resource/Default"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OzQrCQAyEn8X7Nla9eFXBq1K9l+02Suz+yCarSOm7u60KQmBmko8wS1iUJZQz/eTCtF1hqYH+JNp0qkIOKRpUu4s/JLknUZmqe9IO+mOwZF7j6euqYCdy1EExMuRwRne3WlBZ7ZpWQ79P3ggFP5I/n+lVrZlRGDaj5AzbZDqUreb8bFrmTlfyV2USS3B1/JZjOMbwoBaj2k2X/9Y/PygfWoQbzx+LNeRZzm5MVMTkhRxC9dE3E5XKHAwBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-SES/CDKMetadata/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Beginner Hatha Yoga",
+  "category": "beginners",
+  "level": "beginner",
+  "duration": 60,
+  "maxParticipants": 15,
+  "description": "A gentle introduction to Hatha yoga, perfect for beginners. This class focuses on basic postures, proper alignment, and breath awareness. Students will learn foundational yoga principles in a supportive environment.",
+  "status": "active",
+  "location": "Main Studio",
+  "price": 20,
+  "instructor": "Gabi",
+  "requirements": [
+    "No prior yoga experience required",
+    "Please inform the instructor of any injuries or health concerns"
+  ],
+  "whatToBring": [
+    "Yoga mat (mats available to borrow)",
+    "Water bottle",
+    "Comfortable clothing"
+  ],
+  "cancellationPolicy": "Cancel up to 2 hours before class"
+}

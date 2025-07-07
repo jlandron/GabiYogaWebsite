@@ -1,0 +1,34 @@
+{
+  "version": "34.0.0",
+  "files": {
+    "1dffd197943ca2b0a225758865c336bd4cb24f3aa77ebc7d22c679e5f64bfc53": {
+      "source": {
+        "path": "asset.1dffd197943ca2b0a225758865c336bd4cb24f3aa77ebc7d22c679e5f64bfc53",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "891709159344-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-east-1",
+          "objectKey": "1dffd197943ca2b0a225758865c336bd4cb24f3aa77ebc7d22c679e5f64bfc53.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-east-1"
+        }
+      }
+    },
+    "c7c8a70acf9bdbc43122c719a67fee5dfed662e882c06593b6cb1361ce68b0d1": {
+      "source": {
+        "path": "GabiYogaLambda-prod-Api.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "891709159344-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-east-1",
+          "objectKey": "c7c8a70acf9bdbc43122c719a67fee5dfed662e882c06593b6cb1361ce68b0d1.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Environment Login</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            margin-top: 0;
+            color: #3a7a42;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #3a7a42;
+        }
+        .error-message {
+            color: #e74c3c;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+        .info-text {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Development Environment</h1>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter the development password">
+        </div>
+        
+        <button id="login-button">Log In</button>
+        
+        <div id="error-message" class="error-message">
+            Invalid password. Please try again.
+        </div>
+        
+        <div class="info-text">
+            This is a restricted development environment.<br>
+            Authentication is required to view this website.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnUrl = urlParams.get('returnUrl') || '/';
+            
+            // Handle login submission
+            const loginButton = document.getElementById('login-button');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Allow Enter key to submit
+            passwordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            loginButton.addEventListener('click', handleLogin);
+            
+            function handleLogin() {
+                const password = passwordInput.value.trim();
+                
+                if (!password) {
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Send login request to backend
+                fetch('/dev-auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect back to the original URL
+                        window.location.href = returnUrl;
+                    } else {
+                        // Show error message
+                        errorMessage.style.display = 'block';
+                        passwordInput.value = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    errorMessage.style.display = 'block';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

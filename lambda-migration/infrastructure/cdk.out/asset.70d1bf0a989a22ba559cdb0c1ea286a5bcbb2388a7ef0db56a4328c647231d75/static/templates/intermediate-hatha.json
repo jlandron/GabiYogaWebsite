@@ -1,0 +1,24 @@
+{
+  "title": "Intermediate Hatha Yoga",
+  "category": "all-levels",
+  "level": "intermediate",
+  "duration": 75,
+  "maxParticipants": 12,
+  "description": "A balanced Hatha yoga class for practitioners with some experience. This class builds on foundational poses and introduces more challenging variations, deeper stretches, and longer holds. Focus on refining alignment and developing strength and flexibility.",
+  "status": "active",
+  "location": "Main Studio",
+  "price": 25,
+  "instructor": "Gabi",
+  "requirements": [
+    "Some yoga experience recommended",
+    "Ability to hold poses for 3-5 breaths",
+    "Please inform the instructor of any injuries or health concerns"
+  ],
+  "whatToBring": [
+    "Yoga mat (mats available to borrow)",
+    "Water bottle",
+    "Small towel",
+    "Comfortable clothing"
+  ],
+  "cancellationPolicy": "Cancel up to 2 hours before class"
+}

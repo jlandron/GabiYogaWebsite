@@ -1,0 +1,246 @@
+/**
+ * Gallery List Lambda Function
+ * Handles retrieving gallery images with pagination and filtering
+ */
+
+const { 
+  createSuccessResponse, 
+  createErrorResponse,
+  logWithContext,
+  dynamoUtils
+} = require('../shared/public-utils');
+
+/**
+ * Generates a CloudFront URL for an image based on its S3 key
+ * 
+ * @param {string} s3Key - The S3 key of the image
+ * @returns {string|null} The CloudFront URL or null if CDN is not configured
+ */
+const generateCdnUrl = (s3Key) => {
+  // Check if we have a CDN domain configured
+  const cdnDomain = process.env.IMAGE_CDN_DOMAIN;
+  
+  if (!cdnDomain) {
+    logWithContext('debug', 'No CDN domain configured, using presigned S3 URL');
+    return null; // No CDN configured, return null
+  }
+  
+  // The S3 key includes 'gallery/' prefix, but CloudFront is configured with /gallery as origin path
+  const imageKey = s3Key.startsWith('gallery/') 
+    ? s3Key.substring(8) // Remove 'gallery/' prefix
+    : s3Key;
+  
+  // Return the CDN URL
+  const url = `https://${cdnDomain}/${imageKey}`;
+  logWithContext('debug', `Generated CDN URL for gallery image`, { cdnDomain, s3Key, cdnUrl: url });
+  return url;
+};
+
+exports.handler = async (event, context) => {
+  const requestId = context.awsRequestId;
+  
+  try {
+    logWithContext('info', 'Gallery list request received', { requestId });
+
+    // Handle CORS preflight
+    if (event.httpMethod === 'OPTIONS') {
+      return createSuccessResponse({}, 200);
+    }
+
+    // Parse query parameters
+    const queryParams = event.queryStringParameters || {};
+    const limit = Math.min(parseInt(queryParams.limit) || 20, 100); // Max 100 images per request
+    const page = Math.max(parseInt(queryParams.page) || 1, 1);
+    const category = queryParams.category; // e.g., 'class', 'retreat', 'studio'
+    const featured = queryParams.featured === 'true';
+
+    logWithContext('info', 'Processing gallery list request', { 
+      requestId, 
+      limit,
+      page,
+      category,
+      featured
+    });
+
+    try {
+      const AWS = require('aws-sdk');
+      const dynamoDb = new AWS.DynamoDB.DocumentClient();
+      const s3 = new AWS.S3();
+      
+      // Build filter expression
+      let filterExpression = '#status = :active';
+      let expressionAttributeNames = { '#status': 'status' };
+      let expressionAttributeValues = { ':active': 'active' };
+
+      if (category) {
+        filterExpression += ' AND category = :category';
+        expressionAttributeValues[':category'] = category;
+      }
+
+      if (featured) {
+        filterExpression += ' AND featured = :featured';
+        expressionAttributeValues[':featured'] = true;
+      }
+
+      // Calculate pagination
+      const startKey = page > 1 ? { 
+        id: queryParams.lastEvaluatedKey 
+      } : undefined;
+
+      const scanParams = {
+        TableName: process.env.GALLERY_TABLE,
+        FilterExpression: filterExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        Limit: limit,
+        ExclusiveStartKey: startKey
+      };
+
+      const result = await dynamoDb.scan(scanParams).promise();
+      const images = result.Items || [];
+      const lastEvaluatedKey = result.LastEvaluatedKey;
+
+      // Sort images by display order, then by creation date (newest first)
+      images.sort((a, b) => {
+        if (a.displayOrder !== b.displayOrder) {
+          return (a.displayOrder || 999) - (b.displayOrder || 999);
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      // Transform images for response - generate presigned URLs
+      const transformedImages = await Promise.all(images.map(async (image) => {
+        let imageUrl = image.imageUrl; // Fallback for old format
+        let thumbnailUrl = image.thumbnailUrl || image.imageUrl;
+        
+        // Generate URLs for S3 keys - try CDN first, fall back to presigned URLs
+        if (image.s3Key && image.s3Bucket) {
+          try {
+            // First try to generate a CDN URL
+            const cdnUrl = generateCdnUrl(image.s3Key);
+            
+            if (cdnUrl) {
+              // Use CDN URL if available
+              imageUrl = cdnUrl;
+              thumbnailUrl = cdnUrl; // Use same URL for thumbnail for now
+              logWithContext('debug', 'Using CDN URL for gallery image', { 
+                requestId, 
+                imageId: image.id,
+                cdnUrl 
+              });
+            } else {
+              // Fall back to presigned S3 URL if CDN is not configured
+              imageUrl = await s3.getSignedUrlPromise('getObject', {
+                Bucket: image.s3Bucket,
+                Key: image.s3Key,
+                Expires: 3600 // 1 hour
+              });
+              thumbnailUrl = imageUrl; // Use same URL for thumbnail for now
+              logWithContext('debug', 'Using presigned S3 URL for gallery image', { 
+                requestId, 
+                imageId: image.id
+              });
+            }
+          } catch (s3Error) {
+            logWithContext('warn', 'Failed to generate image URL', { 
+              requestId, 
+              s3Key: image.s3Key,
+              error: s3Error.message 
+            });
+            // Fall back to placeholder or original URL
+            imageUrl = image.imageUrl;
+            thumbnailUrl = imageUrl;
+          }
+        }
+        
+        return {
+          id: image.id,
+          title: image.title,
+          description: image.description,
+          imageUrl,
+          thumbnailUrl,
+          altText: image.altText || image.title,
+          category: image.category || 'general',
+          tags: image.tags || [],
+          featured: image.featured || false,
+          displayOrder: image.displayOrder || 0,
+          dimensions: image.dimensions || { width: 0, height: 0 },
+          fileSize: image.fileSize || 0,
+          uploadedAt: image.createdAt,
+          updatedAt: image.updatedAt
+        };
+      }));
+
+      // Calculate pagination info
+      const totalImages = images.length;
+      const totalPages = Math.ceil(totalImages / limit);
+      const hasNextPage = !!lastEvaluatedKey;
+      const hasPrevPage = page > 1;
+
+      logWithContext('info', 'Gallery list request successful', { 
+        requestId, 
+        imagesReturned: transformedImages.length,
+        page,
+        hasNextPage
+      });
+
+      return createSuccessResponse({
+        images: transformedImages,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          imagesPerPage: limit,
+          hasNextPage,
+          hasPrevPage,
+          nextPage: hasNextPage ? page + 1 : null,
+          prevPage: hasPrevPage ? page - 1 : null,
+          lastEvaluatedKey: lastEvaluatedKey?.id || null
+        },
+        filters: {
+          category,
+          featured
+        },
+        categories: await getGalleryCategories()
+      });
+
+    } catch (dbError) {
+      logWithContext('error', 'Database error in gallery list', { 
+        requestId, 
+        error: dbError.message 
+      });
+      throw dbError;
+    }
+
+  } catch (error) {
+    logWithContext('error', 'Gallery list error', { 
+      requestId, 
+      error: error.message,
+      stack: error.stack 
+    });
+
+    if (error.code === 'ResourceNotFoundException') {
+      return createErrorResponse('Gallery service temporarily unavailable', 503);
+    }
+
+    return createErrorResponse('An error occurred while fetching gallery images', 500);
+  }
+};
+
+/**
+ * Get available gallery categories
+ */
+async function getGalleryCategories() {
+  try {
+    // This could be cached or stored in a separate config
+    return [
+      { id: 'class', name: 'Class Photos', description: 'Photos from yoga classes' },
+      { id: 'retreat', name: 'Retreats', description: 'Yoga retreat experiences' },
+      { id: 'studio', name: 'Studio', description: 'Studio space and atmosphere' },
+      { id: 'workshop', name: 'Workshops', description: 'Special workshops and events' },
+      { id: 'general', name: 'General', description: 'Other yoga-related photos' }
+    ];
+  } catch (error) {
+    console.error('Error getting gallery categories:', error);
+    return [];
+  }
+}

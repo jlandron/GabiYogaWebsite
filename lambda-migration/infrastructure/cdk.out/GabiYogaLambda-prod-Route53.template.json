@@ -1,0 +1,231 @@
+{
+ "Description": "Gabi Yoga Lambda Route53 Stack (prod)",
+ "Resources": {
+  "Certificate4E7ABB08": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "gabi.yoga",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "gabi.yoga",
+      "HostedZoneId": "Z0858162FM97J2FO2QJU"
+     },
+     {
+      "DomainName": "www.gabi.yoga",
+      "HostedZoneId": "Z0858162FM97J2FO2QJU"
+     }
+    ],
+    "SubjectAlternativeNames": [
+     "www.gabi.yoga"
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "GabiYogaLambda-prod-Route53/Certificate"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/Certificate/Resource"
+   }
+  },
+  "CustomDomainNameF09954DE": {
+   "Type": "AWS::ApiGateway::DomainName",
+   "Properties": {
+    "CertificateArn": {
+     "Ref": "Certificate4E7ABB08"
+    },
+    "DomainName": "gabi.yoga",
+    "EndpointConfiguration": {
+     "Types": [
+      "EDGE"
+     ]
+    },
+    "SecurityPolicy": "TLS_1_2"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/CustomDomainName/Resource"
+   }
+  },
+  "CustomDomainNameMapGabiYogaLambdaprodApiApiGateway1A2FC539A46161E6": {
+   "Type": "AWS::ApiGateway::BasePathMapping",
+   "Properties": {
+    "BasePath": "",
+    "DomainName": {
+     "Ref": "CustomDomainNameF09954DE"
+    },
+    "RestApiId": {
+     "Fn::ImportValue": "GabiYogaLambda-prod-Api:ExportsOutputRefApiGateway11E7F47BFA6EBBFD"
+    },
+    "Stage": {
+     "Fn::ImportValue": "GabiYogaLambda-prod-Api:ExportsOutputRefApiGatewayDeploymentStageprod1C6D5CD6155A932F"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/CustomDomainName/Map:--=>GabiYogaLambdaprodApiApiGateway1A2FC539/Resource"
+   }
+  },
+  "ApiAliasRecordBCE933A3": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "CustomDomainNameF09954DE",
+       "DistributionDomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::GetAtt": [
+       "CustomDomainNameF09954DE",
+       "DistributionHostedZoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z0858162FM97J2FO2QJU",
+    "Name": "gabi.yoga.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/ApiAliasRecord/Resource"
+   }
+  },
+  "WwwCustomDomainName97BEA41D": {
+   "Type": "AWS::ApiGateway::DomainName",
+   "Properties": {
+    "CertificateArn": {
+     "Ref": "Certificate4E7ABB08"
+    },
+    "DomainName": "www.gabi.yoga",
+    "EndpointConfiguration": {
+     "Types": [
+      "EDGE"
+     ]
+    },
+    "SecurityPolicy": "TLS_1_2"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/WwwCustomDomainName/Resource"
+   }
+  },
+  "WwwCustomDomainNameMapGabiYogaLambdaprodApiApiGateway1A2FC539473B76AA": {
+   "Type": "AWS::ApiGateway::BasePathMapping",
+   "Properties": {
+    "BasePath": "",
+    "DomainName": {
+     "Ref": "WwwCustomDomainName97BEA41D"
+    },
+    "RestApiId": {
+     "Fn::ImportValue": "GabiYogaLambda-prod-Api:ExportsOutputRefApiGateway11E7F47BFA6EBBFD"
+    },
+    "Stage": {
+     "Fn::ImportValue": "GabiYogaLambda-prod-Api:ExportsOutputRefApiGatewayDeploymentStageprod1C6D5CD6155A932F"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/WwwCustomDomainName/Map:--=>GabiYogaLambdaprodApiApiGateway1A2FC539/Resource"
+   }
+  },
+  "WwwApiAliasRecordD0ACCDD4": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "WwwCustomDomainName97BEA41D",
+       "DistributionDomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::GetAtt": [
+       "WwwCustomDomainName97BEA41D",
+       "DistributionHostedZoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z0858162FM97J2FO2QJU",
+    "Name": "www.gabi.yoga.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/WwwApiAliasRecord/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12OzQrCMBCEn8V7ulZF8OrP1R/qA8iarnWrTUqyUSTk3W3tQREWdr6ZOcwUJnkO+QifPtPlLbvzGeJRUN9UQd4Gp0l12SlqcsIX1ijUoMGKHMT111Pri/nBpLDlqhNPfEHc2AbZ7LD51H5ohZ4OKNctti2bqk//rKScDULzGcRlQdq6si8N6kiSUo/7IG2QIRg2J2VsSVD78WOygO6mo9ozZy4Y4YagGP4b5DUtTf4AAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-prod-Route53/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "CustomDomainUrl": {
+   "Description": "Custom domain URL for the API",
+   "Value": "https://gabi.yoga",
+   "Export": {
+    "Name": "GabiYoga-prod-CustomDomainUrl"
+   }
+  },
+  "HostedZoneId": {
+   "Description": "Route53 Hosted Zone ID",
+   "Value": "Z0858162FM97J2FO2QJU",
+   "Export": {
+    "Name": "GabiYoga-prod-HostedZoneId"
+   }
+  },
+  "CertificateArn": {
+   "Description": "ACM Certificate ARN",
+   "Value": {
+    "Ref": "Certificate4E7ABB08"
+   },
+   "Export": {
+    "Name": "GabiYoga-prod-CertificateArn"
+   }
+  },
+  "ApiCustomDomain": {
+   "Description": "Custom domain for API",
+   "Value": "gabi.yoga",
+   "Export": {
+    "Name": "GabiYogaLambda-prod-ApiCustomDomain"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
