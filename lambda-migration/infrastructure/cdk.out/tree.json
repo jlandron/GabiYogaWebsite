@@ -2341,74 +2341,6 @@
               "version": "10.4.2"
             }
           },
-          "DependenciesLayer": {
-            "id": "DependenciesLayer",
-            "path": "GabiYogaLambda-dev-Api/DependenciesLayer",
-            "children": {
-              "Layer": {
-                "id": "Layer",
-                "path": "GabiYogaLambda-dev-Api/DependenciesLayer/Layer",
-                "children": {
-                  "Code": {
-                    "id": "Code",
-                    "path": "GabiYogaLambda-dev-Api/DependenciesLayer/Layer/Code",
-                    "children": {
-                      "Stage": {
-                        "id": "Stage",
-                        "path": "GabiYogaLambda-dev-Api/DependenciesLayer/Layer/Code/Stage",
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.AssetStaging",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "AssetBucket": {
-                        "id": "AssetBucket",
-                        "path": "GabiYogaLambda-dev-Api/DependenciesLayer/Layer/Code/AssetBucket",
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_s3.BucketBase",
-                          "version": "2.100.0"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
-                      "version": "2.100.0"
-                    }
-                  },
-                  "Resource": {
-                    "id": "Resource",
-                    "path": "GabiYogaLambda-dev-Api/DependenciesLayer/Layer/Resource",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::Lambda::LayerVersion",
-                      "aws:cdk:cloudformation:props": {
-                        "compatibleRuntimes": [
-                          "nodejs16.x"
-                        ],
-                        "content": {
-                          "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                          "s3Key": "7004664a805d6c1e9f3b2de628e53e362dbd99902cc92fb0b679f5001ef5ba07.zip"
-                        },
-                        "description": "Common dependencies for GabiYoga Lambda functions (dev)",
-                        "layerName": "GabiYoga-dev-dependencies"
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_lambda.CfnLayerVersion",
-                      "version": "2.100.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_lambda.LayerVersion",
-                  "version": "2.100.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "constructs.Construct",
-              "version": "10.4.2"
-            }
-          },
           "AuthLogin": {
             "id": "AuthLogin",
             "path": "GabiYogaLambda-dev-Api/AuthLogin",
@@ -2780,7 +2712,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -3033,11 +2965,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthLogin",
                     "handler": "auth/login.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -3448,7 +3375,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -3701,11 +3628,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthRegister",
                     "handler": "auth/register.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -4116,7 +4038,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -4369,11 +4291,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthRefresh",
                     "handler": "auth/refresh.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -4784,7 +4701,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -5037,11 +4954,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthLogout",
                     "handler": "auth/logout.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -5462,7 +5374,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -5715,11 +5627,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthForgot",
                     "handler": "auth/forgot.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -6130,7 +6037,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -6383,11 +6290,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthResetPassword",
                     "handler": "auth/reset-password.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -6798,7 +6700,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -7051,11 +6953,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthVerify",
                     "handler": "auth/verify.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -7466,7 +7363,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -7719,11 +7616,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthVerifyToken",
                     "handler": "auth/verify-token.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -8134,7 +8026,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -8387,11 +8279,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthProfile",
                     "handler": "auth/profile.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -8802,7 +8689,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -9055,11 +8942,6 @@
                     },
                     "functionName": "GabiYoga-dev-AuthAccount",
                     "handler": "auth/account.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -9470,7 +9352,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -9723,11 +9605,6 @@
                     },
                     "functionName": "GabiYoga-dev-BlogList",
                     "handler": "blog/list.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -10138,7 +10015,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -10391,11 +10268,6 @@
                     },
                     "functionName": "GabiYoga-dev-BlogGet",
                     "handler": "blog/get.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -10806,7 +10678,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -11059,11 +10931,6 @@
                     },
                     "functionName": "GabiYoga-dev-BlogCreate",
                     "handler": "blog/create.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -11474,7 +11341,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -11727,11 +11594,6 @@
                     },
                     "functionName": "GabiYoga-dev-BlogUpdate",
                     "handler": "blog/update.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -12142,7 +12004,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -12395,11 +12257,6 @@
                     },
                     "functionName": "GabiYoga-dev-BlogDelete",
                     "handler": "blog/delete.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -12810,7 +12667,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -13063,11 +12920,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminDashboard",
                     "handler": "admin/dashboard.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 512,
                     "role": {
                       "Fn::GetAtt": [
@@ -13478,7 +13330,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -13731,11 +13583,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminUsers",
                     "handler": "admin/users.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -14146,7 +13993,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -14399,11 +14246,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminSettings",
                     "handler": "admin/settings.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -14814,7 +14656,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -15067,11 +14909,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminMakeAdmin",
                     "handler": "admin/make-admin.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -15492,7 +15329,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -15745,11 +15582,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminClasses",
                     "handler": "admin/classes.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -16160,7 +15992,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -16413,11 +16245,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminCommunications",
                     "handler": "admin/communications.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -16828,7 +16655,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -17081,11 +16908,6 @@
                     },
                     "functionName": "GabiYoga-dev-SettingsGet",
                     "handler": "settings/get.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -17496,7 +17318,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -17749,11 +17571,6 @@
                     },
                     "functionName": "GabiYoga-dev-OfferingsGet",
                     "handler": "offerings/get.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -18164,7 +17981,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -18417,11 +18234,6 @@
                     },
                     "functionName": "GabiYoga-dev-OfferingsCreate",
                     "handler": "offerings/create.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -18832,7 +18644,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -19085,11 +18897,6 @@
                     },
                     "functionName": "GabiYoga-dev-OfferingsUpdate",
                     "handler": "offerings/update.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -19500,7 +19307,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -19753,11 +19560,6 @@
                     },
                     "functionName": "GabiYoga-dev-OfferingsDelete",
                     "handler": "offerings/delete.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -20168,7 +19970,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -20421,11 +20223,6 @@
                     },
                     "functionName": "GabiYoga-dev-GalleryList",
                     "handler": "gallery/list.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -20836,7 +20633,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -21089,11 +20886,6 @@
                     },
                     "functionName": "GabiYoga-dev-GalleryUpload",
                     "handler": "gallery/upload.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -21504,7 +21296,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -21757,11 +21549,6 @@
                     },
                     "functionName": "GabiYoga-dev-GallerySave",
                     "handler": "gallery/save.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -22172,7 +21959,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -22425,11 +22212,6 @@
                     },
                     "functionName": "GabiYoga-dev-GalleryUpdate",
                     "handler": "gallery/update.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -22840,7 +22622,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -23093,11 +22875,6 @@
                     },
                     "functionName": "GabiYoga-dev-GalleryDelete",
                     "handler": "gallery/delete.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -23508,7 +23285,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -23761,11 +23538,6 @@
                     },
                     "functionName": "GabiYoga-dev-BookingClasses",
                     "handler": "booking/classes.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -24186,7 +23958,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -24439,11 +24211,6 @@
                     },
                     "functionName": "GabiYoga-dev-BookingBook",
                     "handler": "booking/book.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -24854,7 +24621,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -25107,11 +24874,6 @@
                     },
                     "functionName": "GabiYoga-dev-BookingList",
                     "handler": "booking/list.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -25522,7 +25284,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -25775,11 +25537,6 @@
                     },
                     "functionName": "GabiYoga-dev-BookingCancel",
                     "handler": "booking/cancel.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -26190,7 +25947,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -26443,11 +26200,6 @@
                     },
                     "functionName": "GabiYoga-dev-PaymentIntent",
                     "handler": "payment/intent.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -26858,7 +26610,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -27111,11 +26863,6 @@
                     },
                     "functionName": "GabiYoga-dev-PaymentWebhook",
                     "handler": "payment/webhook.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -27526,7 +27273,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -27779,11 +27526,6 @@
                     },
                     "functionName": "GabiYoga-dev-ContactForm",
                     "handler": "shared/contact.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 256,
                     "role": {
                       "Fn::GetAtt": [
@@ -28194,7 +27936,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -28447,11 +28189,6 @@
                     },
                     "functionName": "GabiYoga-dev-StaticWebsite",
                     "handler": "static/website.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 512,
                     "role": {
                       "Fn::GetAtt": [
@@ -28862,7 +28599,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -29115,11 +28852,6 @@
                     },
                     "functionName": "GabiYoga-dev-StaticFiles",
                     "handler": "static/serve-static.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 512,
                     "role": {
                       "Fn::GetAtt": [
@@ -29530,7 +29262,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -29783,11 +29515,6 @@
                     },
                     "functionName": "GabiYoga-dev-AdminDashboardPage",
                     "handler": "admin/serve-dashboard.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 512,
                     "role": {
                       "Fn::GetAtt": [
@@ -30198,7 +29925,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "b524b99170b2844e18cdc0d461ce1294bed8e5bf1bbe489b9bef2f31fedd19f5.zip"
+                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
                     },
                     "environment": {
                       "variables": {
@@ -30451,11 +30178,6 @@
                     },
                     "functionName": "GabiYoga-dev-UserDashboardPage",
                     "handler": "user/serve-dashboard.handler",
-                    "layers": [
-                      {
-                        "Ref": "DependenciesLayer0950F2BF"
-                      }
-                    ],
                     "memorySize": 512,
                     "role": {
                       "Fn::GetAtt": [

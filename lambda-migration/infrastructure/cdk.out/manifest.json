@@ -585,7 +585,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/03b0b73839e7b085f1ecdd361192927a119076dfce137148fdf367233bba7775.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/9da833e586eeab8591afd30fd3573880ae69ad7f45595f2d2af6552982cf8bc6.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -606,7 +606,7 @@
         "/GabiYogaLambda-dev-Api": [
           {
             "type": "aws:cdk:info",
-            "data": "Number of resources: 406 is approaching allowed maximum of 500",
+            "data": "Number of resources: 405 is approaching allowed maximum of 500",
             "trace": [
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1526)",
               "Annotations.addInfo (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1015)",
@@ -628,7 +628,7 @@
           },
           {
             "type": "aws:cdk:warning",
-            "data": "Template size is approaching limit: 866892/1000000. Split resources into multiple stacks or set suppressTemplateIndentation to reduce template size. [ack: @aws-cdk/core:Stack.templateSize]",
+            "data": "Template size is approaching limit: 862885/1000000. Split resources into multiple stacks or set suppressTemplateIndentation to reduce template size. [ack: @aws-cdk/core:Stack.templateSize]",
             "trace": [
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1526)",
               "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
@@ -728,12 +728,6 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "ImageCdnImageCdnDomain035BC4C7"
-          }
-        ],
-        "/GabiYogaLambda-dev-Api/DependenciesLayer/Layer/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "DependenciesLayer0950F2BF"
           }
         ],
         "/GabiYogaLambda-dev-Api/AuthLogin/ServiceRole/Resource": [

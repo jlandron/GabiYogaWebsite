@@ -1,0 +1,547 @@
+{
+ "Description": "Gabi Yoga Lambda Authentication Stack (dev)",
+ "Resources": {
+  "JWTSecretF6F1CBF0": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "JWT secret for Gabi Yoga Lambda dev environment",
+    "GenerateSecretString": {
+     "ExcludeCharacters": "\"@/\\'",
+     "GenerateStringKey": "secret",
+     "IncludeSpace": false,
+     "PasswordLength": 64,
+     "SecretStringTemplate": "{}"
+    },
+    "Name": "GabiYoga-dev-JWT-Secret",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "Purpose",
+      "Value": "JWT-Authentication"
+     },
+     {
+      "Key": "Service",
+      "Value": "GabiYogaLambda"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-dev-Auth/JWTSecret/Resource"
+   }
+  },
+  "StripeSecret80A38A68": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "Stripe API keys for Gabi Yoga Lambda dev environment",
+    "Name": "GabiYoga-dev-Stripe-Secret",
+    "SecretString": "{\"publishableKey\":\"pk_test_51RIECgFvIUQZU80GkNvPQBmwpbKhf0LiFCh4Rv5EPxArapsnz6f3C4CWenkiPrZshZCJW3ghjfvveCpdou1bAJkC00b1TlmLo9\",\"secretKey\":\"sk_test_your_test_secret_key_here\",\"webhookSecret\":\"whsec_your_test_webhook_secret_here\"}",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "Purpose",
+      "Value": "Payment-Processing"
+     },
+     {
+      "Key": "Service",
+      "Value": "GabiYogaLambda"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-dev-Auth/StripeSecret/Resource"
+   }
+  },
+  "LambdaExecutionRoleD5C26073": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "RoleName": "GabiYoga-dev-Lambda-Execution-Role",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "Purpose",
+      "Value": "Lambda-Execution"
+     },
+     {
+      "Key": "Service",
+      "Value": "GabiYogaLambda"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-dev-Auth/LambdaExecutionRole/Resource"
+   }
+  },
+  "LambdaExecutionRoleDefaultPolicy6D69732F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttJWTBlacklistTable0878CD5FArnF2FCFFB4"
+        },
+        {
+         "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttUsersTable9725E9C8Arn5684EF99"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttUsersTable9725E9C8Arn5684EF99"
+           },
+           "/index/*"
+          ]
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "JWTSecretF6F1CBF0"
+        },
+        {
+         "Ref": "StripeSecret80A38A68"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "ses:GetSendQuota",
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "xray:PutTelemetryRecords",
+        "xray:PutTraceSegments"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:GetObjectAcl",
+        "s3:GetSignedUrl",
+        "s3:PutObject",
+        "s3:PutObjectAcl"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        "arn:aws:s3:::gabi-yoga-dev-assets-*",
+        "arn:aws:s3:::gabi-yoga-dev-assets-*/*"
+       ]
+      },
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        "arn:aws:logs:us-east-1:891709159344:log-group:/aws/lambda/GabiYoga-dev-*",
+        "arn:aws:logs:us-east-1:891709159344:log-group:/aws/lambda/GabiYoga-dev-*:*"
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "LambdaExecutionRoleDefaultPolicy6D69732F",
+    "Roles": [
+     {
+      "Ref": "LambdaExecutionRoleD5C26073"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-dev-Auth/LambdaExecutionRole/DefaultPolicy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zWMXQ7CIBCEz9J3utI++e4BNHgAg3Q1tPwYFjSGcHcpxGSSmfl2sjNMnAMf5IdGtWyj0XfI1yjVxiq6ZUIVMJKVTj4x1FPr7PRwPRWmpYUsvMEdNr94o9V3rz2VwgSST0G1zTnFV2ov/rQw5xeElQ7v6QhV87CS1mNILmqLILr/ALNgO3msAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "GabiYogaLambda-dev-Auth/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "JWTSecretArn": {
+   "Description": "JWT Secret ARN",
+   "Value": {
+    "Ref": "JWTSecretF6F1CBF0"
+   },
+   "Export": {
+    "Name": "GabiYoga-dev-JWTSecretArn"
+   }
+  },
+  "StripeSecretArn": {
+   "Description": "Stripe Secret ARN",
+   "Value": {
+    "Ref": "StripeSecret80A38A68"
+   },
+   "Export": {
+    "Name": "GabiYoga-dev-StripeSecretArn"
+   }
+  },
+  "LambdaExecutionRoleArn": {
+   "Description": "Lambda Execution Role ARN",
+   "Value": {
+    "Fn::GetAtt": [
+     "LambdaExecutionRoleD5C26073",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "GabiYoga-dev-LambdaExecutionRoleArn"
+   }
+  },
+  "JWTSecretName": {
+   "Description": "JWT Secret Name",
+   "Value": {
+    "Fn::Join": [
+     "-",
+     [
+      {
+       "Fn::Select": [
+        0,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "JWTSecretF6F1CBF0"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        1,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "JWTSecretF6F1CBF0"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        2,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "JWTSecretF6F1CBF0"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "JWTSecretF6F1CBF0"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "GabiYoga-dev-JWTSecretName"
+   }
+  },
+  "StripeSecretName": {
+   "Description": "Stripe Secret Name",
+   "Value": {
+    "Fn::Join": [
+     "-",
+     [
+      {
+       "Fn::Select": [
+        0,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "StripeSecret80A38A68"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        1,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "StripeSecret80A38A68"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        2,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "StripeSecret80A38A68"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          "-",
+          {
+           "Fn::Select": [
+            6,
+            {
+             "Fn::Split": [
+              ":",
+              {
+               "Ref": "StripeSecret80A38A68"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "GabiYoga-dev-StripeSecretName"
+   }
+  },
+  "AuthStackName": {
+   "Description": "Authentication stack name",
+   "Value": "GabiYogaLambda-dev-Auth",
+   "Export": {
+    "Name": "GabiYogaLambda-dev-AuthStackName"
+   }
+  },
+  "ExportsOutputRefStripeSecret80A38A6811AB71BD": {
+   "Value": {
+    "Ref": "StripeSecret80A38A68"
+   },
+   "Export": {
+    "Name": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+   }
+  },
+  "ExportsOutputRefJWTSecretF6F1CBF05938782E": {
+   "Value": {
+    "Ref": "JWTSecretF6F1CBF0"
+   },
+   "Export": {
+    "Name": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

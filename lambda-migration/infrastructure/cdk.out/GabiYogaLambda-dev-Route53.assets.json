@@ -1,0 +1,20 @@
+{
+  "version": "34.0.0",
+  "files": {
+    "f79f2587d7487a1b07c350c07484e83151553725480d54bb6cac091c5c972470": {
+      "source": {
+        "path": "GabiYogaLambda-dev-Route53.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "891709159344-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-891709159344-us-east-1",
+          "objectKey": "f79f2587d7487a1b07c350c07484e83151553725480d54bb6cac091c5c972470.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-file-publishing-role-891709159344-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
