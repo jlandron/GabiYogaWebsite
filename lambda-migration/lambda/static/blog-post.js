@@ -135,9 +135,9 @@ function serveBlogPostPage(slug) {
                             '</div>' +
                         '</header>';
                         
-                        // Add content (for now, we'll just use the excerpt as placeholder since we don't have full content)
+                        // Add content 
                         postHTML += '<div class="blog-post-content">' +
-                            '<p> </p>' +
+                            (post.content || post.excerpt || '<p>Content not available.</p>') +
                         '</div>';
                         
                         // Add tags if available
