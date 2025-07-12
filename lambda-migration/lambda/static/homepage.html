@@ -35,7 +35,15 @@
     <header class="header">
         <nav class="nav-container">
             <a href="/" class="logo">Gabi Yoga</a>
-            <div class="nav-content">
+            
+            <!-- Hamburger Menu Button -->
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+            </button>
+            
+            <div class="nav-content" id="nav-content">
                 <ul class="nav-links">
                     <li><a href="/" class="active">Home</a></li>
                     <li><a href="/blog-page">Blog</a></li>
@@ -237,5 +245,37 @@
     <script src="/static/class-modal-public.js"></script>
     <script src="/static/init-public-modal.js"></script>
     <script src="/static/frontend.js"></script>
+    
+    <!-- Mobile Navigation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+            
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function() {
+                    navToggle.classList.toggle('active');
+                    navContent.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on nav links
+                const navLinks = navContent.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navToggle.classList.remove('active');
+                        navContent.classList.remove('active');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navToggle.contains(event.target) && !navContent.contains(event.target)) {
+                        navToggle.classList.remove('active');
+                        navContent.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

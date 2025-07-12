@@ -12,27 +12,64 @@
     <link rel="stylesheet" href="/static/css/booking-status.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="nav-brand">My Dashboard</div>
-            <div class="nav-links">
-                <a href="#" class="active" data-section="dashboard">Overview</a>
-                <a href="#" data-section="upcoming">Upcoming Classes</a>
-                <a href="#" data-section="history">Class History</a>
-                <a href="#" data-section="profile">Profile</a>
-                <a href="/" class="view-site">View Site</a>
-                <button id="logoutBtn">Logout</button>
+    <!-- Main Navigation - Same as homepage -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="/" class="logo">Gabi Yoga</a>
+            
+            <!-- Hamburger Menu Button -->
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+            </button>
+            
+            <div class="nav-content" id="nav-content">
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/blog-page">Blog</a></li>
+                    <li><a href="/user-dashboard.html" class="active">Dashboard</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <button id="logoutBtn" class="btn btn-outline">Logout</button>
+                </div>
             </div>
         </nav>
     </header>
 
-    <div class="user-hero">
-        <div class="user-hero-content">
-            <h1>Welcome to Your Dashboard</h1>
+    <!-- Hero Banner -->
+    <section class="user-hero">
+        <div class="hero-content">
+            <h1>My Dashboard</h1>
+            <p>Manage your yoga journey</p>
         </div>
-    </div>
+    </section>
+    
+    <!-- User Dashboard Layout with Sidebar -->
+    <div class="user-container">
+        <!-- User Sidebar Navigation -->
+        <aside class="user-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" data-section="dashboard" class="active">
+                    <i class="icon">📊</i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" data-section="upcoming">
+                    <i class="icon">📅</i>
+                    <span>Upcoming Classes</span>
+                </a>
+                <a href="#" data-section="history">
+                    <i class="icon">📚</i>
+                    <span>Class History</span>
+                </a>
+                <a href="#" data-section="profile">
+                    <i class="icon">👤</i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+        </aside>
 
-    <main>
+        <main class="user-content">
         <!-- Dashboard Overview Section -->
         <section id="dashboard-section" class="user-section active">
             <h1>My Overview</h1>
@@ -133,10 +170,43 @@
                 </div>
             </div>
         </section>
-    </main>
+        </main>
+    </div>
 
     <script src="/static/environment-indicator.js"></script>
     <script src="/static/auth.js"></script>
     <script src="/static/user.js"></script>
+    
+    <!-- Mobile Navigation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('nav-toggle');
+            const navContent = document.getElementById('nav-content');
+            
+            if (navToggle && navContent) {
+                navToggle.addEventListener('click', function() {
+                    navToggle.classList.toggle('active');
+                    navContent.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on nav links
+                const navLinks = navContent.querySelectorAll('a, button');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navToggle.classList.remove('active');
+                        navContent.classList.remove('active');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navToggle.contains(event.target) && !navContent.contains(event.target)) {
+                        navToggle.classList.remove('active');
+                        navContent.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

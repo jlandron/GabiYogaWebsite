@@ -177,8 +177,8 @@ function navigateToSection(sectionId) {
     // Show selected section
     document.getElementById(`${sectionId}-section`).classList.add('active');
 
-    // Update navigation active state
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    // Update navigation active state - check both old nav-links and new sidebar-nav
+    document.querySelectorAll('.nav-links a, .sidebar-nav a').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.section === sectionId) {
             link.classList.add('active');

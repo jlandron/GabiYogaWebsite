@@ -150,12 +150,6 @@ function serveBlogPostPage(slug) {
                             '</div>';
                         }
                         
-                        // Add author section
-                        postHTML += '<div class="blog-author">' +
-                            '<div>' +
-                                '<div class="blog-author-name">' + (post.author ? post.author.firstName : 'Gabi Yoga') + '</div>' +
-                            '</div>' +
-                        '</div>';
                         
                         // Close content wrapper
                         postHTML += '</div>';
