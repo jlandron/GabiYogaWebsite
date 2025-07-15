@@ -486,70 +486,114 @@ async function deleteAccount() {
 
 // Calendar Functions
 function updateCalendar(classes, bookings) {
-    const calendar = document.querySelector('.class-calendar');
-    
-    // Create calendar structure (similar to homepage)
-    const calendarHTML = 
-        '<div class="calendar-container">' +
-            '<div class="calendar-header">' +
-                '<div class="calendar-navigation">' +
-                    '<button class="nav-btn" id="prev-month">←</button>' +
-                    '<div class="calendar-date-range" id="calendar-date-range">' +
-                        '<!-- Date range will be populated here -->' +
+    try {
+        const calendar = document.querySelector('.class-calendar');
+        if (!calendar) {
+            console.warn('Calendar container not found');
+            return;
+        }
+        
+        // Create calendar structure (similar to homepage)
+        const calendarHTML = 
+            '<div class="calendar-container">' +
+                '<div class="calendar-header">' +
+                    '<div class="calendar-navigation">' +
+                        '<button class="nav-btn" id="prev-month-user">←</button>' +
+                        '<div class="calendar-date-range" id="calendar-date-range-user">' +
+                            '<!-- Date range will be populated here -->' +
+                        '</div>' +
+                        '<button class="nav-btn" id="next-month-user">→</button>' +
                     '</div>' +
-                    '<button class="nav-btn" id="next-month">→</button>' +
                 '</div>' +
-            '</div>' +
-            '<div class="calendar-grid-container">' +
-                '<div class="calendar-grid" id="calendar-grid">' +
-                    '<!-- Calendar will be populated here -->' +
+                '<div class="calendar-grid-container">' +
+                    '<div class="calendar-grid" id="calendar-grid-user">' +
+                        '<!-- Calendar will be populated here -->' +
+                    '</div>' +
                 '</div>' +
-            '</div>' +
-        '</div>';
-    
-    calendar.innerHTML = calendarHTML;
-    
-    // Initialize calendar
-    initializeCalendar(classes, bookings);
-    
-    // Add class detail modal
-    addClassModal();
+            '</div>';
+        
+        calendar.innerHTML = calendarHTML;
+        
+        // Initialize calendar with error handling
+        setTimeout(() => {
+            try {
+                initializeCalendar(classes, bookings);
+            } catch (error) {
+                console.error('Error initializing calendar:', error);
+                calendar.innerHTML = '<p>Unable to load calendar. Please refresh the page.</p>';
+            }
+        }, 0);
+        
+        // Add class detail modal
+        addClassModal();
+        
+    } catch (error) {
+        console.error('Error updating calendar:', error);
+    }
 }
 
 /// Initialize calendar and set up event listeners
 function initializeCalendar(classes, bookings) {
-    // Group classes by date
-    const calendarClasses = {};
-    classes.forEach(classItem => {
-        const dateKey = classItem.scheduleDate;
-        if (!calendarClasses[dateKey]) {
-            calendarClasses[dateKey] = [];
+    try {
+        // Group classes by date
+        const calendarClasses = {};
+        if (classes && Array.isArray(classes)) {
+            classes.forEach(classItem => {
+                const dateKey = classItem.scheduleDate;
+                if (!calendarClasses[dateKey]) {
+                    calendarClasses[dateKey] = [];
+                }
+                calendarClasses[dateKey].push(classItem);
+            });
         }
-        calendarClasses[dateKey].push(classItem);
-    });
-    
-    // Set current date
-    const currentDate = new Date();
-    
-    // Setup navigation event listeners
-    document.getElementById('prev-month').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar(currentDate, calendarClasses, bookings);
-    });
+        
+        // Set current date
+        const currentDate = new Date();
+        
+        // Setup navigation event listeners with proper error handling
+        const prevBtn = document.getElementById('prev-month-user');
+        const nextBtn = document.getElementById('next-month-user');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                try {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar(currentDate, calendarClasses, bookings);
+                } catch (error) {
+                    console.error('Error navigating calendar:', error);
+                }
+            });
+        }
 
-    document.getElementById('next-month').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                try {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar(currentDate, calendarClasses, bookings);
+                } catch (error) {
+                    console.error('Error navigating calendar:', error);
+                }
+            });
+        }
+        
+        // Initial render
         renderCalendar(currentDate, calendarClasses, bookings);
-    });
-    
-    // Initial render
-    renderCalendar(currentDate, calendarClasses, bookings);
+        
+    } catch (error) {
+        console.error('Error in initializeCalendar:', error);
+        throw error; // Re-throw to be caught by updateCalendar
+    }
 }
 
 // Render calendar with classes
 function renderCalendar(currentDate, calendarClasses, bookings) {
-    const grid = document.getElementById('calendar-grid');
-    const dateRange = document.getElementById('calendar-date-range');
+    const grid = document.getElementById('calendar-grid-user');
+    const dateRange = document.getElementById('calendar-date-range-user');
+    
+    if (!grid || !dateRange) {
+        console.error('Calendar elements not found');
+        return;
+    }
     
     // Calculate the start of the 4-week period
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);

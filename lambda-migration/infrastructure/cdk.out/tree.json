@@ -1871,6 +1871,132 @@
           "version": "2.100.0"
         }
       },
+      "GabiYogaLambda-dev-Email": {
+        "id": "GabiYogaLambda-dev-Email",
+        "path": "GabiYogaLambda-dev-Email",
+        "children": {
+          "WorkMailSsmParameterPolicy": {
+            "id": "WorkMailSsmParameterPolicy",
+            "path": "GabiYogaLambda-dev-Email/WorkMailSsmParameterPolicy",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "GabiYogaLambda-dev-Email/WorkMailSsmParameterPolicy/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                  "aws:cdk:cloudformation:props": {
+                    "policyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "ssm:GetParameter",
+                          "Effect": "Allow",
+                          "Resource": "arn:aws:ssm:us-east-1:891709159344:parameter/gabi-yoga/workmail/smtp-password"
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "policyName": "GabiYoga-dev-WorkMailSsmParameterPolicy"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                  "version": "2.100.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Policy",
+              "version": "2.100.0"
+            }
+          },
+          "WorkMailSmtpParameterArn": {
+            "id": "WorkMailSmtpParameterArn",
+            "path": "GabiYogaLambda-dev-Email/WorkMailSmtpParameterArn",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "WorkMailSmtpParameterName": {
+            "id": "WorkMailSmtpParameterName",
+            "path": "GabiYogaLambda-dev-Email/WorkMailSmtpParameterName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "DefaultSenderAddress": {
+            "id": "DefaultSenderAddress",
+            "path": "GabiYogaLambda-dev-Email/DefaultSenderAddress",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "SmtpHost": {
+            "id": "SmtpHost",
+            "path": "GabiYogaLambda-dev-Email/SmtpHost",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "EmailServiceType": {
+            "id": "EmailServiceType",
+            "path": "GabiYogaLambda-dev-Email/EmailServiceType",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "EmailDomain": {
+            "id": "EmailDomain",
+            "path": "GabiYogaLambda-dev-Email/EmailDomain",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.100.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "GabiYogaLambda-dev-Email/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "GabiYogaLambda-dev-Email/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.100.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.4.2"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "GabiYogaLambda-dev-Email/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.100.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "GabiYogaLambda-dev-Email/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.100.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.100.0"
+        }
+      },
       "GabiYogaLambda-dev-Api": {
         "id": "GabiYogaLambda-dev-Api",
         "path": "GabiYogaLambda-dev-Api",
@@ -2712,7 +2838,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -3375,7 +3501,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -4038,7 +4164,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -4701,7 +4827,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -5308,6 +5434,14 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "Action": [
+                                    "ssm:GetParameter",
+                                    "ssm:GetParameters"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:ssm:us-east-1:891709159344:parameter/gabi-yoga/workmail/smtp-password"
                                 }
                               ],
                               "Version": "2012-10-17"
@@ -5374,7 +5508,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -6037,7 +6171,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -6700,7 +6834,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -7363,7 +7497,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -8026,7 +8160,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -8689,7 +8823,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -8958,6 +9092,669 @@
                       {
                         "key": "Function",
                         "value": "AuthAccount"
+                      },
+                      {
+                        "key": "Service",
+                        "value": "GabiYogaLambda"
+                      }
+                    ],
+                    "timeout": 30,
+                    "tracingConfig": {
+                      "mode": "Active"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.100.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.100.0"
+            }
+          },
+          "AuthUnsubscribe": {
+            "id": "AuthUnsubscribe",
+            "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe",
+            "children": {
+              "ServiceRole": {
+                "id": "ServiceRole",
+                "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole",
+                "children": {
+                  "ImportServiceRole": {
+                    "id": "ImportServiceRole",
+                    "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/ImportServiceRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.100.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ],
+                        "tags": [
+                          {
+                            "key": "Environment",
+                            "value": "dev"
+                          },
+                          {
+                            "key": "Function",
+                            "value": "AuthUnsubscribe"
+                          },
+                          {
+                            "key": "Service",
+                            "value": "GabiYogaLambda"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.100.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "xray:PutTelemetryRecords",
+                                    "xray:PutTraceSegments"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
+                                  "Action": [
+                                    "dynamodb:BatchGetItem",
+                                    "dynamodb:BatchWriteItem",
+                                    "dynamodb:ConditionCheckItem",
+                                    "dynamodb:DeleteItem",
+                                    "dynamodb:DescribeTable",
+                                    "dynamodb:GetItem",
+                                    "dynamodb:GetRecords",
+                                    "dynamodb:GetShardIterator",
+                                    "dynamodb:PutItem",
+                                    "dynamodb:Query",
+                                    "dynamodb:Scan",
+                                    "dynamodb:UpdateItem"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttBlogPostsTable95467250Arn12E4E3AF"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttBookingsTableB2628485Arn4FAB36A9"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttClassesTable4AE801CBArn1FF0AAF5"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttCommunicationsTable734E5D43Arn34AFDEBD"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttGalleryTableACB2F8F7Arn0A206BF8"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttJWTBlacklistTable0878CD5FArnF2FCFFB4"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttOfferingTable71FB2BA1Arn73398B39"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttRetreatsTableBC211435Arn39F6F489"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttSettingsTable4DB0CCD0Arn1D1BE79B"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttUsersTable9725E9C8Arn5684EF99"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttWorkshopsTableA490E08AArn1EF55A4B"
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttBlogPostsTable95467250Arn12E4E3AF"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttBookingsTableB2628485Arn4FAB36A9"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttClassesTable4AE801CBArn1FF0AAF5"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttCommunicationsTable734E5D43Arn34AFDEBD"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttGalleryTableACB2F8F7Arn0A206BF8"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttOfferingTable71FB2BA1Arn73398B39"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttRetreatsTableBC211435Arn39F6F489"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttSettingsTable4DB0CCD0Arn1D1BE79B"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttUsersTable9725E9C8Arn5684EF99"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputFnGetAttWorkshopsTableA490E08AArn1EF55A4B"
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
+                                    },
+                                    {
+                                      "Ref": "AWS::NoValue"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:DescribeSecret",
+                                    "secretsmanager:GetSecretValue"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+                                    },
+                                    {
+                                      "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "Action": [
+                                    "s3:Abort*",
+                                    "s3:DeleteObject*",
+                                    "s3:GetBucket*",
+                                    "s3:GetObject*",
+                                    "s3:List*",
+                                    "s3:PutObject",
+                                    "s3:PutObjectLegalHold",
+                                    "s3:PutObjectRetention",
+                                    "s3:PutObjectTagging",
+                                    "s3:PutObjectVersionTagging"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "AssetsBucket5CB76180",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "AssetsBucket5CB76180",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "AuthUnsubscribeServiceRoleDefaultPolicy1DEC3073",
+                            "roles": [
+                              {
+                                "Ref": "AuthUnsubscribeServiceRole04C616CF"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.100.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.100.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.100.0"
+                }
+              },
+              "Code": {
+                "id": "Code",
+                "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.100.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.100.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.100.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "GabiYogaLambda-dev-Api/AuthUnsubscribe/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "architectures": [
+                      "arm64"
+                    ],
+                    "code": {
+                      "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
+                    },
+                    "environment": {
+                      "variables": {
+                        "STAGE": "dev",
+                        "REGION": "us-east-1",
+                        "USERS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefUsersTable9725E9C857961836"
+                        },
+                        "BLOG_POSTS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefBlogPostsTable9546725021C47579"
+                        },
+                        "CLASSES_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefClassesTable4AE801CB7AB7AA91"
+                        },
+                        "BOOKINGS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefBookingsTableB262848587A36CBD"
+                        },
+                        "RETREATS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefRetreatsTableBC21143554B4713D"
+                        },
+                        "WORKSHOPS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefWorkshopsTableA490E08A027A725C"
+                        },
+                        "GALLERY_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefGalleryTableACB2F8F770A4EDAB"
+                        },
+                        "SETTINGS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefSettingsTable4DB0CCD0297D747B"
+                        },
+                        "COMMUNICATIONS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefCommunicationsTable734E5D435DC845BF"
+                        },
+                        "IMAGE_CDN_DOMAIN": {
+                          "Fn::GetAtt": [
+                            "ImageCdnImageCdnDistribution7578DD3C",
+                            "DomainName"
+                          ]
+                        },
+                        "JWT_BLACKLIST_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefJWTBlacklistTable0878CD5FE0E3F2B3"
+                        },
+                        "OFFERINGS_TABLE": {
+                          "Fn::ImportValue": "GabiYogaLambda-dev-Database:ExportsOutputRefOfferingTable71FB2BA152D76D66"
+                        },
+                        "JWT_SECRET_NAME": {
+                          "Fn::Join": [
+                            "-",
+                            [
+                              {
+                                "Fn::Select": [
+                                  0,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  1,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  2,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefJWTSecretF6F1CBF05938782E"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        "STRIPE_SECRET_NAME": {
+                          "Fn::Join": [
+                            "-",
+                            [
+                              {
+                                "Fn::Select": [
+                                  0,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  1,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  2,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      "-",
+                                      {
+                                        "Fn::Select": [
+                                          6,
+                                          {
+                                            "Fn::Split": [
+                                              ":",
+                                              {
+                                                "Fn::ImportValue": "GabiYogaLambda-dev-Auth:ExportsOutputRefStripeSecret80A38A6811AB71BD"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        "ASSETS_BUCKET": {
+                          "Ref": "AssetsBucket5CB76180"
+                        },
+                        "CORS_ORIGIN": "https://dev.gabi.yoga",
+                        "BASE_URL": "https://dev.gabi.yoga",
+                        "FROM_EMAIL": "noreply@gabi.yoga"
+                      }
+                    },
+                    "functionName": "GabiYoga-dev-AuthUnsubscribe",
+                    "handler": "auth/unsubscribe.handler",
+                    "memorySize": 256,
+                    "role": {
+                      "Fn::GetAtt": [
+                        "AuthUnsubscribeServiceRole04C616CF",
+                        "Arn"
+                      ]
+                    },
+                    "runtime": "nodejs16.x",
+                    "tags": [
+                      {
+                        "key": "Environment",
+                        "value": "dev"
+                      },
+                      {
+                        "key": "Function",
+                        "value": "AuthUnsubscribe"
                       },
                       {
                         "key": "Service",
@@ -9352,7 +10149,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -10015,7 +10812,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -10678,7 +11475,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -11341,7 +12138,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -12004,7 +12801,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -12667,7 +13464,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -13330,7 +14127,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -13993,7 +14790,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -14656,7 +15453,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -15263,6 +16060,14 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "Action": [
+                                    "ssm:GetParameter",
+                                    "ssm:GetParameters"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:ssm:us-east-1:891709159344:parameter/gabi-yoga/workmail/smtp-password"
                                 }
                               ],
                               "Version": "2012-10-17"
@@ -15329,7 +16134,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -15992,7 +16797,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -16655,7 +17460,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -17318,7 +18123,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -17981,7 +18786,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -18644,7 +19449,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -19307,7 +20112,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -19970,7 +20775,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -20633,7 +21438,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -21296,7 +22101,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -21959,7 +22764,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -22622,7 +23427,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -23285,7 +24090,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -23892,6 +24697,14 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "Action": [
+                                    "ssm:GetParameter",
+                                    "ssm:GetParameters"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:ssm:us-east-1:891709159344:parameter/gabi-yoga/workmail/smtp-password"
                                 }
                               ],
                               "Version": "2012-10-17"
@@ -23958,7 +24771,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -24621,7 +25434,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -25284,7 +26097,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -25947,7 +26760,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -26610,7 +27423,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -27207,6 +28020,14 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "Action": [
+                                    "ssm:GetParameter",
+                                    "ssm:GetParameters"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "arn:aws:ssm:us-east-1:891709159344:parameter/gabi-yoga/workmail/smtp-password"
                                 }
                               ],
                               "Version": "2012-10-17"
@@ -27273,7 +28094,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -27936,7 +28757,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -28599,7 +29420,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -29262,7 +30083,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -29925,7 +30746,7 @@
                     ],
                     "code": {
                       "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                      "s3Key": "0a0db95fb52909d7727a8258af86c5c8c08de916f256eccd629179e6b9405b25.zip"
+                      "s3Key": "19a4244c7980f746808bc0ba97b72ee6b1494076a15a9fdceb0210be20c7c09e.zip"
                     },
                     "environment": {
                       "variables": {
@@ -30370,7 +31191,7 @@
                       "aws:cdk:cloudformation:type": "AWS::ApiGateway::Stage",
                       "aws:cdk:cloudformation:props": {
                         "deploymentId": {
-                          "Ref": "ApiGatewayDeploymentA26796E820cceb08c1555792e970f752ce7bc3c7"
+                          "Ref": "ApiGatewayDeploymentA26796E8c0c1d1762cdb3f85be4fd953d4a613d7"
                         },
                         "methodSettings": [
                           {
@@ -32231,6 +33052,216 @@
                                     },
                                     "resourceId": {
                                       "Ref": "ApiGatewayauthresetpassword6D1E1F27"
+                                    },
+                                    "restApiId": {
+                                      "Ref": "ApiGateway11E7F47B"
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                  "version": "2.100.0"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                              "version": "2.100.0"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_apigateway.Resource",
+                          "version": "2.100.0"
+                        }
+                      },
+                      "unsubscribe": {
+                        "id": "unsubscribe",
+                        "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe",
+                        "children": {
+                          "Resource": {
+                            "id": "Resource",
+                            "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/Resource",
+                            "attributes": {
+                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Resource",
+                              "aws:cdk:cloudformation:props": {
+                                "parentId": {
+                                  "Ref": "ApiGatewayauth73A616B6"
+                                },
+                                "pathPart": "unsubscribe",
+                                "restApiId": {
+                                  "Ref": "ApiGateway11E7F47B"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
+                              "version": "2.100.0"
+                            }
+                          },
+                          "OPTIONS": {
+                            "id": "OPTIONS",
+                            "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/OPTIONS",
+                            "children": {
+                              "Resource": {
+                                "id": "Resource",
+                                "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/OPTIONS/Resource",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                  "aws:cdk:cloudformation:props": {
+                                    "apiKeyRequired": false,
+                                    "authorizationType": "NONE",
+                                    "httpMethod": "OPTIONS",
+                                    "integration": {
+                                      "type": "MOCK",
+                                      "requestTemplates": {
+                                        "application/json": "{ statusCode: 200 }"
+                                      },
+                                      "integrationResponses": [
+                                        {
+                                          "statusCode": "204",
+                                          "responseParameters": {
+                                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,Accept'",
+                                            "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                                            "method.response.header.Access-Control-Allow-Credentials": "'true'"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "methodResponses": [
+                                      {
+                                        "statusCode": "204",
+                                        "responseParameters": {
+                                          "method.response.header.Access-Control-Allow-Headers": true,
+                                          "method.response.header.Access-Control-Allow-Origin": true,
+                                          "method.response.header.Access-Control-Allow-Methods": true,
+                                          "method.response.header.Access-Control-Allow-Credentials": true
+                                        }
+                                      }
+                                    ],
+                                    "resourceId": {
+                                      "Ref": "ApiGatewayauthunsubscribe9AE8B42C"
+                                    },
+                                    "restApiId": {
+                                      "Ref": "ApiGateway11E7F47B"
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                  "version": "2.100.0"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                              "version": "2.100.0"
+                            }
+                          },
+                          "GET": {
+                            "id": "GET",
+                            "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET",
+                            "children": {
+                              "ApiPermission.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe": {
+                                "id": "ApiPermission.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe",
+                                "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/ApiPermission.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                                  "aws:cdk:cloudformation:props": {
+                                    "action": "lambda:InvokeFunction",
+                                    "functionName": {
+                                      "Fn::GetAtt": [
+                                        "AuthUnsubscribeCA096F9B",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "principal": "apigateway.amazonaws.com",
+                                    "sourceArn": {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          "arn:aws:execute-api:us-east-1:891709159344:",
+                                          {
+                                            "Ref": "ApiGateway11E7F47B"
+                                          },
+                                          "/",
+                                          {
+                                            "Ref": "ApiGatewayDeploymentStagedev5A0070C9"
+                                          },
+                                          "/GET/auth/unsubscribe"
+                                        ]
+                                      ]
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                                  "version": "2.100.0"
+                                }
+                              },
+                              "ApiPermission.Test.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe": {
+                                "id": "ApiPermission.Test.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe",
+                                "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/ApiPermission.Test.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                                  "aws:cdk:cloudformation:props": {
+                                    "action": "lambda:InvokeFunction",
+                                    "functionName": {
+                                      "Fn::GetAtt": [
+                                        "AuthUnsubscribeCA096F9B",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "principal": "apigateway.amazonaws.com",
+                                    "sourceArn": {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          "arn:aws:execute-api:us-east-1:891709159344:",
+                                          {
+                                            "Ref": "ApiGateway11E7F47B"
+                                          },
+                                          "/test-invoke-stage/GET/auth/unsubscribe"
+                                        ]
+                                      ]
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                                  "version": "2.100.0"
+                                }
+                              },
+                              "Resource": {
+                                "id": "Resource",
+                                "path": "GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/Resource",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                  "aws:cdk:cloudformation:props": {
+                                    "authorizationType": "NONE",
+                                    "httpMethod": "GET",
+                                    "integration": {
+                                      "type": "AWS_PROXY",
+                                      "uri": {
+                                        "Fn::Join": [
+                                          "",
+                                          [
+                                            "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+                                            {
+                                              "Fn::GetAtt": [
+                                                "AuthUnsubscribeCA096F9B",
+                                                "Arn"
+                                              ]
+                                            },
+                                            "/invocations"
+                                          ]
+                                        ]
+                                      },
+                                      "integrationHttpMethod": "POST"
+                                    },
+                                    "resourceId": {
+                                      "Ref": "ApiGatewayauthunsubscribe9AE8B42C"
                                     },
                                     "restApiId": {
                                       "Ref": "ApiGateway11E7F47B"
@@ -41933,570 +42964,6 @@
           "CheckBootstrapVersion": {
             "id": "CheckBootstrapVersion",
             "path": "GabiYogaLambda-dev-Route53/CheckBootstrapVersion",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnRule",
-              "version": "2.100.0"
-            }
-          }
-        },
-        "constructInfo": {
-          "fqn": "aws-cdk-lib.Stack",
-          "version": "2.100.0"
-        }
-      },
-      "GabiYogaLambda-dev-SES": {
-        "id": "GabiYogaLambda-dev-SES",
-        "path": "GabiYogaLambda-dev-SES",
-        "children": {
-          "ImportedHostedZone": {
-            "id": "ImportedHostedZone",
-            "path": "GabiYogaLambda-dev-SES/ImportedHostedZone",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.Resource",
-              "version": "2.100.0"
-            }
-          },
-          "DomainIdentity": {
-            "id": "DomainIdentity",
-            "path": "GabiYogaLambda-dev-SES/DomainIdentity",
-            "children": {
-              "Resource": {
-                "id": "Resource",
-                "path": "GabiYogaLambda-dev-SES/DomainIdentity/Resource",
-                "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::SES::EmailIdentity",
-                  "aws:cdk:cloudformation:props": {
-                    "emailIdentity": "gabi.yoga",
-                    "mailFromAttributes": {
-                      "mailFromDomain": "mail.gabi.yoga"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_ses.CfnEmailIdentity",
-                  "version": "2.100.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_ses.EmailIdentity",
-              "version": "2.100.0"
-            }
-          },
-          "EmailSendingPolicy": {
-            "id": "EmailSendingPolicy",
-            "path": "GabiYogaLambda-dev-SES/EmailSendingPolicy",
-            "children": {
-              "Resource": {
-                "id": "Resource",
-                "path": "GabiYogaLambda-dev-SES/EmailSendingPolicy/Resource",
-                "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
-                  "aws:cdk:cloudformation:props": {
-                    "policyDocument": {
-                      "Statement": [
-                        {
-                          "Action": [
-                            "ses:SendBulkTemplatedEmail",
-                            "ses:SendEmail",
-                            "ses:SendRawEmail",
-                            "ses:SendTemplatedEmail"
-                          ],
-                          "Condition": {
-                            "StringLike": {
-                              "ses:FromAddress": [
-                                "*@gabi.yoga",
-                                "*@*.gabi.yoga"
-                              ]
-                            }
-                          },
-                          "Effect": "Allow",
-                          "Resource": "*"
-                        }
-                      ],
-                      "Version": "2012-10-17"
-                    },
-                    "policyName": "GabiYoga-dev-EmailSendingPolicy"
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
-                  "version": "2.100.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_iam.Policy",
-              "version": "2.100.0"
-            }
-          },
-          "TransactionalEmailTemplate": {
-            "id": "TransactionalEmailTemplate",
-            "path": "GabiYogaLambda-dev-SES/TransactionalEmailTemplate",
-            "attributes": {
-              "aws:cdk:cloudformation:type": "AWS::SES::Template",
-              "aws:cdk:cloudformation:props": {
-                "template": {
-                  "templateName": "GabiYoga-dev-TransactionalEmail",
-                  "subjectPart": "{{subject}}",
-                  "htmlPart": "\n          <!DOCTYPE html>\n          <html>\n          <head>\n              <meta charset=\"utf-8\">\n              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n              <title>{{subject}}</title>\n              <style>\n                  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n                  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }\n                  .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }\n                  .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }\n                  .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }\n              </style>\n          </head>\n          <body>\n              <div class=\"container\">\n                  <div class=\"header\">\n                      <h1>🧘‍♀️ Gabi Yoga</h1>\n                      <p>{{headerSubtitle}}</p>\n                  </div>\n                  <div class=\"content\">\n                      {{content}}\n                  </div>\n                  <div class=\"footer\">\n                      <p>© 2025 Gabi Yoga. All rights reserved.</p>\n                      <p>This email was sent to {{email}}</p>\n                  </div>\n              </div>\n          </body>\n          </html>\n        ",
-                  "textPart": "{{textContent}}"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_ses.CfnTemplate",
-              "version": "2.100.0"
-            }
-          },
-          "CrossRegionVerification": {
-            "id": "CrossRegionVerification",
-            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification",
-            "children": {
-              "VerificationFunction": {
-                "id": "VerificationFunction",
-                "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction",
-                "children": {
-                  "ServiceRole": {
-                    "id": "ServiceRole",
-                    "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole",
-                    "children": {
-                      "ImportServiceRole": {
-                        "id": "ImportServiceRole",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/ImportServiceRole",
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.Resource",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "Resource": {
-                        "id": "Resource",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/Resource",
-                        "attributes": {
-                          "aws:cdk:cloudformation:type": "AWS::IAM::Role",
-                          "aws:cdk:cloudformation:props": {
-                            "assumeRolePolicyDocument": {
-                              "Statement": [
-                                {
-                                  "Action": "sts:AssumeRole",
-                                  "Effect": "Allow",
-                                  "Principal": {
-                                    "Service": "lambda.amazonaws.com"
-                                  }
-                                }
-                              ],
-                              "Version": "2012-10-17"
-                            },
-                            "managedPolicyArns": [
-                              {
-                                "Fn::Join": [
-                                  "",
-                                  [
-                                    "arn:",
-                                    {
-                                      "Ref": "AWS::Partition"
-                                    },
-                                    ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-                                  ]
-                                ]
-                              }
-                            ]
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_iam.CfnRole",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "DefaultPolicy": {
-                        "id": "DefaultPolicy",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/DefaultPolicy",
-                        "children": {
-                          "Resource": {
-                            "id": "Resource",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/DefaultPolicy/Resource",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
-                              "aws:cdk:cloudformation:props": {
-                                "policyDocument": {
-                                  "Statement": [
-                                    {
-                                      "Action": [
-                                        "ses:GetIdentityDkimAttributes",
-                                        "ses:GetIdentityMailFromDomainAttributes",
-                                        "ses:GetIdentityVerificationAttributes",
-                                        "ses:ListIdentities",
-                                        "ses:SetIdentityDkimEnabled",
-                                        "ses:SetIdentityMailFromDomain",
-                                        "ses:VerifyDomainIdentity"
-                                      ],
-                                      "Effect": "Allow",
-                                      "Resource": "*"
-                                    }
-                                  ],
-                                  "Version": "2012-10-17"
-                                },
-                                "policyName": "CrossRegionVerificationVerificationFunctionServiceRoleDefaultPolicyA86D2C00",
-                                "roles": [
-                                  {
-                                    "Ref": "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB"
-                                  }
-                                ]
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
-                              "version": "2.100.0"
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_iam.Policy",
-                          "version": "2.100.0"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_iam.Role",
-                      "version": "2.100.0"
-                    }
-                  },
-                  "Code": {
-                    "id": "Code",
-                    "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/Code",
-                    "children": {
-                      "Stage": {
-                        "id": "Stage",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/Code/Stage",
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.AssetStaging",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "AssetBucket": {
-                        "id": "AssetBucket",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/Code/AssetBucket",
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_s3.BucketBase",
-                          "version": "2.100.0"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
-                      "version": "2.100.0"
-                    }
-                  },
-                  "Resource": {
-                    "id": "Resource",
-                    "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/Resource",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
-                      "aws:cdk:cloudformation:props": {
-                        "code": {
-                          "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                          "s3Key": "d730ff9bd37bb55f318781f1d6d537cb51dd5dbe61ae384e67166c84b7808d64.zip"
-                        },
-                        "description": "Lambda function to handle cross-region SES domain verification",
-                        "handler": "index.handler",
-                        "role": {
-                          "Fn::GetAtt": [
-                            "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB",
-                            "Arn"
-                          ]
-                        },
-                        "runtime": "nodejs16.x",
-                        "timeout": 300
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
-                      "version": "2.100.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_lambda.Function",
-                  "version": "2.100.0"
-                }
-              },
-              "Provider": {
-                "id": "Provider",
-                "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider",
-                "children": {
-                  "framework-onEvent": {
-                    "id": "framework-onEvent",
-                    "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent",
-                    "children": {
-                      "ServiceRole": {
-                        "id": "ServiceRole",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole",
-                        "children": {
-                          "ImportServiceRole": {
-                            "id": "ImportServiceRole",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/ImportServiceRole",
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.Resource",
-                              "version": "2.100.0"
-                            }
-                          },
-                          "Resource": {
-                            "id": "Resource",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/Resource",
-                            "attributes": {
-                              "aws:cdk:cloudformation:type": "AWS::IAM::Role",
-                              "aws:cdk:cloudformation:props": {
-                                "assumeRolePolicyDocument": {
-                                  "Statement": [
-                                    {
-                                      "Action": "sts:AssumeRole",
-                                      "Effect": "Allow",
-                                      "Principal": {
-                                        "Service": "lambda.amazonaws.com"
-                                      }
-                                    }
-                                  ],
-                                  "Version": "2012-10-17"
-                                },
-                                "managedPolicyArns": [
-                                  {
-                                    "Fn::Join": [
-                                      "",
-                                      [
-                                        "arn:",
-                                        {
-                                          "Ref": "AWS::Partition"
-                                        },
-                                        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-                                      ]
-                                    ]
-                                  }
-                                ]
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_iam.CfnRole",
-                              "version": "2.100.0"
-                            }
-                          },
-                          "DefaultPolicy": {
-                            "id": "DefaultPolicy",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/DefaultPolicy",
-                            "children": {
-                              "Resource": {
-                                "id": "Resource",
-                                "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource",
-                                "attributes": {
-                                  "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
-                                  "aws:cdk:cloudformation:props": {
-                                    "policyDocument": {
-                                      "Statement": [
-                                        {
-                                          "Action": "lambda:InvokeFunction",
-                                          "Effect": "Allow",
-                                          "Resource": [
-                                            {
-                                              "Fn::GetAtt": [
-                                                "CrossRegionVerificationVerificationFunctionC056806F",
-                                                "Arn"
-                                              ]
-                                            },
-                                            {
-                                              "Fn::Join": [
-                                                "",
-                                                [
-                                                  {
-                                                    "Fn::GetAtt": [
-                                                      "CrossRegionVerificationVerificationFunctionC056806F",
-                                                      "Arn"
-                                                    ]
-                                                  },
-                                                  ":*"
-                                                ]
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      ],
-                                      "Version": "2012-10-17"
-                                    },
-                                    "policyName": "CrossRegionVerificationProviderframeworkonEventServiceRoleDefaultPolicyC1FEE98F",
-                                    "roles": [
-                                      {
-                                        "Ref": "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "constructInfo": {
-                                  "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
-                                  "version": "2.100.0"
-                                }
-                              }
-                            },
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_iam.Policy",
-                              "version": "2.100.0"
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_iam.Role",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "Code": {
-                        "id": "Code",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/Code",
-                        "children": {
-                          "Stage": {
-                            "id": "Stage",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/Code/Stage",
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.AssetStaging",
-                              "version": "2.100.0"
-                            }
-                          },
-                          "AssetBucket": {
-                            "id": "AssetBucket",
-                            "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/Code/AssetBucket",
-                            "constructInfo": {
-                              "fqn": "aws-cdk-lib.aws_s3.BucketBase",
-                              "version": "2.100.0"
-                            }
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
-                          "version": "2.100.0"
-                        }
-                      },
-                      "Resource": {
-                        "id": "Resource",
-                        "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/Resource",
-                        "attributes": {
-                          "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
-                          "aws:cdk:cloudformation:props": {
-                            "code": {
-                              "s3Bucket": "cdk-hnb659fds-assets-891709159344-us-east-1",
-                              "s3Key": "7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94.zip"
-                            },
-                            "description": "AWS CDK resource provider framework - onEvent (GabiYogaLambda-dev-SES/CrossRegionVerification/Provider)",
-                            "environment": {
-                              "variables": {
-                                "USER_ON_EVENT_FUNCTION_ARN": {
-                                  "Fn::GetAtt": [
-                                    "CrossRegionVerificationVerificationFunctionC056806F",
-                                    "Arn"
-                                  ]
-                                }
-                              }
-                            },
-                            "handler": "framework.onEvent",
-                            "role": {
-                              "Fn::GetAtt": [
-                                "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB",
-                                "Arn"
-                              ]
-                            },
-                            "runtime": "nodejs18.x",
-                            "timeout": 900
-                          }
-                        },
-                        "constructInfo": {
-                          "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
-                          "version": "2.100.0"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_lambda.Function",
-                      "version": "2.100.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.custom_resources.Provider",
-                  "version": "2.100.0"
-                }
-              },
-              "Resource": {
-                "id": "Resource",
-                "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Resource",
-                "children": {
-                  "Default": {
-                    "id": "Default",
-                    "path": "GabiYogaLambda-dev-SES/CrossRegionVerification/Resource/Default",
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.CfnResource",
-                      "version": "2.100.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CustomResource",
-                  "version": "2.100.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "constructs.Construct",
-              "version": "10.4.2"
-            }
-          },
-          "EmailDomainIdentity": {
-            "id": "EmailDomainIdentity",
-            "path": "GabiYogaLambda-dev-SES/EmailDomainIdentity",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnOutput",
-              "version": "2.100.0"
-            }
-          },
-          "DefaultSenderAddress": {
-            "id": "DefaultSenderAddress",
-            "path": "GabiYogaLambda-dev-SES/DefaultSenderAddress",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnOutput",
-              "version": "2.100.0"
-            }
-          },
-          "EmailDomain": {
-            "id": "EmailDomain",
-            "path": "GabiYogaLambda-dev-SES/EmailDomain",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnOutput",
-              "version": "2.100.0"
-            }
-          },
-          "CDKMetadata": {
-            "id": "CDKMetadata",
-            "path": "GabiYogaLambda-dev-SES/CDKMetadata",
-            "children": {
-              "Default": {
-                "id": "Default",
-                "path": "GabiYogaLambda-dev-SES/CDKMetadata/Default",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CfnResource",
-                  "version": "2.100.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "constructs.Construct",
-              "version": "10.4.2"
-            }
-          },
-          "BootstrapVersion": {
-            "id": "BootstrapVersion",
-            "path": "GabiYogaLambda-dev-SES/BootstrapVersion",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnParameter",
-              "version": "2.100.0"
-            }
-          },
-          "CheckBootstrapVersion": {
-            "id": "CheckBootstrapVersion",
-            "path": "GabiYogaLambda-dev-SES/CheckBootstrapVersion",
             "constructInfo": {
               "fqn": "aws-cdk-lib.CfnRule",
               "version": "2.100.0"

@@ -562,6 +562,142 @@
       },
       "displayName": "GabiYogaLambda-dev-Auth"
     },
+    "GabiYogaLambda-dev-Email.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "GabiYogaLambda-dev-Email.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "GabiYogaLambda-dev-Email": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://891709159344/us-east-1",
+      "properties": {
+        "templateFile": "GabiYogaLambda-dev-Email.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "Environment": "dev",
+          "ManagedBy": "CDK",
+          "Project": "GabiYoga",
+          "Service": "Lambda"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/a7821517d9d80d9aadeadf82a69c36c6b83a07f47cd82b094c4cbdad03ddf7fc.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "GabiYogaLambda-dev-Email.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-lookup-role-891709159344-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "GabiYogaLambda-dev-Email.assets"
+      ],
+      "metadata": {
+        "/GabiYogaLambda-dev-Email": [
+          {
+            "type": "WorkMail.Configuration",
+            "data": {
+              "domainName": "gabi.yoga",
+              "smtpHost": "smtp.mail.us-east-1.awsapps.com",
+              "smtpPort": 465,
+              "fromEmail": "noreply@gabi.yoga",
+              "parameterName": "/gabi-yoga/workmail/smtp-password",
+              "note": "Using AWS WorkMail SMTP with SSM Parameter Store for password storage"
+            }
+          },
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "Environment",
+                "Value": "dev"
+              },
+              {
+                "Key": "ManagedBy",
+                "Value": "CDK"
+              },
+              {
+                "Key": "Project",
+                "Value": "GabiYoga"
+              },
+              {
+                "Key": "Service",
+                "Value": "Lambda"
+              }
+            ]
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/WorkMailSsmParameterPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailSsmParameterPolicy74FEA704"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/WorkMailSmtpParameterArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailSmtpParameterArn"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/WorkMailSmtpParameterName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkMailSmtpParameterName"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/DefaultSenderAddress": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DefaultSenderAddress"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/SmtpHost": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SmtpHost"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/EmailServiceType": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EmailServiceType"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/EmailDomain": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EmailDomain"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/GabiYogaLambda-dev-Email/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "GabiYogaLambda-dev-Email"
+    },
     "GabiYogaLambda-dev-Api.assets": {
       "type": "cdk:asset-manifest",
       "properties": {
@@ -585,7 +721,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/9da833e586eeab8591afd30fd3573880ae69ad7f45595f2d2af6552982cf8bc6.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/686ad1b82e935e7203753b1b6d9789922c8e1c2515636e7069b348f8089ab7de.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -600,13 +736,14 @@
       "dependencies": [
         "GabiYogaLambda-dev-Database",
         "GabiYogaLambda-dev-Auth",
+        "GabiYogaLambda-dev-Email",
         "GabiYogaLambda-dev-Api.assets"
       ],
       "metadata": {
         "/GabiYogaLambda-dev-Api": [
           {
             "type": "aws:cdk:info",
-            "data": "Number of resources: 405 is approaching allowed maximum of 500",
+            "data": "Number of resources: 413 is approaching allowed maximum of 500",
             "trace": [
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1526)",
               "Annotations.addInfo (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1015)",
@@ -628,7 +765,7 @@
           },
           {
             "type": "aws:cdk:warning",
-            "data": "Template size is approaching limit: 862885/1000000. Split resources into multiple stacks or set suppressTemplateIndentation to reduce template size. [ack: @aws-cdk/core:Stack.templateSize]",
+            "data": "Template size is approaching limit: 882939/1000000. Split resources into multiple stacks or set suppressTemplateIndentation to reduce template size. [ack: @aws-cdk/core:Stack.templateSize]",
             "trace": [
               "Annotations.addMessage (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1526)",
               "Annotations.addWarningV2 (/local/home/jlandron/Desktop/yoga-website/lambda-migration/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
@@ -908,6 +1045,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "AuthAccountB5E58ABD"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AuthUnsubscribeServiceRole04C616CF"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/AuthUnsubscribe/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AuthUnsubscribeServiceRoleDefaultPolicy1DEC3073"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/AuthUnsubscribe/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AuthUnsubscribeCA096F9B"
           }
         ],
         "/GabiYogaLambda-dev-Api/BlogList/ServiceRole/Resource": [
@@ -1507,7 +1662,7 @@
         "/GabiYogaLambda-dev-Api/ApiGateway/Deployment/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ApiGatewayDeploymentA26796E820cceb08c1555792e970f752ce7bc3c7"
+            "data": "ApiGatewayDeploymentA26796E8c0c1d1762cdb3f85be4fd953d4a613d7"
           }
         ],
         "/GabiYogaLambda-dev-Api/ApiGateway/DeploymentStage.dev/Resource": [
@@ -1778,6 +1933,36 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "ApiGatewayauthresetpasswordPOST6C9D8AE8"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiGatewayauthunsubscribe9AE8B42C"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiGatewayauthunsubscribeOPTIONS7B6F83F5"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/ApiPermission.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiGatewayauthunsubscribeGETApiPermissionGabiYogaLambdadevApiApiGateway852B343CGETauthunsubscribe218A3786"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/ApiPermission.Test.GabiYogaLambdadevApiApiGateway852B343C.GET..auth.unsubscribe": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiGatewayauthunsubscribeGETApiPermissionTestGabiYogaLambdadevApiApiGateway852B343CGETauthunsubscribe350E085C"
+          }
+        ],
+        "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/unsubscribe/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiGatewayauthunsubscribeGET34B9AC0C"
           }
         ],
         "/GabiYogaLambda-dev-Api/ApiGateway/Default/auth/profile/Resource": [
@@ -3300,174 +3485,6 @@
         ]
       },
       "displayName": "GabiYogaLambda-dev-Route53"
-    },
-    "GabiYogaLambda-dev-SES.assets": {
-      "type": "cdk:asset-manifest",
-      "properties": {
-        "file": "GabiYogaLambda-dev-SES.assets.json",
-        "requiresBootstrapStackVersion": 6,
-        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
-      }
-    },
-    "GabiYogaLambda-dev-SES": {
-      "type": "aws:cloudformation:stack",
-      "environment": "aws://891709159344/us-east-1",
-      "properties": {
-        "templateFile": "GabiYogaLambda-dev-SES.template.json",
-        "terminationProtection": false,
-        "tags": {
-          "Environment": "dev",
-          "ManagedBy": "CDK",
-          "Project": "GabiYoga",
-          "Service": "Lambda"
-        },
-        "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-deploy-role-891709159344-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-cfn-exec-role-891709159344-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-891709159344-us-east-1/439b8907f626e1f9662693ccd74252d3e89a8a5b779a8e57db6ae9a224fa2120.json",
-        "requiresBootstrapStackVersion": 6,
-        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
-        "additionalDependencies": [
-          "GabiYogaLambda-dev-SES.assets"
-        ],
-        "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::891709159344:role/cdk-hnb659fds-lookup-role-891709159344-us-east-1",
-          "requiresBootstrapStackVersion": 8,
-          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
-        }
-      },
-      "dependencies": [
-        "GabiYogaLambda-dev-Route53",
-        "GabiYogaLambda-dev-SES.assets"
-      ],
-      "metadata": {
-        "/GabiYogaLambda-dev-SES": [
-          {
-            "type": "aws:cdk:stack-tags",
-            "data": [
-              {
-                "Key": "Environment",
-                "Value": "dev"
-              },
-              {
-                "Key": "ManagedBy",
-                "Value": "CDK"
-              },
-              {
-                "Key": "Project",
-                "Value": "GabiYoga"
-              },
-              {
-                "Key": "Service",
-                "Value": "Lambda"
-              }
-            ]
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/DomainIdentity": [
-          {
-            "type": "info",
-            "data": "Domain gabi.yoga is managed by Route53 stack with hosted zone ID: Z0858162FM97J2FO2QJU"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/DomainIdentity/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "DomainIdentity034B48F5"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/EmailSendingPolicy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "EmailSendingPolicy3EEA5068"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/TransactionalEmailTemplate": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "TransactionalEmailTemplate"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationVerificationFunctionServiceRoleCB8CFDDB"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/ServiceRole/DefaultPolicy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationVerificationFunctionServiceRoleDefaultPolicyA86D2C00"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/VerificationFunction/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationVerificationFunctionC056806F"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationProviderframeworkonEventServiceRole48B4A0FB"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationProviderframeworkonEventServiceRoleDefaultPolicyC1FEE98F"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/Provider/framework-onEvent/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerificationProviderframeworkonEvent8CE8B526"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CrossRegionVerification/Resource/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CrossRegionVerification2BF53957"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/EmailDomainIdentity": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "EmailDomainIdentity"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/DefaultSenderAddress": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "DefaultSenderAddress"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/EmailDomain": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "EmailDomain"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CDKMetadata/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CDKMetadata"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/BootstrapVersion": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "BootstrapVersion"
-          }
-        ],
-        "/GabiYogaLambda-dev-SES/CheckBootstrapVersion": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CheckBootstrapVersion"
-          }
-        ]
-      },
-      "displayName": "GabiYogaLambda-dev-SES"
     },
     "Tree": {
       "type": "cdk:tree",

@@ -4,7 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { LambdaDbStack } from '../lib/lambda-db-stack';
 import { LambdaApiStack } from '../lib/lambda-api-stack';
 import { LambdaAuthStack } from '../lib/lambda-auth-stack';
-import { LambdaSesStack } from '../lib/lambda-ses-stack';
+import { LambdaEmailStack } from '../lib/lambda-ses-stack';
 import { LambdaRoute53Stack } from '../lib/lambda-route53-stack';
 
 const app = new cdk.App();
@@ -50,6 +50,15 @@ const authStack = new LambdaAuthStack(app, `${stackPrefix}-Auth`, {
   jwtBlacklistTable: dbStack.jwtBlacklistTable,
 });
 
+// WorkMail Email Stack - Email sending infrastructure using WorkMail SMTP
+const emailStack = new LambdaEmailStack(app, `${stackPrefix}-Email`, {
+  env,
+  stage,
+  tags: commonTags,
+  description: `Gabi Yoga Lambda WorkMail Email Stack (${stage})`,
+  domainName: 'gabi.yoga',
+});
+
 // API Stack - Lambda functions and API Gateway
 const apiStack = new LambdaApiStack(app, `${stackPrefix}-Api`, {
   env,
@@ -83,24 +92,13 @@ const route53Stack = new LambdaRoute53Stack(app, `${stackPrefix}-Route53`, {
   domainName: 'gabi.yoga',
 });
 
-// SES Stack - Email sending infrastructure
-const sesStack = new LambdaSesStack(app, `${stackPrefix}-SES`, {
-  env,
-  stage,
-  tags: commonTags,
-  description: `Gabi Yoga Lambda SES Email Stack (${stage})`,
-  domainName: 'gabi.yoga',
-  // Pass the hosted zone ID from Route53 stack
-  hostedZoneId: route53Stack.hostedZone.hostedZoneId,
-});
-
 // Image CDN is now directly integrated in the API stack
 
 // Stack dependencies
 apiStack.addDependency(dbStack);
 apiStack.addDependency(authStack);
+apiStack.addDependency(emailStack);
 route53Stack.addDependency(apiStack);
-sesStack.addDependency(route53Stack);
 // No need for imageCdnStack dependencies as it's now part of the API stack
 
 // Output key information
@@ -138,10 +136,10 @@ new cdk.CfnOutput(authStack, 'AuthStackName', {
   exportName: `${stackPrefix}-AuthStackName`,
 });
 
-new cdk.CfnOutput(sesStack, 'EmailDomain', {
+new cdk.CfnOutput(emailStack, 'EmailDomain', {
   value: 'gabi.yoga',
   description: 'Email domain for sending emails',
-  exportName: `${stackPrefix}-EmailDomain`,
+  exportName: `${stackPrefix}-WorkMailEmailDomain`,
 });
 
 new cdk.CfnOutput(route53Stack, 'ApiCustomDomain', {
@@ -155,7 +153,7 @@ console.log(`Deploying Gabi Yoga Lambda stacks for ${stage} environment:`);
 console.log(`- Database Stack: ${dbStack.stackName}`);
 console.log(`- Auth Stack: ${authStack.stackName}`);
 console.log(`- API Stack: ${apiStack.stackName}`);
-console.log(`- SES Stack: ${sesStack.stackName}`);
+console.log(`- Email Stack: ${emailStack.stackName}`);
 console.log(`- Route53 Stack: ${route53Stack.stackName}`);
 console.log(`- Image CDN: Integrated into API Stack`);
 console.log(`- Region: ${region}`);

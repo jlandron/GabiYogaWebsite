@@ -114,6 +114,7 @@ export class LambdaApiStack extends cdk.Stack {
     const authVerifyToken = this.createLambdaFunction('AuthVerifyToken', 'auth/verify-token.js', commonLambdaProps);
     const authProfile = this.createLambdaFunction('AuthProfile', 'auth/profile.js', commonLambdaProps);
     const authAccount = this.createLambdaFunction('AuthAccount', 'auth/account.js', commonLambdaProps);
+    const authUnsubscribe = this.createLambdaFunction('AuthUnsubscribe', 'auth/unsubscribe.js', commonLambdaProps);
 
     // Blog Lambda Functions
     const blogList = this.createLambdaFunction('BlogList', 'blog/list.js', commonLambdaProps);
@@ -218,6 +219,14 @@ export class LambdaApiStack extends cdk.Stack {
       bookingBook,     // For booking confirmation emails
       adminClasses     // For class cancellation emails
     ]);
+    
+    // Grant SSM Parameter Store permissions to functions that need to send emails
+    this.grantSSMParameterPermissions([
+      authForgot,      // For password reset emails
+      bookingBook,     // For booking confirmation emails
+      adminClasses,    // For class cancellation emails
+      contactForm      // For contact form emails
+    ]);
 
     // API Gateway
     this.apiGateway = new apigateway.RestApi(this, 'ApiGateway', {
@@ -267,6 +276,11 @@ export class LambdaApiStack extends cdk.Stack {
       authorizationType: apigateway.AuthorizationType.NONE
     });
     authResource.addResource('reset-password').addMethod('POST', new apigateway.LambdaIntegration(authResetPassword), {
+      authorizationType: apigateway.AuthorizationType.NONE
+    });
+    
+    // One-click unsubscribe endpoint (no auth required)
+    authResource.addResource('unsubscribe').addMethod('GET', new apigateway.LambdaIntegration(authUnsubscribe), {
       authorizationType: apigateway.AuthorizationType.NONE
     });
     
@@ -487,6 +501,25 @@ export class LambdaApiStack extends cdk.Stack {
 
       // Add the policy to the function's role
       func.addToRolePolicy(sesPolicy);
+    });
+  }
+
+  private grantSSMParameterPermissions(functions: lambda.Function[]): void {
+    functions.forEach(func => {
+      // Create a policy statement for SSM Parameter Store permissions
+      const ssmPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'ssm:GetParameter',
+          'ssm:GetParameters'
+        ],
+        resources: [
+          `arn:aws:ssm:${this.region}:${this.account}:parameter/gabi-yoga/workmail/smtp-password`
+        ],
+      });
+
+      // Add the policy to the function's role
+      func.addToRolePolicy(ssmPolicy);
     });
   }
 

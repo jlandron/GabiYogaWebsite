@@ -27,6 +27,8 @@ function wrapEmailContent(content, title, subtitle = null) {
         .button { display: inline-block; background: linear-gradient(135deg, #a1b082, #82946c); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(92, 92, 85, 0.15); transition: all 0.3s ease; }
         .button:hover { background: #82946c; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92, 92, 85, 0.2); }
         .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #8f8f87; }
+        .unsubscribe { margin-top: 20px; font-size: 12px; color: #999; }
+        .unsubscribe a { color: #999; text-decoration: underline; }
         h1, h2, h3, h4 { font-family: 'Georgia', serif; font-weight: 600; color: #3b3b35; }
         p { color: #5c5c55; }
         .highlight { color: #a1b082; font-weight: 600; }
@@ -44,6 +46,9 @@ function wrapEmailContent(content, title, subtitle = null) {
         <div class="footer">
             <p>© ${currentYear} Gabi Yoga. All rights reserved.</p>
             <p>This email was sent to {{email}}</p>
+            <div class="unsubscribe">
+                <p>Don't want to receive these emails? <a href="{{baseUrl}}/auth/unsubscribe?email={{email}}">Unsubscribe</a></p>
+            </div>
         </div>
     </div>
 </body>
